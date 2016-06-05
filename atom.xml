@@ -1,15 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 <feed xmlns="http://www.w3.org/2005/Atom">
-  <title>Hexo</title>
-  
+  <title>Devops</title>
+  <subtitle>网站架构|系统架构</subtitle>
   <link href="/atom.xml" rel="self"/>
   
-  <link href="http://yoursite.com/"/>
+  <link href="http://icyxp.github.io/"/>
   <updated>2016-05-30T06:17:06.000Z</updated>
-  <id>http://yoursite.com/</id>
+  <id>http://icyxp.github.io/</id>
   
   <author>
-    <name>John Doe</name>
+    <name>icyboy</name>
     
   </author>
   
@@ -17,9 +17,9 @@
   
   <entry>
     <title>Hello World</title>
-    <link href="http://yoursite.com/2016/05/30/hello-world/"/>
-    <id>http://yoursite.com/2016/05/30/hello-world/</id>
-    <published>2016-05-30T06:44:56.556Z</published>
+    <link href="http://icyxp.github.io//blog/2016/06/hello-world.html"/>
+    <id>http://icyxp.github.io//blog/2016/06/hello-world.html</id>
+    <published>2016-06-05T14:04:27.444Z</published>
     <updated>2016-05-30T06:17:06.000Z</updated>
     
     <content type="html">&lt;p&gt;Welcome to &lt;a href=&quot;https://hexo.io/&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;Hexo&lt;/a&gt;! This is your very first post. Check &lt;a href=&quot;https://hexo.io/docs/&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;documentation&lt;/a&gt; for more info. If you get any problems when using Hexo, you can find the answer in &lt;a href=&quot;https://hexo.io/docs/troubleshooting.html&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;troubleshooting&lt;/a&gt; or you can ask me on &lt;a href=&quot;https://github.com/hexojs/hexo/issues&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;GitHub&lt;/a&gt;.&lt;/p&gt;
@@ -44,10 +44,10 @@
   
   <entry>
     <title>第一篇文件</title>
-    <link href="http://yoursite.com/2016/05/30/%E7%AC%AC%E4%B8%80%E7%AF%87%E6%96%87%E4%BB%B6/"/>
-    <id>http://yoursite.com/2016/05/30/第一篇文件/</id>
+    <link href="http://icyxp.github.io//blog/2016/05/%E7%AC%AC%E4%B8%80%E7%AF%87%E6%96%87%E4%BB%B6.html"/>
+    <id>http://icyxp.github.io//blog/2016/05/第一篇文件.html</id>
     <published>2016-05-30T06:40:56.000Z</published>
-    <updated>2016-05-30T06:43:32.000Z</updated>
+    <updated>2016-06-01T15:20:16.000Z</updated>
     
     <content type="html">&lt;h1 id=&quot;我的生活&quot;&gt;&lt;a href=&quot;#我的生活&quot; class=&quot;headerlink&quot; title=&quot;我的生活&quot;&gt;&lt;/a&gt;我的生活&lt;/h1&gt;</content>
     
@@ -57,10 +57,12 @@
     
     </summary>
     
-      <category term="随手记" scheme="http://yoursite.com/categories/%E9%9A%8F%E6%89%8B%E8%AE%B0/"/>
+      <category term="随手记" scheme="http://icyxp.github.io/categories/%E9%9A%8F%E6%89%8B%E8%AE%B0/"/>
     
     
-      <category term="123" scheme="http://yoursite.com/tags/123/"/>
+      <category term="生活" scheme="http://icyxp.github.io/tags/%E7%94%9F%E6%B4%BB/"/>
+    
+      <category term="人生" scheme="http://icyxp.github.io/tags/%E4%BA%BA%E7%94%9F/"/>
     
   </entry>
   
