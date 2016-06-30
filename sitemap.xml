@@ -2,6 +2,20 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   
   <url>
+    <loc>http://icyxp.github.io/blog/2016/06/zephir-02.html</loc>
+    
+    <lastmod>2016-06-30T14:25:21.000Z</lastmod>
+    
+  </url>
+  
+  <url>
+    <loc>http://icyxp.github.io/blog/2016/06/zephir-01.html</loc>
+    
+    <lastmod>2016-06-30T14:24:55.000Z</lastmod>
+    
+  </url>
+  
+  <url>
     <loc>http://icyxp.github.io/blog/2016/06/cache-server.html</loc>
     
     <lastmod>2016-06-29T07:51:38.000Z</lastmod>

@@ -278,6 +278,323 @@
             
               
                 
+                <a class="post-title-link" href="/blog/2016/06/zephir-02.html" itemprop="url">
+                  Zephir安装和初体验
+                </a>
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            <span class="post-meta-item-icon">
+              <i class="fa fa-calendar-o"></i>
+            </span>
+            <span class="post-meta-item-text">发表于</span>
+            <time itemprop="dateCreated" datetime="2016-06-30T22:23:00+08:00" content="2016-06-30">
+              2016-06-30
+            </time>
+          </span>
+
+          
+            <span class="post-category" >
+              &nbsp; | &nbsp;
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+              
+                <span itemprop="about" itemscope itemtype="https://schema.org/Thing">
+                  <a href="/categories/zephir/" itemprop="url" rel="index">
+                    <span itemprop="name">zephir</span>
+                  </a>
+                </span>
+
+                
+                
+
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                &nbsp; | &nbsp;
+                <a href="/blog/2016/06/zephir-02.html#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count ds-thread-count" data-thread-key="/blog/2016/06/zephir-02.html" itemprop="commentsCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+
+          
+          
+
+          
+        </div>
+      </header>
+    
+
+
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h2 id="Zephir安装"><a href="#Zephir安装" class="headerlink" title="Zephir安装"></a>Zephir安装</h2><h3 id="环境依赖"><a href="#环境依赖" class="headerlink" title="环境依赖"></a>环境依赖</h3><p>Zephir主要依赖于下面环境</p>
+<ul>
+<li>gcc &gt;= 4.x/clang &gt;= 3.x</li>
+<li>re2c 0.13或更高版本</li>
+<li>gnu 3.81或更高版本</li>
+<li>autoconf 2.31或更高版本</li>
+<li>automake 1.14或更高版本</li>
+<li>libpcre3</li>
+<li>php开发工具-phpize</li>
+</ul>
+<p>如果你使用Ubuntu,你可以安装所需要的包<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">$ sudo apt-get update</span><br><span class="line">$ sudo apt-get install git gcc make re2c php5 php5-json php5-dev libpcre3-dev</span><br></pre></td></tr></table></figure></p>
+<p>由于Zephir是用PHP编写的，所以你需要安装php<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">$ php -v</span><br><span class="line">PHP 5.6.5 (cli) (built: Jan 24 2015 20:04:31)</span><br><span class="line">Copyright (c) 1997-2014 The PHP Group</span><br><span class="line">Zend Engine v2.6.0, Copyright (c) 1998-2014 Zend Technologies</span><br><span class="line">with Zend OPcache v7.0.4-dev, Copyright (c) 1999-2014, by Zend Technologies</span><br></pre></td></tr></table></figure></p>
+<p>同时也必须确保安装了PHP开发库<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">$ phpize -v</span><br><span class="line">Configuring <span class="keyword">for</span>:</span><br><span class="line">PHP Api Version:         20131106</span><br><span class="line">Zend Module Api No:      20131226</span><br><span class="line">Zend Extension Api No:   220131226</span><br></pre></td></tr></table></figure></p>
+<h3 id="安装Zephir"><a href="#安装Zephir" class="headerlink" title="安装Zephir"></a>安装Zephir</h3><ol>
+<li><p>下载最新稳定版</p>
+</li>
+<li><p>运行Zephir安装程序(编译/创建解析器)</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">$ <span class="built_in">cd</span> zephir</span><br><span class="line">$ ./install-json</span><br><span class="line">$ ./install -c</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>测试安装</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">zephir <span class="built_in">help</span></span><br></pre></td></tr></table></figure>
+</li>
+<li><p>会得到如下返回</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br></pre></td><td class="code"><pre><span class="line"> _____              __    _</span><br><span class="line">/__  /  ___  ____  / /_  (_)____</span><br><span class="line">  / /  / _ \/ __ \/ __ \/ / ___/</span><br><span class="line"> / /__/  __/ /_/ / / / / / /</span><br><span class="line">/____/\___/ .___/_/ /_/_/_/</span><br><span class="line">         /_/</span><br><span class="line"></span><br><span class="line">Zephir version 0.9.2a-dev</span><br><span class="line"></span><br><span class="line">Usage: </span><br><span class="line">    <span class="built_in">command</span> [options]</span><br><span class="line"></span><br><span class="line">Available commands:</span><br><span class="line">    install             Installs the extension (requires root password)</span><br><span class="line">    builddev            Generate/Compile/Install a Zephir extension <span class="keyword">in</span> development mode</span><br><span class="line">    <span class="built_in">help</span>                Displays this <span class="built_in">help</span></span><br><span class="line">    build               Generate/Compile/Install a Zephir extension</span><br><span class="line">    compile             Compile a Zephir extension</span><br><span class="line">    stubs               Generates extension PHP stubs</span><br><span class="line">    version             Shows the Zephir version</span><br><span class="line">    init [namespace]    Initializes a Zephir extension</span><br><span class="line">    fullclean           Cleans the generated object files <span class="keyword">in</span> compilation</span><br><span class="line">    api [--theme-path=/path][--output-directory=/path][--theme-options=&#123;json&#125;|/path]Generates a HTML API</span><br><span class="line">    generate            Generates C code from the Zephir code</span><br><span class="line">    clean               Cleans the generated object files <span class="keyword">in</span> compilation</span><br><span class="line"></span><br><span class="line">Options:</span><br><span class="line">    <span class="_">-f</span>([a-z0-9\-]+)     Enables compiler optimizations</span><br><span class="line">    -fno-([a-z0-9\-]+)  Disables compiler optimizations</span><br><span class="line">    -w([a-z0-9\-]+)     Turns a warning on</span><br><span class="line">    -W([a-z0-9\-]+)     Turns a warning off</span><br></pre></td></tr></table></figure>
+</li>
+</ol>
+<h2 id="Zephir初体验"><a href="#Zephir初体验" class="headerlink" title="Zephir初体验"></a>Zephir初体验</h2><p>还记得在开篇那个Helloword例子吗？我们先来简单介绍一下Zephir编译机制，在对例子介绍一下Zephir的语法。</p>
+<h3 id="编译-解释"><a href="#编译-解释" class="headerlink" title="编译/解释"></a>编译/解释</h3><p>每一种语言都有它自己的“Hello World!”示例，在此Zephir介绍性的例子展示了这种语言的一些重要特性。</p>
+<p>在Zephir代码中必须放在类里。这种语言的目的是建立面向对象的库/框架，因此代码移出类是不允许的。此外，需要还需要一个命名空间。<br><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">namespace</span> <span class="title">Test</span>;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Hello</span></span><br><span class="line"></span>&#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">say</span><span class="params">()</span></span><br><span class="line">    </span>&#123;</span><br><span class="line">        <span class="keyword">echo</span> <span class="string">"Hello World!"</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>一旦类编译它将产生以下代码gcc/clang/vc++<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">EPHIR_INIT_CLASS(Test_Hello) &#123;</span><br><span class="line">    ZEPHIR_REGISTER_CLASS(Test, Hello, hello, test_hello_method_entry, <span class="number">0</span>);</span><br><span class="line">    <span class="keyword">return</span> SUCCESS;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">PHP_METHOD(Test_Hello, say) &#123;</span><br><span class="line">    php_printf(<span class="string">"%s"</span>, <span class="string">"Hello World!"</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>实际上，它不需要使用Zephir的开发人员必须知道或者理解C编译器，然而开发人员使用Zephir的时候，如果你有任何php内部经验或C语言本身的了解，将会有一个更清晰的了解。</p>
+<h3 id="进一步了解zephir的感觉"><a href="#进一步了解zephir的感觉" class="headerlink" title="进一步了解zephir的感觉"></a>进一步了解zephir的感觉</h3><p>在下面的例子中，我们将描述足够的细节，所以你理解发生了什么。 我们的目标是给你一个在Zephir编程是什么样的感觉。 后面会在后续章节中探讨更多的细节和功能。</p>
+<p>下面的例子非常简单，它实现了一个类和一个小程序，检查方法一个数组的类型。</p>
+<p>让我们更详细地解释一下代码，现在可以开始学习Zephir语法。<br><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">namespace</span> <span class="title">Test</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span><br><span class="line"> * MyTest (test/mytest.zep)</span><br><span class="line"> */</span></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">MyTest</span> </span>&#123; </span><br><span class="line">	<span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">someMethod</span><span class="params">()</span> </span>&#123;</span><br><span class="line">		<span class="comment">/* 变量必须声明 */</span></span><br><span class="line">		 <span class="keyword">var</span> myArray;</span><br><span class="line">		 int i = <span class="number">0</span>, length;</span><br><span class="line">		</span><br><span class="line">		 <span class="comment">/*创建一个数组 */</span></span><br><span class="line">		 let myArray = [<span class="string">"hello"</span>, <span class="number">0</span>, <span class="number">100.25</span>, <span class="keyword">false</span>, <span class="keyword">null</span>];</span><br><span class="line">		</span><br><span class="line">		 <span class="comment">/* 数组有多少个元素*/</span></span><br><span class="line">		 let length = count(myArray);</span><br><span class="line">		</span><br><span class="line">		 <span class="comment">/* 打印值类型 */</span></span><br><span class="line">		 <span class="keyword">while</span> i &lt; length &#123;</span><br><span class="line">		     <span class="keyword">echo</span> typeof myArray[i], <span class="string">"\n"</span>;</span><br><span class="line">		     let i++;</span><br><span class="line">		 &#125;</span><br><span class="line">		 </span><br><span class="line">		 <span class="keyword">return</span> myArray;</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>方法中，第一行使用“var”和“int”关键字用于声明一个变量的类型。 每一个变量在方法中使用，必须进行类型声明。 这个声明不是可选的, 它告诉编译器关于键入变量或变量的使用类型，通常在运行时错误就会结束。</p>
+<p>动态变量是用var关键字来声明。 这些变量可以分配和重新分配不同的类型。</p>
+<p>与PHP相比，你不需要使用美元符号($)在变量名前面定义。</p>
+<p>Zephir遵循相同的注释约定如Java、c#、c++等等。Zephir默认变量是不可变的， 变量保持初始值可以优化的编译器静态常量。 当需要更改变量的值，必须使用关键字“let”<br><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/* 创建一个数组 */</span></span><br><span class="line">let myArray = [<span class="string">"hello"</span>, <span class="number">0</span>, <span class="number">100.25</span>, <span class="keyword">false</span>, <span class="keyword">null</span>];</span><br></pre></td></tr></table></figure></p>
+<p>默认情况下，PHP数组是动态的，它们可能包含不同类型的值。 用户可以在Zephir代码中调用php函数，示例中“count” 函数被调用时，编译器可以执行优化避免这个调用，因为它已经知道数组的大小。<br><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/*数组有多少个元素 */</span></span><br><span class="line">let length = count(myArray);</span><br></pre></td></tr></table></figure></p>
+<p>括号在控制流语句中是可选的，您也可以使用它们，如果让你感觉更舒服的话。<br><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">while</span> i &lt; length &#123;</span><br><span class="line">    <span class="keyword">echo</span> typeof myArray[i], <span class="string">"\n"</span>;</span><br><span class="line">    let i++;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>PHP仅适用于动态变量，方法总是返回动态变量，这意味着如果一个返回静态类型的变量，在PHP的方面，你会得到一个动态变量在使用在PHP代码中。</p>
+<p><strong>注意! 内存是由编译器自动管理的，所以你不需要像C一样分配或释放</strong></p>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>我们们来回顾一下Zephir这个名字的来源是(Zend Engine/PHP/Intermediate)，今天主要介绍了Zephir的安装和他的一些基本特性，在后面的章节将会一步一步的深入了解Zephir！</p>
+
+          
+        
+      
+    </div>
+
+    <div>
+      
+    </div>
+
+    <div>
+      
+    </div>
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+
+
+    
+      
+
+  
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+            
+            
+              
+                
+                <a class="post-title-link" href="/blog/2016/06/zephir-01.html" itemprop="url">
+                  Zephir介绍
+                </a>
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            <span class="post-meta-item-icon">
+              <i class="fa fa-calendar-o"></i>
+            </span>
+            <span class="post-meta-item-text">发表于</span>
+            <time itemprop="dateCreated" datetime="2016-06-30T21:18:00+08:00" content="2016-06-30">
+              2016-06-30
+            </time>
+          </span>
+
+          
+            <span class="post-category" >
+              &nbsp; | &nbsp;
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+              
+                <span itemprop="about" itemscope itemtype="https://schema.org/Thing">
+                  <a href="/categories/zephir/" itemprop="url" rel="index">
+                    <span itemprop="name">zephir</span>
+                  </a>
+                </span>
+
+                
+                
+
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                &nbsp; | &nbsp;
+                <a href="/blog/2016/06/zephir-01.html#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count ds-thread-count" data-thread-key="/blog/2016/06/zephir-01.html" itemprop="commentsCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+
+          
+          
+
+          
+        </div>
+      </header>
+    
+
+
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h2 id="zephir介绍"><a href="#zephir介绍" class="headerlink" title="zephir介绍"></a>zephir介绍</h2><p>那么今天的目的是什么，今天的目的不是告诉大家怎么用zephir编写PHP拓展，也不是zephir语法要怎么写，中国有句老话千里之行始于足下，我们先来简单的了解一下zephir他的特点和特性。</p>
+<h3 id="简单易于开发"><a href="#简单易于开发" class="headerlink" title="简单易于开发"></a>简单易于开发</h3><p>相信大家和我有一样的经历，看到了yaf和phalcon在想为什么C语言的拓展框架可以这么的快，我自己能不能写一个出来呢？然后屁颠屁颠的跑去找资料找大神了解，大神说你去看一下 “PHP扩展开发及内核应用”，结果大家都知道醉了。</p>
+<p>主要原因是需要对C相对的熟悉并且对PHP内核API也要很熟悉，我觉得这已经不是门槛的问题了是太平洋的距离，就草草结束了研究。</p>
+<p>当遇到zephir首先了解的就是复杂程度，结果花了10分钟就跟着流程做了一个小DEMO，就这点看来就开发效率这点看来无可厚非的的高效快速，大家感受一下<br><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">namespace</span> <span class="title">Icyboy</span>;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Hello</span></span><br><span class="line"></span>&#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="function"><span class="keyword">function</span> <span class="title">hi</span><span class="params">()</span></span><br><span class="line">    </span>&#123;</span><br><span class="line">        <span class="keyword">echo</span>  <span class="string">"hello world"</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>编译之后引入到php.ini里面，使用方式如下<br><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">use</span> <span class="title">Icyboy</span>\<span class="title">Hello</span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">echo</span> Hello::hi() . PHP_EOL;</span><br></pre></td></tr></table></figure></p>
+<p>zephir是一个解释器语言和PHP非常近似，通过zephir的机制编译成C语言，然后通过C编译出PHP拓展提供使用，把中间过程高度封装，很大程度让PHP拓展开发简单了很多。</p>
+<p><strong>PHP扩展开发及内核应用</strong> <a href="http://www.walu.cc/phpbook" target="_blank" rel="external">http://www.walu.cc/phpbook</a></p>
+<h3 id="zephir特性"><a href="#zephir特性" class="headerlink" title="zephir特性"></a>zephir特性</h3><ul>
+<li>zephir是静态动态结合语言，在zephir内可以使用传统静态变量，也可以使用动态变量，灵活度高。</li>
+<li>内存安全，熟悉C程序的童鞋都知道C可以控制内存指针，其实用的不好是一件很危险的事情，zephir它不允许你使用指针，它提供了一个<strong>task-local垃圾收集器</strong>，以避免内存泄漏。</li>
+<li>编译模式，zephir能够编译主流系统Liunx/OSX/Windows能够识别的拓展程序。</li>
+<li>开发源代码的高级语言，以面向对象为基础，编写拓展都需要基于面向对象。</li>
+</ul>
+<h3 id="感受一下"><a href="#感受一下" class="headerlink" title="感受一下"></a>感受一下</h3><p>下面是官方提供的一个让大家感受一下的小例子作用是过滤变量返回字母字符<br><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">namespace</span> <span class="title">MyLibrary</span>;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Filter</span></span><br><span class="line"></span>&#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">alpha</span><span class="params">(string str)</span></span><br><span class="line">    </span>&#123;</span><br><span class="line">        char ch; string filtered = <span class="string">""</span>;</span><br><span class="line">        <span class="keyword">for</span> ch in str &#123;</span><br><span class="line">           <span class="keyword">if</span> (ch &gt;= <span class="string">'a'</span> &amp;&amp; ch &lt;= <span class="string">'z'</span>) || (ch &gt;= <span class="string">'A'</span> &amp;&amp; ch &lt;= <span class="string">'Z'</span>) &#123;</span><br><span class="line">              let filtered .= ch;</span><br><span class="line">           &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> filtered;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>从PHP类可以使用如下<br><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"></span><br><span class="line">$filter = <span class="keyword">new</span> MyLibrary\Filter();</span><br><span class="line"><span class="keyword">echo</span> $filter-&gt;alpha(<span class="string">"01he#l.lo?/1"</span>); <span class="comment">// 结果输出 hello</span></span><br></pre></td></tr></table></figure></p>
+<h2 id="为什么是Zephir"><a href="#为什么是Zephir" class="headerlink" title="为什么是Zephir"></a>为什么是Zephir</h2><p>今天的PHP应用程序必须平衡一系列问题包括稳定性、性能和功能。</p>
+<p>每一个PHP应用程序是基于一组常见的组件或者说框架，这些公共组件是库/框架或它们的组合。一旦安装后很少改变，作为应用程序的基础，他们必须是有非常快的,</p>
+<p>快速和强大的库会很复杂，由于高水平的抽象，一般的做法是约定基础库或框架很少改变，才有机会来改善性能和资源消耗。</p>
+<p>Zephir，您可以实现面向对象库/框架/应用程序，使您的应用程序速度提高，改善用户体验。</p>
+<h3 id="如果你是一个PHP程序员……"><a href="#如果你是一个PHP程序员……" class="headerlink" title="如果你是一个PHP程序员……"></a>如果你是一个PHP程序员……</h3><p>PHP是在使用的Web应用程序开发中最流行的语言之一。像PHP动态类型和解释语言，由于其灵活性，提供非常高的效率。</p>
+<p>PHP是基于Zend引擎的实现。这是执行从字节码表示的PHP代码的虚拟机。Zend引擎是世界上每一个PHP的安装几乎目前，随着Zephir，您可以创建在Zend引擎运行PHP扩展。</p>
+<p>PHP托管Zephir，所以他们显然有很多相似的地方，但是，他们有给Zephir自己的个性的重要差异。例如，Zephir更加严格，它可以让你减少编译步骤。</p>
+<h3 id="如果你是一个C程序员……"><a href="#如果你是一个C程序员……" class="headerlink" title="如果你是一个C程序员……"></a>如果你是一个C程序员……</h3><p>C是有史以来最强大的和流行的语言之一。 事实上，PHP是用C编写的。</p>
+<p>然而，用C开发大型应用程序可以把PHP或Zephir相比比预期的要长很多，一些错误是很难找到。如果你不是一个有经验的开发人员。</p>
+<p>Zephir设计是安全的，所以它没有实现指针或手动内存管理，如果你是一个C程序员，你会觉得Zephir强大，比C更加的友好。</p>
+<h3 id="编译VS解读"><a href="#编译VS解读" class="headerlink" title="编译VS解读"></a>编译VS解读</h3><p>编译通常会减慢下来的发展；你需要多一点耐心，使你的代码编译运行它之前。此外，该解释趋于降低有利于生产率的性能。</p>
+<p>为了更高的效率，Zephir需要编译你的代码，但是他不会影响高生产效率，开发人员可以决定哪些应用程序部分应当在Zephir，哪些不是。</p>
+<h3 id="静态类型和动态类型语言"><a href="#静态类型和动态类型语言" class="headerlink" title="静态类型和动态类型语言"></a>静态类型和动态类型语言</h3><p>一般来说，在静态类型语言中，变量是绑定到一个特定类型的一生。 其类型不能改变，只能参考实例和兼容操作。 像C / c++语言实现的方案<br><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">int a = <span class="number">0</span>;</span><br><span class="line">a = <span class="string">"hello"</span>; <span class="comment">// not allowed</span></span><br></pre></td></tr></table></figure></p>
+<p>在动态类型，绑定到类型的值，而不是变量。 所以，一个变量可能引用值的类型，然后重新分配后的值类型无关。 Javascript / PHP的例子 动态类型语言<br><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> a = <span class="number">0</span>;</span><br><span class="line">a = <span class="string">"hello"</span>; <span class="comment">// allowed</span></span><br></pre></td></tr></table></figure></p>
+<p>尽管动态类型有着生产力的优势，但是动态语言并不能成为所有应用的选择，特别是对于非常大型代码库和高性能的应用程序。</p>
+<p>优化性能的动态语言像PHP比静态语言(如C)是更具挑战性的。 在静态语言中，优化器可以利用类型信息做出决策。 在动态语言中，只有很有限的信息是可用的，这使得优化器的选择更加困难。</p>
+<p>如果你需要非常高的性能,，静态语言可能是一个更安全的选择。</p>
+<p>静态语言的另一个好处是编译器执行额外的检查。 编译器无法发现逻辑错误，这更重要但是编译器可以提前发现错误，动态语言只能在运行提示报错信息。</p>
+<p>Zephir是静态和动态类型都允许使用的。</p>
+<h3 id="代码保护"><a href="#代码保护" class="headerlink" title="代码保护"></a>代码保护</h3><p>在某些情况下，编译不显著提高性能，这可能是因为瓶颈所在。 在应用程序的I / O(很有可能)，而不是计算/内存限制。 然而，编译代码也可能带来某种程度的intelectual保护您的应用程序。 Zephir产生本地二进制文件，你也有能力“隐藏”用户或客户的原始代码。</p>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>Zephir不是用来取代PHP或C，相反我们认为这是一个补充，允许开发者进入代码编译和静态类型。Zephir正是试图加入从C和PHP的世界，美好的事物寻找机会使他们的应用程序更快！如果你喜欢PHP，如果你渴望执行效率，那就别犹豫赶快尝试一下Zephir吧！</p>
+
+          
+        
+      
+    </div>
+
+    <div>
+      
+    </div>
+
+    <div>
+      
+    </div>
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+
+
+    
+      
+
+  
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+            
+            
+              
+                
                 <a class="post-title-link" href="/blog/2016/06/cache-server.html" itemprop="url">
                   Cache 应用中的服务过载案例研究
                 </a>
@@ -825,7 +1142,7 @@
         <nav class="site-state motion-element">
           <div class="site-state-item site-state-posts">
             <a href="/archives">
-              <span class="site-state-item-count">2</span>
+              <span class="site-state-item-count">4</span>
               <span class="site-state-item-name">日志</span>
             </a>
           </div>
@@ -833,7 +1150,7 @@
           
             <div class="site-state-item site-state-categories">
               <a href="/categories">
-                <span class="site-state-item-count">2</span>
+                <span class="site-state-item-count">3</span>
                 <span class="site-state-item-name">分类</span>
               </a>
             </div>
@@ -842,7 +1159,7 @@
           
             <div class="site-state-item site-state-tags">
               <a href="/tags">
-                <span class="site-state-item-count">3</span>
+                <span class="site-state-item-count">5</span>
                 <span class="site-state-item-name">标签</span>
               </a>
             </div>
