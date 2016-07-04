@@ -91,12 +91,12 @@ Zephir的名字是取自Zend Engine/PHP/Intermediate的缩写。建议发音为z
 简单易于开发相信大家和我有一样的经历，看到了yaf和phalc">
 <meta property="og:type" content="article">
 <meta property="og:title" content="Zephir介绍">
-<meta property="og:url" content="http://icyxp.github.io/blog/2016/06/zephir-01.html">
+<meta property="og:url" content="http://icyxp.github.io/blog/2016/06/zephir-zephir-01.html">
 <meta property="og:site_name" content="Devops">
 <meta property="og:description" content="zephir介绍Zephir是一种可以让PHP开发者尝试编写和编译可以被PHP执行代码的一种语言。它是动态/静态类型，它的一些特性对于PHP 开发者来说是非常的相似的。
 Zephir的名字是取自Zend Engine/PHP/Intermediate的缩写。建议发音为zephyr相同。事实上Zephir的创造者发音为zaefire_.
 简单易于开发相信大家和我有一样的经历，看到了yaf和phalc">
-<meta property="og:updated_time" content="2016-06-30T14:36:45.000Z">
+<meta property="og:updated_time" content="2016-07-04T12:50:53.000Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Zephir介绍">
 <meta name="twitter:description" content="zephir介绍Zephir是一种可以让PHP开发者尝试编写和编译可以被PHP执行代码的一种语言。它是动态/静态类型，它的一些特性对于PHP 开发者来说是非常的相似的。
@@ -324,8 +324,8 @@ Zephir的名字是取自Zend Engine/PHP/Intermediate的缩写。建议发音为z
             
               <span class="post-comments-count">
                 &nbsp; | &nbsp;
-                <a href="/blog/2016/06/zephir-01.html#comments" itemprop="discussionUrl">
-                  <span class="post-comments-count ds-thread-count" data-thread-key="/blog/2016/06/zephir-01.html" itemprop="commentsCount"></span>
+                <a href="/blog/2016/06/zephir-zephir-01.html#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count ds-thread-count" data-thread-key="/blog/2016/06/zephir-zephir-01.html" itemprop="commentsCount"></span>
                 </a>
               </span>
             
@@ -352,7 +352,7 @@ Zephir的名字是取自Zend Engine/PHP/Intermediate的缩写。建议发音为z
 <p>Zephir的名字是取自Zend Engine/PHP/Intermediate的缩写。建议发音为zephyr相同。事实上Zephir的创造者发音为zaefire_.</p>
 <h3 id="简单易于开发"><a href="#简单易于开发" class="headerlink" title="简单易于开发"></a>简单易于开发</h3><p>相信大家和我有一样的经历，看到了yaf和phalcon在想为什么C语言的拓展框架可以这么的快，我自己能不能写一个出来呢？然后屁颠屁颠的跑去找资料找大神了解，大神说你去看一下 “PHP扩展开发及内核应用”，结果大家都知道醉了。</p>
 <p>主要原因是需要对C相对的熟悉并且对PHP内核API也要很熟悉，我觉得这已经不是门槛的问题了是太平洋的距离，就草草结束了研究。</p>
-<p>当遇到zephir首先了解的就是复杂程度，结果花了10分钟就跟着流程做了一个小DEMO，就这点看来就开发效率这点看来无可厚非的的高效快速，大家感受一下<br><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">namespace</span> <span class="title">Icyboy</span>;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Hello</span></span><br><span class="line"></span>&#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="function"><span class="keyword">function</span> <span class="title">hi</span><span class="params">()</span></span><br><span class="line">    </span>&#123;</span><br><span class="line">        <span class="keyword">echo</span>  <span class="string">"hello world"</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>当遇到zephir首先了解的就是复杂程度，结果花了10分钟就跟着流程做了一个小DEMO，就这点看来就开发效率这点看来无可厚非的的高效快速，大家感受一下。<br><a id="more"></a><br><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">namespace</span> <span class="title">Icyboy</span>;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Hello</span></span><br><span class="line"></span>&#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="function"><span class="keyword">function</span> <span class="title">hi</span><span class="params">()</span></span><br><span class="line">    </span>&#123;</span><br><span class="line">        <span class="keyword">echo</span>  <span class="string">"hello world"</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
 <p>编译之后引入到php.ini里面，使用方式如下<br><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">use</span> <span class="title">Icyboy</span>\<span class="title">Hello</span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">echo</span> Hello::hi() . PHP_EOL;</span><br></pre></td></tr></table></figure></p>
 <p>zephir是一个解释器语言和PHP非常近似，通过zephir的机制编译成C语言，然后通过C编译出PHP拓展提供使用，把中间过程高度封装，很大程度让PHP拓展开发简单了很多。</p>
 <p><strong>PHP扩展开发及内核应用</strong> <a href="http://www.walu.cc/phpbook" target="_blank" rel="external">http://www.walu.cc/phpbook</a></p>
@@ -425,7 +425,7 @@ Zephir的名字是取自Zend Engine/PHP/Intermediate的缩写。建议发音为z
 
           <div class="post-nav-prev post-nav-item">
             
-              <a href="/blog/2016/06/zephir-02.html" rel="prev" title="Zephir安装和初体验">
+              <a href="/blog/2016/06/zephir-zephir-02.html" rel="prev" title="Zephir安装和初体验">
                 Zephir安装和初体验 <i class="fa fa-chevron-right"></i>
               </a>
             
@@ -476,8 +476,8 @@ Zephir的名字是取自Zend Engine/PHP/Intermediate的缩写。建议发音为z
           
   <div class="comments" id="comments">
     
-      <div class="ds-thread" data-thread-key="/blog/2016/06/zephir-01.html"
-           data-title="Zephir介绍" data-url="http://icyxp.github.io/blog/2016/06/zephir-01.html">
+      <div class="ds-thread" data-thread-key="/blog/2016/06/zephir-zephir-01.html"
+           data-title="Zephir介绍" data-url="http://icyxp.github.io/blog/2016/06/zephir-zephir-01.html">
       </div>
     
   </div>
@@ -522,7 +522,7 @@ Zephir的名字是取自Zend Engine/PHP/Intermediate的缩写。建议发音为z
         <nav class="site-state motion-element">
           <div class="site-state-item site-state-posts">
             <a href="/archives">
-              <span class="site-state-item-count">4</span>
+              <span class="site-state-item-count">5</span>
               <span class="site-state-item-name">日志</span>
             </a>
           </div>
@@ -530,7 +530,7 @@ Zephir的名字是取自Zend Engine/PHP/Intermediate的缩写。建议发音为z
           
             <div class="site-state-item site-state-categories">
               <a href="/categories">
-                <span class="site-state-item-count">3</span>
+                <span class="site-state-item-count">4</span>
                 <span class="site-state-item-name">分类</span>
               </a>
             </div>
@@ -539,7 +539,7 @@ Zephir的名字是取自Zend Engine/PHP/Intermediate的缩写。建议发音为z
           
             <div class="site-state-item site-state-tags">
               <a href="/tags">
-                <span class="site-state-item-count">5</span>
+                <span class="site-state-item-count">7</span>
                 <span class="site-state-item-name">标签</span>
               </a>
             </div>

@@ -278,8 +278,8 @@
             
               
                 
-                <a class="post-title-link" href="/blog/2016/06/zephir-02.html" itemprop="url">
-                  Zephir安装和初体验
+                <a class="post-title-link" href="/blog/2016/07/mysql-auto-increment-primary-key.html" itemprop="url">
+                  MySQL为什么需要一个自增主键
                 </a>
               
             
@@ -292,8 +292,8 @@
               <i class="fa fa-calendar-o"></i>
             </span>
             <span class="post-meta-item-text">发表于</span>
-            <time itemprop="dateCreated" datetime="2016-06-30T22:23:00+08:00" content="2016-06-30">
-              2016-06-30
+            <time itemprop="dateCreated" datetime="2016-07-04T17:38:00+08:00" content="2016-07-04">
+              2016-07-04
             </time>
           </span>
 
@@ -306,8 +306,8 @@
               <span class="post-meta-item-text">分类于</span>
               
                 <span itemprop="about" itemscope itemtype="https://schema.org/Thing">
-                  <a href="/categories/zephir/" itemprop="url" rel="index">
-                    <span itemprop="name">zephir</span>
+                  <a href="/categories/mysql/" itemprop="url" rel="index">
+                    <span itemprop="name">mysql</span>
                   </a>
                 </span>
 
@@ -322,8 +322,8 @@
             
               <span class="post-comments-count">
                 &nbsp; | &nbsp;
-                <a href="/blog/2016/06/zephir-02.html#comments" itemprop="discussionUrl">
-                  <span class="post-comments-count ds-thread-count" data-thread-key="/blog/2016/06/zephir-02.html" itemprop="commentsCount"></span>
+                <a href="/blog/2016/07/mysql-auto-increment-primary-key.html#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count ds-thread-count" data-thread-key="/blog/2016/07/mysql-auto-increment-primary-key.html" itemprop="commentsCount"></span>
                 </a>
               </span>
             
@@ -347,52 +347,23 @@
 
       
         
-          
-            <h2 id="Zephir安装"><a href="#Zephir安装" class="headerlink" title="Zephir安装"></a>Zephir安装</h2><h3 id="环境依赖"><a href="#环境依赖" class="headerlink" title="环境依赖"></a>环境依赖</h3><p>Zephir主要依赖于下面环境</p>
-<ul>
-<li>gcc &gt;= 4.x/clang &gt;= 3.x</li>
-<li>re2c 0.13或更高版本</li>
-<li>gnu 3.81或更高版本</li>
-<li>autoconf 2.31或更高版本</li>
-<li>automake 1.14或更高版本</li>
-<li>libpcre3</li>
-<li>php开发工具-phpize</li>
-</ul>
-<p>如果你使用Ubuntu，你可以安装所需要的包<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">$ sudo apt-get update</span><br><span class="line">$ sudo apt-get install git gcc make re2c php5 php5-json php5-dev libpcre3-dev</span><br></pre></td></tr></table></figure></p>
-<p>由于Zephir是用PHP编写的，所以你需要安装php<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">$ php -v</span><br><span class="line">PHP 5.6.5 (cli) (built: Jan 24 2015 20:04:31)</span><br><span class="line">Copyright (c) 1997-2014 The PHP Group</span><br><span class="line">Zend Engine v2.6.0, Copyright (c) 1998-2014 Zend Technologies</span><br><span class="line">with Zend OPcache v7.0.4-dev, Copyright (c) 1999-2014, by Zend Technologies</span><br></pre></td></tr></table></figure></p>
-<p>同时也必须确保安装了PHP开发库<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">$ phpize -v</span><br><span class="line">Configuring <span class="keyword">for</span>:</span><br><span class="line">PHP Api Version:         20131106</span><br><span class="line">Zend Module Api No:      20131226</span><br><span class="line">Zend Extension Api No:   220131226</span><br></pre></td></tr></table></figure></p>
-<h3 id="安装Zephir"><a href="#安装Zephir" class="headerlink" title="安装Zephir"></a>安装Zephir</h3><ol>
-<li><p>下载最新稳定版</p>
-</li>
-<li><p>运行Zephir安装程序(编译/创建解析器)</p>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">$ <span class="built_in">cd</span> zephir</span><br><span class="line">$ ./install-json</span><br><span class="line">$ ./install -c</span><br></pre></td></tr></table></figure>
-</li>
-<li><p>测试安装</p>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">zephir <span class="built_in">help</span></span><br></pre></td></tr></table></figure>
-</li>
-<li><p>会得到如下返回</p>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br></pre></td><td class="code"><pre><span class="line"> _____              __    _</span><br><span class="line">/__  /  ___  ____  / /_  (_)____</span><br><span class="line">  / /  / _ \/ __ \/ __ \/ / ___/</span><br><span class="line"> / /__/  __/ /_/ / / / / / /</span><br><span class="line">/____/\___/ .___/_/ /_/_/_/</span><br><span class="line">         /_/</span><br><span class="line"></span><br><span class="line">Zephir version 0.9.2a-dev</span><br><span class="line"></span><br><span class="line">Usage: </span><br><span class="line">    <span class="built_in">command</span> [options]</span><br><span class="line"></span><br><span class="line">Available commands:</span><br><span class="line">    install             Installs the extension (requires root password)</span><br><span class="line">    builddev            Generate/Compile/Install a Zephir extension <span class="keyword">in</span> development mode</span><br><span class="line">    <span class="built_in">help</span>                Displays this <span class="built_in">help</span></span><br><span class="line">    build               Generate/Compile/Install a Zephir extension</span><br><span class="line">    compile             Compile a Zephir extension</span><br><span class="line">    stubs               Generates extension PHP stubs</span><br><span class="line">    version             Shows the Zephir version</span><br><span class="line">    init [namespace]    Initializes a Zephir extension</span><br><span class="line">    fullclean           Cleans the generated object files <span class="keyword">in</span> compilation</span><br><span class="line">    api [--theme-path=/path][--output-directory=/path][--theme-options=&#123;json&#125;|/path]Generates a HTML API</span><br><span class="line">    generate            Generates C code from the Zephir code</span><br><span class="line">    clean               Cleans the generated object files <span class="keyword">in</span> compilation</span><br><span class="line"></span><br><span class="line">Options:</span><br><span class="line">    <span class="_">-f</span>([a-z0-9\-]+)     Enables compiler optimizations</span><br><span class="line">    -fno-([a-z0-9\-]+)  Disables compiler optimizations</span><br><span class="line">    -w([a-z0-9\-]+)     Turns a warning on</span><br><span class="line">    -W([a-z0-9\-]+)     Turns a warning off</span><br></pre></td></tr></table></figure>
-</li>
-</ol>
-<h2 id="Zephir初体验"><a href="#Zephir初体验" class="headerlink" title="Zephir初体验"></a>Zephir初体验</h2><p>还记得在开篇那个Helloword例子吗？我们先来简单介绍一下Zephir编译机制，在用例子介绍一下Zephir的语法。</p>
-<h3 id="编译-解释"><a href="#编译-解释" class="headerlink" title="编译/解释"></a>编译/解释</h3><p>每一种语言都会有它们的”Hello World!”例子，对于Zehpir来说也不例外，下面的这个引导例子列举了许多它重要的特性。</p>
-<p>Zephir的代码必须放置在类中。Zephir是基于面向对象类/框架打造的。所以代码放置在类的外面是不允许的。另外，一个命名空间也是必须的。<br><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">namespace</span> <span class="title">Test</span>;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Hello</span></span><br><span class="line"></span>&#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">say</span><span class="params">()</span></span><br><span class="line">    </span>&#123;</span><br><span class="line">        <span class="keyword">echo</span> <span class="string">"Hello World!"</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
-<p>一但这个类被编译完成，它会产生下面的一段C代码（gcc/clang/vc++编译）<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">EPHIR_INIT_CLASS(Test_Hello) &#123;</span><br><span class="line">    ZEPHIR_REGISTER_CLASS(Test, Hello, hello, test_hello_method_entry, <span class="number">0</span>);</span><br><span class="line">    <span class="keyword">return</span> SUCCESS;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">PHP_METHOD(Test_Hello, say) &#123;</span><br><span class="line">    php_printf(<span class="string">"%s"</span>, <span class="string">"Hello World!"</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
-<p>事实上，使用Zephir的开发者无需懂得C语言，如果你有使用编译器，或者php内部的构造，或者C语言本身的经验， 在使用Zephir的时候你将会感到更加的清晰。</p>
-<h3 id="Zephir初试"><a href="#Zephir初试" class="headerlink" title="Zephir初试"></a>Zephir初试</h3><p>在接下来的例子中，我们将会尽详细的描述，以便你知道是怎么回事。 我们的目标是让你感觉一下到底Zephir是怎么样的一个东西。 随便我们将会详细的探索Zephir的新特性。    </p>
-<p>下面的例子很简单，它提供一个类和一个函数，检测一个数组的类型</p>
-<p>让我们认真的检查下面的代码，开始认真的的学习Zephir. 这几行代码包括了很多详细的东西，我们将会慢慢的解释。<br><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">namespace</span> <span class="title">Test</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span><br><span class="line"> * MyTest (test/mytest.zep)</span><br><span class="line"> */</span></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">MyTest</span> </span>&#123; </span><br><span class="line">	<span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">someMethod</span><span class="params">()</span> </span>&#123;</span><br><span class="line">		<span class="comment">/* 变量必须声明 */</span></span><br><span class="line">		 <span class="keyword">var</span> myArray;</span><br><span class="line">		 int i = <span class="number">0</span>, length;</span><br><span class="line">		</span><br><span class="line">		 <span class="comment">/*创建一个数组 */</span></span><br><span class="line">		 let myArray = [<span class="string">"hello"</span>, <span class="number">0</span>, <span class="number">100.25</span>, <span class="keyword">false</span>, <span class="keyword">null</span>];</span><br><span class="line">		</span><br><span class="line">		 <span class="comment">/* 数组有多少个元素*/</span></span><br><span class="line">		 let length = count(myArray);</span><br><span class="line">		</span><br><span class="line">		 <span class="comment">/* 打印值类型 */</span></span><br><span class="line">		 <span class="keyword">while</span> i &lt; length &#123;</span><br><span class="line">		     <span class="keyword">echo</span> typeof myArray[i], <span class="string">"\n"</span>;</span><br><span class="line">		     let i++;</span><br><span class="line">		 &#125;</span><br><span class="line">		 </span><br><span class="line">		 <span class="keyword">return</span> myArray;</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
-<p>在函数中，第一行使用了’var’ 和 ‘int’ 关键词来声明一个函数内的私有变量。 在函数中的每一个变量必须事先声明它们自己的类型。这些声明并不是随意的，它帮助编译器来报告给你关于 错误的变量，或者变量的使用是否超出的它的范围，通常它会在最后抛出错误。</p>
-<p>动态的变量必须以关键词’var’来声明。这些变量可以被指定或再指定成不同的变量类型。另一方面，’i’ and ‘length’使用了整数的静态变量，在执行程序的过程中，它只能改变值，而不能改变变量的类型。</p>
-<p>与PHP不同的是，你不用在变量的前面加上($)符号。</p>
-<p>Zephir的注释和Java, C#, C++等等一些语言的一样。</p>
-<p>默认的，变量是不变的，意思是说Zephir期望大部分的变量保持不变。变量保持它们原始的值不变可以优化成静态常量。 如果需要改变变量的值，请使用关键词’let’<br><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/* 创建一个数组 */</span></span><br><span class="line">let myArray = [<span class="string">"hello"</span>, <span class="number">0</span>, <span class="number">100.25</span>, <span class="keyword">false</span>, <span class="keyword">null</span>];</span><br></pre></td></tr></table></figure></p>
-<p>默认的，数组是一种象PHP一样的动态变量，它包含了许多不同类型的值。令人吃惊的是，PHP内部的函数可以在Zephir中使用，在下面的例子中，’count’ 函数被使用了，编辑器可以以最佳的状态来执行，因为它已经知道了数组的长度了。<br><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/*数组有多少个元素 */</span></span><br><span class="line">let length = count(myArray);</span><br></pre></td></tr></table></figure></p>
-<p>同样的，我们可以使用花括号来控制程序的流程.<br><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">while</span> i &lt; length &#123;</span><br><span class="line">    <span class="keyword">echo</span> typeof myArray[i], <span class="string">"\n"</span>;</span><br><span class="line">    let i++;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
-<p>PHP的变量总是动态的，函数总是返回的是可变的动态变量，这就意味着如果一个静态变量在Zphir中被返回了，在PHP的调用中 你得到的却是一个动态变量。</p>
-<p><strong>请注意！内存是在编译器中自动管理的，所以你没有必要像C语言一样去分配和释放内存。</strong> 这和PHP是很相似的。</p>
-
-          
+          <h2 id="主键"><a href="#主键" class="headerlink" title="主键"></a>主键</h2><p>表中每一行都应该有可以唯一标识自己的一列（或一组列）。</p>
+<p>一个顾客可以使用顾客编号列，而订单可以使用订单ID，雇员可以使用雇员ID 或 雇员社会保险号。</p>
+<p>主键（primary key） 一列（或一组列），其值能够唯一区分表中的每个行。<br>唯一标识表中每行的这个列（或这组列）称为主键。<strong><code>没有主键，更新或删除表中特定行很困难，因为没有安全的方法保证只设计相关的行。</code></strong></p>
+<p>虽然并不总是都需要主键，但大多数数据库设计人员都应保证他们创建的每个表有一个主键，以便于以后数据操纵和管理</p>
+<p>表中的任何列都可以作为主键，只要它满足一下条件:<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">任何两行都不具有相同的主键值</span><br><span class="line">每个行都必须具有一个主键值（主键列不允许NULL值）</span><br></pre></td></tr></table></figure></p>
+<p>主键值规范：这里列出的规则是MySQL本身强制实施的。</p>
+<p>主键的最好习惯：<br>除MySQL强制实施的规则外，应该坚持的几个普遍认为的最好习惯为:</p>
+<pre><code class="plain">1、不更新主键列的值
+2、不重用主键列的值
+3、不在主键列中使用可能会更改的值（例如，如果使用一个名字作为主键以标识某个供应商，应该供应商合并和更改其名字时，必须更改这个主键）
+</code></pre>
+<p>总之：不应该使用一个具有意义的column（id 本身并不保存表 有意义信息） 作为主键，并且一个表必须要有一个主键，为方便扩展、松耦合，高可用的系统做铺垫。<br>
+          <div class="post-more-link text-center">
+            <a class="btn" href="/blog/2016/07/mysql-auto-increment-primary-key.html#more" rel="contents">
+              阅读全文 &raquo;
+            </a>
+          </div>
         
       
     </div>
@@ -440,7 +411,141 @@
             
               
                 
-                <a class="post-title-link" href="/blog/2016/06/zephir-01.html" itemprop="url">
+                <a class="post-title-link" href="/blog/2016/06/zephir-zephir-02.html" itemprop="url">
+                  Zephir安装和初体验
+                </a>
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            <span class="post-meta-item-icon">
+              <i class="fa fa-calendar-o"></i>
+            </span>
+            <span class="post-meta-item-text">发表于</span>
+            <time itemprop="dateCreated" datetime="2016-06-30T22:23:00+08:00" content="2016-06-30">
+              2016-06-30
+            </time>
+          </span>
+
+          
+            <span class="post-category" >
+              &nbsp; | &nbsp;
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+              
+                <span itemprop="about" itemscope itemtype="https://schema.org/Thing">
+                  <a href="/categories/zephir/" itemprop="url" rel="index">
+                    <span itemprop="name">zephir</span>
+                  </a>
+                </span>
+
+                
+                
+
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                &nbsp; | &nbsp;
+                <a href="/blog/2016/06/zephir-zephir-02.html#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count ds-thread-count" data-thread-key="/blog/2016/06/zephir-zephir-02.html" itemprop="commentsCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+
+          
+          
+
+          
+        </div>
+      </header>
+    
+
+
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          <h2 id="Zephir安装"><a href="#Zephir安装" class="headerlink" title="Zephir安装"></a>Zephir安装</h2><h3 id="环境依赖"><a href="#环境依赖" class="headerlink" title="环境依赖"></a>环境依赖</h3><p>Zephir主要依赖于下面环境</p>
+<ul>
+<li>gcc &gt;= 4.x/clang &gt;= 3.x</li>
+<li>re2c 0.13或更高版本</li>
+<li>gnu 3.81或更高版本</li>
+<li>autoconf 2.31或更高版本</li>
+<li>automake 1.14或更高版本</li>
+<li>libpcre3</li>
+<li>php开发工具-phpize</li>
+</ul>
+<p>如果你使用Ubuntu，你可以安装所需要的包<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">$ sudo apt-get update</span><br><span class="line">$ sudo apt-get install git gcc make re2c php5 php5-json php5-dev libpcre3-dev</span><br></pre></td></tr></table></figure></p>
+<p>由于Zephir是用PHP编写的，所以你需要安装php<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">$ php -v</span><br><span class="line">PHP 5.6.5 (cli) (built: Jan 24 2015 20:04:31)</span><br><span class="line">Copyright (c) 1997-2014 The PHP Group</span><br><span class="line">Zend Engine v2.6.0, Copyright (c) 1998-2014 Zend Technologies</span><br><span class="line">with Zend OPcache v7.0.4-dev, Copyright (c) 1999-2014, by Zend Technologies</span><br></pre></td></tr></table></figure></p>
+<p>同时也必须确保安装了PHP开发库<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">$ phpize -v</span><br><span class="line">Configuring <span class="keyword">for</span>:</span><br><span class="line">PHP Api Version:         20131106</span><br><span class="line">Zend Module Api No:      20131226</span><br><span class="line">Zend Extension Api No:   220131226</span><br></pre></td></tr></table></figure></p>
+          <div class="post-more-link text-center">
+            <a class="btn" href="/blog/2016/06/zephir-zephir-02.html#more" rel="contents">
+              阅读全文 &raquo;
+            </a>
+          </div>
+        
+      
+    </div>
+
+    <div>
+      
+    </div>
+
+    <div>
+      
+    </div>
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+
+
+    
+      
+
+  
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+            
+            
+              
+                
+                <a class="post-title-link" href="/blog/2016/06/zephir-zephir-01.html" itemprop="url">
                   Zephir介绍
                 </a>
               
@@ -484,8 +589,8 @@
             
               <span class="post-comments-count">
                 &nbsp; | &nbsp;
-                <a href="/blog/2016/06/zephir-01.html#comments" itemprop="discussionUrl">
-                  <span class="post-comments-count ds-thread-count" data-thread-key="/blog/2016/06/zephir-01.html" itemprop="commentsCount"></span>
+                <a href="/blog/2016/06/zephir-zephir-01.html#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count ds-thread-count" data-thread-key="/blog/2016/06/zephir-zephir-01.html" itemprop="commentsCount"></span>
                 </a>
               </span>
             
@@ -509,46 +614,16 @@
 
       
         
-          
-            <h2 id="zephir介绍"><a href="#zephir介绍" class="headerlink" title="zephir介绍"></a>zephir介绍</h2><p>Zephir是一种可以让PHP开发者尝试编写和编译可以被PHP执行代码的一种语言。它是动态/静态类型，它的一些特性对于PHP 开发者来说是非常的相似的。</p>
+          <h2 id="zephir介绍"><a href="#zephir介绍" class="headerlink" title="zephir介绍"></a>zephir介绍</h2><p>Zephir是一种可以让PHP开发者尝试编写和编译可以被PHP执行代码的一种语言。它是动态/静态类型，它的一些特性对于PHP 开发者来说是非常的相似的。</p>
 <p>Zephir的名字是取自Zend Engine/PHP/Intermediate的缩写。建议发音为zephyr相同。事实上Zephir的创造者发音为zaefire_.</p>
 <h3 id="简单易于开发"><a href="#简单易于开发" class="headerlink" title="简单易于开发"></a>简单易于开发</h3><p>相信大家和我有一样的经历，看到了yaf和phalcon在想为什么C语言的拓展框架可以这么的快，我自己能不能写一个出来呢？然后屁颠屁颠的跑去找资料找大神了解，大神说你去看一下 “PHP扩展开发及内核应用”，结果大家都知道醉了。</p>
 <p>主要原因是需要对C相对的熟悉并且对PHP内核API也要很熟悉，我觉得这已经不是门槛的问题了是太平洋的距离，就草草结束了研究。</p>
-<p>当遇到zephir首先了解的就是复杂程度，结果花了10分钟就跟着流程做了一个小DEMO，就这点看来就开发效率这点看来无可厚非的的高效快速，大家感受一下<br><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">namespace</span> <span class="title">Icyboy</span>;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Hello</span></span><br><span class="line"></span>&#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="function"><span class="keyword">function</span> <span class="title">hi</span><span class="params">()</span></span><br><span class="line">    </span>&#123;</span><br><span class="line">        <span class="keyword">echo</span>  <span class="string">"hello world"</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
-<p>编译之后引入到php.ini里面，使用方式如下<br><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">use</span> <span class="title">Icyboy</span>\<span class="title">Hello</span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">echo</span> Hello::hi() . PHP_EOL;</span><br></pre></td></tr></table></figure></p>
-<p>zephir是一个解释器语言和PHP非常近似，通过zephir的机制编译成C语言，然后通过C编译出PHP拓展提供使用，把中间过程高度封装，很大程度让PHP拓展开发简单了很多。</p>
-<p><strong>PHP扩展开发及内核应用</strong> <a href="http://www.walu.cc/phpbook" target="_blank" rel="external">http://www.walu.cc/phpbook</a></p>
-<h3 id="zephir特性"><a href="#zephir特性" class="headerlink" title="zephir特性"></a>zephir特性</h3><ul>
-<li>zephir是静态动态结合语言，在zephir内可以使用传统静态变量，也可以使用动态变量，灵活度高。</li>
-<li>内存安全，熟悉C程序的童鞋都知道C可以控制内存指针，其实用的不好是一件很危险的事情，zephir它不允许你使用指针，它提供了一个<strong>task-local垃圾收集器</strong>，以避免内存泄漏。</li>
-<li>编译模式，zephir能够编译主流系统Liunx/OSX/Windows能够识别的拓展程序。</li>
-<li>开发源代码的高级语言，以面向对象为基础，编写拓展都需要基于面向对象。</li>
-</ul>
-<h3 id="感受一下"><a href="#感受一下" class="headerlink" title="感受一下"></a>感受一下</h3><p>下面是官方提供的一个让大家感受一下的小例子作用是过滤变量返回字母字符<br><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">namespace</span> <span class="title">MyLibrary</span>;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Filter</span></span><br><span class="line"></span>&#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">alpha</span><span class="params">(string str)</span></span><br><span class="line">    </span>&#123;</span><br><span class="line">        char ch; string filtered = <span class="string">""</span>;</span><br><span class="line">        <span class="keyword">for</span> ch in str &#123;</span><br><span class="line">           <span class="keyword">if</span> (ch &gt;= <span class="string">'a'</span> &amp;&amp; ch &lt;= <span class="string">'z'</span>) || (ch &gt;= <span class="string">'A'</span> &amp;&amp; ch &lt;= <span class="string">'Z'</span>) &#123;</span><br><span class="line">              let filtered .= ch;</span><br><span class="line">           &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> filtered;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
-<p>从PHP类可以使用如下<br><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"></span><br><span class="line">$filter = <span class="keyword">new</span> MyLibrary\Filter();</span><br><span class="line"><span class="keyword">echo</span> $filter-&gt;alpha(<span class="string">"01he#l.lo?/1"</span>); <span class="comment">// 结果输出 hello</span></span><br></pre></td></tr></table></figure></p>
-<h2 id="为什么是Zephir"><a href="#为什么是Zephir" class="headerlink" title="为什么是Zephir"></a>为什么是Zephir</h2><p>今天的PHP应用程序必须平衡一系列问题包括稳定性、性能和功能。</p>
-<p>每一个PHP应用程序是基于一组常见的组件或者说框架，这些公共组件是库/框架或它们的组合。一旦安装后很少改变，作为应用程序的基础，他们必须是有非常快的,</p>
-<p>快速和强大的库会很复杂，由于高水平的抽象，一般的做法是约定基础库或框架很少改变，才有机会来改善性能和资源消耗。</p>
-<p>Zephir，您可以实现面向对象库/框架/应用程序，使您的应用程序速度提高，改善用户体验。</p>
-<h3 id="如果你是一个PHP程序员……"><a href="#如果你是一个PHP程序员……" class="headerlink" title="如果你是一个PHP程序员……"></a>如果你是一个PHP程序员……</h3><p>PHP是在使用的Web应用程序开发中最流行的语言之一。像PHP动态类型和解释语言，由于其灵活性，提供非常高的效率。</p>
-<p>PHP是基于Zend引擎的实现。这是执行从字节码表示的PHP代码的虚拟机。Zend引擎是世界上每一个PHP的安装几乎目前，随着Zephir，您可以创建在Zend引擎运行PHP扩展。</p>
-<p>PHP托管Zephir，所以他们显然有很多相似的地方，但是，他们有给Zephir自己的个性的重要差异。例如，Zephir更加严格，它可以让你减少编译步骤。</p>
-<h3 id="如果你是一个C程序员……"><a href="#如果你是一个C程序员……" class="headerlink" title="如果你是一个C程序员……"></a>如果你是一个C程序员……</h3><p>C是有史以来最强大的和流行的语言之一。 事实上，PHP是用C编写的。</p>
-<p>然而，用C开发大型应用程序可以把PHP或Zephir相比比预期的要长很多，一些错误是很难找到。如果你不是一个有经验的开发人员。</p>
-<p>Zephir设计是安全的，所以它没有实现指针或手动内存管理，如果你是一个C程序员，你会觉得Zephir强大，比C更加的友好。</p>
-<h3 id="编译VS解读"><a href="#编译VS解读" class="headerlink" title="编译VS解读"></a>编译VS解读</h3><p>编译通常会减慢下来的发展；你需要多一点耐心，使你的代码编译运行它之前。此外，该解释趋于降低有利于生产率的性能。</p>
-<p>为了更高的效率，Zephir需要编译你的代码，但是他不会影响高生产效率，开发人员可以决定哪些应用程序部分应当在Zephir，哪些不是。</p>
-<h3 id="静态类型和动态类型语言"><a href="#静态类型和动态类型语言" class="headerlink" title="静态类型和动态类型语言"></a>静态类型和动态类型语言</h3><p>一般来说，在静态类型语言中，变量是绑定到一个特定类型的一生。 其类型不能改变，只能参考实例和兼容操作。 像C / c++语言实现的方案<br><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">int a = <span class="number">0</span>;</span><br><span class="line">a = <span class="string">"hello"</span>; <span class="comment">// not allowed</span></span><br></pre></td></tr></table></figure></p>
-<p>在动态类型，绑定到类型的值，而不是变量。 所以，一个变量可能引用值的类型，然后重新分配后的值类型无关。 Javascript / PHP的例子 动态类型语言<br><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> a = <span class="number">0</span>;</span><br><span class="line">a = <span class="string">"hello"</span>; <span class="comment">// allowed</span></span><br></pre></td></tr></table></figure></p>
-<p>尽管动态类型有着生产力的优势，但是动态语言并不能成为所有应用的选择，特别是对于非常大型代码库和高性能的应用程序。</p>
-<p>优化性能的动态语言像PHP比静态语言(如C)是更具挑战性的。 在静态语言中，优化器可以利用类型信息做出决策。 在动态语言中，只有很有限的信息是可用的，这使得优化器的选择更加困难。</p>
-<p>如果你需要非常高的性能,，静态语言可能是一个更安全的选择。</p>
-<p>静态语言的另一个好处是编译器执行额外的检查。 编译器无法发现逻辑错误，这更重要但是编译器可以提前发现错误，动态语言只能在运行提示报错信息。</p>
-<p>Zephir是静态和动态类型都允许使用的。</p>
-<h3 id="代码保护"><a href="#代码保护" class="headerlink" title="代码保护"></a>代码保护</h3><p>在某些情况下，编译不显著提高性能，这可能是因为瓶颈所在。 在应用程序的I / O(很有可能)，而不是计算/内存限制。 然而，编译代码也可能带来某种程度的intelectual保护您的应用程序。 Zephir产生本地二进制文件，你也有能力“隐藏”用户或客户的原始代码。</p>
-<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>Zephir不是用来取代PHP或C，相反我们认为这是一个补充，允许开发者进入代码编译和静态类型。Zephir正是试图加入从C和PHP的世界，美好的事物寻找机会使他们的应用程序更快！如果你喜欢PHP，如果你渴望执行效率，那就别犹豫赶快尝试一下Zephir吧！</p>
-
-          
+<p>当遇到zephir首先了解的就是复杂程度，结果花了10分钟就跟着流程做了一个小DEMO，就这点看来就开发效率这点看来无可厚非的的高效快速，大家感受一下。<br>
+          <div class="post-more-link text-center">
+            <a class="btn" href="/blog/2016/06/zephir-zephir-01.html#more" rel="contents">
+              阅读全文 &raquo;
+            </a>
+          </div>
         
       
     </div>
@@ -665,156 +740,15 @@
 
       
         
-          
-            <p>简单地说，过载是外部请求对系统的访问量突然激增，造成请求堆积，服务不可用，最终导致系统崩溃。本文主要分析引入Cache可能造成的服务过载，并讨论相关的预防、恢复策略。</p>
+          <p>简单地说，过载是外部请求对系统的访问量突然激增，造成请求堆积，服务不可用，最终导致系统崩溃。本文主要分析引入Cache可能造成的服务过载，并讨论相关的预防、恢复策略。</p>
 <p>Cache在现代系统中使用广泛，由此引入的服务过载隐患无处不在，但却非常隐蔽，容易被忽视。本文希望能为开发者在设计和编写相关类型应用，以及服务过载发生处理时能够有章可循。</p>
 <h2 id="一个服务过载案例"><a href="#一个服务过载案例" class="headerlink" title="一个服务过载案例"></a>一个服务过载案例</h2><p>本文讨论的案例是指存在正常调用关系的两个系统（假设调用方为A系统，服务方为B系统），A系统对B系统的访问突然超出B系统的承受能力，造成B系统崩溃。造成服务过载的原因很多，这里分析的是严重依赖Cache的系统服务过载。首先来看一种包含Cache的体系结构（如下图所示）。<br><img src="/images/2_cache.png" alt="Cache应用体系结构"></p>
-<p>A系统依赖B系统的读服务，A系统是60台机器组成的集群，B系统是6台机器组成的集群，之所以6台机器能够扛住60台机器的访问，是因为A系统并不是每次都访问B，而是首先请求Cache，只有Cache的相应数据失效时才会请求B。</p>
-<p>这正是Cache存在的意义，它让B系统节省了大量机器；如果没有Cache，B系统不得不组成60台机器的集群，如果A也同时依赖除B系统外的另一个系统（假设为C系统）呢？那么C系统也要60台机器，放大的流量将很快耗尽公司的资源。</p>
-<p>然而Cache的引入也不是十全十美的，这个结构中如果Cache发生问题，全部的流量将流向依赖方，造成流量激增，从而引发依赖系统的过载。</p>
-<p>回到A和B的架构，造成服务过载的原因至少有下面三种：</p>
-<ul>
-<li>B系统的前置代理发生故障或者其他原因造成B系统暂时不可用，等B系统系统服务恢复时，其流量将远远超过正常值。</li>
-<li>Cache系统故障，A系统的流量将全部流到B系统，造成B系统过载。</li>
-<li>Cache故障恢复，但这时Cache为空，Cache瞬间命中率为0，相当于Cache被击穿，造成B系统过载。</li>
-</ul>
-<p>第一个原因不太好理解，为什么B系统恢复后流量会猛增呢？主要原因就是缓存的超时时间。当有数据超时的时候，A系统会访问B系统，但是这时候B系统偏偏故障不可用，那么这个数据只好超时，等发现B系统恢复时，发现缓存里的B系统数据已经都超时了，都成了旧数据，这时当然所有的请求就打到了B。</p>
-<p>下文主要介绍服务过载的预防和发生后的一些补救方法，以预防为主，从调用方和服务方的视角阐述一些可行方案。</p>
-<h2 id="服务过载的预防"><a href="#服务过载的预防" class="headerlink" title="服务过载的预防"></a>服务过载的预防</h2><p>所谓Client端指的就是上文结构中的A系统，相对于B系统，A系统就是B系统的Client，B系统相当于Server。</p>
-<h3 id="Client端的方案"><a href="#Client端的方案" class="headerlink" title="Client端的方案"></a>Client端的方案</h3><p>针对上文阐述的造成服务过载的三个原因：B系统故障恢复、Cache故障、Cache故障恢复，我们看看A系统有哪些方案可以应对。</p>
-<blockquote>
-<p>合理使用Cache应对B系统宕机</p>
-</blockquote>
-<p>一般情况下，Cache的每个Key除了对应Value，还对应一个过期时间T，在T内，get操作直接在Cache中拿到Key对应Value并返回。但是在T到达时，get操作主要有五种模式：</p>
-<h4 id="基于超时的简单（stupid）模式"><a href="#基于超时的简单（stupid）模式" class="headerlink" title="基于超时的简单（stupid）模式"></a>基于超时的简单（stupid）模式</h4><p>在T到达后，任何线程get操作发现Cache中的Key和对应Value将被清除或标记为不可用，get操作将发起调用远程服务获取Key对应的Value，并更新写回Cache，然后get操作返回新值；如果远程获取Key-Value失败，则get抛出异常。</p>
-<p>为了便于理解，举一个码头工人取货的例子：5个工人（线程）去港口取同样Key的货（get），发现货已经过期被扔掉了，这时5个工人各自分别去对岸取新货，然后返回。</p>
-<h4 id="基于超时的常规模式"><a href="#基于超时的常规模式" class="headerlink" title="基于超时的常规模式"></a>基于超时的常规模式</h4><p>在T到达后，Cache中的Key和对应Value将被清除或标记为不可用，get操作将调用远程服务获取Key对应的Value，并更新写回Cache；此时，如果另一个线程发现Key和Value已经不可用，get操作还需要判断有没有其他线程发起了远程调用，如果有，那么自己就等待，直到那个线程远程获取操作成功，Cache中得Key变得可用，get操作返回新的Value。如果远程获取操作失败，则get操作抛出异常，不会返回任何Value。</p>
-<p>还是码头工人的例子：5个工人（线程）去港口取同样Key的货（get），发现货已经过期被扔掉了，那么只需派出一个人去对岸取货，其他四个人在港口等待即可，而不用5个人全去。</p>
-<p>基于超时的简单模式和常规模式区别在于对于同一个超时的Key，前者每个get线程一旦发现Key不存在，则发起远程调用获取值；而后者每个get线程发现Key不存在，则还要判断当前是否有其他线程已经发起了远程调用操作获取新值，如果有，自己就简单的等待即可。</p>
-<p>显然基于超时的常规模式比基于超时的简单模式更加优化，减少了超时时并发访问后端的调用量。</p>
-<p>实现基于超时的常规模式就需要用到经典的Double-checked locking惯用法了。</p>
-<h4 id="基于刷新的简单（stupid）模式"><a href="#基于刷新的简单（stupid）模式" class="headerlink" title="基于刷新的简单（stupid）模式"></a>基于刷新的简单（stupid）模式</h4><p>在T到达后，Cache中的Key和相应Value不动，但是如果有线程调用get操作，将触发refresh操作，根据get和refresh的同步关系，又分为两种模式：</p>
-<ul>
-<li>同步模式：任何线程发现Key过期，都触发一次refresh操作，get操作等待refresh操作结束，refresh结束后，get操作返回当前Cache中Key对应的Value。注意refresh操作结束并不意味着refresh成功，还可能抛了异常，没有更新Cache，但是get操作不管，get操作返回的值可能是旧值。</li>
-<li>异步模式：任何线程发现Key过期，都触发一次refresh操作，get操作触发refresh操作，不等refresh完成，直接返回Cache中的旧值。</li>
-</ul>
-<p>举上面码头工人的例子说明基于刷新的常规模式：这次还是5工人去港口取货，这时货都在，但是已经旧了，这时5个工人有两种选择：</p>
-<ul>
-<li>5个人各自去远程取新货，如果取货失败，则拿着旧货返回（同步模式）</li>
-<li>5个人各自通知5个雇佣工去取新货，5个工人拿着旧货先回（异步模式）</li>
-</ul>
-<h4 id="基于刷新的常规模式"><a href="#基于刷新的常规模式" class="headerlink" title="基于刷新的常规模式"></a>基于刷新的常规模式</h4><p>在T到达后，Cache中的Key和相应Value都不会被清除，而是被标记为旧数据，如果有线程调用get操作，将触发refresh更新操作，根据get和refresh的同步关系，又分为两种模式：</p>
-<ul>
-<li>同步模式：get操作等待refresh操作结束，refresh结束后，get操作返回当前Cache中Key对应的Value，注意：refresh操作结束并不意味着refresh成功，还可能抛了异常，没有更新Cache，但是get操作不管，get操作返回的值可能是旧值。如果其他线程进行get操作，Key已经过期，并且发现有线程触发了refresh操作，则自己不等refresh完成直接返回旧值。</li>
-<li>异步模式：get操作触发refresh操作，不等refresh完成，直接返回Cache中的旧值。如果其他线程进行get操作，发现Key已经过期，并且发现有线程触发了refresh操作，则自己不等refresh完成直接返回旧值。</li>
-</ul>
-<p>再举上面码头工人的例子说明基于刷新的常规模式：这次还是5工人去港口取货，这时货都在，但是已经旧了，这时5个工人有两种选择：</p>
-<ul>
-<li>派一个人去远方港口取新货，其余4个人拿着旧货先回（同步模式）。</li>
-<li>5个人通知一个雇佣工去远方取新货，5个人都拿着旧货先回（异步模式）。</li>
-</ul>
-<p>基于刷新的简单模式和基于刷新的常规模式区别就在于取数线程之间能否感知当前数据是否正处在刷新状态，因为基于刷新的简单模式中取数线程无法感知当前过期数据是否正处在刷新状态，所以每个取数线程都会触发一个刷新操作，造成一定的线程资源浪费。</p>
-<p>而基于超时的常规模式和基于刷新的常规模式区别在于前者过期数据将不能对外访问，所以一旦数据过期，各线程要么拿到数据，要么抛出异常；后者过期数据可以对外访问，所以一旦数据过期，各线程要么拿到新数据，要么拿到旧数据。</p>
-<h4 id="基于刷新的续费模式"><a href="#基于刷新的续费模式" class="headerlink" title="基于刷新的续费模式"></a>基于刷新的续费模式</h4><p>该模式和基于刷新的常规模式唯一的区别在于refresh操作超时或失败的处理上。在基于刷新的常规模式中，refresh操作超时或失败时抛出异常，Cache中的相应Key-Value还是旧值，这样下一个get操作到来时又会触发一次refresh操作。</p>
-<p>在基于刷新的续费模式中，如果refresh操作失败，那么refresh将把旧值当成新值返回，这样就相当于旧值又被续费了T时间，后续T时间内get操作将取到这个续费的旧值而不会触发refresh操作。</p>
-<p>基于刷新的续费模式也像常规模式那样分为同步模式和异步模式，不再赘述。</p>
-<p>下面讨论这5种Cache get模式在服务过载发生时的表现，首先假设如下：</p>
-<ul>
-<li>假设A系统的访问量为每分钟M次。</li>
-<li>假设Cache能存Key为C个，并且Key空间有N个。</li>
-<li>假设正常状态下，B系统访问量为每分钟W次，显然W&lt;N&lt;M。</li>
-</ul>
-<p>这时因为某种原因，比如B长时间故障，造成Cache中得Key全部过期，B系统这时从故障中恢复，五种get模式分析表现分析如下：</p>
-<ul>
-<li>在基于超时和刷新的简单模式中，B系统的瞬间流量将达到和A的瞬时流量M大体等同，相当于Cache被击穿。这就发生了服务过载，这时刚刚恢复的B系统将肯定会被大流量压垮。</li>
-<li>在基于超时和刷新的常规模式中，B系统的瞬间流量将和Cache中Key空间N大体等同。这时是否发生服务过载，就要看Key空间N是否超过B系统的流量上限了。</li>
-<li>在基于刷新的续费模式中，B系统的瞬间流量为W，和正常情况相同而不会发生服务过载。实际上，在基于刷新的续费模式中，不存在Cache Key全部过期的情况，就算把B系统永久性地干掉，A系统的Cache也会基于旧值长久的平稳运行。</li>
-</ul>
-<p>第3点，B系统不会发生服务过载的主要原因是基于刷新的续费模式下不会出现chache中的Key全部长时间过期的情况，即使B系统长时间不可用，基于刷新的续费模式也会在一个过期周期内把旧值当成新值继续使用。所以当B系统恢复时，A系统的Cache都处在正常工作状态。</p>
-<p>从B系统的角度看，能够抵抗服务过载的基于刷新的续费模式最优。</p>
-<p>从A系统的角度看，由于一般情况下A系统是一个高访问量的在线web应用，这种应用最讨厌的一个词就是“线程等待”，因此基于刷新的各种异步模式较优。</p>
-<p>综合考虑，基于刷新的异步续费模式是首选。然而凡事有利就有弊，有两点需要注意的地方：</p>
-<ul>
-<li>基于刷新模式最大的缺点是Key-Value一旦放入Cache就不会被清除，每次更新也是新值覆盖旧值，JVM GC永远无法对其进行垃圾收集，而基于超时的模式中，Key-Value超时后如果新的访问没有到来，内存是可以被GC垃圾回收的。所以如果你使用的是寸土寸金的本地内存做Cache就要小心了。</li>
-<li>基于刷新的续费模式需要做好监控，不然有可能Cache中的值已经和真实的值相差很远了，应用还以为是新值而使用。</li>
-</ul>
-<p>关于具体的Cache，来自Google的Guava本地缓存库支持上文的第二种、第四种和第五种get操作模式。</p>
-<p>但是对于Redis等分布式缓存，只提供原始的get、set方法，而提供的get仅仅是获取，与上文提到的五种get操作模式不是一个概念。开发者想用这五种get操作模式的话不得不自己封装和实现。</p>
-<p>五种get操作模式中，基于超时和刷新的简单模式是实现起来最简单的模式，但遗憾的是这两种模式对服务过载完全无免疫力，这可能也是服务过载在大量依赖缓存的系统中频繁发生的一个重要原因吧。</p>
-<p>本文之所以把第1、3种模式称为stupid模式，是想强调这种模式应该尽量避免，Guava里面根本没有这种模式，而Redis只提供简单的读写操作，很容易就把系统实现成了这种方式。</p>
-<blockquote>
-<p>应对分布式Cache宕机</p>
-</blockquote>
-<p>如果是Cache直接挂了，那么就算是基于刷新的异步续费模式也无能为力了。这时A系统铁定无法对Cache进行存取操作，只能将流量完全打到B系统，B系统面对服务过载在劫难逃……</p>
-<p>本节讨论的预防Cache宕机仅限于分布式Cache，因为本地Cache一般和A系统应用共享内存和进程，本地Cache挂了A系统也挂了，不会出现本地Cache挂了而A系统应用正常的情况。</p>
-<p>首先，A系统请求线程检查分布式Cache状态，如果无应答则说明分布式Cache挂了，则转向请求B系统，这样一来大流量将压垮B系统。这时可选的方案如下：</p>
-<ul>
-<li>A系统的当前线程不请求B系统，而是打个日志并设置一个默认值。</li>
-<li>A系统的当前线程按照一定概率决定是否请求B系统。</li>
-<li>A系统的当前线程检查B系统运行情况，如果良好则请求B系统。</li>
-</ul>
-<p><strong>方案1</strong> 最简单，A系统知道如果没有Cache，B系统可能扛不住自己的全部流量，索性不请求B系统，等待Cache恢复。但这时B系统利用率为0，显然不是最优方案，而且当请求的Value不容易设置默认值时，这个方案就不行了。</p>
-<p><strong>方案2</strong> 可以让一部分线程请求B系统，这部分请求肯定能被B系统hold住。可以保守的设置这个概率 u =（B系统的平均流量）/（A系统的峰值流量）。</p>
-<p><strong>方案3</strong> 是一种更为智能的方案，如果B系统运行良好，当前线程请求；如果B系统过载，则不请求，这样A系统将让B系统处于一种宕机与不宕机的临界状态，最大限度挖掘B系统性能。这种方案要求B系统提供一个性能评估接口返回Yes和No，Yes表示B系统良好，可以请求；No表示B系统情况不妙，不要请求。这个接口将被频繁调用，必须高效。</p>
-<p>方案3的关键在于如何评估一个系统的运行状况。一个系统中当前主机的性能参数有CPU负载、内存使用率、Swap使用率、GC频率和GC时间、各个接口平均响应时间等，性能评估接口需要根据这些参数返回Yes或者No，是不是机器学习里的二分类问题？??关于这个问题已经可以单独写篇文章讨论了，在这里就不展开了，你可以想一个比较简单傻瓜的保守策略，缺点是A系统的请求无法很好的逼近B系统的性能极限。</p>
-<p>综合以上分析，方案2比较靠谱。如果选择方案3，建议由专门团队负责研究并提供统一的系统性能实时评估方案和工具。</p>
-<blockquote>
-<p>应对分布式Cache宕机后的恢复</p>
-</blockquote>
-<p>不要以为成功hold住分布式Cache宕机就万事大吉了，真正的考验是分布式Cache从宕机过程恢复之后，这时分布式Cache中什么都没有。</p>
-<p>即使是上文中提到了基于刷新的异步续费策略这时也没用，因为分布式Cache为空，无论如何都要请求B系统。这时B系统的最大流量是Key的空间取值数量。</p>
-<p>如果Key的取值空间数量很少，则相安无事；如果Key的取值空间数量大于B系统的流量上限，服务过载依然在所难免。</p>
-<p>这种情况A系统很难处理，关键原因是A系统请求Cache返回Key对应Value为空，A系统无法知道是因为当前Cache是刚刚初始化，所有内容都为空；还是因为仅仅是自己请求的那个Key没在Cache里。</p>
-<p>如果是前者，那么当前线程就要像处理Cache宕机那样进行某种策略的回避；如果是后者，直接请求B系统即可，因为这是正常的Cache使用流程。</p>
-<p>对于Cache宕机的恢复，A系统真的无能为力，只能寄希望于B系统的方案了。</p>
-<h3 id="Server端的方案"><a href="#Server端的方案" class="headerlink" title="Server端的方案"></a>Server端的方案</h3><p>相对于Client端需要应对各种复杂问题，Server端需要应对的问题非常简单，就是如何从容应对过载的问题。无论是缓存击穿也好，还是拒绝服务攻击也罢，对于Server端来说都是过载保护的问题。对于过载保护，主要给出两种可行方案，以及一种比较复杂的方案思路。</p>
-<blockquote>
-<p>流量控制</p>
-</blockquote>
-<p>流量控制就是B系统实时监控当前流量，如果超过预设的值或者系统承受能力，则直接拒绝掉一部分请求，以实现对系统的保护。</p>
-<p>流量控制根据基于的数据不同，可分为两种：</p>
-<ul>
-<li>基于流量阈值的流控：流量阈值是每个主机的流量上限，流量超过该阈值主机将进入不稳定状态。阈值提前进行设定，如果主机当前流量超过阈值，则拒绝掉一部分流量，使得实际被处理流量始终低于阈值。</li>
-<li>基于主机状态的流控：每个接受每个请求之前先判断当前主机状态，如果主机状况不佳，则拒绝当前请求。</li>
-</ul>
-<p>基于阈值的流控实现简单，但是最大的问题是需要提前设置阈值，而且随着业务逻辑越来越复杂，接口越来越多，主机的服务能力实际应该是下降的，这样就需要不断下调阈值，增加了维护成本，而且万一忘记调整的话，呵呵……</p>
-<p>主机的阈值可以通过压力测试确定，选择的时候可以保守些。</p>
-<p>基于主机状态的流控免去了人为控制，但是其最大的确定上文已经提到：如何根据当前主机各个参数判断主机状态呢？想要完美的回答这个问题目测并不容易，因此在没有太好答案之前，我推荐基于阈值的流控。</p>
-<p>流量控制基于实现位置的不同，又可以分为两种：</p>
-<ul>
-<li>反向代理实现流控：在反向代理如Nginx上基于各种策略进行流量控制。这种一般针对HTTP服务。</li>
-<li>借助服务治理系统：如果Server端是RMI、RPC等服务，可以构建专门的服务治理系统进行负载均衡、流控等服务。</li>
-<li>服务容器实现流控：在应用代码里，业务逻辑之前实现流量控制。</li>
-</ul>
-<p>第3种在服务器的容器（如Java容器）中实现流控并不推荐，因为流控和业务代码混在一起容易混乱；其次实际上流量已经全量进入到了业务代码里，这时的流控只是阻止其进入真正的业务逻辑，所以流控效果将打折；还有，如果流量策略经常变动，系统将不得不为此经常更改。</p>
-<p>因此，推荐前两种方式。</p>
-<p>最后提一个注意点：当因为流控而拒绝请求时，务必在返回的数据中带上相关信息（比如“当前请求因为超出流量而被禁止访问”），如果返回值什么都没有将是一个大坑。因为造成调用方请求没有被响应的原因很多，可能是调用方Bug，也可能是服务方Bug，还可能是网络不稳定，这样一来很可能在排查一整天后发现是流控搞的鬼……</p>
-<blockquote>
-<p>服务降级</p>
-</blockquote>
-<p>服务降级一般由人为触发，属于服务过载造成崩溃恢复时的策略，但为了和流控对比，将其放到这里。</p>
-<p>流量控制本质上是减小访问量，而服务处理能力不变；而服务降级本质上是降低了部分服务的处理能力，增强另一部分服务处理能力，而访问量不变。</p>
-<p>服务降级是指在服务过载时关闭不重要的接口（直接拒绝处理请求），而保留重要的接口。比如服务由10个接口，服务降级时关闭了其中五个，保留五个，这时这个主机的服务处理能力将增强到二倍左右。</p>
-<p>然而，服务过载发生时动辄就超出系统处理能力10倍，而服务降级能使主机服务处理能力提高10倍么？显然很困难，因此服务过载的应对不能只依靠服务降级策略。</p>
-<blockquote>
-<p>动态扩展</p>
-</blockquote>
-<p>动态扩展指的是在流量超过系统服务能力时，自动触发集群扩容，自动部署并上线运行；当流量过去后又自动回收多余机器，完全弹性。</p>
-<p>这个方案是不是感觉很不错。但是目前互联网公司的在线应用跑在云上的本身就不多，要完全实现在线应用的自动化弹性运维，要走的路就更多了。</p>
-<h2 id="崩溃恢复"><a href="#崩溃恢复" class="headerlink" title="崩溃恢复"></a>崩溃恢复</h2><p>如果服务过载造成系统崩溃还是不幸发生了，这时需要运维控制流量，等后台系统启动完毕后循序渐进的放开流量，主要目的是让Cache慢慢预热。流量控制刚开始可以为10%，然后20%，然后50%，然后80%，最后全量，当然具体的比例，尤其是初始比例，还要看后端承受能力和前端流量的比例，各个系统并不相同。</p>
-<p>如果后端系统有专门的工具进行Cache预热，则省去了运维的工作，等Cache热起来再发布后台系统即可。但是如果Cache中的Key空间很大，开发预热工具将比较困难。</p>
-<h2 id="结论"><a href="#结论" class="headerlink" title="结论"></a>结论</h2><p>“防患于未然”放在服务过载的应对上也是适合的，预防为主，补救为辅。综合上文分析，具体的预防要点如下：</p>
-<ul>
-<li>调用方（A系统）采用基于刷新的异步续费模式使用Cache，或者至少不能使用基于超时或刷新的简单（stupid）模式。</li>
-<li>调用方（A系统）每次请求Cache时检查Cache是否可用（available），如果不可用则按照一个保守的概率访问后端，而不是无所顾忌的直接访问后端。</li>
-<li>服务方（B系统）在反向代理处设置流量控制进行过载保护，阈值需要通过压测获得。</li>
-</ul>
-<p>崩溃的补救主要还是靠运维和研发在发生时的通力合作：观察流量变化准确定位崩溃原因，运维控流量研发持续关注性能变化。</p>
-<p>未来如果有条件的话可以研究下主机应用健康判断问题和动态弹性运维问题，毕竟自动化比人为操作要靠谱。</p>
-<hr>
-<p>来源：美团点评技术团队-张杨<br>链接：<a href="http://tech.meituan.com/avalanche-study.html" target="_blank" rel="external">http://tech.meituan.com/avalanche-study.html</a></p>
-
-          
+<p>A系统依赖B系统的读服务，A系统是60台机器组成的集群，B系统是6台机器组成的集群，之所以6台机器能够扛住60台机器的访问，是因为A系统并不是每次都访问B，而是首先请求Cache，只有Cache的相应数据失效时才会请求B。<br>
+          <div class="post-more-link text-center">
+            <a class="btn" href="/blog/2016/06/cache-server.html#more" rel="contents">
+              阅读全文 &raquo;
+            </a>
+          </div>
         
       
     </div>
@@ -931,151 +865,19 @@
 
       
         
-          
-            <p>iptables是一个Linux下优秀的nat+防火墙工具，我使用该工具以较低配置的传统pc配置了一个灵活强劲的防火墙+nat系统,小有心得，看了网上也有很多这方面的文章，但是似乎要么说的比较少，要么就是比较偏，内容不全，容易误导，我研究了一段时间的iptables同时也用了很久，有点滴经验，写来供大家参考，同时也备日后自己翻阅。</p>
+          <p>iptables是一个Linux下优秀的nat+防火墙工具，我使用该工具以较低配置的传统pc配置了一个灵活强劲的防火墙+nat系统,小有心得，看了网上也有很多这方面的文章，但是似乎要么说的比较少，要么就是比较偏，内容不全，容易误导，我研究了一段时间的iptables同时也用了很久，有点滴经验，写来供大家参考，同时也备日后自己翻阅。</p>
 <p>首先要说明的是，iptables操作的是2.4以上内核的netfilter。所以需要linux的内核在2.4以上。其功能与安全性远远比其前辈ipfwadm,ipchains强大，iptables大致是工作在OSI七层的二、三、四层，其前辈ipchains不能单独实现对tcp/udp port以及对mac地址的的定义与操作，所以我想ipchains应该是仅仅工作在三层上的。</p>
 <h2 id="netfilter工作流程"><a href="#netfilter工作流程" class="headerlink" title="netfilter工作流程"></a>netfilter工作流程</h2><p>我们先简单介绍一下netfilter的大致工作流程，也就是一个数据包（或者叫分组、packet,我个人习惯叫包）在到达linux的网络接口的时候 （网卡）如何处理这个包，然后再介绍一下如何用iptables改变或者说控制对这个数据包进行操作。</p>
 <ul>
 <li>netfilter内部分为三个表，分别是 filter,nat,mangle，每个表又有不同的操作链（Chains）。</li>
 <li>在filter（过滤）表中，也就是他的 防火墙功能 的这个表，定义了三个 Chain。分别是INPUT,FORWARD,OUTPUT。也就是对包的入、转发、出进行定义的三个过滤链。对于这个filter表的操作和控制也是我们实现防火墙功能的一个重要手段</li>
 <li>在nat(Network Address Translation、网络地址翻译)表中，也就是我们用以实现地址转换和端口转发功能的这个表，定义了PREROUTING, POSTROUTING,OUTPUT三个链,下面我们会对这三个链作详细的说明</li>
-<li>而netfilter的mangle表则是一个自定义表，里面包括上面 的filter以及nat表中的各种chains，它可以让我们进行一些自定义的操作，同时这个mangle表中的chains在netfilter对包 的处理流程中处在一个比较优先的位置。</li>
-</ul>
-<p>下面有一张图清晰的描绘了netfilter对包的处理流程（该图摘自网上，不知作者是谁，在此深表敬意！），一般情况下，我们用不到这个mangle表，在这里我们就不做介绍了。<br><img src="/images/iptables_netfilter_chains.png" alt="iptables包处理流程"></p>
-<ul>
-<li>ebtables基本使用: <a href="http://www.cnblogs.com/peteryj/archive/2011/07/24/2115602.html" target="_blank" rel="external">http://www.cnblogs.com/peteryj/archive/2011/07/24/2115602.html</a><br><img src="/images/iptables_entables.png" alt="iptables_entables处理流程图"></li>
-</ul>
-<h3 id="PREROUTING-DNAT"><a href="#PREROUTING-DNAT" class="headerlink" title="PREROUTING(DNAT)"></a>PREROUTING(DNAT)</h3><p>PREROUTING这个chain在最前面，当一个包来到linux的网络接口的时候先过mangle的PREROUTING；然后是nat的PREROUTING,从这个chain的名字我们可以看出，这个chain是在路由之前(pre-routing)要过的。</p>
-<p>为什么要在路由之前过呢？大家可以看到这个图上，上面有一个菱形的部分叫ROUTING,这个ROUTING部分就是Linux的route box,也就是路由系统，它同样有很高深的功能，可以实现策略路由等等一些高级特性，此处我们不做详细解释。单说这个PREROUTING链，因为在这个链里面我们对包的操作是DNAT,也就是改变目的地址和（或端口），通常用在端口转发，或者nat到内网的DMZ区，也就是说当一个包过来的时候我们要改变它的目的地址，大家可以想想,如果一个包在改变目的地址之前就被扔进了route box,让系统选好路之后再改变目的地址，那么选路就可能是错的，或者说毫无意义了，所以，PREROUTING这个Chain一定要在进Routing 之前做。</p>
-<p>比如说，我们的公网ip是60.1.1.1/24，位于linux中的eth0内网ip是10.1.1.1/24，位于linux中的eth1, 我们的内网有一台web服务器，地址是10.1.1.2/24,我们怎么样能让internet用户通过这个公网ip访问我们内部的这个web服务器呢？ 我们就可以在这个PREROUTING链上面定义一个规则，把访问60.1.1.1:80的用户的目的地址改变一下，改变为10.1.1.2:80,这样 就实现了internet用户对内网服务器的访问了，当然了，这个端口是比较灵活的，我们可以定义任何一个端口的转发，不一定是80–&gt;80，具体的命令我们在下面的例子中介绍，这里我们只谈流程与概念上的实现方法。</p>
-<h3 id="FORWARD"><a href="#FORWARD" class="headerlink" title="FORWARD"></a>FORWARD</h3><p>好了，我们接着往下走，这个包已经过了两个PREROUTING链了，这个时候，出现了一个分支转折的地方，也就是图中下方的那个菱形（FORWARD）,转发！这里有一个对目的地址的判断（这里同样说明了PREROUTING一定要在最先，不仅要在route box之前，甚至是这个对目的地址的判断之前，因为我们可能做一个去某某某ip的地方转到自己的ip的规则，所以PREROUTING是最先处理这个包的Chain）！</p>
-<p>如果包的目的地是本机ip,那么包向上走，走入INPUT链处理，然后进入LOCAL PROCESS,如果非本地，那么就进入FORWARD链进行过滤，我们在这里就不介绍INPUT,OUTPUT的处理了，因为那主要是对于本机安全的一种处理，我们这里主要说对转发的过滤和nat的实现。</p>
-<p>这里的FORWARD我简单说一下，当linux收到了一个 目的ip地址不是本地的包 ，Linux会把这个包丢弃，因为默认情况下，Linux的三层包转发功能是关闭的，如果要让我们的linux实现转发，则需要打开这个转发功能，可以 改变它的一个系统参数，使用sysctl net.ipv4.ip_forward=1或者echo “1” &gt; /proc/sys/net/ipv4/ip_forward命令打开转发功能。</p>
-<p>好了，在这里我们让linux允许转发，这个包的目的地址也不是本机，那么它将接着走入FORWARD链，在FORWARD链里面，我们就可以定义详细的规则，也就是是否允许他通过，或者对这个包的方向流程进行一些改变，这也是我们实现访问控制的地方，这里同样也是Mangle_FORWARD然后filter_FORWARD,我们操作任何一个链都会影响到这个包的命运，在下面的介绍中，我们就忽略掉mangle表，我们基本用不到操作它，所以我们假设它是透明的。</p>
-<h3 id="POSTROUTING-SNAT"><a href="#POSTROUTING-SNAT" class="headerlink" title="POSTROUTING(SNAT)"></a>POSTROUTING(SNAT)</h3><p>假设这个包被我们的规则放过去了，也就是ACCEPT了，它将进入POSTROUTING部分， 注意！这里我注意到一个细节问题，也就是上面的图中数据包过了FORWARD链之后直接进入了POSTROUITNG链，我觉得这中间缺少一个环节，也就是route box,对于转发的包来说，linux同样需要在选路（路由）之后才能将它送出，这个图却没有标明这一点，我认为它是在过了route box之后才进入的POSTROUITNG，当然了，这对于我们讨论iptables的过滤转发来说不是很重要，只是我觉得流程上有这个问题，还是要说明 一下。</p>
-<p>同样的，我们在这里从名字就可以看出，这个POSTROUTING链应该是路由之后的一个链，也就是这个包要送出这台Linux的 最后一个环节了，这也是极其重要的一个环节！！这个时候linux已经完成(has done.._)了对这个包的路由（选路工作），已经找到了合适的接口送出这个包了，在这个链里面我们要进行重要的操作，就是被Linux称为 SNAT 的一个动作，修改源ip地址！为什么修改源ip地址？很多情况需要修改源地址阿，最常见的就是我们内网多台机器需要共享一个或几个公网ip访问internet,因为我们的内网地址是私有的，假如就让linux给路由出去，源地址也不变，这个包应该能访问到目的地，但是却回不来，因为 internet上的N多个路由节点不会转发私有地址的数据包，也就是说，不用合法ip,我们的数据包有去无回。有人会说：“既然是这样，我就不用私有 ip了，我自己分配自己合法的地址不行吗？那样包就会回来了吧？”答案是否定的，ip地址是ICANN来分配的，你的数据包或许能发到目的地，但是回来的 时候人家可不会转到你那里，internet上的路由器中的路由信息会把这个返回包送到那个合法的获得ip的地方去，你同样收不到,而你这种行为有可能被定义为一种ip欺骗，很多设备会把这样的包在接入端就给滤掉了，可能都到不了你要访问的那个服务器，呵呵。</p>
-<p>那么Linux如何做SNAT呢？比如一个内网的10.1.1.11的pc访问202.2.2.2的一个web服务器，linux的内网接口10.1.1.1在收到这个包之后把原来的 PC的 ip10.1.1.11改变为60.1.1.1的合法地址然后送出，同时在自己的ip_conntrack表里面做一个记录,记住是内网的哪一个ip的哪 个端口访问的这个web服务器，自己把它的源地址改成多少了，端口改成多少了，以便这个web服务器返回数据包的时候linux将它准确的送回给发送请求 的这个pc.</p>
-<p>大体的数据转发流程我们说完了,我们看看iptables使用什么样的参数来完成这些操作。</p>
-<h2 id="概念理解"><a href="#概念理解" class="headerlink" title="概念理解"></a>概念理解</h2><p>在描述这些具体的操作之前，我还要说几个我对iptables的概念的理解（未必完全正确），这将有助于大家理解这些规则，以实现更精确的控制。</p>
-<p>上文中我们提到过，对包的控制是由我们在不同的Chain(链)上面添加不同的规则来实现的，比如我们对过滤表（filter table）添加规则来执行对包的操控。那么既然叫链，一定就是一条或者多条规则组成的了，这时就有一个问题了，如果多个规则对同一种包进行了定义，会发生什么事情呢？ 在Chain中，所有的规则都是从上向下来执行的 ，也就是说，如果匹配了第一行，那么就按照第一行的规则执行，一行一行的往下找，直到找到 符合这个类型的包的规则为止。如果找了一遍没有找到符合这个包的规则怎么办呢？itpables里面有一个概念，就是 Policy ，也就是策略。一说这个东西大家可能就会觉得比较麻烦，什么策略阿，我对于它的理解就是所谓这个策略就是chain中的最后一条规则，也就是说如果找了一遍找不到符合处理这个包的规则，就按照policy来办。这样理解起来就容易多了。iptables 使用-P来设置Chain的策略。</p>
-<p>好了，我们言归正传，来说说iptables到底怎样实现对包的控制。</p>
-<h4 id="链操作"><a href="#链操作" class="headerlink" title="链操作"></a>链操作</h4><p>先介绍一下iptables如何操作链</p>
-<p>对链的操作就那么几种：</p>
-<ul>
-<li>-I(插入)</li>
-<li>-A(追加)</li>
-<li>-R(替换)</li>
-<li>-D（删除）</li>
-<li>-L（列表显示）</li>
-</ul>
-<p>这里要说明的就是-I将会把规则放在第一行，-A将会放在最后一行。</p>
-<p>比如我们要添加一个规则到filter表的FORWARD链：<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#意思为：追加一个规则至filter表中的FORWARD链尾，允许（-j ACCEPT）源地址为10.1.1.11目的地址为202.1.1.1的数据包通过。其中-t后面跟的是表名，在-A后面跟Chain名，后面的小写的 -s为源地址，-d为目的地址，-j为处理方向。</span></span><br><span class="line">iptables -t filter -A FORWARD <span class="_">-s</span> 10.1.1.11 <span class="_">-d</span> 202.1.1.1 -j ACCEPT</span><br><span class="line"></span><br><span class="line"><span class="comment">#在iptables中，默认的表名就是filter，所以这里可以省略-t filter直接写成: </span></span><br><span class="line">iptables -A FORWARD <span class="_">-s</span> 10.1.1.11 <span class="_">-d</span> 202.1.1.1 -j ACCEPT</span><br></pre></td></tr></table></figure></p>
-<h4 id="匹配参数"><a href="#匹配参数" class="headerlink" title="匹配参数"></a>匹配参数</h4><p>iptables中的匹配参数： 我们在这里就介绍几种常用的参数，详细地用法可以man iptables看它的联机文档，你会有意外的收获。</p>
-<table>
-<thead>
-<tr>
-<th style="text-align:left">参数</th>
-<th style="text-align:left">说明</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td style="text-align:left">-s</td>
-<td style="text-align:left">匹配源地址</td>
-</tr>
-<tr>
-<td style="text-align:left">-d</td>
-<td style="text-align:left">匹配目的地址</td>
-</tr>
-<tr>
-<td style="text-align:left">-p</td>
-<td style="text-align:left">协议匹配</td>
-</tr>
-<tr>
-<td style="text-align:left">-i</td>
-<td style="text-align:left">入接口匹配</td>
-</tr>
-<tr>
-<td style="text-align:left">-o</td>
-<td style="text-align:left">出接口匹配</td>
-</tr>
-<tr>
-<td style="text-align:left">–sport，–dport</td>
-<td style="text-align:left">源和目的端口匹配</td>
-</tr>
-<tr>
-<td style="text-align:left">-j</td>
-<td style="text-align:left">跳转,也就是包的方向</td>
-</tr>
-<tr>
-<td style="text-align:left">!</td>
-<td style="text-align:left">取反</td>
-</tr>
-</tbody>
-</table>
-<p>其中还有一个!参数，使用!就是取反的意思。下面我们简单举几个例子介绍一下。</p>
-<ul>
-<li>-s 这个参数呢就是指定源地址的，如果使用这个参数也就是告诉netfilter，对于符合这样一个源地址的包怎么去处理，可以指定某一个单播ip地址，也可以指定一个网络，如果单个的ip地址其实隐含了一个32位的子网掩码，比如-s 10.1.1.11 其实就是-s 10.1.1.11/32，同样我们可以指定不同的掩码用以实现源网络地址的规则，比如一个C类地址我们可以用-s 10.1.1.0/24来指定。</li>
-<li>-d参数与-s格式一样。</li>
-<li>-i参数是指定入接口的网络接口，比如我仅仅允许从eth3接口过来的包通过FORWARD链，就可以这样指定iptables -A FORWARD -i eth3 -j ACCEPT</li>
-<li>-o是出接口,与上同。</li>
-</ul>
-<p>我们下面用一些简单的实例来step by step看看iptables的具体配置方法。</p>
-<h4 id="实例一：简单的nat路由器"><a href="#实例一：简单的nat路由器" class="headerlink" title="实例一：简单的nat路由器"></a>实例一：简单的nat路由器</h4><blockquote>
-<p><strong>环境介绍</strong></p>
-<ul>
-<li>linux 2.4 +</li>
-<li>2个网络接口</li>
-<li>Lan口:10.1.1.254/24 eth0</li>
-<li>Lan口:10.1.1.254/24 eth0</li>
-<li>目的：实现内网中的节点（10.1.1.0/24）可控的访问internet。</li>
-</ul>
-</blockquote>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#首先将Lan的节点pc的网关指向10.1.1.254。</span></span><br><span class="line"></span><br><span class="line"><span class="comment">#确定你的linux的ip配置无误，可以正确的ping通内外的地址。同时用route命令查看linux的本地路由表，确认指定了可用的ISP提供的默认网关。</span></span><br><span class="line"></span><br><span class="line"><span class="comment">#打开linux的转发功能：</span></span><br><span class="line">sysctl net.ipv4.ip_forward=1</span><br><span class="line"></span><br><span class="line"><span class="comment">#将FORWARD链的策略设置为DROP，这样做的目的是做到对内网ip的控制，你允许哪一个访问internet就可以增加一个规则，不在规则中的ip将无法访问internet.</span></span><br><span class="line">iptables -P FORWARD DROP</span><br><span class="line"></span><br><span class="line"><span class="comment">#这条规则规定允许任何地址到任何地址的确认包和关联包通过。一定要加这一条，否则你只允许lan IP访问没有用，至于为什么，下面我们再详细说。</span></span><br><span class="line">iptables -A FORWARD -m state --state ESTABLISHED,RELATED -j ACCEPT</span><br><span class="line"></span><br><span class="line"><span class="comment">#这条规则做了一个SNAT，也就是源地址转换，将来自10.1.1.0/24的地址转换为60.1.1.1</span></span><br><span class="line"><span class="comment">#(Deven：因为是让内网上网，因此对于代理服务器而言POSTROUTING（经过路由之后的包应该要把源地址改变为60.1.1.1，否则包无法返回）)</span></span><br><span class="line">iptables -t nat -A POSTROUTING <span class="_">-s</span> 10.1.1.0/24 -j SNAT --to 60.1.1.1</span><br><span class="line"><span class="comment">#有这几条规则，一个简单的nat路由器就实现了。这时你可以将允许访问的ip添加至FORWARD链，他们就能访问internet了。</span></span><br><span class="line"></span><br><span class="line"><span class="comment">#比如我想让10.1.1.9这个地址访问internet,那么你就加如下的命令就可以了。</span></span><br><span class="line">iptables -A FORWARD <span class="_">-s</span> 10.1.1.9 -j ACCEPT</span><br><span class="line"></span><br><span class="line"><span class="comment">#也可以精确控制他的访问地址,比如我就允许10.1.1.99访问3.3.3.3这个ip</span></span><br><span class="line">iptables -A FORWARD <span class="_">-s</span> 10.1.1.99 <span class="_">-d</span> 3.3.3.3 -j ACCEPT</span><br><span class="line"></span><br><span class="line"><span class="comment">#或者只允许他们访问80端口。</span></span><br><span class="line">iptables -A FORWARD <span class="_">-s</span> 10.1.1.0/24 -p tcp --dport http -j ACCEPT</span><br><span class="line"></span><br><span class="line"><span class="comment">#更多的控制可以自己灵活去做,或者查阅iptables的联机文档。</span></span><br></pre></td></tr></table></figure>
-<h4 id="实例二：端口转发"><a href="#实例二：端口转发" class="headerlink" title="实例二：端口转发"></a>实例二：端口转发</h4><blockquote>
-<p><strong>环境介绍</strong></p>
-<ul>
-<li>linux 2.4 +</li>
-<li>2个网络接口</li>
-<li>Lan口:10.1.1.254/24 eth0</li>
-<li>Lan内web server: 10.1.1.1:80</li>
-<li>Lan内ftp server: 10.1.1.2:21</li>
-<li>Wan口:60.1.1.1/24 eth1</li>
-<li>目的：对内部server进行端口转发实现internet用户访问内网服务器。</li>
-</ul>
-</blockquote>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#同样确认你的linux的各项配置正常，能够访问内外网。</span></span><br><span class="line">iptables -P FORWARD DROP</span><br><span class="line">iptables -A FORWARD -m state --state ESTABLISHED,RELATED -j ACCEPT</span><br><span class="line"></span><br><span class="line"><span class="comment">#也需要加入确认包和关联包的允许通过</span></span><br><span class="line"><span class="comment">#如果你要把访问60.1.1.1:80的数据包转发到Lan内web server,用下面的命令</span></span><br><span class="line">iptables -t nat -A PREROUTING <span class="_">-d</span> 60.1.1.1 -p tcp --dport 80 -j DNAT --to 10.1.1.1:80</span><br><span class="line"></span><br><span class="line"><span class="comment">#ftp服务也同样，命令如下：</span></span><br><span class="line">iptables -t nat -A PREROUTING <span class="_">-d</span> 60.1.1.1 -p tcp --dport 21 -j DNAT --to 10.1.1.2:21</span><br></pre></td></tr></table></figure>
-<p>好了，命令完成了，端口转发也做完了，本例能不能转发呢？不能，为什么呢？我下面详细分析一下。</p>
-<p>对于iptables好像往外访问的配置比较容易，而对内的转发似乎就有一些问题了，在一开始的时候我就先说了一些关于netfilter的流程问题，那么我就简单说说做了这些配置之后为什么有可能还不行呢？</p>
-<p>能引起这个配置失败的原因有很多，我们一个个的来说：</p>
-<p><strong>第一</strong> 本例中，我们的FORWARD策略是DROP,那么也就是说，没有符合规则的包将被丢弃，不管内到外还是外到内，我们在这里依然不讨论那个确认包和关联包的问题，我们不用考虑他的问题，下面我会详细说一下这个东西，那么如何让本例可以成功呢？加入下面的规则。<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">iptables -A FORWARD <span class="_">-d</span> 10.1.1.1 -p tcp --dport 80 -j ACCEPT</span><br><span class="line">iptables -A FORWARD <span class="_">-d</span> 10.1.1.2 -p tcp --dport 21 -j ACCEPT</span><br></pre></td></tr></table></figure></p>
-<p>有没有觉得有一些晕？为什么目的地址是10.xxx而不是60.xxx人家internet用户不是访问的60.xxx吗？呵呵，回到上面看看那个图吧，FORWARD链在什么位置上，它是在PREROUTING之后，也就是说当这个包到达FORWARD链的时候，目的地址已经变成10.xxx了，假如internet用户的请求是这样202.1.1.1:1333–&gt;60.1.1.1:80，在经过了我们的PREROUTING链之后将变成 202.1.1.1:1333–&gt;10.1.1.1:80,这个时候如果你设置一个目的地址为60.xxx的规则有用吗？呵呵，这是问题一。这个时候应该可以完成端口转发的访问了，但是有一些时候还是不行？为什么？看问题二。</p>
-<p><strong>第二</strong> 内网server的ip配置问题，这里我们以web server为例说明一下（ftp情况有一些特殊，下面我们再详细讨论，说确认包和关联包的时候讨论这个问题），上面说到，有的时候可以访问了，有的时候却不行，就是这个web server的ip设置问题了，如果web server没有指定默认的网关，那么在作了上面的配置之后，web server会收到internet的请求，但是，他不知道往哪里回啊，人家的本地路由表不知道你那个internet的ip,202.1.1.1该怎么走。如果你使用截包工具在web server上面察看，你会发现server收到了来自202.1.1.1:1333–&gt;10.1.1.1:80的请求，由于你没有给web server配置默认网关，它不知道怎么回去，所以就出现了不通的情况。怎么办呢？两个解决方法：</p>
-<p>一就是给这个server配置一个默认网关，当然要指向这个配置端口转发的linux,本例是10.1.1.254,配置好了，就一定能访问了。有一个疑问？难道不需要在FORWARD链上面设置一个允许web server的ip地址访问外网的规则吗？它的包能出去？答案是肯定的，能出去。因为我们那一条允许确认包与关联包的规则，否则它是出不去的。</p>
-<p><strong>第二种方法</strong>，比较麻烦一些，但是对服务器来说这样似乎更安全一些。方法就是对这个包再作一次SNAT，也就是在POSTROUTING链上添加规则。命令如下：<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">iptables -t nat -A POSTROUTING <span class="_">-d</span> 10.1.1.1 -p tcp --dport 80 -j SNAT --to 10.1.1.254</span><br></pre></td></tr></table></figure></p>
-<p>ftp 的方法相同。这条命令不太好懂？？其实很简单，如果使用这条命令，那么你的web server不需要再设置默认网关，就能收到这个请求，只要他和linux的lan ip地址是能互访的（也就是说web server和Linux的Lan ip在一个广播域），我们在根据上面的netfilter流程图来分析这个包到底被我们怎么样了：</p>
-<ul>
-<li>首先一个请求202.1.1.1:1333–&gt; 60.1.1.1:80被linux收到了，进入PREROUTING；</li>
-<li>发现一个规则iptables -t nat -A PREROUTING -d 60.1.1.1 -p tcp –dport 80 -j DNAT –to 10.1.1.1:80符合，好了，改你的目的地址，于是这个包变成了202.1.1.1:1333–&gt;10.1.1.1:80，继续往前走；</li>
-<li>进入FORWARD链，okay,也有一条规则允许通过iptables -A FORWARD -d 10.1.1.1 -p tcp –dport 80 -j ACCEPT；</li>
-<li>进入route box选路，找到合适的路径了，继续进入POSTROUTING链；</li>
-<li>耶？又发现一个符合的规则iptables -t nat -A POSTROUTING -d 10.1.1.1 -p tcp –dport 80 -j SNAT –to 10.1.1.254,原来是一个SNAT,改你的源地址，于是这个包变成了10.1.1.254:xxxx–&gt;10.1.1.1:80。为什么用xxxx了，这里的端口是随机的，我也不知道会是什么。</li>
-<li>而整个的两次变化的过程都会记录在linux的ip_conntrack中；</li>
-<li>当web server收到这个包的时候，发现，原来是一个内网自己兄弟来的请求阿，又在一个广播域，不用找网关，把返回包直接扔给交换机了；</li>
-<li>linux在收到返回包之后，会根据他的ip_conntrack中的条目进行两次变换，返回真正的internet用户，于是完成这一次的访问。</li>
-</ul>
-<p>看了上面的两个例子，不知道大家是否清楚了iptables的转发流程，希望对大家有所帮助。</p>
-<h4 id="状态机制"><a href="#状态机制" class="headerlink" title="状态机制"></a>状态机制</h4><p>下面我们就说说我一直在上面提到的关于那个ESTABLISHED,RELATED的规则是怎么回事，到底有什么用处。</p>
-<p>说这个东西就要简单说一下网络的数据通讯的方式，我们知道，网络的访问是双向的，也就是说一个Client与Server之间完成数据交换需要双方的发包与收包。在netfilter中，有几种状态，也就是new, established,related,invalid。</p>
-<p>当一个客户端，在本文例一中，内网的一台机器访问外网，我们设置了规则允许他出去，但是没有设置允许回来的规则阿，怎么完成访问呢？这就是netfilter的 状态机制 ，当一个lan用户通过这个linux访问外网的时候，它发送了一个请求包，这个包的状态是new,当外网回包的时候他的状态就是established,所以，linux知道，哦，这个包是我的内网的一台机器发出去的应答包，他就放行了。</p>
-<p>而外网试图对内发起一个新的连接的时候，他的状态是new,所以linux压根不去理会它。这就是我们为什么要加这一句的原因。</p>
-<p>还有那个related,他是一个关联状态，什么会用到呢？tftp,ftp都会用到，因为他们的传输机制决定了，它不像http访问那样，Client_IP: port–&gt;server:80然后server:80–&gt;Client_IP:port，ftp使用tcp21建立连接，使用20端口发送数据，其中又有两种方式，一种主动active mode，一种被动passive mode。主动模式下，client使用port命令告诉server我用哪一个端口接受数据，然后server主动发起对这个端口的请求。被动模式下，server使用port命令告诉客户端，它用那个端口监听，然后客户端发起对他的数据传输，所以这对于一个防火墙来说就是比较麻烦的事情，因为有可能会有new状态的数据包，但是它又是合理的请求，这个时候就用到这个related状态了，他就是一种关联，在linux中，有个叫 ftp_conntrack的模块，它能识别port命令，然后对相应的端口进行放行。</p>
-<p>一口气写了这么多东西，不知道质量如何，大家凑和着看吧，希望多多交流共同进步，我还是一个linux的初学者，难免很多谬误，希望高手赐教指正，以期不断进步。</p>
-<h4 id="实用命令"><a href="#实用命令" class="headerlink" title="实用命令"></a>实用命令</h4><p>对了，还有几个在实际中比较实用（也比较受用:-)）的命令参数，写出来供大家参考<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">iptables -L -n</span><br><span class="line"><span class="comment">#这样的列表会跳过linux的domain lookup,有的时候使用iptables -L会比较慢，因为linux会尝试解析ip的域名，真是罗嗦，如果你的dns server比较不爽的话，iptables -L就会让你很不爽，加一个-n参数就好了。列表刷的就出来。当然了，如果你的linux就是做防火墙，建议把nameserver去掉，在 /etc/resolve.conf里面，因为有时候使用route命令也会比较慢列出来，很是不爽。</span></span><br><span class="line"></span><br><span class="line">iptables -L -v</span><br><span class="line"><span class="comment">#这个命令会显示链中规则的包和流量计数，嘿嘿，看看哪些小子用的流量那么多，用tc限了他。</span></span><br><span class="line"></span><br><span class="line">iptables -t nat -L -vn</span><br><span class="line"><span class="comment">#查看nat表中的规则。</span></span><br><span class="line"></span><br><span class="line">cat /proc/net/ip_conntrack</span><br><span class="line"><span class="comment">#查看目前的conntrack，可能会比较多哦，最好加一个|grep "关键字"，看看你感兴趣的链接跟踪</span></span><br><span class="line"></span><br><span class="line">wc <span class="_">-l</span> /proc/net/ip_conntrack</span><br><span class="line"><span class="comment">#看看总链接有多少条。</span></span><br><span class="line"></span><br><span class="line">iptables-save &gt;/etc/iptables</span><br><span class="line"><span class="comment">#把当前的所有链备份一下，之所以放到/etc下面叫iptables，因为这样重起机器的时候会自动加载所有的链，经常地备份一下吧，否则如果链多，万一掉电重启，你还是会比较痛苦。</span></span><br></pre></td></tr></table></figure></p>
-<p><strong>转发</strong><br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#之前因为一个网段被封了，因此通过iptables做转发：</span></span><br><span class="line"><span class="comment">#代理服务器WAN IP：111.**.**.219，LAN IP：192.168.0.219</span></span><br><span class="line"><span class="comment">#内网服务器IP：192.168.0.41</span></span><br><span class="line"><span class="comment">#1.在代理服务器打开转发功能（sysctl.conf）</span></span><br><span class="line"><span class="comment">#2.添加以下规则</span></span><br><span class="line">iptables -t nat -A PREROUTING <span class="_">-d</span> 111.**.**.219 -p tcp --dport 9999 -j DNAT --to-destination 192.168.0.41:9999</span><br><span class="line">iptables -t nat -A POSTROUTING <span class="_">-d</span> 192.168.0.41 -p tcp --dport 9999 -j SNAT --to-source 192.168.0.219</span><br></pre></td></tr></table></figure></p>
-<p> 原文：<a href="http://wwdhks.blog.51cto.com/839773/1154032" target="_blank" rel="external">http://wwdhks.blog.51cto.com/839773/1154032</a></p>
-
-          
+<li>而netfilter的mangle表则是一个自定义表，里面包括上面 的filter以及nat表中的各种chains，它可以让我们进行一些自定义的操作，同时这个mangle表中的chains在netfilter对包 的处理流程中处在一个比较优先的位置。
+          <div class="post-more-link text-center">
+            <a class="btn" href="/blog/2016/06/iptables-forward-internet-share.html#more" rel="contents">
+              阅读全文 &raquo;
+            </a>
+          </div>
         
       
     </div>
@@ -1143,7 +945,7 @@
         <nav class="site-state motion-element">
           <div class="site-state-item site-state-posts">
             <a href="/archives">
-              <span class="site-state-item-count">4</span>
+              <span class="site-state-item-count">5</span>
               <span class="site-state-item-name">日志</span>
             </a>
           </div>
@@ -1151,7 +953,7 @@
           
             <div class="site-state-item site-state-categories">
               <a href="/categories">
-                <span class="site-state-item-count">3</span>
+                <span class="site-state-item-count">4</span>
                 <span class="site-state-item-name">分类</span>
               </a>
             </div>
@@ -1160,7 +962,7 @@
           
             <div class="site-state-item site-state-tags">
               <a href="/tags">
-                <span class="site-state-item-count">5</span>
+                <span class="site-state-item-count">7</span>
                 <span class="site-state-item-name">标签</span>
               </a>
             </div>

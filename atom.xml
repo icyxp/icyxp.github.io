@@ -5,7 +5,7 @@
   <link href="/atom.xml" rel="self"/>
   
   <link href="http://icyxp.github.io/"/>
-  <updated>2016-06-30T14:42:08.000Z</updated>
+  <updated>2016-07-04T12:52:21.000Z</updated>
   <id>http://icyxp.github.io/</id>
   
   <author>
@@ -16,11 +16,63 @@
   <generator uri="http://hexo.io/">Hexo</generator>
   
   <entry>
+    <title>MySQL为什么需要一个自增主键</title>
+    <link href="http://icyxp.github.io//blog/2016/07/mysql-auto-increment-primary-key.html"/>
+    <id>http://icyxp.github.io//blog/2016/07/mysql-auto-increment-primary-key.html</id>
+    <published>2016-07-04T09:38:00.000Z</published>
+    <updated>2016-07-04T12:52:21.000Z</updated>
+    
+    <content type="html">&lt;h2 id=&quot;主键&quot;&gt;&lt;a href=&quot;#主键&quot; class=&quot;headerlink&quot; title=&quot;主键&quot;&gt;&lt;/a&gt;主键&lt;/h2&gt;&lt;p&gt;表中每一行都应该有可以唯一标识自己的一列（或一组列）。&lt;/p&gt;
+&lt;p&gt;一个顾客可以使用顾客编号列，而订单可以使用订单ID，雇员可以使用雇员ID 或 雇员社会保险号。&lt;/p&gt;
+&lt;p&gt;主键（primary key） 一列（或一组列），其值能够唯一区分表中的每个行。&lt;br&gt;唯一标识表中每行的这个列（或这组列）称为主键。&lt;strong&gt;&lt;code&gt;没有主键，更新或删除表中特定行很困难，因为没有安全的方法保证只设计相关的行。&lt;/code&gt;&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;虽然并不总是都需要主键，但大多数数据库设计人员都应保证他们创建的每个表有一个主键，以便于以后数据操纵和管理&lt;/p&gt;
+&lt;p&gt;表中的任何列都可以作为主键，只要它满足一下条件:&lt;br&gt;&lt;figure class=&quot;highlight plain&quot;&gt;&lt;table&gt;&lt;tr&gt;&lt;td class=&quot;gutter&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;1&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;2&lt;/span&gt;&lt;br&gt;&lt;/pre&gt;&lt;/td&gt;&lt;td class=&quot;code&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;任何两行都不具有相同的主键值&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;每个行都必须具有一个主键值（主键列不允许NULL值）&lt;/span&gt;&lt;br&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/figure&gt;&lt;/p&gt;
+&lt;p&gt;主键值规范：这里列出的规则是MySQL本身强制实施的。&lt;/p&gt;
+&lt;p&gt;主键的最好习惯：&lt;br&gt;除MySQL强制实施的规则外，应该坚持的几个普遍认为的最好习惯为:&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&quot;plain&quot;&gt;1、不更新主键列的值
+2、不重用主键列的值
+3、不在主键列中使用可能会更改的值（例如，如果使用一个名字作为主键以标识某个供应商，应该供应商合并和更改其名字时，必须更改这个主键）
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;总之：不应该使用一个具有意义的column（id 本身并不保存表 有意义信息） 作为主键，并且一个表必须要有一个主键，为方便扩展、松耦合，高可用的系统做铺垫。&lt;br&gt;&lt;a id=&quot;more&quot;&gt;&lt;/a&gt;&lt;/p&gt;
+&lt;h3 id=&quot;无特殊需求下Innodb建议使用与业务无关的自增ID作为主键&quot;&gt;&lt;a href=&quot;#无特殊需求下Innodb建议使用与业务无关的自增ID作为主键&quot; class=&quot;headerlink&quot; title=&quot;无特殊需求下Innodb建议使用与业务无关的自增ID作为主键&quot;&gt;&lt;/a&gt;无特殊需求下Innodb建议使用与业务无关的自增ID作为主键&lt;/h3&gt;&lt;p&gt;InnoDB引擎使用聚集索引，数据记录本身被存于主索引（一颗B+Tree）的叶子节点上。这就要求同一个叶子节点内（大小为一个内存页或磁盘页）的各条数据记录按主键顺序存放，因此每当有一条新的记录插入时，MySQL会根据其主键将其插入适当的节点和位置，如果页面达到装载因子（InnoDB默认为15/16），则开辟一个新的页（节点）&lt;/p&gt;
+&lt;p&gt;1、如果表使用自增主键，那么每次插入新的记录，记录就会顺序添加到当前索引节点的后续位置，当一页写满，就会自动开辟一个新的页。如下图所示：&lt;br&gt;&lt;img src=&quot;/images/mysql_aipk_1.jpg&quot; alt=&quot;mysql_primary_key&quot;&gt;&lt;br&gt;这样就会形成一个紧凑的索引结构，近似顺序填满。&lt;strong&gt;&lt;code&gt;由于每次插入时也不需要移动已有数据，因此效率很高，也不会增加很多开销在维护索引上。&lt;/code&gt;&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;2、 如果使用非自增主键（如果身份证号或学号等），由于每次插入主键的值近似于随机，因此每次新纪录都要被插到现有索引页得中间某个位置：&lt;br&gt;&lt;img src=&quot;/images/mysql_aipk_2.jpg&quot; alt=&quot;mysql_primary_key&quot;&gt;&lt;br&gt;&lt;strong&gt;&lt;code&gt;此时MySQL不得不为了将新记录插到合适位置而移动数据，甚至目标页面可能已经被回写到磁盘上而从缓存中清掉，此时又要从磁盘上读回来，这增加了很多开销，同时频繁的移动、分页操作造成了大量的碎片。&lt;/code&gt;&lt;/strong&gt;得到了不够紧凑的索引结构，后续不得不通过OPTIMIZE TABLE来重建表并优化填充页面。&lt;/p&gt;
+&lt;p&gt;在使用InnoDB存储引擎时，如果没有特别的需要，请永远使用一个与业务无关的自增字段作为主键。&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;&lt;code&gt;mysql 在频繁的更新、删除操作，会产生碎片。而含碎片比较大的表，查询效率会降低。此时需对表进行优化，这样才会使查询变得更有效率。&lt;/code&gt;&lt;/strong&gt;&lt;/p&gt;
+</content>
+    
+    <summary type="html">
+    
+      &lt;h2 id=&quot;主键&quot;&gt;&lt;a href=&quot;#主键&quot; class=&quot;headerlink&quot; title=&quot;主键&quot;&gt;&lt;/a&gt;主键&lt;/h2&gt;&lt;p&gt;表中每一行都应该有可以唯一标识自己的一列（或一组列）。&lt;/p&gt;
+&lt;p&gt;一个顾客可以使用顾客编号列，而订单可以使用订单ID，雇员可以使用雇员ID 或 雇员社会保险号。&lt;/p&gt;
+&lt;p&gt;主键（primary key） 一列（或一组列），其值能够唯一区分表中的每个行。&lt;br&gt;唯一标识表中每行的这个列（或这组列）称为主键。&lt;strong&gt;&lt;code&gt;没有主键，更新或删除表中特定行很困难，因为没有安全的方法保证只设计相关的行。&lt;/code&gt;&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;虽然并不总是都需要主键，但大多数数据库设计人员都应保证他们创建的每个表有一个主键，以便于以后数据操纵和管理&lt;/p&gt;
+&lt;p&gt;表中的任何列都可以作为主键，只要它满足一下条件:&lt;br&gt;&lt;figure class=&quot;highlight plain&quot;&gt;&lt;table&gt;&lt;tr&gt;&lt;td class=&quot;gutter&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;1&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;2&lt;/span&gt;&lt;br&gt;&lt;/pre&gt;&lt;/td&gt;&lt;td class=&quot;code&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;任何两行都不具有相同的主键值&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;每个行都必须具有一个主键值（主键列不允许NULL值）&lt;/span&gt;&lt;br&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/figure&gt;&lt;/p&gt;
+&lt;p&gt;主键值规范：这里列出的规则是MySQL本身强制实施的。&lt;/p&gt;
+&lt;p&gt;主键的最好习惯：&lt;br&gt;除MySQL强制实施的规则外，应该坚持的几个普遍认为的最好习惯为:&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&quot;plain&quot;&gt;1、不更新主键列的值
+2、不重用主键列的值
+3、不在主键列中使用可能会更改的值（例如，如果使用一个名字作为主键以标识某个供应商，应该供应商合并和更改其名字时，必须更改这个主键）
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;总之：不应该使用一个具有意义的column（id 本身并不保存表 有意义信息） 作为主键，并且一个表必须要有一个主键，为方便扩展、松耦合，高可用的系统做铺垫。&lt;br&gt;
+    
+    </summary>
+    
+      <category term="mysql" scheme="http://icyxp.github.io/categories/mysql/"/>
+    
+    
+      <category term="mysql" scheme="http://icyxp.github.io/tags/mysql/"/>
+    
+      <category term="主键" scheme="http://icyxp.github.io/tags/%E4%B8%BB%E9%94%AE/"/>
+    
+  </entry>
+  
+  <entry>
     <title>Zephir安装和初体验</title>
-    <link href="http://icyxp.github.io//blog/2016/06/zephir-02.html"/>
-    <id>http://icyxp.github.io//blog/2016/06/zephir-02.html</id>
+    <link href="http://icyxp.github.io//blog/2016/06/zephir-zephir-02.html"/>
+    <id>http://icyxp.github.io//blog/2016/06/zephir-zephir-02.html</id>
     <published>2016-06-30T14:23:00.000Z</published>
-    <updated>2016-06-30T14:42:08.000Z</updated>
+    <updated>2016-07-04T12:51:08.000Z</updated>
     
     <content type="html">&lt;h2 id=&quot;Zephir安装&quot;&gt;&lt;a href=&quot;#Zephir安装&quot; class=&quot;headerlink&quot; title=&quot;Zephir安装&quot;&gt;&lt;/a&gt;Zephir安装&lt;/h2&gt;&lt;h3 id=&quot;环境依赖&quot;&gt;&lt;a href=&quot;#环境依赖&quot; class=&quot;headerlink&quot; title=&quot;环境依赖&quot;&gt;&lt;/a&gt;环境依赖&lt;/h3&gt;&lt;p&gt;Zephir主要依赖于下面环境&lt;/p&gt;
 &lt;ul&gt;
@@ -35,6 +87,7 @@
 &lt;p&gt;如果你使用Ubuntu，你可以安装所需要的包&lt;br&gt;&lt;figure class=&quot;highlight bash&quot;&gt;&lt;table&gt;&lt;tr&gt;&lt;td class=&quot;gutter&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;1&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;2&lt;/span&gt;&lt;br&gt;&lt;/pre&gt;&lt;/td&gt;&lt;td class=&quot;code&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;$ sudo apt-get update&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;$ sudo apt-get install git gcc make re2c php5 php5-json php5-dev libpcre3-dev&lt;/span&gt;&lt;br&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/figure&gt;&lt;/p&gt;
 &lt;p&gt;由于Zephir是用PHP编写的，所以你需要安装php&lt;br&gt;&lt;figure class=&quot;highlight bash&quot;&gt;&lt;table&gt;&lt;tr&gt;&lt;td class=&quot;gutter&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;1&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;2&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;3&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;4&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;5&lt;/span&gt;&lt;br&gt;&lt;/pre&gt;&lt;/td&gt;&lt;td class=&quot;code&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;$ php -v&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;PHP 5.6.5 (cli) (built: Jan 24 2015 20:04:31)&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;Copyright (c) 1997-2014 The PHP Group&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;Zend Engine v2.6.0, Copyright (c) 1998-2014 Zend Technologies&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;with Zend OPcache v7.0.4-dev, Copyright (c) 1999-2014, by Zend Technologies&lt;/span&gt;&lt;br&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/figure&gt;&lt;/p&gt;
 &lt;p&gt;同时也必须确保安装了PHP开发库&lt;br&gt;&lt;figure class=&quot;highlight bash&quot;&gt;&lt;table&gt;&lt;tr&gt;&lt;td class=&quot;gutter&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;1&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;2&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;3&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;4&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;5&lt;/span&gt;&lt;br&gt;&lt;/pre&gt;&lt;/td&gt;&lt;td class=&quot;code&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;$ phpize -v&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;Configuring &lt;span class=&quot;keyword&quot;&gt;for&lt;/span&gt;:&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;PHP Api Version:         20131106&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;Zend Module Api No:      20131226&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;Zend Extension Api No:   220131226&lt;/span&gt;&lt;br&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/figure&gt;&lt;/p&gt;
+&lt;a id=&quot;more&quot;&gt;&lt;/a&gt;
 &lt;h3 id=&quot;安装Zephir&quot;&gt;&lt;a href=&quot;#安装Zephir&quot; class=&quot;headerlink&quot; title=&quot;安装Zephir&quot;&gt;&lt;/a&gt;安装Zephir&lt;/h3&gt;&lt;ol&gt;
 &lt;li&gt;&lt;p&gt;下载最新稳定版&lt;/p&gt;
 &lt;/li&gt;
@@ -69,7 +122,19 @@
     
     <summary type="html">
     
-      &lt;h2 id=&quot;Zephir安装&quot;&gt;&lt;a href=&quot;#Zephir安装&quot; class=&quot;headerlink&quot; title=&quot;Zephir安装&quot;&gt;&lt;/a&gt;Zephir安装&lt;/h2&gt;&lt;h3 id=&quot;环境依赖&quot;&gt;&lt;a href=&quot;#环境依赖&quot; class=&quot;headerlink&quot; 
+      &lt;h2 id=&quot;Zephir安装&quot;&gt;&lt;a href=&quot;#Zephir安装&quot; class=&quot;headerlink&quot; title=&quot;Zephir安装&quot;&gt;&lt;/a&gt;Zephir安装&lt;/h2&gt;&lt;h3 id=&quot;环境依赖&quot;&gt;&lt;a href=&quot;#环境依赖&quot; class=&quot;headerlink&quot; title=&quot;环境依赖&quot;&gt;&lt;/a&gt;环境依赖&lt;/h3&gt;&lt;p&gt;Zephir主要依赖于下面环境&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;gcc &amp;gt;= 4.x/clang &amp;gt;= 3.x&lt;/li&gt;
+&lt;li&gt;re2c 0.13或更高版本&lt;/li&gt;
+&lt;li&gt;gnu 3.81或更高版本&lt;/li&gt;
+&lt;li&gt;autoconf 2.31或更高版本&lt;/li&gt;
+&lt;li&gt;automake 1.14或更高版本&lt;/li&gt;
+&lt;li&gt;libpcre3&lt;/li&gt;
+&lt;li&gt;php开发工具-phpize&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;如果你使用Ubuntu，你可以安装所需要的包&lt;br&gt;&lt;figure class=&quot;highlight bash&quot;&gt;&lt;table&gt;&lt;tr&gt;&lt;td class=&quot;gutter&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;1&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;2&lt;/span&gt;&lt;br&gt;&lt;/pre&gt;&lt;/td&gt;&lt;td class=&quot;code&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;$ sudo apt-get update&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;$ sudo apt-get install git gcc make re2c php5 php5-json php5-dev libpcre3-dev&lt;/span&gt;&lt;br&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/figure&gt;&lt;/p&gt;
+&lt;p&gt;由于Zephir是用PHP编写的，所以你需要安装php&lt;br&gt;&lt;figure class=&quot;highlight bash&quot;&gt;&lt;table&gt;&lt;tr&gt;&lt;td class=&quot;gutter&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;1&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;2&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;3&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;4&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;5&lt;/span&gt;&lt;br&gt;&lt;/pre&gt;&lt;/td&gt;&lt;td class=&quot;code&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;$ php -v&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;PHP 5.6.5 (cli) (built: Jan 24 2015 20:04:31)&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;Copyright (c) 1997-2014 The PHP Group&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;Zend Engine v2.6.0, Copyright (c) 1998-2014 Zend Technologies&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;with Zend OPcache v7.0.4-dev, Copyright (c) 1999-2014, by Zend Technologies&lt;/span&gt;&lt;br&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/figure&gt;&lt;/p&gt;
+&lt;p&gt;同时也必须确保安装了PHP开发库&lt;br&gt;&lt;figure class=&quot;highlight bash&quot;&gt;&lt;table&gt;&lt;tr&gt;&lt;td class=&quot;gutter&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;1&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;2&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;3&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;4&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;5&lt;/span&gt;&lt;br&gt;&lt;/pre&gt;&lt;/td&gt;&lt;td class=&quot;code&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;$ phpize -v&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;Configuring &lt;span class=&quot;keyword&quot;&gt;for&lt;/span&gt;:&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;PHP Api Version:         20131106&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;Zend Module Api No:      20131226&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;Zend Extension Api No:   220131226&lt;/span&gt;&lt;br&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/figure&gt;&lt;/p&gt;
     
     </summary>
     
@@ -84,16 +149,16 @@
   
   <entry>
     <title>Zephir介绍</title>
-    <link href="http://icyxp.github.io//blog/2016/06/zephir-01.html"/>
-    <id>http://icyxp.github.io//blog/2016/06/zephir-01.html</id>
+    <link href="http://icyxp.github.io//blog/2016/06/zephir-zephir-01.html"/>
+    <id>http://icyxp.github.io//blog/2016/06/zephir-zephir-01.html</id>
     <published>2016-06-30T13:18:00.000Z</published>
-    <updated>2016-06-30T14:36:45.000Z</updated>
+    <updated>2016-07-04T12:50:53.000Z</updated>
     
     <content type="html">&lt;h2 id=&quot;zephir介绍&quot;&gt;&lt;a href=&quot;#zephir介绍&quot; class=&quot;headerlink&quot; title=&quot;zephir介绍&quot;&gt;&lt;/a&gt;zephir介绍&lt;/h2&gt;&lt;p&gt;Zephir是一种可以让PHP开发者尝试编写和编译可以被PHP执行代码的一种语言。它是动态/静态类型，它的一些特性对于PHP 开发者来说是非常的相似的。&lt;/p&gt;
 &lt;p&gt;Zephir的名字是取自Zend Engine/PHP/Intermediate的缩写。建议发音为zephyr相同。事实上Zephir的创造者发音为zaefire_.&lt;/p&gt;
 &lt;h3 id=&quot;简单易于开发&quot;&gt;&lt;a href=&quot;#简单易于开发&quot; class=&quot;headerlink&quot; title=&quot;简单易于开发&quot;&gt;&lt;/a&gt;简单易于开发&lt;/h3&gt;&lt;p&gt;相信大家和我有一样的经历，看到了yaf和phalcon在想为什么C语言的拓展框架可以这么的快，我自己能不能写一个出来呢？然后屁颠屁颠的跑去找资料找大神了解，大神说你去看一下 “PHP扩展开发及内核应用”，结果大家都知道醉了。&lt;/p&gt;
 &lt;p&gt;主要原因是需要对C相对的熟悉并且对PHP内核API也要很熟悉，我觉得这已经不是门槛的问题了是太平洋的距离，就草草结束了研究。&lt;/p&gt;
-&lt;p&gt;当遇到zephir首先了解的就是复杂程度，结果花了10分钟就跟着流程做了一个小DEMO，就这点看来就开发效率这点看来无可厚非的的高效快速，大家感受一下&lt;br&gt;&lt;figure class=&quot;highlight php&quot;&gt;&lt;table&gt;&lt;tr&gt;&lt;td class=&quot;gutter&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;1&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;2&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;3&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;4&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;5&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;6&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;7&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;8&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;9&lt;/span&gt;&lt;br&gt;&lt;/pre&gt;&lt;/td&gt;&lt;td class=&quot;code&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;&lt;span class=&quot;keyword&quot;&gt;namespace&lt;/span&gt; &lt;span class=&quot;title&quot;&gt;Icyboy&lt;/span&gt;;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;&lt;span class=&quot;class&quot;&gt;&lt;span class=&quot;keyword&quot;&gt;class&lt;/span&gt; &lt;span class=&quot;title&quot;&gt;Hello&lt;/span&gt;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;&lt;/span&gt;&amp;#123;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;    &lt;span class=&quot;keyword&quot;&gt;public&lt;/span&gt; &lt;span class=&quot;keyword&quot;&gt;static&lt;/span&gt; &lt;span class=&quot;function&quot;&gt;&lt;span class=&quot;keyword&quot;&gt;function&lt;/span&gt; &lt;span class=&quot;title&quot;&gt;hi&lt;/span&gt;&lt;span class=&quot;params&quot;&gt;()&lt;/span&gt;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;    &lt;/span&gt;&amp;#123;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;        &lt;span class=&quot;keyword&quot;&gt;echo&lt;/span&gt;  &lt;span class=&quot;string&quot;&gt;&quot;hello world&quot;&lt;/span&gt;;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;    &amp;#125;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;&amp;#125;&lt;/span&gt;&lt;br&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/figure&gt;&lt;/p&gt;
+&lt;p&gt;当遇到zephir首先了解的就是复杂程度，结果花了10分钟就跟着流程做了一个小DEMO，就这点看来就开发效率这点看来无可厚非的的高效快速，大家感受一下。&lt;br&gt;&lt;a id=&quot;more&quot;&gt;&lt;/a&gt;&lt;br&gt;&lt;figure class=&quot;highlight php&quot;&gt;&lt;table&gt;&lt;tr&gt;&lt;td class=&quot;gutter&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;1&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;2&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;3&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;4&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;5&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;6&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;7&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;8&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;9&lt;/span&gt;&lt;br&gt;&lt;/pre&gt;&lt;/td&gt;&lt;td class=&quot;code&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;&lt;span class=&quot;keyword&quot;&gt;namespace&lt;/span&gt; &lt;span class=&quot;title&quot;&gt;Icyboy&lt;/span&gt;;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;&lt;span class=&quot;class&quot;&gt;&lt;span class=&quot;keyword&quot;&gt;class&lt;/span&gt; &lt;span class=&quot;title&quot;&gt;Hello&lt;/span&gt;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;&lt;/span&gt;&amp;#123;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;    &lt;span class=&quot;keyword&quot;&gt;public&lt;/span&gt; &lt;span class=&quot;keyword&quot;&gt;static&lt;/span&gt; &lt;span class=&quot;function&quot;&gt;&lt;span class=&quot;keyword&quot;&gt;function&lt;/span&gt; &lt;span class=&quot;title&quot;&gt;hi&lt;/span&gt;&lt;span class=&quot;params&quot;&gt;()&lt;/span&gt;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;    &lt;/span&gt;&amp;#123;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;        &lt;span class=&quot;keyword&quot;&gt;echo&lt;/span&gt;  &lt;span class=&quot;string&quot;&gt;&quot;hello world&quot;&lt;/span&gt;;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;    &amp;#125;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;&amp;#125;&lt;/span&gt;&lt;br&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/figure&gt;&lt;/p&gt;
 &lt;p&gt;编译之后引入到php.ini里面，使用方式如下&lt;br&gt;&lt;figure class=&quot;highlight php&quot;&gt;&lt;table&gt;&lt;tr&gt;&lt;td class=&quot;gutter&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;1&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;2&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;3&lt;/span&gt;&lt;br&gt;&lt;/pre&gt;&lt;/td&gt;&lt;td class=&quot;code&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;&lt;span class=&quot;keyword&quot;&gt;use&lt;/span&gt; &lt;span class=&quot;title&quot;&gt;Icyboy&lt;/span&gt;\&lt;span class=&quot;title&quot;&gt;Hello&lt;/span&gt;;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;&lt;span class=&quot;keyword&quot;&gt;echo&lt;/span&gt; Hello::hi() . PHP_EOL;&lt;/span&gt;&lt;br&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/figure&gt;&lt;/p&gt;
 &lt;p&gt;zephir是一个解释器语言和PHP非常近似，通过zephir的机制编译成C语言，然后通过C编译出PHP拓展提供使用，把中间过程高度封装，很大程度让PHP拓展开发简单了很多。&lt;/p&gt;
 &lt;p&gt;&lt;strong&gt;PHP扩展开发及内核应用&lt;/strong&gt; &lt;a href=&quot;http://www.walu.cc/phpbook&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;http://www.walu.cc/phpbook&lt;/a&gt;&lt;/p&gt;
@@ -130,7 +195,11 @@
     
     <summary type="html">
     
-      &lt;h2 id=&quot;zephir介绍&quot;&gt;&lt;a href=&quot;#zephir介绍&quot; class=&quot;headerlink&quot; title=&quot;zephir介绍&quot;&gt;&lt;/a&gt;zephir介绍&lt;/h2&gt;&lt;p&gt;Zephir是一种可以让PHP开发者尝试编写和编译可以被PHP执行代码的一种语言。它是动态/
+      &lt;h2 id=&quot;zephir介绍&quot;&gt;&lt;a href=&quot;#zephir介绍&quot; class=&quot;headerlink&quot; title=&quot;zephir介绍&quot;&gt;&lt;/a&gt;zephir介绍&lt;/h2&gt;&lt;p&gt;Zephir是一种可以让PHP开发者尝试编写和编译可以被PHP执行代码的一种语言。它是动态/静态类型，它的一些特性对于PHP 开发者来说是非常的相似的。&lt;/p&gt;
+&lt;p&gt;Zephir的名字是取自Zend Engine/PHP/Intermediate的缩写。建议发音为zephyr相同。事实上Zephir的创造者发音为zaefire_.&lt;/p&gt;
+&lt;h3 id=&quot;简单易于开发&quot;&gt;&lt;a href=&quot;#简单易于开发&quot; class=&quot;headerlink&quot; title=&quot;简单易于开发&quot;&gt;&lt;/a&gt;简单易于开发&lt;/h3&gt;&lt;p&gt;相信大家和我有一样的经历，看到了yaf和phalcon在想为什么C语言的拓展框架可以这么的快，我自己能不能写一个出来呢？然后屁颠屁颠的跑去找资料找大神了解，大神说你去看一下 “PHP扩展开发及内核应用”，结果大家都知道醉了。&lt;/p&gt;
+&lt;p&gt;主要原因是需要对C相对的熟悉并且对PHP内核API也要很熟悉，我觉得这已经不是门槛的问题了是太平洋的距离，就草草结束了研究。&lt;/p&gt;
+&lt;p&gt;当遇到zephir首先了解的就是复杂程度，结果花了10分钟就跟着流程做了一个小DEMO，就这点看来就开发效率这点看来无可厚非的的高效快速，大家感受一下。&lt;br&gt;
     
     </summary>
     
@@ -148,13 +217,12 @@
     <link href="http://icyxp.github.io//blog/2016/06/cache-server.html"/>
     <id>http://icyxp.github.io//blog/2016/06/cache-server.html</id>
     <published>2016-06-28T16:00:00.000Z</published>
-    <updated>2016-06-29T07:51:38.000Z</updated>
+    <updated>2016-07-04T12:50:21.000Z</updated>
     
     <content type="html">&lt;p&gt;简单地说，过载是外部请求对系统的访问量突然激增，造成请求堆积，服务不可用，最终导致系统崩溃。本文主要分析引入Cache可能造成的服务过载，并讨论相关的预防、恢复策略。&lt;/p&gt;
 &lt;p&gt;Cache在现代系统中使用广泛，由此引入的服务过载隐患无处不在，但却非常隐蔽，容易被忽视。本文希望能为开发者在设计和编写相关类型应用，以及服务过载发生处理时能够有章可循。&lt;/p&gt;
 &lt;h2 id=&quot;一个服务过载案例&quot;&gt;&lt;a href=&quot;#一个服务过载案例&quot; class=&quot;headerlink&quot; title=&quot;一个服务过载案例&quot;&gt;&lt;/a&gt;一个服务过载案例&lt;/h2&gt;&lt;p&gt;本文讨论的案例是指存在正常调用关系的两个系统（假设调用方为A系统，服务方为B系统），A系统对B系统的访问突然超出B系统的承受能力，造成B系统崩溃。造成服务过载的原因很多，这里分析的是严重依赖Cache的系统服务过载。首先来看一种包含Cache的体系结构（如下图所示）。&lt;br&gt;&lt;img src=&quot;/images/2_cache.png&quot; alt=&quot;Cache应用体系结构&quot;&gt;&lt;/p&gt;
-&lt;p&gt;A系统依赖B系统的读服务，A系统是60台机器组成的集群，B系统是6台机器组成的集群，之所以6台机器能够扛住60台机器的访问，是因为A系统并不是每次都访问B，而是首先请求Cache，只有Cache的相应数据失效时才会请求B。&lt;/p&gt;
-&lt;p&gt;这正是Cache存在的意义，它让B系统节省了大量机器；如果没有Cache，B系统不得不组成60台机器的集群，如果A也同时依赖除B系统外的另一个系统（假设为C系统）呢？那么C系统也要60台机器，放大的流量将很快耗尽公司的资源。&lt;/p&gt;
+&lt;p&gt;A系统依赖B系统的读服务，A系统是60台机器组成的集群，B系统是6台机器组成的集群，之所以6台机器能够扛住60台机器的访问，是因为A系统并不是每次都访问B，而是首先请求Cache，只有Cache的相应数据失效时才会请求B。&lt;br&gt;&lt;a id=&quot;more&quot;&gt;&lt;/a&gt;&lt;br&gt;这正是Cache存在的意义，它让B系统节省了大量机器；如果没有Cache，B系统不得不组成60台机器的集群，如果A也同时依赖除B系统外的另一个系统（假设为C系统）呢？那么C系统也要60台机器，放大的流量将很快耗尽公司的资源。&lt;/p&gt;
 &lt;p&gt;然而Cache的引入也不是十全十美的，这个结构中如果Cache发生问题，全部的流量将流向依赖方，造成流量激增，从而引发依赖系统的过载。&lt;/p&gt;
 &lt;p&gt;回到A和B的架构，造成服务过载的原因至少有下面三种：&lt;/p&gt;
 &lt;ul&gt;
@@ -302,7 +370,9 @@
     <summary type="html">
     
       &lt;p&gt;简单地说，过载是外部请求对系统的访问量突然激增，造成请求堆积，服务不可用，最终导致系统崩溃。本文主要分析引入Cache可能造成的服务过载，并讨论相关的预防、恢复策略。&lt;/p&gt;
-&lt;p&gt;Cache在现代系统中使用广泛，由此引入的服务过载隐患无处不在，但却非常隐蔽，容易被忽视。本
+&lt;p&gt;Cache在现代系统中使用广泛，由此引入的服务过载隐患无处不在，但却非常隐蔽，容易被忽视。本文希望能为开发者在设计和编写相关类型应用，以及服务过载发生处理时能够有章可循。&lt;/p&gt;
+&lt;h2 id=&quot;一个服务过载案例&quot;&gt;&lt;a href=&quot;#一个服务过载案例&quot; class=&quot;headerlink&quot; title=&quot;一个服务过载案例&quot;&gt;&lt;/a&gt;一个服务过载案例&lt;/h2&gt;&lt;p&gt;本文讨论的案例是指存在正常调用关系的两个系统（假设调用方为A系统，服务方为B系统），A系统对B系统的访问突然超出B系统的承受能力，造成B系统崩溃。造成服务过载的原因很多，这里分析的是严重依赖Cache的系统服务过载。首先来看一种包含Cache的体系结构（如下图所示）。&lt;br&gt;&lt;img src=&quot;/images/2_cache.png&quot; alt=&quot;Cache应用体系结构&quot;&gt;&lt;/p&gt;
+&lt;p&gt;A系统依赖B系统的读服务，A系统是60台机器组成的集群，B系统是6台机器组成的集群，之所以6台机器能够扛住60台机器的访问，是因为A系统并不是每次都访问B，而是首先请求Cache，只有Cache的相应数据失效时才会请求B。&lt;br&gt;
     
     </summary>
     
@@ -320,7 +390,7 @@
     <link href="http://icyxp.github.io//blog/2016/06/iptables-forward-internet-share.html"/>
     <id>http://icyxp.github.io//blog/2016/06/iptables-forward-internet-share.html</id>
     <published>2016-06-20T16:00:00.000Z</published>
-    <updated>2016-06-29T07:51:27.000Z</updated>
+    <updated>2016-07-04T12:50:30.000Z</updated>
     
     <content type="html">&lt;p&gt;iptables是一个Linux下优秀的nat+防火墙工具，我使用该工具以较低配置的传统pc配置了一个灵活强劲的防火墙+nat系统,小有心得，看了网上也有很多这方面的文章，但是似乎要么说的比较少，要么就是比较偏，内容不全，容易误导，我研究了一段时间的iptables同时也用了很久，有点滴经验，写来供大家参考，同时也备日后自己翻阅。&lt;/p&gt;
 &lt;p&gt;首先要说明的是，iptables操作的是2.4以上内核的netfilter。所以需要linux的内核在2.4以上。其功能与安全性远远比其前辈ipfwadm,ipchains强大，iptables大致是工作在OSI七层的二、三、四层，其前辈ipchains不能单独实现对tcp/udp port以及对mac地址的的定义与操作，所以我想ipchains应该是仅仅工作在三层上的。&lt;/p&gt;
@@ -329,10 +399,8 @@
 &lt;li&gt;netfilter内部分为三个表，分别是 filter,nat,mangle，每个表又有不同的操作链（Chains）。&lt;/li&gt;
 &lt;li&gt;在filter（过滤）表中，也就是他的 防火墙功能 的这个表，定义了三个 Chain。分别是INPUT,FORWARD,OUTPUT。也就是对包的入、转发、出进行定义的三个过滤链。对于这个filter表的操作和控制也是我们实现防火墙功能的一个重要手段&lt;/li&gt;
 &lt;li&gt;在nat(Network Address Translation、网络地址翻译)表中，也就是我们用以实现地址转换和端口转发功能的这个表，定义了PREROUTING, POSTROUTING,OUTPUT三个链,下面我们会对这三个链作详细的说明&lt;/li&gt;
-&lt;li&gt;而netfilter的mangle表则是一个自定义表，里面包括上面 的filter以及nat表中的各种chains，它可以让我们进行一些自定义的操作，同时这个mangle表中的chains在netfilter对包 的处理流程中处在一个比较优先的位置。&lt;/li&gt;
-&lt;/ul&gt;
-&lt;p&gt;下面有一张图清晰的描绘了netfilter对包的处理流程（该图摘自网上，不知作者是谁，在此深表敬意！），一般情况下，我们用不到这个mangle表，在这里我们就不做介绍了。&lt;br&gt;&lt;img src=&quot;/images/iptables_netfilter_chains.png&quot; alt=&quot;iptables包处理流程&quot;&gt;&lt;/p&gt;
-&lt;ul&gt;
+&lt;li&gt;而netfilter的mangle表则是一个自定义表，里面包括上面 的filter以及nat表中的各种chains，它可以让我们进行一些自定义的操作，同时这个mangle表中的chains在netfilter对包 的处理流程中处在一个比较优先的位置。&lt;a id=&quot;more&quot;&gt;&lt;/a&gt;
+下面有一张图清晰的描绘了netfilter对包的处理流程（该图摘自网上，不知作者是谁，在此深表敬意！），一般情况下，我们用不到这个mangle表，在这里我们就不做介绍了。&lt;br&gt;&lt;img src=&quot;/images/iptables_netfilter_chains.png&quot; alt=&quot;iptables包处理流程&quot;&gt;&lt;/li&gt;
 &lt;li&gt;ebtables基本使用: &lt;a href=&quot;http://www.cnblogs.com/peteryj/archive/2011/07/24/2115602.html&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;http://www.cnblogs.com/peteryj/archive/2011/07/24/2115602.html&lt;/a&gt;&lt;br&gt;&lt;img src=&quot;/images/iptables_entables.png&quot; alt=&quot;iptables_entables处理流程图&quot;&gt;&lt;/li&gt;
 &lt;/ul&gt;
 &lt;h3 id=&quot;PREROUTING-DNAT&quot;&gt;&lt;a href=&quot;#PREROUTING-DNAT&quot; class=&quot;headerlink&quot; title=&quot;PREROUTING(DNAT)&quot;&gt;&lt;/a&gt;PREROUTING(DNAT)&lt;/h3&gt;&lt;p&gt;PREROUTING这个chain在最前面，当一个包来到linux的网络接口的时候先过mangle的PREROUTING；然后是nat的PREROUTING,从这个chain的名字我们可以看出，这个chain是在路由之前(pre-routing)要过的。&lt;/p&gt;
@@ -468,7 +536,14 @@
     
     <summary type="html">
     
-      &lt;p&gt;iptables是一个Linux下优秀的nat+防火墙工具，我使用该工具以较低配置的传统pc配置了一个灵活强劲的防火墙+nat系统,小有心得，看了网上也有很多这方面的文章，但是似乎要么说的比较少，要么就是比较偏，内容不全，容易误导，我研究了一段时间的iptables同时也用
+      &lt;p&gt;iptables是一个Linux下优秀的nat+防火墙工具，我使用该工具以较低配置的传统pc配置了一个灵活强劲的防火墙+nat系统,小有心得，看了网上也有很多这方面的文章，但是似乎要么说的比较少，要么就是比较偏，内容不全，容易误导，我研究了一段时间的iptables同时也用了很久，有点滴经验，写来供大家参考，同时也备日后自己翻阅。&lt;/p&gt;
+&lt;p&gt;首先要说明的是，iptables操作的是2.4以上内核的netfilter。所以需要linux的内核在2.4以上。其功能与安全性远远比其前辈ipfwadm,ipchains强大，iptables大致是工作在OSI七层的二、三、四层，其前辈ipchains不能单独实现对tcp/udp port以及对mac地址的的定义与操作，所以我想ipchains应该是仅仅工作在三层上的。&lt;/p&gt;
+&lt;h2 id=&quot;netfilter工作流程&quot;&gt;&lt;a href=&quot;#netfilter工作流程&quot; class=&quot;headerlink&quot; title=&quot;netfilter工作流程&quot;&gt;&lt;/a&gt;netfilter工作流程&lt;/h2&gt;&lt;p&gt;我们先简单介绍一下netfilter的大致工作流程，也就是一个数据包（或者叫分组、packet,我个人习惯叫包）在到达linux的网络接口的时候 （网卡）如何处理这个包，然后再介绍一下如何用iptables改变或者说控制对这个数据包进行操作。&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;netfilter内部分为三个表，分别是 filter,nat,mangle，每个表又有不同的操作链（Chains）。&lt;/li&gt;
+&lt;li&gt;在filter（过滤）表中，也就是他的 防火墙功能 的这个表，定义了三个 Chain。分别是INPUT,FORWARD,OUTPUT。也就是对包的入、转发、出进行定义的三个过滤链。对于这个filter表的操作和控制也是我们实现防火墙功能的一个重要手段&lt;/li&gt;
+&lt;li&gt;在nat(Network Address Translation、网络地址翻译)表中，也就是我们用以实现地址转换和端口转发功能的这个表，定义了PREROUTING, POSTROUTING,OUTPUT三个链,下面我们会对这三个链作详细的说明&lt;/li&gt;
+&lt;li&gt;而netfilter的mangle表则是一个自定义表，里面包括上面 的filter以及nat表中的各种chains，它可以让我们进行一些自定义的操作，同时这个mangle表中的chains在netfilter对包 的处理流程中处在一个比较优先的位置。
     
     </summary>
     

@@ -96,7 +96,7 @@
 首先要说明的是，iptables操作的是2.4以上内核的netfi">
 <meta property="og:image" content="http://icyxp.github.io/images/iptables_netfilter_chains.png">
 <meta property="og:image" content="http://icyxp.github.io/images/iptables_entables.png">
-<meta property="og:updated_time" content="2016-06-29T07:51:27.000Z">
+<meta property="og:updated_time" content="2016-07-04T12:50:30.000Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="通过iptables实现端口转发与内网共享上网">
 <meta name="twitter:description" content="iptables是一个Linux下优秀的nat+防火墙工具，我使用该工具以较低配置的传统pc配置了一个灵活强劲的防火墙+nat系统,小有心得，看了网上也有很多这方面的文章，但是似乎要么说的比较少，要么就是比较偏，内容不全，容易误导，我研究了一段时间的iptables同时也用了很久，有点滴经验，写来供大家参考，同时也备日后自己翻阅。
@@ -355,10 +355,8 @@
 <li>netfilter内部分为三个表，分别是 filter,nat,mangle，每个表又有不同的操作链（Chains）。</li>
 <li>在filter（过滤）表中，也就是他的 防火墙功能 的这个表，定义了三个 Chain。分别是INPUT,FORWARD,OUTPUT。也就是对包的入、转发、出进行定义的三个过滤链。对于这个filter表的操作和控制也是我们实现防火墙功能的一个重要手段</li>
 <li>在nat(Network Address Translation、网络地址翻译)表中，也就是我们用以实现地址转换和端口转发功能的这个表，定义了PREROUTING, POSTROUTING,OUTPUT三个链,下面我们会对这三个链作详细的说明</li>
-<li>而netfilter的mangle表则是一个自定义表，里面包括上面 的filter以及nat表中的各种chains，它可以让我们进行一些自定义的操作，同时这个mangle表中的chains在netfilter对包 的处理流程中处在一个比较优先的位置。</li>
-</ul>
-<p>下面有一张图清晰的描绘了netfilter对包的处理流程（该图摘自网上，不知作者是谁，在此深表敬意！），一般情况下，我们用不到这个mangle表，在这里我们就不做介绍了。<br><img src="/images/iptables_netfilter_chains.png" alt="iptables包处理流程"></p>
-<ul>
+<li>而netfilter的mangle表则是一个自定义表，里面包括上面 的filter以及nat表中的各种chains，它可以让我们进行一些自定义的操作，同时这个mangle表中的chains在netfilter对包 的处理流程中处在一个比较优先的位置。<a id="more"></a>
+下面有一张图清晰的描绘了netfilter对包的处理流程（该图摘自网上，不知作者是谁，在此深表敬意！），一般情况下，我们用不到这个mangle表，在这里我们就不做介绍了。<br><img src="/images/iptables_netfilter_chains.png" alt="iptables包处理流程"></li>
 <li>ebtables基本使用: <a href="http://www.cnblogs.com/peteryj/archive/2011/07/24/2115602.html" target="_blank" rel="external">http://www.cnblogs.com/peteryj/archive/2011/07/24/2115602.html</a><br><img src="/images/iptables_entables.png" alt="iptables_entables处理流程图"></li>
 </ul>
 <h3 id="PREROUTING-DNAT"><a href="#PREROUTING-DNAT" class="headerlink" title="PREROUTING(DNAT)"></a>PREROUTING(DNAT)</h3><p>PREROUTING这个chain在最前面，当一个包来到linux的网络接口的时候先过mangle的PREROUTING；然后是nat的PREROUTING,从这个chain的名字我们可以看出，这个chain是在路由之前(pre-routing)要过的。</p>
@@ -621,7 +619,7 @@
         <nav class="site-state motion-element">
           <div class="site-state-item site-state-posts">
             <a href="/archives">
-              <span class="site-state-item-count">4</span>
+              <span class="site-state-item-count">5</span>
               <span class="site-state-item-name">日志</span>
             </a>
           </div>
@@ -629,7 +627,7 @@
           
             <div class="site-state-item site-state-categories">
               <a href="/categories">
-                <span class="site-state-item-count">3</span>
+                <span class="site-state-item-count">4</span>
                 <span class="site-state-item-name">分类</span>
               </a>
             </div>
@@ -638,7 +636,7 @@
           
             <div class="site-state-item site-state-tags">
               <a href="/tags">
-                <span class="site-state-item-count">5</span>
+                <span class="site-state-item-count">7</span>
                 <span class="site-state-item-name">标签</span>
               </a>
             </div>

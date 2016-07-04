@@ -4,8 +4,31 @@
   
     
     <entry>
+      <title><![CDATA[MySQL为什么需要一个自增主键]]></title>
+      <url>http://icyxp.github.io/blog/2016/07/mysql-auto-increment-primary-key.html</url>
+      <content type="html"><![CDATA[<h2 id="主键"><a href="#主键" class="headerlink" title="主键"></a>主键</h2><p>表中每一行都应该有可以唯一标识自己的一列（或一组列）。</p>
+<p>一个顾客可以使用顾客编号列，而订单可以使用订单ID，雇员可以使用雇员ID 或 雇员社会保险号。</p>
+<p>主键（primary key） 一列（或一组列），其值能够唯一区分表中的每个行。<br>唯一标识表中每行的这个列（或这组列）称为主键。<strong><code>没有主键，更新或删除表中特定行很困难，因为没有安全的方法保证只设计相关的行。</code></strong></p>
+<p>虽然并不总是都需要主键，但大多数数据库设计人员都应保证他们创建的每个表有一个主键，以便于以后数据操纵和管理</p>
+<p>表中的任何列都可以作为主键，只要它满足一下条件:<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">任何两行都不具有相同的主键值</span><br><span class="line">每个行都必须具有一个主键值（主键列不允许NULL值）</span><br></pre></td></tr></table></figure></p>
+<p>主键值规范：这里列出的规则是MySQL本身强制实施的。</p>
+<p>主键的最好习惯：<br>除MySQL强制实施的规则外，应该坚持的几个普遍认为的最好习惯为:</p>
+<pre><code class="plain">1、不更新主键列的值
+2、不重用主键列的值
+3、不在主键列中使用可能会更改的值（例如，如果使用一个名字作为主键以标识某个供应商，应该供应商合并和更改其名字时，必须更改这个主键）
+</code></pre>
+<p>总之：不应该使用一个具有意义的column（id 本身并不保存表 有意义信息） 作为主键，并且一个表必须要有一个主键，为方便扩展、松耦合，高可用的系统做铺垫。<br><a id="more"></a></p>
+<h3 id="无特殊需求下Innodb建议使用与业务无关的自增ID作为主键"><a href="#无特殊需求下Innodb建议使用与业务无关的自增ID作为主键" class="headerlink" title="无特殊需求下Innodb建议使用与业务无关的自增ID作为主键"></a>无特殊需求下Innodb建议使用与业务无关的自增ID作为主键</h3><p>InnoDB引擎使用聚集索引，数据记录本身被存于主索引（一颗B+Tree）的叶子节点上。这就要求同一个叶子节点内（大小为一个内存页或磁盘页）的各条数据记录按主键顺序存放，因此每当有一条新的记录插入时，MySQL会根据其主键将其插入适当的节点和位置，如果页面达到装载因子（InnoDB默认为15/16），则开辟一个新的页（节点）</p>
+<p>1、如果表使用自增主键，那么每次插入新的记录，记录就会顺序添加到当前索引节点的后续位置，当一页写满，就会自动开辟一个新的页。如下图所示：<br><img src="/images/mysql_aipk_1.jpg" alt="mysql_primary_key"><br>这样就会形成一个紧凑的索引结构，近似顺序填满。<strong><code>由于每次插入时也不需要移动已有数据，因此效率很高，也不会增加很多开销在维护索引上。</code></strong></p>
+<p>2、 如果使用非自增主键（如果身份证号或学号等），由于每次插入主键的值近似于随机，因此每次新纪录都要被插到现有索引页得中间某个位置：<br><img src="/images/mysql_aipk_2.jpg" alt="mysql_primary_key"><br><strong><code>此时MySQL不得不为了将新记录插到合适位置而移动数据，甚至目标页面可能已经被回写到磁盘上而从缓存中清掉，此时又要从磁盘上读回来，这增加了很多开销，同时频繁的移动、分页操作造成了大量的碎片。</code></strong>得到了不够紧凑的索引结构，后续不得不通过OPTIMIZE TABLE来重建表并优化填充页面。</p>
+<p>在使用InnoDB存储引擎时，如果没有特别的需要，请永远使用一个与业务无关的自增字段作为主键。</p>
+<p><strong><code>mysql 在频繁的更新、删除操作，会产生碎片。而含碎片比较大的表，查询效率会降低。此时需对表进行优化，这样才会使查询变得更有效率。</code></strong></p>
+]]></content>
+    </entry>
+    
+    <entry>
       <title><![CDATA[Zephir安装和初体验]]></title>
-      <url>http://icyxp.github.io/blog/2016/06/zephir-02.html</url>
+      <url>http://icyxp.github.io/blog/2016/06/zephir-zephir-02.html</url>
       <content type="html"><![CDATA[<h2 id="Zephir安装"><a href="#Zephir安装" class="headerlink" title="Zephir安装"></a>Zephir安装</h2><h3 id="环境依赖"><a href="#环境依赖" class="headerlink" title="环境依赖"></a>环境依赖</h3><p>Zephir主要依赖于下面环境</p>
 <ul>
 <li>gcc &gt;= 4.x/clang &gt;= 3.x</li>
@@ -19,6 +42,7 @@
 <p>如果你使用Ubuntu，你可以安装所需要的包<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">$ sudo apt-get update</span><br><span class="line">$ sudo apt-get install git gcc make re2c php5 php5-json php5-dev libpcre3-dev</span><br></pre></td></tr></table></figure></p>
 <p>由于Zephir是用PHP编写的，所以你需要安装php<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">$ php -v</span><br><span class="line">PHP 5.6.5 (cli) (built: Jan 24 2015 20:04:31)</span><br><span class="line">Copyright (c) 1997-2014 The PHP Group</span><br><span class="line">Zend Engine v2.6.0, Copyright (c) 1998-2014 Zend Technologies</span><br><span class="line">with Zend OPcache v7.0.4-dev, Copyright (c) 1999-2014, by Zend Technologies</span><br></pre></td></tr></table></figure></p>
 <p>同时也必须确保安装了PHP开发库<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">$ phpize -v</span><br><span class="line">Configuring <span class="keyword">for</span>:</span><br><span class="line">PHP Api Version:         20131106</span><br><span class="line">Zend Module Api No:      20131226</span><br><span class="line">Zend Extension Api No:   220131226</span><br></pre></td></tr></table></figure></p>
+<a id="more"></a>
 <h3 id="安装Zephir"><a href="#安装Zephir" class="headerlink" title="安装Zephir"></a>安装Zephir</h3><ol>
 <li><p>下载最新稳定版</p>
 </li>
@@ -54,12 +78,12 @@
     
     <entry>
       <title><![CDATA[Zephir介绍]]></title>
-      <url>http://icyxp.github.io/blog/2016/06/zephir-01.html</url>
+      <url>http://icyxp.github.io/blog/2016/06/zephir-zephir-01.html</url>
       <content type="html"><![CDATA[<h2 id="zephir介绍"><a href="#zephir介绍" class="headerlink" title="zephir介绍"></a>zephir介绍</h2><p>Zephir是一种可以让PHP开发者尝试编写和编译可以被PHP执行代码的一种语言。它是动态/静态类型，它的一些特性对于PHP 开发者来说是非常的相似的。</p>
 <p>Zephir的名字是取自Zend Engine/PHP/Intermediate的缩写。建议发音为zephyr相同。事实上Zephir的创造者发音为zaefire_.</p>
 <h3 id="简单易于开发"><a href="#简单易于开发" class="headerlink" title="简单易于开发"></a>简单易于开发</h3><p>相信大家和我有一样的经历，看到了yaf和phalcon在想为什么C语言的拓展框架可以这么的快，我自己能不能写一个出来呢？然后屁颠屁颠的跑去找资料找大神了解，大神说你去看一下 “PHP扩展开发及内核应用”，结果大家都知道醉了。</p>
 <p>主要原因是需要对C相对的熟悉并且对PHP内核API也要很熟悉，我觉得这已经不是门槛的问题了是太平洋的距离，就草草结束了研究。</p>
-<p>当遇到zephir首先了解的就是复杂程度，结果花了10分钟就跟着流程做了一个小DEMO，就这点看来就开发效率这点看来无可厚非的的高效快速，大家感受一下<br><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">namespace</span> <span class="title">Icyboy</span>;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Hello</span></span><br><span class="line"></span>&#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="function"><span class="keyword">function</span> <span class="title">hi</span><span class="params">()</span></span><br><span class="line">    </span>&#123;</span><br><span class="line">        <span class="keyword">echo</span>  <span class="string">"hello world"</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>当遇到zephir首先了解的就是复杂程度，结果花了10分钟就跟着流程做了一个小DEMO，就这点看来就开发效率这点看来无可厚非的的高效快速，大家感受一下。<br><a id="more"></a><br><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">namespace</span> <span class="title">Icyboy</span>;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Hello</span></span><br><span class="line"></span>&#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="function"><span class="keyword">function</span> <span class="title">hi</span><span class="params">()</span></span><br><span class="line">    </span>&#123;</span><br><span class="line">        <span class="keyword">echo</span>  <span class="string">"hello world"</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
 <p>编译之后引入到php.ini里面，使用方式如下<br><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">use</span> <span class="title">Icyboy</span>\<span class="title">Hello</span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">echo</span> Hello::hi() . PHP_EOL;</span><br></pre></td></tr></table></figure></p>
 <p>zephir是一个解释器语言和PHP非常近似，通过zephir的机制编译成C语言，然后通过C编译出PHP拓展提供使用，把中间过程高度封装，很大程度让PHP拓展开发简单了很多。</p>
 <p><strong>PHP扩展开发及内核应用</strong> <a href="http://www.walu.cc/phpbook" target="_blank" rel="external">http://www.walu.cc/phpbook</a></p>
@@ -101,8 +125,7 @@
       <content type="html"><![CDATA[<p>简单地说，过载是外部请求对系统的访问量突然激增，造成请求堆积，服务不可用，最终导致系统崩溃。本文主要分析引入Cache可能造成的服务过载，并讨论相关的预防、恢复策略。</p>
 <p>Cache在现代系统中使用广泛，由此引入的服务过载隐患无处不在，但却非常隐蔽，容易被忽视。本文希望能为开发者在设计和编写相关类型应用，以及服务过载发生处理时能够有章可循。</p>
 <h2 id="一个服务过载案例"><a href="#一个服务过载案例" class="headerlink" title="一个服务过载案例"></a>一个服务过载案例</h2><p>本文讨论的案例是指存在正常调用关系的两个系统（假设调用方为A系统，服务方为B系统），A系统对B系统的访问突然超出B系统的承受能力，造成B系统崩溃。造成服务过载的原因很多，这里分析的是严重依赖Cache的系统服务过载。首先来看一种包含Cache的体系结构（如下图所示）。<br><img src="/images/2_cache.png" alt="Cache应用体系结构"></p>
-<p>A系统依赖B系统的读服务，A系统是60台机器组成的集群，B系统是6台机器组成的集群，之所以6台机器能够扛住60台机器的访问，是因为A系统并不是每次都访问B，而是首先请求Cache，只有Cache的相应数据失效时才会请求B。</p>
-<p>这正是Cache存在的意义，它让B系统节省了大量机器；如果没有Cache，B系统不得不组成60台机器的集群，如果A也同时依赖除B系统外的另一个系统（假设为C系统）呢？那么C系统也要60台机器，放大的流量将很快耗尽公司的资源。</p>
+<p>A系统依赖B系统的读服务，A系统是60台机器组成的集群，B系统是6台机器组成的集群，之所以6台机器能够扛住60台机器的访问，是因为A系统并不是每次都访问B，而是首先请求Cache，只有Cache的相应数据失效时才会请求B。<br><a id="more"></a><br>这正是Cache存在的意义，它让B系统节省了大量机器；如果没有Cache，B系统不得不组成60台机器的集群，如果A也同时依赖除B系统外的另一个系统（假设为C系统）呢？那么C系统也要60台机器，放大的流量将很快耗尽公司的资源。</p>
 <p>然而Cache的引入也不是十全十美的，这个结构中如果Cache发生问题，全部的流量将流向依赖方，造成流量激增，从而引发依赖系统的过载。</p>
 <p>回到A和B的架构，造成服务过载的原因至少有下面三种：</p>
 <ul>
@@ -258,10 +281,8 @@
 <li>netfilter内部分为三个表，分别是 filter,nat,mangle，每个表又有不同的操作链（Chains）。</li>
 <li>在filter（过滤）表中，也就是他的 防火墙功能 的这个表，定义了三个 Chain。分别是INPUT,FORWARD,OUTPUT。也就是对包的入、转发、出进行定义的三个过滤链。对于这个filter表的操作和控制也是我们实现防火墙功能的一个重要手段</li>
 <li>在nat(Network Address Translation、网络地址翻译)表中，也就是我们用以实现地址转换和端口转发功能的这个表，定义了PREROUTING, POSTROUTING,OUTPUT三个链,下面我们会对这三个链作详细的说明</li>
-<li>而netfilter的mangle表则是一个自定义表，里面包括上面 的filter以及nat表中的各种chains，它可以让我们进行一些自定义的操作，同时这个mangle表中的chains在netfilter对包 的处理流程中处在一个比较优先的位置。</li>
-</ul>
-<p>下面有一张图清晰的描绘了netfilter对包的处理流程（该图摘自网上，不知作者是谁，在此深表敬意！），一般情况下，我们用不到这个mangle表，在这里我们就不做介绍了。<br><img src="/images/iptables_netfilter_chains.png" alt="iptables包处理流程"></p>
-<ul>
+<li>而netfilter的mangle表则是一个自定义表，里面包括上面 的filter以及nat表中的各种chains，它可以让我们进行一些自定义的操作，同时这个mangle表中的chains在netfilter对包 的处理流程中处在一个比较优先的位置。<a id="more"></a>
+下面有一张图清晰的描绘了netfilter对包的处理流程（该图摘自网上，不知作者是谁，在此深表敬意！），一般情况下，我们用不到这个mangle表，在这里我们就不做介绍了。<br><img src="/images/iptables_netfilter_chains.png" alt="iptables包处理流程"></li>
 <li>ebtables基本使用: <a href="http://www.cnblogs.com/peteryj/archive/2011/07/24/2115602.html" target="_blank" rel="external">http://www.cnblogs.com/peteryj/archive/2011/07/24/2115602.html</a><br><img src="/images/iptables_entables.png" alt="iptables_entables处理流程图"></li>
 </ul>
 <h3 id="PREROUTING-DNAT"><a href="#PREROUTING-DNAT" class="headerlink" title="PREROUTING(DNAT)"></a>PREROUTING(DNAT)</h3><p>PREROUTING这个chain在最前面，当一个包来到linux的网络接口的时候先过mangle的PREROUTING；然后是nat的PREROUTING,从这个chain的名字我们可以看出，这个chain是在路由之前(pre-routing)要过的。</p>

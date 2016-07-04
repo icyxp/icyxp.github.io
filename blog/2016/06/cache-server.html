@@ -97,7 +97,7 @@ Cache在现代系统中使用广泛，由此引入的服务过载隐患无处不
 Cache在现代系统中使用广泛，由此引入的服务过载隐患无处不在，但却非常隐蔽，容易被忽视。本文希望能为开发者在设计和编写相关类型应用，以及服务过载发生处理时能够有章可循。
 一个服务过载案例本文讨论的案例是指存在正常调用关系的两个系统">
 <meta property="og:image" content="http://icyxp.github.io/images/2_cache.png">
-<meta property="og:updated_time" content="2016-06-29T07:51:38.000Z">
+<meta property="og:updated_time" content="2016-07-04T12:50:21.000Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Cache 应用中的服务过载案例研究">
 <meta name="twitter:description" content="简单地说，过载是外部请求对系统的访问量突然激增，造成请求堆积，服务不可用，最终导致系统崩溃。本文主要分析引入Cache可能造成的服务过载，并讨论相关的预防、恢复策略。
@@ -353,8 +353,7 @@ Cache在现代系统中使用广泛，由此引入的服务过载隐患无处不
         <p>简单地说，过载是外部请求对系统的访问量突然激增，造成请求堆积，服务不可用，最终导致系统崩溃。本文主要分析引入Cache可能造成的服务过载，并讨论相关的预防、恢复策略。</p>
 <p>Cache在现代系统中使用广泛，由此引入的服务过载隐患无处不在，但却非常隐蔽，容易被忽视。本文希望能为开发者在设计和编写相关类型应用，以及服务过载发生处理时能够有章可循。</p>
 <h2 id="一个服务过载案例"><a href="#一个服务过载案例" class="headerlink" title="一个服务过载案例"></a>一个服务过载案例</h2><p>本文讨论的案例是指存在正常调用关系的两个系统（假设调用方为A系统，服务方为B系统），A系统对B系统的访问突然超出B系统的承受能力，造成B系统崩溃。造成服务过载的原因很多，这里分析的是严重依赖Cache的系统服务过载。首先来看一种包含Cache的体系结构（如下图所示）。<br><img src="/images/2_cache.png" alt="Cache应用体系结构"></p>
-<p>A系统依赖B系统的读服务，A系统是60台机器组成的集群，B系统是6台机器组成的集群，之所以6台机器能够扛住60台机器的访问，是因为A系统并不是每次都访问B，而是首先请求Cache，只有Cache的相应数据失效时才会请求B。</p>
-<p>这正是Cache存在的意义，它让B系统节省了大量机器；如果没有Cache，B系统不得不组成60台机器的集群，如果A也同时依赖除B系统外的另一个系统（假设为C系统）呢？那么C系统也要60台机器，放大的流量将很快耗尽公司的资源。</p>
+<p>A系统依赖B系统的读服务，A系统是60台机器组成的集群，B系统是6台机器组成的集群，之所以6台机器能够扛住60台机器的访问，是因为A系统并不是每次都访问B，而是首先请求Cache，只有Cache的相应数据失效时才会请求B。<br><a id="more"></a><br>这正是Cache存在的意义，它让B系统节省了大量机器；如果没有Cache，B系统不得不组成60台机器的集群，如果A也同时依赖除B系统外的另一个系统（假设为C系统）呢？那么C系统也要60台机器，放大的流量将很快耗尽公司的资源。</p>
 <p>然而Cache的引入也不是十全十美的，这个结构中如果Cache发生问题，全部的流量将流向依赖方，造成流量激增，从而引发依赖系统的过载。</p>
 <p>回到A和B的架构，造成服务过载的原因至少有下面三种：</p>
 <ul>
@@ -537,7 +536,7 @@ Cache在现代系统中使用广泛，由此引入的服务过载隐患无处不
 
           <div class="post-nav-prev post-nav-item">
             
-              <a href="/blog/2016/06/zephir-01.html" rel="prev" title="Zephir介绍">
+              <a href="/blog/2016/06/zephir-zephir-01.html" rel="prev" title="Zephir介绍">
                 Zephir介绍 <i class="fa fa-chevron-right"></i>
               </a>
             
@@ -634,7 +633,7 @@ Cache在现代系统中使用广泛，由此引入的服务过载隐患无处不
         <nav class="site-state motion-element">
           <div class="site-state-item site-state-posts">
             <a href="/archives">
-              <span class="site-state-item-count">4</span>
+              <span class="site-state-item-count">5</span>
               <span class="site-state-item-name">日志</span>
             </a>
           </div>
@@ -642,7 +641,7 @@ Cache在现代系统中使用广泛，由此引入的服务过载隐患无处不
           
             <div class="site-state-item site-state-categories">
               <a href="/categories">
-                <span class="site-state-item-count">3</span>
+                <span class="site-state-item-count">4</span>
                 <span class="site-state-item-name">分类</span>
               </a>
             </div>
@@ -651,7 +650,7 @@ Cache在现代系统中使用广泛，由此引入的服务过载隐患无处不
           
             <div class="site-state-item site-state-tags">
               <a href="/tags">
-                <span class="site-state-item-count">5</span>
+                <span class="site-state-item-count">7</span>
                 <span class="site-state-item-name">标签</span>
               </a>
             </div>
