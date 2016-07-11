@@ -100,7 +100,7 @@ Read Uncommitted（读取未提交内容）
 Read Uncommitted（读取未提交内容）
 
 在该隔离级别，所有事务都可以看到其他未提交事务的执行结果。本隔离级别很少用于实际应用，因为它的性能也不比其他级别好多少。读取未提交的数据，也被称之为脏读（Dirty R">
-<meta property="og:updated_time" content="2016-07-11T09:23:03.000Z">
+<meta property="og:updated_time" content="2016-07-11T09:23:50.000Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="MySQL事务隔离级别">
 <meta name="twitter:description" content="四类隔离级别SQL标准定义了4类隔离级别，包括了一些具体规则，用来限定事务内外的哪些改变是可见的，哪些是不可见的。低级别的隔离级一般支持更高的并发处理，并拥有更低的系统开销。
@@ -370,7 +370,7 @@ Read Uncommitted（读取未提交内容）
 <ul>
 <li>Serializable（可串行化）</li>
 </ul>
-<p>这是最高的隔离级别，它通过强制事务排序，使之不可能相互冲突，从而解决幻读问题。简言之，它是在每个读的数据行上加上共享锁。在这个级别，可能导致大量的超时现象和锁竞争。</p>
+<p>这是最高的隔离级别，它通过强制事务排序，使之不可能相互冲突，从而解决幻读问题。简言之，它是在每个读的数据行上加上共享锁。在这个级别，可能导致大量的超时现象和锁竞争。<br><a id="more"></a></p>
 <h2 id="隔离级别与一致性"><a href="#隔离级别与一致性" class="headerlink" title="隔离级别与一致性"></a>隔离级别与一致性</h2><p>这四种隔离级别采取不同的锁类型来实现，若读取的是同一个数据的话，就容易发生问题。例如：</p>
 <ul>
 <li>脏读(Drity Read)：某个事务已更新一份数据，另一个事务在此时读取了同一份数据，由于某些原因，前一个RollBack了操作，则后一个事务所读取的数据就会是不正确的。</li>
