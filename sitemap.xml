@@ -2,6 +2,13 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   
   <url>
+    <loc>http://icyxp.github.io/blog/2016/07/mysql-transaction-level.html</loc>
+    
+    <lastmod>2016-07-11T09:20:16.000Z</lastmod>
+    
+  </url>
+  
+  <url>
     <loc>http://icyxp.github.io/blog/2016/07/mysql-auto-increment-primary-key.html</loc>
     
     <lastmod>2016-07-04T12:52:21.000Z</lastmod>

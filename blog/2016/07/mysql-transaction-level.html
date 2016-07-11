@@ -68,7 +68,7 @@
 <link href="/css/main.css?v=5.0.1" rel="stylesheet" type="text/css" />
 
 
-  <meta name="keywords" content="mysql,主键," />
+  <meta name="keywords" content="mysql,事务," />
 
 
 
@@ -86,28 +86,28 @@
 
 
 
-<meta name="description" content="主键表中每一行都应该有可以唯一标识自己的一列（或一组列）。
-一个顾客可以使用顾客编号列，而订单可以使用订单ID，雇员可以使用雇员ID 或 雇员社会保险号。
-主键（primary key） 一列（或一组列），其值能够唯一区分表中的每个行。唯一标识表中每行的这个列（或这组列）称为主键。没有主键，更新或删除表中特定行很困难，因为没有安全的方法保证只设计相关的行。
-虽然并不总是都需要主键，但大多数数据库设">
+<meta name="description" content="四类隔离级别SQL标准定义了4类隔离级别，包括了一些具体规则，用来限定事务内外的哪些改变是可见的，哪些是不可见的。低级别的隔离级一般支持更高的并发处理，并拥有更低的系统开销。
+
+Read Uncommitted（读取未提交内容）
+
+在该隔离级别，所有事务都可以看到其他未提交事务的执行结果。本隔离级别很少用于实际应用，因为它的性能也不比其他级别好多少。读取未提交的数据，也被称之为脏读（Dirty R">
 <meta property="og:type" content="article">
-<meta property="og:title" content="MySQL为什么需要一个自增主键">
-<meta property="og:url" content="http://icyxp.github.io/blog/2016/07/mysql-auto-increment-primary-key.html">
+<meta property="og:title" content="MySQL事务隔离级别">
+<meta property="og:url" content="http://icyxp.github.io/blog/2016/07/mysql-transaction-level.html">
 <meta property="og:site_name" content="Devops">
-<meta property="og:description" content="主键表中每一行都应该有可以唯一标识自己的一列（或一组列）。
-一个顾客可以使用顾客编号列，而订单可以使用订单ID，雇员可以使用雇员ID 或 雇员社会保险号。
-主键（primary key） 一列（或一组列），其值能够唯一区分表中的每个行。唯一标识表中每行的这个列（或这组列）称为主键。没有主键，更新或删除表中特定行很困难，因为没有安全的方法保证只设计相关的行。
-虽然并不总是都需要主键，但大多数数据库设">
-<meta property="og:image" content="http://icyxp.github.io/images/mysql_aipk_1.jpg">
-<meta property="og:image" content="http://icyxp.github.io/images/mysql_aipk_2.jpg">
-<meta property="og:updated_time" content="2016-07-04T12:52:21.000Z">
+<meta property="og:description" content="四类隔离级别SQL标准定义了4类隔离级别，包括了一些具体规则，用来限定事务内外的哪些改变是可见的，哪些是不可见的。低级别的隔离级一般支持更高的并发处理，并拥有更低的系统开销。
+
+Read Uncommitted（读取未提交内容）
+
+在该隔离级别，所有事务都可以看到其他未提交事务的执行结果。本隔离级别很少用于实际应用，因为它的性能也不比其他级别好多少。读取未提交的数据，也被称之为脏读（Dirty R">
+<meta property="og:updated_time" content="2016-07-11T09:20:16.000Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="MySQL为什么需要一个自增主键">
-<meta name="twitter:description" content="主键表中每一行都应该有可以唯一标识自己的一列（或一组列）。
-一个顾客可以使用顾客编号列，而订单可以使用订单ID，雇员可以使用雇员ID 或 雇员社会保险号。
-主键（primary key） 一列（或一组列），其值能够唯一区分表中的每个行。唯一标识表中每行的这个列（或这组列）称为主键。没有主键，更新或删除表中特定行很困难，因为没有安全的方法保证只设计相关的行。
-虽然并不总是都需要主键，但大多数数据库设">
-<meta name="twitter:image" content="http://icyxp.github.io/images/mysql_aipk_1.jpg">
+<meta name="twitter:title" content="MySQL事务隔离级别">
+<meta name="twitter:description" content="四类隔离级别SQL标准定义了4类隔离级别，包括了一些具体规则，用来限定事务内外的哪些改变是可见的，哪些是不可见的。低级别的隔离级一般支持更高的并发处理，并拥有更低的系统开销。
+
+Read Uncommitted（读取未提交内容）
+
+在该隔离级别，所有事务都可以看到其他未提交事务的执行结果。本隔离级别很少用于实际应用，因为它的性能也不比其他级别好多少。读取未提交的数据，也被称之为脏读（Dirty R">
 
 
 
@@ -125,7 +125,7 @@
   };
 </script>
 
-  <title> MySQL为什么需要一个自增主键 | Devops </title>
+  <title> MySQL事务隔离级别 | Devops </title>
 </head>
 
 <body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
@@ -288,7 +288,7 @@
             
             
               
-                MySQL为什么需要一个自增主键
+                MySQL事务隔离级别
               
             
           </h1>
@@ -330,8 +330,8 @@
             
               <span class="post-comments-count">
                 &nbsp; | &nbsp;
-                <a href="/blog/2016/07/mysql-auto-increment-primary-key.html#comments" itemprop="discussionUrl">
-                  <span class="post-comments-count ds-thread-count" data-thread-key="/blog/2016/07/mysql-auto-increment-primary-key.html" itemprop="commentsCount"></span>
+                <a href="/blog/2016/07/mysql-transaction-level.html#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count ds-thread-count" data-thread-key="/blog/2016/07/mysql-transaction-level.html" itemprop="commentsCount"></span>
                 </a>
               </span>
             
@@ -354,23 +354,32 @@
       
 
       
-        <h2 id="主键"><a href="#主键" class="headerlink" title="主键"></a>主键</h2><p>表中每一行都应该有可以唯一标识自己的一列（或一组列）。</p>
-<p>一个顾客可以使用顾客编号列，而订单可以使用订单ID，雇员可以使用雇员ID 或 雇员社会保险号。</p>
-<p>主键（primary key） 一列（或一组列），其值能够唯一区分表中的每个行。<br>唯一标识表中每行的这个列（或这组列）称为主键。<strong><code>没有主键，更新或删除表中特定行很困难，因为没有安全的方法保证只设计相关的行。</code></strong></p>
-<p>虽然并不总是都需要主键，但大多数数据库设计人员都应保证他们创建的每个表有一个主键，以便于以后数据操纵和管理</p>
-<p>表中的任何列都可以作为主键，只要它满足一下条件:<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">任何两行都不具有相同的主键值</span><br><span class="line">每个行都必须具有一个主键值（主键列不允许NULL值）</span><br></pre></td></tr></table></figure></p>
-<p>主键值规范：这里列出的规则是MySQL本身强制实施的。</p>
-<p>主键的最好习惯：<br>除MySQL强制实施的规则外，应该坚持的几个普遍认为的最好习惯为:</p>
-<pre><code class="plain">1、不更新主键列的值
-2、不重用主键列的值
-3、不在主键列中使用可能会更改的值（例如，如果使用一个名字作为主键以标识某个供应商，应该供应商合并和更改其名字时，必须更改这个主键）
-</code></pre>
-<p>总之：不应该使用一个具有意义的column（id 本身并不保存表 有意义信息） 作为主键，并且一个表必须要有一个主键，为方便扩展、松耦合，高可用的系统做铺垫。<br><a id="more"></a></p>
-<h3 id="无特殊需求下Innodb建议使用与业务无关的自增ID作为主键"><a href="#无特殊需求下Innodb建议使用与业务无关的自增ID作为主键" class="headerlink" title="无特殊需求下Innodb建议使用与业务无关的自增ID作为主键"></a>无特殊需求下Innodb建议使用与业务无关的自增ID作为主键</h3><p>InnoDB引擎使用聚集索引，数据记录本身被存于主索引（一颗B+Tree）的叶子节点上。这就要求同一个叶子节点内（大小为一个内存页或磁盘页）的各条数据记录按主键顺序存放，因此每当有一条新的记录插入时，MySQL会根据其主键将其插入适当的节点和位置，如果页面达到装载因子（InnoDB默认为15/16），则开辟一个新的页（节点）</p>
-<p>1、如果表使用自增主键，那么每次插入新的记录，记录就会顺序添加到当前索引节点的后续位置，当一页写满，就会自动开辟一个新的页。如下图所示：<br><img src="/images/mysql_aipk_1.jpg" alt="mysql_primary_key"><br>这样就会形成一个紧凑的索引结构，近似顺序填满。<strong><code>由于每次插入时也不需要移动已有数据，因此效率很高，也不会增加很多开销在维护索引上。</code></strong></p>
-<p>2、 如果使用非自增主键（如果身份证号或学号等），由于每次插入主键的值近似于随机，因此每次新纪录都要被插到现有索引页得中间某个位置：<br><img src="/images/mysql_aipk_2.jpg" alt="mysql_primary_key"><br><strong><code>此时MySQL不得不为了将新记录插到合适位置而移动数据，甚至目标页面可能已经被回写到磁盘上而从缓存中清掉，此时又要从磁盘上读回来，这增加了很多开销，同时频繁的移动、分页操作造成了大量的碎片。</code></strong>得到了不够紧凑的索引结构，后续不得不通过OPTIMIZE TABLE来重建表并优化填充页面。</p>
-<p>在使用InnoDB存储引擎时，如果没有特别的需要，请永远使用一个与业务无关的自增字段作为主键。</p>
-<p><strong><code>mysql 在频繁的更新、删除操作，会产生碎片。而含碎片比较大的表，查询效率会降低。此时需对表进行优化，这样才会使查询变得更有效率。</code></strong></p>
+        <h2 id="四类隔离级别"><a href="#四类隔离级别" class="headerlink" title="四类隔离级别"></a>四类隔离级别</h2><p>SQL标准定义了4类隔离级别，包括了一些具体规则，用来限定事务内外的哪些改变是可见的，哪些是不可见的。低级别的隔离级一般支持更高的并发处理，并拥有更低的系统开销。</p>
+<ul>
+<li>Read Uncommitted（读取未提交内容）</li>
+</ul>
+<p>在该隔离级别，所有事务都可以看到其他未提交事务的执行结果。本隔离级别很少用于实际应用，因为它的性能也不比其他级别好多少。读取未提交的数据，也被称之为脏读（Dirty Read）。 </p>
+<ul>
+<li>Read Committed（读取提交内容）</li>
+</ul>
+<p>这是大多数数据库系统的默认隔离级别（但不是MySQL默认的）。它满足了隔离的简单定义：一个事务只能看见已经提交事务所做的改变。这种隔离级别 也支持所谓的不可重复读（Nonrepeatable Read），因为同一事务的其他实例在该实例处理其间可能会有新的commit，所以同一select可能返回不同结果。</p>
+<ul>
+<li>Repeatable Read（可重读）</li>
+</ul>
+<p>这是MySQL的默认事务隔离级别，它确保同一事务的多个实例在并发读取数据时，会看到同样的数据行。不过理论上，这会导致另一个棘手的问题：幻读 （Phantom Read）。简单的说，幻读指当用户读取某一范围的数据行时，另一个事务又在该范围内插入了新行，当用户再读取该范围的数据行时，会发现有新的“幻影” 行。InnoDB和Falcon存储引擎通过多版本并发控制（MVCC，Multiversion Concurrency Control）机制解决了该问题。</p>
+<ul>
+<li>Serializable（可串行化）</li>
+</ul>
+<p>这是最高的隔离级别，它通过强制事务排序，使之不可能相互冲突，从而解决幻读问题。简言之，它是在每个读的数据行上加上共享锁。在这个级别，可能导致大量的超时现象和锁竞争。</p>
+<h2 id="隔离级别与一致性"><a href="#隔离级别与一致性" class="headerlink" title="隔离级别与一致性"></a>隔离级别与一致性</h2><p>这四种隔离级别采取不同的锁类型来实现，若读取的是同一个数据的话，就容易发生问题。例如：</p>
+<ul>
+<li>脏读(Drity Read)：某个事务已更新一份数据，另一个事务在此时读取了同一份数据，由于某些原因，前一个RollBack了操作，则后一个事务所读取的数据就会是不正确的。</li>
+<li>不可重复读(Non-repeatable read):在一个事务的两次查询之中数据不一致，这可能是两次查询过程中间插入了一个事务更新的原有的数据。</li>
+<li>幻读(Phantom Read):在一个事务的两次查询中数据笔数不一致，例如有一个事务查询了几列(Row)数据，而另一个事务却在此时插入了新的几列数据，先前的事务在接下来的查询中，就会发现有几列数据是它先前所没有的。</li>
+</ul>
+<p>在MySQL中，实现了这四种隔离级别，分别有可能产生问题如下所示：<br>| 隔离级别      |  脏读 | 不可重复读  | 幻读 |<br>| :——– | :——–|:——– | :——– |<br>| 读未提交(Read Uncommitted) | yes | yes | yes |<br>| 读已提交(Read Committed) | no | yes | yes |<br>| 可重复读(Repeatable Read) | no | no | yes |<br>| 可串行化(Serializable) | no | no | no |</p>
+<h2 id="设置当前隔离级别"><a href="#设置当前隔离级别" class="headerlink" title="设置当前隔离级别"></a>设置当前隔离级别</h2><figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">-- 取消autocommit</span></span><br><span class="line"><span class="keyword">set</span> autocommit=<span class="number">0</span></span><br><span class="line"><span class="keyword">show</span> <span class="keyword">variables</span> <span class="keyword">like</span> <span class="string">"%autocommit%"</span>;</span><br><span class="line"> </span><br><span class="line"><span class="comment">-- 查看隔离级别</span></span><br><span class="line"><span class="keyword">SELECT</span> @@global.tx_isolation;</span><br><span class="line"><span class="keyword">SELECT</span> @@session.tx_isolation;</span><br><span class="line"><span class="keyword">SELECT</span> @@tx_isolation;</span><br><span class="line"> </span><br><span class="line"><span class="keyword">show</span> <span class="keyword">variables</span> <span class="keyword">like</span> <span class="string">'%iso%'</span>;</span><br><span class="line">+<span class="comment">---------------+-----------------+</span></span><br><span class="line">| Variable_name | Value           |</span><br><span class="line">+<span class="comment">---------------+-----------------+</span></span><br><span class="line">| tx_isolation  | REPEATABLE-READ |</span><br><span class="line">+<span class="comment">---------------+-----------------+</span></span><br><span class="line"> </span><br><span class="line"><span class="keyword">show</span> <span class="keyword">global</span> <span class="keyword">variables</span> <span class="keyword">like</span> <span class="string">'%iso%'</span>;</span><br><span class="line">+<span class="comment">---------------+-----------------+</span></span><br><span class="line">| Variable_name | Value           |</span><br><span class="line">+<span class="comment">---------------+-----------------+</span></span><br><span class="line">| tx_isolation  | REPEATABLE-READ |</span><br><span class="line">+<span class="comment">---------------+-----------------+</span></span><br><span class="line"> </span><br><span class="line"><span class="comment">-- 设置隔离级别</span></span><br><span class="line"><span class="keyword">SET</span> <span class="keyword">SESSION</span> <span class="keyword">TRANSACTION</span> <span class="keyword">ISOLATION</span> <span class="keyword">LEVEL</span> <span class="keyword">read</span> uncommitted;</span><br><span class="line"><span class="keyword">SET</span> <span class="keyword">SESSION</span> <span class="keyword">TRANSACTION</span> <span class="keyword">ISOLATION</span> <span class="keyword">LEVEL</span> <span class="keyword">read</span> committed;</span><br><span class="line"><span class="keyword">SET</span> <span class="keyword">SESSION</span> <span class="keyword">TRANSACTION</span> <span class="keyword">ISOLATION</span> <span class="keyword">LEVEL</span> repeatable <span class="keyword">read</span>;</span><br><span class="line"><span class="keyword">SET</span> <span class="keyword">SESSION</span> <span class="keyword">TRANSACTION</span> <span class="keyword">ISOLATION</span> <span class="keyword">LEVEL</span> <span class="keyword">serializable</span>;</span><br><span class="line"> </span><br><span class="line"><span class="comment">-- 事务操作</span></span><br><span class="line"><span class="keyword">start</span> <span class="keyword">transaction</span>;</span><br><span class="line"><span class="keyword">SELECT</span> * <span class="keyword">FROM</span> text.tx;</span><br><span class="line"><span class="keyword">commit</span>;</span><br><span class="line"> </span><br><span class="line"><span class="keyword">start</span> <span class="keyword">transaction</span>;</span><br><span class="line"><span class="keyword">SELECT</span> * <span class="keyword">FROM</span> text.tx;</span><br><span class="line"><span class="keyword">update</span> text.tx <span class="keyword">set</span> <span class="keyword">num</span> =<span class="number">10</span> <span class="keyword">where</span> <span class="keyword">id</span> = <span class="number">1</span>;</span><br><span class="line"><span class="keyword">insert</span> <span class="keyword">into</span> text.tx(<span class="keyword">id</span>,<span class="keyword">num</span>) <span class="keyword">values</span>(<span class="number">9</span>,<span class="number">9</span>);</span><br><span class="line"><span class="keyword">rollback</span>;</span><br><span class="line"><span class="keyword">commit</span>;</span><br></pre></td></tr></table></figure>
+<h2 id="my-cnf设置"><a href="#my-cnf设置" class="headerlink" title="my.cnf设置"></a>my.cnf设置</h2><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># MySQL支持4种事务隔离级别，他们分别是：</span></span><br><span class="line"><span class="comment"># READ-UNCOMMITTED, READ-COMMITTED, REPEATABLE-READ, SERIALIZABLE.</span></span><br><span class="line"><span class="comment"># 如没有指定，MySQL默认采用的是REPEATABLE-READ，ORACLE默认的是READ-COMMITTED</span></span><br><span class="line">transaction_isolation = REPEATABLE-READ</span><br></pre></td></tr></table></figure>
 
       
     </div>
@@ -394,7 +403,7 @@
           
             <a href="/tags/mysql/" rel="tag">#mysql</a>
           
-            <a href="/tags/主键/" rel="tag">#主键</a>
+            <a href="/tags/事务/" rel="tag">#事务</a>
           
         </div>
       
@@ -403,17 +412,13 @@
         <div class="post-nav">
           <div class="post-nav-next post-nav-item">
             
-              <a href="/blog/2016/06/zephir-zephir-02.html" rel="next" title="Zephir安装和初体验">
-                <i class="fa fa-chevron-left"></i> Zephir安装和初体验
+              <a href="/blog/2016/07/mysql-auto-increment-primary-key.html" rel="next" title="MySQL为什么需要一个自增主键">
+                <i class="fa fa-chevron-left"></i> MySQL为什么需要一个自增主键
               </a>
             
           </div>
 
           <div class="post-nav-prev post-nav-item">
-            
-              <a href="/blog/2016/07/mysql-transaction-level.html" rel="prev" title="MySQL事务隔离级别">
-                MySQL事务隔离级别 <i class="fa fa-chevron-right"></i>
-              </a>
             
           </div>
         </div>
@@ -462,8 +467,8 @@
           
   <div class="comments" id="comments">
     
-      <div class="ds-thread" data-thread-key="/blog/2016/07/mysql-auto-increment-primary-key.html"
-           data-title="MySQL为什么需要一个自增主键" data-url="http://icyxp.github.io/blog/2016/07/mysql-auto-increment-primary-key.html">
+      <div class="ds-thread" data-thread-key="/blog/2016/07/mysql-transaction-level.html"
+           data-title="MySQL事务隔离级别" data-url="http://icyxp.github.io/blog/2016/07/mysql-transaction-level.html">
       </div>
     
   </div>
@@ -612,7 +617,7 @@
               
             
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#主键"><span class="nav-number">1.</span> <span class="nav-text">主键</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#无特殊需求下Innodb建议使用与业务无关的自增ID作为主键"><span class="nav-number">1.1.</span> <span class="nav-text">无特殊需求下Innodb建议使用与业务无关的自增ID作为主键</span></a></li></ol></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#四类隔离级别"><span class="nav-number">1.</span> <span class="nav-text">四类隔离级别</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#隔离级别与一致性"><span class="nav-number">2.</span> <span class="nav-text">隔离级别与一致性</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#设置当前隔离级别"><span class="nav-number">3.</span> <span class="nav-text">设置当前隔离级别</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#my-cnf设置"><span class="nav-number">4.</span> <span class="nav-text">my.cnf设置</span></a></li></ol></div>
             
           </div>
         </section>
