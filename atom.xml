@@ -5,7 +5,7 @@
   <link href="/atom.xml" rel="self"/>
   
   <link href="http://icyxp.github.io/"/>
-  <updated>2016-07-11T09:20:16.000Z</updated>
+  <updated>2016-07-11T09:21:25.000Z</updated>
   <id>http://icyxp.github.io/</id>
   
   <author>
@@ -19,8 +19,8 @@
     <title>MySQL事务隔离级别</title>
     <link href="http://icyxp.github.io//blog/2016/07/mysql-transaction-level.html"/>
     <id>http://icyxp.github.io//blog/2016/07/mysql-transaction-level.html</id>
-    <published>2016-07-04T09:38:00.000Z</published>
-    <updated>2016-07-11T09:20:16.000Z</updated>
+    <published>2016-07-11T09:21:00.000Z</published>
+    <updated>2016-07-11T09:21:25.000Z</updated>
     
     <content type="html">&lt;h2 id=&quot;四类隔离级别&quot;&gt;&lt;a href=&quot;#四类隔离级别&quot; class=&quot;headerlink&quot; title=&quot;四类隔离级别&quot;&gt;&lt;/a&gt;四类隔离级别&lt;/h2&gt;&lt;p&gt;SQL标准定义了4类隔离级别，包括了一些具体规则，用来限定事务内外的哪些改变是可见的，哪些是不可见的。低级别的隔离级一般支持更高的并发处理，并拥有更低的系统开销。&lt;/p&gt;
 &lt;ul&gt;
