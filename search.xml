@@ -12,12 +12,13 @@
 <li>^~ 开头表示uri以某个常规字符串开头，不是正则匹配</li>
 <li>~ 开头表示区分大小写的正则匹配</li>
 <li>~* 开头表示不区分大小写的正则匹配</li>
-<li>/ 通用匹配, 如果没有其它匹配,任何请求都会匹配到<a id="more"></a>
-<strong><code>顺序&amp;&amp;优先级</code></strong><blockquote>
+<li>/ 通用匹配, 如果没有其它匹配,任何请求都会匹配到</li>
+</ul>
+<a id="more"></a>
+<p><strong><code>顺序&amp;&amp;优先级</code></strong></p>
+<blockquote>
 <p>(location =) &gt; (location 完整路径) &gt; (location ^~ 路径) &gt; (location ~,~* 正则顺序) &gt; (location 部分起始路径) &gt; (/)</p>
 </blockquote>
-</li>
-</ul>
 <p>按照上面的location写法，以下的匹配示例成立：</p>
 <ul>
 <li><p>/ —&gt; config A</p>
