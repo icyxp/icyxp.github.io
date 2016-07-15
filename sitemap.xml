@@ -2,6 +2,13 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   
   <url>
+    <loc>http://icyxp.github.io/blog/2016/07/mysq-develop-standard.html</loc>
+    
+    <lastmod>2016-07-15T07:52:04.000Z</lastmod>
+    
+  </url>
+  
+  <url>
     <loc>http://icyxp.github.io/blog/2016/07/mysql-query.html</loc>
     
     <lastmod>2016-07-15T03:30:34.000Z</lastmod>

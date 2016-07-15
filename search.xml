@@ -4,6 +4,12 @@
   
     
     <entry>
+      <title></title>
+      <url>http://icyxp.github.io/blog/2016/07/mysq-develop-standard.html</url>
+      <content type="html"></content>
+    </entry>
+    
+    <entry>
       <title><![CDATA[Advanced MySQL Query Tuning]]></title>
       <url>http://icyxp.github.io/blog/2016/07/mysql-query.html</url>
       <content type="html"><![CDATA[<iframe src="//www.slideshare.net/slideshow/embed_code/key/3HLJJcJmM9KLGT" width="100%" height="550" frameborder="0" marginwidth="0" marginheight="0" scrolling="no" allowfullscreen> </iframe>
