@@ -68,7 +68,7 @@
 <link href="/css/main.css?v=5.0.1" rel="stylesheet" type="text/css" />
 
 
-  <meta name="keywords" content="系统运维,系统开发,系统架构,网站架构,PHP,DevOps" />
+  <meta name="keywords" content="nginx-localtion,nginx-rewrite," />
 
 
 
@@ -86,15 +86,16 @@
 
 
 
-<meta name="description" content="记录分享生活中的点滴">
-<meta property="og:type" content="website">
-<meta property="og:title" content="Devops">
-<meta property="og:url" content="http://icyxp.github.io/index.html">
+<meta name="description" content="location教程示例：123456789101112131415161718192021222324252627282930313233343536373839404142434445464748495051location  = / &amp;#123;    # 精确匹配 / ，主机名后面不能带任何字符串    [ configuration A ] &amp;#125;location  / &amp;#123">
+<meta property="og:type" content="article">
+<meta property="og:title" content="nginx配置location与rewrite规则教程">
+<meta property="og:url" content="http://icyxp.github.io/blog/2016/07/nginx-localtion-rewrite.html">
 <meta property="og:site_name" content="Devops">
-<meta property="og:description" content="记录分享生活中的点滴">
+<meta property="og:description" content="location教程示例：123456789101112131415161718192021222324252627282930313233343536373839404142434445464748495051location  = / &amp;#123;    # 精确匹配 / ，主机名后面不能带任何字符串    [ configuration A ] &amp;#125;location  / &amp;#123">
+<meta property="og:updated_time" content="2016-07-15T03:08:42.000Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="Devops">
-<meta name="twitter:description" content="记录分享生活中的点滴">
+<meta name="twitter:title" content="nginx配置location与rewrite规则教程">
+<meta name="twitter:description" content="location教程示例：123456789101112131415161718192021222324252627282930313233343536373839404142434445464748495051location  = / &amp;#123;    # 精确匹配 / ，主机名后面不能带任何字符串    [ configuration A ] &amp;#125;location  / &amp;#123">
 
 
 
@@ -112,7 +113,7 @@
   };
 </script>
 
-  <title> Devops </title>
+  <title> nginx配置location与rewrite规则教程 | Devops </title>
 </head>
 
 <body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
@@ -143,9 +144,7 @@
     
   
 
-  <div class="container one-collumn sidebar-position-left 
-   page-home 
- ">
+  <div class="container one-collumn sidebar-position-left page-post-detail ">
     <div class="headband"></div>
 
     <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
@@ -255,9 +254,9 @@
         <div class="content-wrap">
           <div id="content" class="content">
             
-  <section id="posts" class="posts-expand">
+
+  <div id="posts" class="posts-expand">
     
-      
 
   
   
@@ -277,10 +276,7 @@
             
             
               
-                
-                <a class="post-title-link" href="/blog/2016/07/nginx-localtion-rewrite.html" itemprop="url">
-                  nginx配置location与rewrite规则教程
-                </a>
+                nginx配置location与rewrite规则教程
               
             
           </h1>
@@ -346,9 +342,7 @@
       
 
       
-        
-          
-            <h2 id="location教程"><a href="#location教程" class="headerlink" title="location教程"></a>location教程</h2><p><strong>示例：</strong><br><figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br></pre></td><td class="code"><pre><span class="line">location  = / &#123;</span><br><span class="line">    # 精确匹配 / ，主机名后面不能带任何字符串</span><br><span class="line">    [ configuration A ] </span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">location  / &#123;</span><br><span class="line">    # 因为所有的地址都以 / 开头，所以这条规则将匹配到所有请求</span><br><span class="line">    # 但是正则和最长字符串会优先匹配</span><br><span class="line">    [ configuration B ] </span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">location /documents/ &#123;</span><br><span class="line">    # 匹配任何以 /documents/ 开头的地址，匹配符合以后，还要继续往下搜索</span><br><span class="line">    # 只有后面的正则表达式没有匹配到时，这一条才会采用这一条</span><br><span class="line">    [ configuration C ] </span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">location ~ /documents/Abc &#123;</span><br><span class="line">    # 匹配任何以 /documents/ 开头的地址，匹配符合以后，还要继续往下搜索</span><br><span class="line">    # 只有后面的正则表达式没有匹配到时，这一条才会采用这一条</span><br><span class="line">    [ configuration CC ] </span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">location ^~ /images/ &#123;</span><br><span class="line">    # 匹配任何以 /images/ 开头的地址，匹配符合以后，停止往下搜索正则，采用这一条。</span><br><span class="line">    [ configuration D ] </span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">location ~* \.(gif|jpg|jpeg)$ &#123;</span><br><span class="line">    # 匹配所有以 gif,jpg或jpeg 结尾的请求</span><br><span class="line">    # 然而，所有请求 /images/ 下的图片会被 config D 处理，因为 ^~ 到达不了这一条正则</span><br><span class="line">    [ configuration E ] </span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">location /images/ &#123;</span><br><span class="line">    # 字符匹配到 /images/，继续往下，会发现 ^~ 存在</span><br><span class="line">    [ configuration F ] </span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">location /images/abc &#123;</span><br><span class="line">    # 最长字符匹配到 /images/abc，继续往下，会发现 ^~ 存在</span><br><span class="line">    # F与G的放置顺序是没有关系的</span><br><span class="line">    [ configuration G ] </span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">location ~ /images/abc/ &#123;</span><br><span class="line">    # 只有去掉 config D 才有效：先最长匹配 config G 开头的地址，继续往下搜索，匹配到这一条正则，采用</span><br><span class="line">    [ configuration H ] </span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">location ~* /js/.*/\.js</span><br></pre></td></tr></table></figure></p>
+        <h2 id="location教程"><a href="#location教程" class="headerlink" title="location教程"></a>location教程</h2><p><strong>示例：</strong><br><figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br></pre></td><td class="code"><pre><span class="line">location  = / &#123;</span><br><span class="line">    # 精确匹配 / ，主机名后面不能带任何字符串</span><br><span class="line">    [ configuration A ] </span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">location  / &#123;</span><br><span class="line">    # 因为所有的地址都以 / 开头，所以这条规则将匹配到所有请求</span><br><span class="line">    # 但是正则和最长字符串会优先匹配</span><br><span class="line">    [ configuration B ] </span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">location /documents/ &#123;</span><br><span class="line">    # 匹配任何以 /documents/ 开头的地址，匹配符合以后，还要继续往下搜索</span><br><span class="line">    # 只有后面的正则表达式没有匹配到时，这一条才会采用这一条</span><br><span class="line">    [ configuration C ] </span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">location ~ /documents/Abc &#123;</span><br><span class="line">    # 匹配任何以 /documents/ 开头的地址，匹配符合以后，还要继续往下搜索</span><br><span class="line">    # 只有后面的正则表达式没有匹配到时，这一条才会采用这一条</span><br><span class="line">    [ configuration CC ] </span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">location ^~ /images/ &#123;</span><br><span class="line">    # 匹配任何以 /images/ 开头的地址，匹配符合以后，停止往下搜索正则，采用这一条。</span><br><span class="line">    [ configuration D ] </span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">location ~* \.(gif|jpg|jpeg)$ &#123;</span><br><span class="line">    # 匹配所有以 gif,jpg或jpeg 结尾的请求</span><br><span class="line">    # 然而，所有请求 /images/ 下的图片会被 config D 处理，因为 ^~ 到达不了这一条正则</span><br><span class="line">    [ configuration E ] </span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">location /images/ &#123;</span><br><span class="line">    # 字符匹配到 /images/，继续往下，会发现 ^~ 存在</span><br><span class="line">    [ configuration F ] </span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">location /images/abc &#123;</span><br><span class="line">    # 最长字符匹配到 /images/abc，继续往下，会发现 ^~ 存在</span><br><span class="line">    # F与G的放置顺序是没有关系的</span><br><span class="line">    [ configuration G ] </span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">location ~ /images/abc/ &#123;</span><br><span class="line">    # 只有去掉 config D 才有效：先最长匹配 config G 开头的地址，继续往下搜索，匹配到这一条正则，采用</span><br><span class="line">    [ configuration H ] </span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">location ~* /js/.*/\.js</span><br></pre></td></tr></table></figure></p>
 <ul>
 <li>已=开头表示精确匹配<br>如 A 中只匹配根目录结尾的请求，后面不能带任何字符串。</li>
 <li>^~ 开头表示uri以某个常规字符串开头，不是正则匹配</li>
@@ -485,571 +479,83 @@
 <hr>
 <p>来源：<a href="http://seanlook.com/" target="_blank" rel="external">http://seanlook.com/</a></p>
 
-          
+      
+    </div>
+
+    <div>
+      
         
       
     </div>
 
     <div>
       
-    </div>
+        
 
-    <div>
       
     </div>
 
     <footer class="post-footer">
       
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-
-
-    
-      
-
-  
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-            
-            
-              
-                
-                <a class="post-title-link" href="/blog/2016/07/mysql-transaction-level.html" itemprop="url">
-                  MySQL事务隔离级别
-                </a>
-              
-            
-          </h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            <span class="post-meta-item-icon">
-              <i class="fa fa-calendar-o"></i>
-            </span>
-            <span class="post-meta-item-text">发表于</span>
-            <time itemprop="dateCreated" datetime="2016-07-11T17:21:00+08:00" content="2016-07-11">
-              2016-07-11
-            </time>
-          </span>
-
+        <div class="post-tags">
           
-            <span class="post-category" >
-              &nbsp; | &nbsp;
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-              
-                <span itemprop="about" itemscope itemtype="https://schema.org/Thing">
-                  <a href="/categories/mysql/" itemprop="url" rel="index">
-                    <span itemprop="name">mysql</span>
-                  </a>
-                </span>
-
-                
-                
-
-              
-            </span>
+            <a href="/tags/nginx-localtion/" rel="tag">#nginx-localtion</a>
           
-
-          
-            
-              <span class="post-comments-count">
-                &nbsp; | &nbsp;
-                <a href="/blog/2016/07/mysql-transaction-level.html#comments" itemprop="discussionUrl">
-                  <span class="post-comments-count ds-thread-count" data-thread-key="/blog/2016/07/mysql-transaction-level.html" itemprop="commentsCount"></span>
-                </a>
-              </span>
-            
-          
-
-          
-
-          
-          
-
+            <a href="/tags/nginx-rewrite/" rel="tag">#nginx-rewrite</a>
           
         </div>
-      </header>
-    
-
-
-    <div class="post-body" itemprop="articleBody">
-
-      
       
 
       
-        
-          <h2 id="四类隔离级别"><a href="#四类隔离级别" class="headerlink" title="四类隔离级别"></a>四类隔离级别</h2><p>SQL标准定义了4类隔离级别，包括了一些具体规则，用来限定事务内外的哪些改变是可见的，哪些是不可见的。低级别的隔离级一般支持更高的并发处理，并拥有更低的系统开销。</p>
-<ul>
-<li>Read Uncommitted（读取未提交内容）</li>
-</ul>
-<p>在该隔离级别，所有事务都可以看到其他未提交事务的执行结果。本隔离级别很少用于实际应用，因为它的性能也不比其他级别好多少。读取未提交的数据，也被称之为脏读（Dirty Read）。 </p>
-<ul>
-<li>Read Committed（读取提交内容）</li>
-</ul>
-<p>这是大多数数据库系统的默认隔离级别（但不是MySQL默认的）。它满足了隔离的简单定义：一个事务只能看见已经提交事务所做的改变。这种隔离级别 也支持所谓的不可重复读（Nonrepeatable Read），因为同一事务的其他实例在该实例处理其间可能会有新的commit，所以同一select可能返回不同结果。</p>
-<ul>
-<li>Repeatable Read（可重读）</li>
-</ul>
-<p>这是MySQL的默认事务隔离级别，它确保同一事务的多个实例在并发读取数据时，会看到同样的数据行。不过理论上，这会导致另一个棘手的问题：幻读 （Phantom Read）。简单的说，幻读指当用户读取某一范围的数据行时，另一个事务又在该范围内插入了新行，当用户再读取该范围的数据行时，会发现有新的“幻影” 行。InnoDB和Falcon存储引擎通过多版本并发控制（MVCC，Multiversion Concurrency Control）机制解决了该问题。</p>
-<ul>
-<li>Serializable（可串行化）</li>
-</ul>
-<p>这是最高的隔离级别，它通过强制事务排序，使之不可能相互冲突，从而解决幻读问题。简言之，它是在每个读的数据行上加上共享锁。在这个级别，可能导致大量的超时现象和锁竞争。<br>
-          <div class="post-more-link text-center">
-            <a class="btn" href="/blog/2016/07/mysql-transaction-level.html#more" rel="contents">
-              阅读全文 &raquo;
-            </a>
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/blog/2016/07/mysql-transaction-level.html" rel="next" title="MySQL事务隔离级别">
+                <i class="fa fa-chevron-left"></i> MySQL事务隔离级别
+              </a>
+            
           </div>
-        
-      
-    </div>
 
-    <div>
-      
-    </div>
-
-    <div>
-      
-    </div>
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-
-
-    
-      
-
-  
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
+          <div class="post-nav-prev post-nav-item">
             
-            
-              
-                
-                <a class="post-title-link" href="/blog/2016/07/mysql-auto-increment-primary-key.html" itemprop="url">
-                  MySQL为什么需要一个自增主键
-                </a>
-              
-            
-          </h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            <span class="post-meta-item-icon">
-              <i class="fa fa-calendar-o"></i>
-            </span>
-            <span class="post-meta-item-text">发表于</span>
-            <time itemprop="dateCreated" datetime="2016-07-04T17:38:00+08:00" content="2016-07-04">
-              2016-07-04
-            </time>
-          </span>
-
-          
-            <span class="post-category" >
-              &nbsp; | &nbsp;
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-              
-                <span itemprop="about" itemscope itemtype="https://schema.org/Thing">
-                  <a href="/categories/mysql/" itemprop="url" rel="index">
-                    <span itemprop="name">mysql</span>
-                  </a>
-                </span>
-
-                
-                
-
-              
-            </span>
-          
-
-          
-            
-              <span class="post-comments-count">
-                &nbsp; | &nbsp;
-                <a href="/blog/2016/07/mysql-auto-increment-primary-key.html#comments" itemprop="discussionUrl">
-                  <span class="post-comments-count ds-thread-count" data-thread-key="/blog/2016/07/mysql-auto-increment-primary-key.html" itemprop="commentsCount"></span>
-                </a>
-              </span>
-            
-          
-
-          
-
-          
-          
-
-          
+          </div>
         </div>
-      </header>
-    
-
-
-    <div class="post-body" itemprop="articleBody">
-
-      
       
 
       
-        
-          <h2 id="主键"><a href="#主键" class="headerlink" title="主键"></a>主键</h2><p>表中每一行都应该有可以唯一标识自己的一列（或一组列）。</p>
-<p>一个顾客可以使用顾客编号列，而订单可以使用订单ID，雇员可以使用雇员ID 或 雇员社会保险号。</p>
-<p>主键（primary key） 一列（或一组列），其值能够唯一区分表中的每个行。<br>唯一标识表中每行的这个列（或这组列）称为主键。<strong><code>没有主键，更新或删除表中特定行很困难，因为没有安全的方法保证只设计相关的行。</code></strong></p>
-<p>虽然并不总是都需要主键，但大多数数据库设计人员都应保证他们创建的每个表有一个主键，以便于以后数据操纵和管理</p>
-<p>表中的任何列都可以作为主键，只要它满足一下条件:<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">任何两行都不具有相同的主键值</span><br><span class="line">每个行都必须具有一个主键值（主键列不允许NULL值）</span><br></pre></td></tr></table></figure></p>
-<p>主键值规范：这里列出的规则是MySQL本身强制实施的。</p>
-<p>主键的最好习惯：<br>除MySQL强制实施的规则外，应该坚持的几个普遍认为的最好习惯为:</p>
-<pre><code class="plain">1、不更新主键列的值
-2、不重用主键列的值
-3、不在主键列中使用可能会更改的值（例如，如果使用一个名字作为主键以标识某个供应商，应该供应商合并和更改其名字时，必须更改这个主键）
-</code></pre>
-<p>总之：不应该使用一个具有意义的column（id 本身并不保存表 有意义信息） 作为主键，并且一个表必须要有一个主键，为方便扩展、松耦合，高可用的系统做铺垫。<br>
-          <div class="post-more-link text-center">
-            <a class="btn" href="/blog/2016/07/mysql-auto-increment-primary-key.html#more" rel="contents">
-              阅读全文 &raquo;
-            </a>
-          </div>
-        
-      
-    </div>
-
-    <div>
-      
-    </div>
-
-    <div>
-      
-    </div>
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
       
     </footer>
   </article>
 
 
-    
+
+    <div class="post-spread">
       
+        <!-- JiaThis Button BEGIN -->
+<div class="jiathis_style">
+  <a class="jiathis_button_tsina"></a>
+  <a class="jiathis_button_tqq"></a>
+  <a class="jiathis_button_weixin"></a>
+  <a class="jiathis_button_cqq"></a>
+  <a class="jiathis_button_douban"></a>
+  <a class="jiathis_button_renren"></a>
+  <a class="jiathis_button_qzone"></a>
+  <a class="jiathis_button_kaixin001"></a>
+  <a class="jiathis_button_copy"></a>
+  <a href="http://www.jiathis.com/share" class="jiathis jiathis_txt jiathis_separator jtico jtico_jiathis" target="_blank"></a>
+  <a class="jiathis_counter_style"></a>
+</div>
+<script type="text/javascript" >
+  var jiathis_config={
+    hideMore:false
+  }
+</script>
+<script type="text/javascript" src="http://v3.jiathis.com/code/jia.js" charset="utf-8"></script>
+<!-- JiaThis Button END -->
 
-  
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-            
-            
-              
-                
-                <a class="post-title-link" href="/blog/2016/06/zephir-zephir-02.html" itemprop="url">
-                  Zephir安装和初体验
-                </a>
-              
-            
-          </h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            <span class="post-meta-item-icon">
-              <i class="fa fa-calendar-o"></i>
-            </span>
-            <span class="post-meta-item-text">发表于</span>
-            <time itemprop="dateCreated" datetime="2016-06-30T22:23:00+08:00" content="2016-06-30">
-              2016-06-30
-            </time>
-          </span>
-
-          
-            <span class="post-category" >
-              &nbsp; | &nbsp;
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-              
-                <span itemprop="about" itemscope itemtype="https://schema.org/Thing">
-                  <a href="/categories/zephir/" itemprop="url" rel="index">
-                    <span itemprop="name">zephir</span>
-                  </a>
-                </span>
-
-                
-                
-
-              
-            </span>
-          
-
-          
-            
-              <span class="post-comments-count">
-                &nbsp; | &nbsp;
-                <a href="/blog/2016/06/zephir-zephir-02.html#comments" itemprop="discussionUrl">
-                  <span class="post-comments-count ds-thread-count" data-thread-key="/blog/2016/06/zephir-zephir-02.html" itemprop="commentsCount"></span>
-                </a>
-              </span>
-            
-          
-
-          
-
-          
-          
-
-          
-        </div>
-      </header>
-    
-
-
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          <h2 id="Zephir安装"><a href="#Zephir安装" class="headerlink" title="Zephir安装"></a>Zephir安装</h2><h3 id="环境依赖"><a href="#环境依赖" class="headerlink" title="环境依赖"></a>环境依赖</h3><p>Zephir主要依赖于下面环境</p>
-<ul>
-<li>gcc &gt;= 4.x/clang &gt;= 3.x</li>
-<li>re2c 0.13或更高版本</li>
-<li>gnu 3.81或更高版本</li>
-<li>autoconf 2.31或更高版本</li>
-<li>automake 1.14或更高版本</li>
-<li>libpcre3</li>
-<li>php开发工具-phpize</li>
-</ul>
-<p>如果你使用Ubuntu，你可以安装所需要的包<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">$ sudo apt-get update</span><br><span class="line">$ sudo apt-get install git gcc make re2c php5 php5-json php5-dev libpcre3-dev</span><br></pre></td></tr></table></figure></p>
-<p>由于Zephir是用PHP编写的，所以你需要安装php<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">$ php -v</span><br><span class="line">PHP 5.6.5 (cli) (built: Jan 24 2015 20:04:31)</span><br><span class="line">Copyright (c) 1997-2014 The PHP Group</span><br><span class="line">Zend Engine v2.6.0, Copyright (c) 1998-2014 Zend Technologies</span><br><span class="line">with Zend OPcache v7.0.4-dev, Copyright (c) 1999-2014, by Zend Technologies</span><br></pre></td></tr></table></figure></p>
-<p>同时也必须确保安装了PHP开发库<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">$ phpize -v</span><br><span class="line">Configuring <span class="keyword">for</span>:</span><br><span class="line">PHP Api Version:         20131106</span><br><span class="line">Zend Module Api No:      20131226</span><br><span class="line">Zend Extension Api No:   220131226</span><br></pre></td></tr></table></figure></p>
-          <div class="post-more-link text-center">
-            <a class="btn" href="/blog/2016/06/zephir-zephir-02.html#more" rel="contents">
-              阅读全文 &raquo;
-            </a>
-          </div>
-        
       
     </div>
-
-    <div>
-      
-    </div>
-
-    <div>
-      
-    </div>
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-
-
-    
-      
-
-  
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-            
-            
-              
-                
-                <a class="post-title-link" href="/blog/2016/06/zephir-zephir-01.html" itemprop="url">
-                  Zephir介绍
-                </a>
-              
-            
-          </h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            <span class="post-meta-item-icon">
-              <i class="fa fa-calendar-o"></i>
-            </span>
-            <span class="post-meta-item-text">发表于</span>
-            <time itemprop="dateCreated" datetime="2016-06-30T21:18:00+08:00" content="2016-06-30">
-              2016-06-30
-            </time>
-          </span>
-
-          
-            <span class="post-category" >
-              &nbsp; | &nbsp;
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-              
-                <span itemprop="about" itemscope itemtype="https://schema.org/Thing">
-                  <a href="/categories/zephir/" itemprop="url" rel="index">
-                    <span itemprop="name">zephir</span>
-                  </a>
-                </span>
-
-                
-                
-
-              
-            </span>
-          
-
-          
-            
-              <span class="post-comments-count">
-                &nbsp; | &nbsp;
-                <a href="/blog/2016/06/zephir-zephir-01.html#comments" itemprop="discussionUrl">
-                  <span class="post-comments-count ds-thread-count" data-thread-key="/blog/2016/06/zephir-zephir-01.html" itemprop="commentsCount"></span>
-                </a>
-              </span>
-            
-          
-
-          
-
-          
-          
-
-          
-        </div>
-      </header>
-    
-
-
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          <h2 id="zephir介绍"><a href="#zephir介绍" class="headerlink" title="zephir介绍"></a>zephir介绍</h2><p>Zephir是一种可以让PHP开发者尝试编写和编译可以被PHP执行代码的一种语言。它是动态/静态类型，它的一些特性对于PHP 开发者来说是非常的相似的。</p>
-<p>Zephir的名字是取自Zend Engine/PHP/Intermediate的缩写。建议发音为zephyr相同。事实上Zephir的创造者发音为zaefire_.</p>
-<h3 id="简单易于开发"><a href="#简单易于开发" class="headerlink" title="简单易于开发"></a>简单易于开发</h3><p>相信大家和我有一样的经历，看到了yaf和phalcon在想为什么C语言的拓展框架可以这么的快，我自己能不能写一个出来呢？然后屁颠屁颠的跑去找资料找大神了解，大神说你去看一下 “PHP扩展开发及内核应用”，结果大家都知道醉了。</p>
-<p>主要原因是需要对C相对的熟悉并且对PHP内核API也要很熟悉，我觉得这已经不是门槛的问题了是太平洋的距离，就草草结束了研究。</p>
-<p>当遇到zephir首先了解的就是复杂程度，结果花了10分钟就跟着流程做了一个小DEMO，就这点看来就开发效率这点看来无可厚非的的高效快速，大家感受一下。<br>
-          <div class="post-more-link text-center">
-            <a class="btn" href="/blog/2016/06/zephir-zephir-01.html#more" rel="contents">
-              阅读全文 &raquo;
-            </a>
-          </div>
-        
-      
-    </div>
-
-    <div>
-      
-    </div>
-
-    <div>
-      
-    </div>
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-
-
-    
-  </section>
-
-  
-  <nav class="pagination">
-    <span class="page-number current">1</span><a class="page-number" href="/page/2/">2</a><a class="extend next" rel="next" href="/page/2/"><i class="fa fa-angle-right"></i></a>
-  </nav>
-
+  </div>
 
 
           </div>
@@ -1057,6 +563,14 @@
 
 
           
+  <div class="comments" id="comments">
+    
+      <div class="ds-thread" data-thread-key="/blog/2016/07/nginx-localtion-rewrite.html"
+           data-title="nginx配置location与rewrite规则教程" data-url="http://icyxp.github.io/blog/2016/07/nginx-localtion-rewrite.html">
+      </div>
+    
+  </div>
+
 
         </div>
         
@@ -1076,8 +590,17 @@
       
 
       
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap" >
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview">
+            站点概览
+          </li>
+        </ul>
+      
 
-      <section class="site-overview sidebar-panel  sidebar-panel-active ">
+      <section class="site-overview sidebar-panel ">
         <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
           <img class="site-author-image" itemprop="image"
                src="/images/avatar.jpg"
@@ -1186,6 +709,17 @@
       </section>
 
       
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+            
+              
+            
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#location教程"><span class="nav-number">1.</span> <span class="nav-text">location教程</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#实际使用建议"><span class="nav-number">1.1.</span> <span class="nav-text">实际使用建议</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Rewrite教程"><span class="nav-number">2.</span> <span class="nav-text">Rewrite教程</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#flag标志位"><span class="nav-number">2.1.</span> <span class="nav-text">flag标志位</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#if指令与全局变量"><span class="nav-number">2.2.</span> <span class="nav-text">if指令与全局变量</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#常用正则"><span class="nav-number">2.3.</span> <span class="nav-text">常用正则</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#rewrite实例"><span class="nav-number">2.4.</span> <span class="nav-text">rewrite实例</span></a></li></ol></li></ol></div>
+            
+          </div>
+        </section>
+      
 
     </div>
   </aside>
@@ -1270,6 +804,10 @@
   
 
   
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.0.1"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.0.1"></script>
+
+
 
   
 
