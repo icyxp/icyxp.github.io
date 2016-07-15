@@ -5,7 +5,7 @@
   <link href="/atom.xml" rel="self"/>
   
   <link href="http://icyxp.github.io/"/>
-  <updated>2016-07-15T07:54:23.000Z</updated>
+  <updated>2016-07-15T07:55:32.000Z</updated>
   <id>http://icyxp.github.io/</id>
   
   <author>
@@ -20,7 +20,7 @@
     <link href="http://icyxp.github.io//blog/2016/07/mysq-develop-standard.html"/>
     <id>http://icyxp.github.io//blog/2016/07/mysq-develop-standard.html</id>
     <published>2016-07-15T07:15:00.000Z</published>
-    <updated>2016-07-15T07:54:23.000Z</updated>
+    <updated>2016-07-15T07:55:32.000Z</updated>
     
     <content type="html">&lt;h2 id=&quot;命名规范&quot;&gt;&lt;a href=&quot;#命名规范&quot; class=&quot;headerlink&quot; title=&quot;命名规范&quot;&gt;&lt;/a&gt;命名规范&lt;/h2&gt;&lt;h3 id=&quot;库名、表名、字段名必须使用小写字母，并采用下划线分割&quot;&gt;&lt;a href=&quot;#库名、表名、字段名必须使用小写字母，并采用下划线分割&quot; class=&quot;headerlink&quot; title=&quot;库名、表名、字段名必须使用小写字母，并采用下划线分割&quot;&gt;&lt;/a&gt;库名、表名、字段名必须使用小写字母，并采用下划线分割&lt;/h3&gt;&lt;ul&gt;
 &lt;li&gt;MySQL有配置参数lower_case_table_names=1，即库表名以小写存储，大小写不敏感。如果是0，则库表名以实际情况存储，大小写敏感；如果是2，以实际情况存储，但以小写比较。&lt;/li&gt;
@@ -37,6 +37,7 @@
 &lt;h3 id=&quot;临时库、表名须以tmp加日期为后缀&quot;&gt;&lt;a href=&quot;#临时库、表名须以tmp加日期为后缀&quot; class=&quot;headerlink&quot; title=&quot;临时库、表名须以tmp加日期为后缀&quot;&gt;&lt;/a&gt;临时库、表名须以tmp加日期为后缀&lt;/h3&gt;&lt;p&gt;如 t_crm_relation_tmp0425。备份表也类似，形如 &lt;code&gt;_bak20160425&lt;/code&gt; 。&lt;/p&gt;
 &lt;h3 id=&quot;按日期时间分表须符合-YYYY-MM-DD-格式&quot;&gt;&lt;a href=&quot;#按日期时间分表须符合-YYYY-MM-DD-格式&quot; class=&quot;headerlink&quot; title=&quot;按日期时间分表须符合_YYYY[MM][DD]格式&quot;&gt;&lt;/a&gt;按日期时间分表须符合_YYYY[MM][DD]格式&lt;/h3&gt;&lt;p&gt;这也是为将来有可能分表做准备的，比如&lt;code&gt;t_crm_ec_record_201403&lt;/code&gt;，但像 t_crm_contact_at201506就打破了这种规范。&lt;br&gt;不具有时间特性的，直接以 &lt;code&gt;t_tbname_001&lt;/code&gt; 这样的方式命名。&lt;/p&gt;
 &lt;h2 id=&quot;库表基础规范&quot;&gt;&lt;a href=&quot;#库表基础规范&quot; class=&quot;headerlink&quot; title=&quot;库表基础规范&quot;&gt;&lt;/a&gt;库表基础规范&lt;/h2&gt;&lt;h3 id=&quot;使用Innodb存储引擎&quot;&gt;&lt;a href=&quot;#使用Innodb存储引擎&quot; class=&quot;headerlink&quot; title=&quot;使用Innodb存储引擎&quot;&gt;&lt;/a&gt;使用Innodb存储引擎&lt;/h3&gt;&lt;p&gt;5.5版本开始mysql默认存储引擎就是InnoDB，5.7版本开始，系统表都放弃MyISAM了。&lt;/p&gt;
+&lt;a id=&quot;more&quot;&gt;&lt;/a&gt;
 &lt;h3 id=&quot;表字符集统一使用UTF8&quot;&gt;&lt;a href=&quot;#表字符集统一使用UTF8&quot; class=&quot;headerlink&quot; title=&quot;表字符集统一使用UTF8&quot;&gt;&lt;/a&gt;表字符集统一使用UTF8&lt;/h3&gt;&lt;ul&gt;
 &lt;li&gt;UTF8字符集存储汉字占用3个字节，存储英文字符占用一个字节&lt;/li&gt;
 &lt;li&gt;校对字符集使用默认的 utf8_general_ci&lt;/li&gt;
@@ -196,7 +197,21 @@
     
     <summary type="html">
     
-      &lt;h2 id=&quot;命名规范&quot;&gt;&lt;a href=&quot;#命名规范&quot; class=&quot;headerlink&quot; title=&quot;命名规范&quot;&gt;&lt;/a&gt;命名规范&lt;/h2&gt;&lt;h3 id=&quot;库名、表名、字段名必须使用小写字母，并采用下划线分割&quot;&gt;&lt;a href=&quot;#库名、表名、字段名必须使用小写字母，并
+      &lt;h2 id=&quot;命名规范&quot;&gt;&lt;a href=&quot;#命名规范&quot; class=&quot;headerlink&quot; title=&quot;命名规范&quot;&gt;&lt;/a&gt;命名规范&lt;/h2&gt;&lt;h3 id=&quot;库名、表名、字段名必须使用小写字母，并采用下划线分割&quot;&gt;&lt;a href=&quot;#库名、表名、字段名必须使用小写字母，并采用下划线分割&quot; class=&quot;headerlink&quot; title=&quot;库名、表名、字段名必须使用小写字母，并采用下划线分割&quot;&gt;&lt;/a&gt;库名、表名、字段名必须使用小写字母，并采用下划线分割&lt;/h3&gt;&lt;ul&gt;
+&lt;li&gt;MySQL有配置参数lower_case_table_names=1，即库表名以小写存储，大小写不敏感。如果是0，则库表名以实际情况存储，大小写敏感；如果是2，以实际情况存储，但以小写比较。&lt;/li&gt;
+&lt;li&gt;如果大小写混合使用，可能存在abc，Abc，ABC等多个表共存，容易导致混乱。&lt;/li&gt;
+&lt;li&gt;字段名显示区分大小写，但实际使⽤时不区分，即不可以建立两个名字一样但大小写不一样的字段。&lt;/li&gt;
+&lt;li&gt;为了统一规范， 库名、表名、字段名使用小写字母。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id=&quot;库名以-d-开头，表名以-t-开头，字段名以-f-开头&quot;&gt;&lt;a href=&quot;#库名以-d-开头，表名以-t-开头，字段名以-f-开头&quot; class=&quot;headerlink&quot; title=&quot;库名以 d 开头，表名以 t 开头，字段名以 f_ 开头&quot;&gt;&lt;/a&gt;库名以 d 开头，表名以 t 开头，字段名以 f_ 开头&lt;/h3&gt;&lt;ul&gt;
+&lt;li&gt;比如表 &lt;code&gt;t_crm_relation&lt;/code&gt;，中间的 crm 代表业务模块名&lt;/li&gt;
+&lt;li&gt;视图以&lt;code&gt;view_&lt;/code&gt;开头，事件以&lt;code&gt;event_&lt;/code&gt;开头，触发器以&lt;code&gt;trig_&lt;/code&gt;开头，存储过程以&lt;code&gt;proc_&lt;/code&gt;开头，函数以&lt;code&gt;func_&lt;/code&gt;开头&lt;/li&gt;
+&lt;li&gt;普通索引以&lt;code&gt;idx_col1_col2&lt;/code&gt;命名，唯一索引以&lt;code&gt;uk_col1_col2&lt;/code&gt;命名（可去掉f_公共部分）。如 &lt;code&gt;idx_companyid_corpid_contacttime&lt;/code&gt;(f_company_id, f_corp_id, f_contact_time)&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id=&quot;库名、表名、字段名禁止超过32个字符，需见名知意&quot;&gt;&lt;a href=&quot;#库名、表名、字段名禁止超过32个字符，需见名知意&quot; class=&quot;headerlink&quot; title=&quot;库名、表名、字段名禁止超过32个字符，需见名知意&quot;&gt;&lt;/a&gt;库名、表名、字段名禁止超过32个字符，需见名知意&lt;/h3&gt;&lt;p&gt;库名、表名、字段名支持最多64个字符，但为了统一规范、易于辨识以及减少传输量，禁止超过32个字符&lt;/p&gt;
+&lt;h3 id=&quot;临时库、表名须以tmp加日期为后缀&quot;&gt;&lt;a href=&quot;#临时库、表名须以tmp加日期为后缀&quot; class=&quot;headerlink&quot; title=&quot;临时库、表名须以tmp加日期为后缀&quot;&gt;&lt;/a&gt;临时库、表名须以tmp加日期为后缀&lt;/h3&gt;&lt;p&gt;如 t_crm_relation_tmp0425。备份表也类似，形如 &lt;code&gt;_bak20160425&lt;/code&gt; 。&lt;/p&gt;
+&lt;h3 id=&quot;按日期时间分表须符合-YYYY-MM-DD-格式&quot;&gt;&lt;a href=&quot;#按日期时间分表须符合-YYYY-MM-DD-格式&quot; class=&quot;headerlink&quot; title=&quot;按日期时间分表须符合_YYYY[MM][DD]格式&quot;&gt;&lt;/a&gt;按日期时间分表须符合_YYYY[MM][DD]格式&lt;/h3&gt;&lt;p&gt;这也是为将来有可能分表做准备的，比如&lt;code&gt;t_crm_ec_record_201403&lt;/code&gt;，但像 t_crm_contact_at201506就打破了这种规范。&lt;br&gt;不具有时间特性的，直接以 &lt;code&gt;t_tbname_001&lt;/code&gt; 这样的方式命名。&lt;/p&gt;
+&lt;h2 id=&quot;库表基础规范&quot;&gt;&lt;a href=&quot;#库表基础规范&quot; class=&quot;headerlink&quot; title=&quot;库表基础规范&quot;&gt;&lt;/a&gt;库表基础规范&lt;/h2&gt;&lt;h3 id=&quot;使用Innodb存储引擎&quot;&gt;&lt;a href=&quot;#使用Innodb存储引擎&quot; class=&quot;headerlink&quot; title=&quot;使用Innodb存储引擎&quot;&gt;&lt;/a&gt;使用Innodb存储引擎&lt;/h3&gt;&lt;p&gt;5.5版本开始mysql默认存储引擎就是InnoDB，5.7版本开始，系统表都放弃MyISAM了。&lt;/p&gt;
     
     </summary>
     

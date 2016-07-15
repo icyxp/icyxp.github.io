@@ -21,6 +21,7 @@
 <h3 id="临时库、表名须以tmp加日期为后缀"><a href="#临时库、表名须以tmp加日期为后缀" class="headerlink" title="临时库、表名须以tmp加日期为后缀"></a>临时库、表名须以tmp加日期为后缀</h3><p>如 t_crm_relation_tmp0425。备份表也类似，形如 <code>_bak20160425</code> 。</p>
 <h3 id="按日期时间分表须符合-YYYY-MM-DD-格式"><a href="#按日期时间分表须符合-YYYY-MM-DD-格式" class="headerlink" title="按日期时间分表须符合_YYYY[MM][DD]格式"></a>按日期时间分表须符合_YYYY[MM][DD]格式</h3><p>这也是为将来有可能分表做准备的，比如<code>t_crm_ec_record_201403</code>，但像 t_crm_contact_at201506就打破了这种规范。<br>不具有时间特性的，直接以 <code>t_tbname_001</code> 这样的方式命名。</p>
 <h2 id="库表基础规范"><a href="#库表基础规范" class="headerlink" title="库表基础规范"></a>库表基础规范</h2><h3 id="使用Innodb存储引擎"><a href="#使用Innodb存储引擎" class="headerlink" title="使用Innodb存储引擎"></a>使用Innodb存储引擎</h3><p>5.5版本开始mysql默认存储引擎就是InnoDB，5.7版本开始，系统表都放弃MyISAM了。</p>
+<a id="more"></a>
 <h3 id="表字符集统一使用UTF8"><a href="#表字符集统一使用UTF8" class="headerlink" title="表字符集统一使用UTF8"></a>表字符集统一使用UTF8</h3><ul>
 <li>UTF8字符集存储汉字占用3个字节，存储英文字符占用一个字节</li>
 <li>校对字符集使用默认的 utf8_general_ci</li>
