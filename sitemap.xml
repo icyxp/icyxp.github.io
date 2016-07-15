@@ -2,6 +2,13 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   
   <url>
+    <loc>http://icyxp.github.io/blog/2016/07/mysql-query.html</loc>
+    
+    <lastmod>2016-07-15T03:30:34.000Z</lastmod>
+    
+  </url>
+  
+  <url>
     <loc>http://icyxp.github.io/blog/2016/07/nginx-localtion-rewrite.html</loc>
     
     <lastmod>2016-07-15T03:14:47.000Z</lastmod>

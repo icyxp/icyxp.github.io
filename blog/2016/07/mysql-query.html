@@ -68,7 +68,7 @@
 <link href="/css/main.css?v=5.0.1" rel="stylesheet" type="text/css" />
 
 
-  <meta name="keywords" content="系统运维,系统开发,系统架构,网站架构,PHP,DevOps" />
+  <meta name="keywords" content="mysql query," />
 
 
 
@@ -86,15 +86,19 @@
 
 
 
-<meta name="description" content="记录分享生活中的点滴">
-<meta property="og:type" content="website">
-<meta property="og:title" content="Devops">
-<meta property="og:url" content="http://icyxp.github.io/categories/mysql/index.html">
+<meta name="description" content="Youtube: https://www.youtube.com/watch?v=TPFibi2G_oo
+Percona webinars上有许多类似的分享，传送门： https://www.percona.com/resources/webinars 。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Advanced MySQL Query Tuning">
+<meta property="og:url" content="http://icyxp.github.io/blog/2016/07/mysql-query.html">
 <meta property="og:site_name" content="Devops">
-<meta property="og:description" content="记录分享生活中的点滴">
+<meta property="og:description" content="Youtube: https://www.youtube.com/watch?v=TPFibi2G_oo
+Percona webinars上有许多类似的分享，传送门： https://www.percona.com/resources/webinars 。">
+<meta property="og:updated_time" content="2016-07-15T03:30:34.000Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="Devops">
-<meta name="twitter:description" content="记录分享生活中的点滴">
+<meta name="twitter:title" content="Advanced MySQL Query Tuning">
+<meta name="twitter:description" content="Youtube: https://www.youtube.com/watch?v=TPFibi2G_oo
+Percona webinars上有许多类似的分享，传送门： https://www.percona.com/resources/webinars 。">
 
 
 
@@ -112,7 +116,7 @@
   };
 </script>
 
-  <title> 分类: mysql | Devops </title>
+  <title> Advanced MySQL Query Tuning | Devops </title>
 </head>
 
 <body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
@@ -143,7 +147,7 @@
     
   
 
-  <div class="container one-collumn sidebar-position-left  ">
+  <div class="container one-collumn sidebar-position-left page-post-detail ">
     <div class="headband"></div>
 
     <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
@@ -254,103 +258,173 @@
           <div id="content" class="content">
             
 
-  <section id="posts" class="posts-collapse">
-    <div class="collection-title">
-      <h2 >
-        mysql
-        <small>分类</small>
-      </h2>
-    </div>
-
+  <div id="posts" class="posts-expand">
     
-      
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-    <header class="post-header">
-
-      <h1 class="post-title">
-        
-            <a class="post-title-link" href="/blog/2016/07/mysql-query.html" itemprop="url">
-              
-                <span itemprop="name">Advanced MySQL Query Tuning</span>
-              
-            </a>
-        
-      </h1>
-
-      <div class="post-meta">
-        <time class="post-time" itemprop="dateCreated"
-              datetime="2016-07-15T11:30:00+08:00"
-              content="2016-07-15" >
-          07-15
-        </time>
-      </div>
-
-    </header>
-  </article>
-
-
-    
-      
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-    <header class="post-header">
-
-      <h1 class="post-title">
-        
-            <a class="post-title-link" href="/blog/2016/07/mysql-transaction-level.html" itemprop="url">
-              
-                <span itemprop="name">MySQL事务隔离级别</span>
-              
-            </a>
-        
-      </h1>
-
-      <div class="post-meta">
-        <time class="post-time" itemprop="dateCreated"
-              datetime="2016-07-11T17:21:00+08:00"
-              content="2016-07-11" >
-          07-11
-        </time>
-      </div>
-
-    </header>
-  </article>
-
-
-    
-      
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-    <header class="post-header">
-
-      <h1 class="post-title">
-        
-            <a class="post-title-link" href="/blog/2016/07/mysql-auto-increment-primary-key.html" itemprop="url">
-              
-                <span itemprop="name">MySQL为什么需要一个自增主键</span>
-              
-            </a>
-        
-      </h1>
-
-      <div class="post-meta">
-        <time class="post-time" itemprop="dateCreated"
-              datetime="2016-07-04T17:38:00+08:00"
-              content="2016-07-04" >
-          07-04
-        </time>
-      </div>
-
-    </header>
-  </article>
-
-
-    
-  </section>
 
   
+  
 
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+            
+            
+              
+                Advanced MySQL Query Tuning
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            <span class="post-meta-item-icon">
+              <i class="fa fa-calendar-o"></i>
+            </span>
+            <span class="post-meta-item-text">发表于</span>
+            <time itemprop="dateCreated" datetime="2016-07-15T11:30:00+08:00" content="2016-07-15">
+              2016-07-15
+            </time>
+          </span>
+
+          
+            <span class="post-category" >
+              &nbsp; | &nbsp;
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+              
+                <span itemprop="about" itemscope itemtype="https://schema.org/Thing">
+                  <a href="/categories/mysql/" itemprop="url" rel="index">
+                    <span itemprop="name">mysql</span>
+                  </a>
+                </span>
+
+                
+                
+
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                &nbsp; | &nbsp;
+                <a href="/blog/2016/07/mysql-query.html#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count ds-thread-count" data-thread-key="/blog/2016/07/mysql-query.html" itemprop="commentsCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+
+          
+          
+
+          
+        </div>
+      </header>
+    
+
+
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <iframe src="//www.slideshare.net/slideshow/embed_code/key/3HLJJcJmM9KLGT" width="100%" height="550" frameborder="0" marginwidth="0" marginheight="0" scrolling="no" allowfullscreen> </iframe>
+
+<p>Youtube: <a href="https://www.youtube.com/watch?v=TPFibi2G_oo" target="_blank" rel="external">https://www.youtube.com/watch?v=TPFibi2G_oo</a></p>
+<p>Percona webinars上有许多类似的分享，传送门： <a href="https://www.percona.com/resources/webinars" target="_blank" rel="external">https://www.percona.com/resources/webinars</a> 。</p>
+
+      
+    </div>
+
+    <div>
+      
+        
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/mysql-query/" rel="tag">#mysql query</a>
+          
+        </div>
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/blog/2016/07/nginx-localtion-rewrite.html" rel="next" title="nginx配置location与rewrite规则教程">
+                <i class="fa fa-chevron-left"></i> nginx配置location与rewrite规则教程
+              </a>
+            
+          </div>
+
+          <div class="post-nav-prev post-nav-item">
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </article>
+
+
+
+    <div class="post-spread">
+      
+        <!-- JiaThis Button BEGIN -->
+<div class="jiathis_style">
+  <a class="jiathis_button_tsina"></a>
+  <a class="jiathis_button_tqq"></a>
+  <a class="jiathis_button_weixin"></a>
+  <a class="jiathis_button_cqq"></a>
+  <a class="jiathis_button_douban"></a>
+  <a class="jiathis_button_renren"></a>
+  <a class="jiathis_button_qzone"></a>
+  <a class="jiathis_button_kaixin001"></a>
+  <a class="jiathis_button_copy"></a>
+  <a href="http://www.jiathis.com/share" class="jiathis jiathis_txt jiathis_separator jtico jtico_jiathis" target="_blank"></a>
+  <a class="jiathis_counter_style"></a>
+</div>
+<script type="text/javascript" >
+  var jiathis_config={
+    hideMore:false
+  }
+</script>
+<script type="text/javascript" src="http://v3.jiathis.com/code/jia.js" charset="utf-8"></script>
+<!-- JiaThis Button END -->
+
+      
+    </div>
+  </div>
 
 
           </div>
@@ -358,6 +432,14 @@
 
 
           
+  <div class="comments" id="comments">
+    
+      <div class="ds-thread" data-thread-key="/blog/2016/07/mysql-query.html"
+           data-title="Advanced MySQL Query Tuning" data-url="http://icyxp.github.io/blog/2016/07/mysql-query.html">
+      </div>
+    
+  </div>
+
 
         </div>
         
@@ -377,8 +459,17 @@
       
 
       
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap" >
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview">
+            站点概览
+          </li>
+        </ul>
+      
 
-      <section class="site-overview sidebar-panel  sidebar-panel-active ">
+      <section class="site-overview sidebar-panel ">
         <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
           <img class="site-author-image" itemprop="image"
                src="/images/avatar.jpg"
@@ -487,6 +578,17 @@
       </section>
 
       
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+            
+              
+            
+            
+              <p class="post-toc-empty">此文章未包含目录</p>
+            
+          </div>
+        </section>
+      
 
     </div>
   </aside>
@@ -571,6 +673,10 @@
   
 
   
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.0.1"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.0.1"></script>
+
+
 
   
 

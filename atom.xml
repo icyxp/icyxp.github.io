@@ -5,7 +5,7 @@
   <link href="/atom.xml" rel="self"/>
   
   <link href="http://icyxp.github.io/"/>
-  <updated>2016-07-15T03:14:47.000Z</updated>
+  <updated>2016-07-15T03:30:34.000Z</updated>
   <id>http://icyxp.github.io/</id>
   
   <author>
@@ -14,6 +14,32 @@
   </author>
   
   <generator uri="http://hexo.io/">Hexo</generator>
+  
+  <entry>
+    <title>Advanced MySQL Query Tuning</title>
+    <link href="http://icyxp.github.io//blog/2016/07/mysql-query.html"/>
+    <id>http://icyxp.github.io//blog/2016/07/mysql-query.html</id>
+    <published>2016-07-15T03:30:00.000Z</published>
+    <updated>2016-07-15T03:30:34.000Z</updated>
+    
+    <content type="html">&lt;iframe src=&quot;//www.slideshare.net/slideshow/embed_code/key/3HLJJcJmM9KLGT&quot; width=&quot;100%&quot; height=&quot;550&quot; frameborder=&quot;0&quot; marginwidth=&quot;0&quot; marginheight=&quot;0&quot; scrolling=&quot;no&quot; allowfullscreen&gt; &lt;/iframe&gt;
+
+&lt;p&gt;Youtube: &lt;a href=&quot;https://www.youtube.com/watch?v=TPFibi2G_oo&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;https://www.youtube.com/watch?v=TPFibi2G_oo&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;Percona webinars上有许多类似的分享，传送门： &lt;a href=&quot;https://www.percona.com/resources/webinars&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;https://www.percona.com/resources/webinars&lt;/a&gt; 。&lt;/p&gt;
+</content>
+    
+    <summary type="html">
+    
+      &lt;iframe src=&quot;//www.slideshare.net/slideshow/embed_code/key/3HLJJcJmM9KLGT&quot; width=&quot;100%&quot; height=&quot;550&quot; frameborder=&quot;0&quot; marginwidth=&quot;0&quot; marginh
+    
+    </summary>
+    
+      <category term="mysql" scheme="http://icyxp.github.io/categories/mysql/"/>
+    
+    
+      <category term="mysql query" scheme="http://icyxp.github.io/tags/mysql-query/"/>
+    
+  </entry>
   
   <entry>
     <title>nginx配置location与rewrite规则教程</title>
