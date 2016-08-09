@@ -95,7 +95,7 @@
 <meta property="og:description" content="架构简介只有两台机器，需要实现其中一台死机之后另一台能接管这台机器的服务，并且在两台机器正常服务时，两台机器都能用上。如何设计这样的架构场景。
 此架构主要是由keepalived实现双机高可用，维护了一个外网VIP，一个内网VIP。正常情况时，外网VIP和内网VIP都绑定在server1服务器，web请求发送到server1的nginx，nginx对于静态资源请求就直接在本机检索并返回，对于php">
 <meta property="og:image" content="http://icyxp.github.io/images/high_availability.png">
-<meta property="og:updated_time" content="2016-08-09T02:40:41.000Z">
+<meta property="og:updated_time" content="2016-08-09T02:45:01.000Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="双机高可用-负载均衡-MySQL(读写分离、主从自动切换)架构设计">
 <meta name="twitter:description" content="架构简介只有两台机器，需要实现其中一台死机之后另一台能接管这台机器的服务，并且在两台机器正常服务时，两台机器都能用上。如何设计这样的架构场景。
@@ -408,7 +408,8 @@
 </tr>
 </tbody>
 </table>
-<h2 id="架构配置"><a href="#架构配置" class="headerlink" title="架构配置"></a>架构配置</h2><h3 id="hosts设置"><a href="#hosts设置" class="headerlink" title="hosts设置"></a>hosts设置</h3><p>Server1与Server2 hosts设置如下<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># cat /etc/hosts</span></span><br><span class="line">192.168.1.100 server1</span><br><span class="line">192.168.1.101 server2</span><br></pre></td></tr></table></figure></p>
+<h2 id="架构配置"><a href="#架构配置" class="headerlink" title="架构配置"></a>架构配置</h2><a id="more"></a>
+<h3 id="hosts设置"><a href="#hosts设置" class="headerlink" title="hosts设置"></a>hosts设置</h3><p>Server1与Server2 hosts设置如下<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># cat /etc/hosts</span></span><br><span class="line">192.168.1.100 server1</span><br><span class="line">192.168.1.101 server2</span><br></pre></td></tr></table></figure></p>
 <h3 id="软件安装"><a href="#软件安装" class="headerlink" title="软件安装"></a>软件安装</h3><p>Nginx、PHP、MySQL、Memcached安装略</p>
 <h3 id="解决session共享问题"><a href="#解决session共享问题" class="headerlink" title="解决session共享问题"></a>解决session共享问题</h3><p>php默认的session存储是在/tmp目录下，现在我们是用两台服务器作php请求的负载，这样会造成session分布在两台服务器的/tmp目录下，导致依赖于session的功能不正常。我们可以使用memcached来解决此问题。</p>
 <p>上一步我们已经安装好了memcached，现在只需要配置php.ini来使用memcached，配置如下，打开php.ini配置文件，修改为如下两行的值：<br><figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">session.save_handler = memcache</span><br><span class="line">session.save_path = "tcp://192.168.1.100:11211,tcp://192.168.1.101:11211"</span><br></pre></td></tr></table></figure></p>
