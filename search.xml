@@ -121,7 +121,7 @@
     
     <entry>
       <title><![CDATA[双机高可用-负载均衡-MySQL(读写分离、主从自动切换)架构设计]]></title>
-      <url>http://icyxp.github.io/blog/2016/08/mysql-ha-load-balance-mysql-master-slave-architecture.html</url>
+      <url>http://icyxp.github.io/blog/2016/08/ha-load-balance-mysql-master-slave-architecture.html</url>
       <content type="html"><![CDATA[<h2 id="架构简介"><a href="#架构简介" class="headerlink" title="架构简介"></a>架构简介</h2><p>只有两台机器，需要实现其中一台死机之后另一台能接管这台机器的服务，并且在两台机器正常服务时，两台机器都能用上。如何设计这样的架构场景。<br><img src="/images/high_availability.png" alt="High Availability"></p>
 <p>此架构主要是由keepalived实现双机高可用，维护了一个外网VIP，一个内网VIP。正常情况时，外网VIP和内网VIP都绑定在server1服务器，web请求发送到server1的nginx，nginx对于静态资源请求就直接在本机检索并返回，对于php的动态请求，则负载均衡到server1和server2。对于SQL请求，会将此类请求发送到Atlas MySQL中间件，Atlas接收到请求之后，把涉及写操作的请求发送到内网VIP，读请求操作发送到mysql从，这样就实现了读写分离。</p>
 <p>当主服务器server1宕机时，keepalived检测到后，立即把外网VIP和内网VIP绑定到server2，并把server2的mysql切换成主库。此时由于外网VIP已经转移到了server2，web请求将发送给server2的nginx。nginx检测到server1宕机，不再把请求转发到server1的php-fpm。之后的sql请求照常发送给本地的atlas，atlas把写操作发送给内网VIP，读操作发送给mysql从，由于内网VIP已经绑定到server2了，server2的mysql同时接受写操作和读操作。</p>
