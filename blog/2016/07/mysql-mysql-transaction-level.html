@@ -68,12 +68,10 @@
 <link href="/css/main.css?v=5.0.1" rel="stylesheet" type="text/css" />
 
 
-  <meta name="keywords" content="mysql,maxscale,中间件," />
+  <meta name="keywords" content="mysql,事务," />
 
 
 
-
-  
 
 
   <link rel="alternate" href="/atom.xml" title="Devops" type="application/atom+xml" />
@@ -88,39 +86,28 @@
 
 
 
-<meta name="description" content="前言之前介绍了 MaxScale 可以实现 Mysql 的读写分离和读负载均衡，那么当 slave 出现故障后，MaxScale 会如何处理呢？
-例如有 3 台数据库服务器，一主二从的结构，数据库名称分别为 master, slave1, slave2
-现在我们实验以下两种情况：
+<meta name="description" content="四类隔离级别SQL标准定义了4类隔离级别，包括了一些具体规则，用来限定事务内外的哪些改变是可见的，哪些是不可见的。低级别的隔离级一般支持更高的并发处理，并拥有更低的系统开销。
 
-当一台从服务器（ slave1 或者 slave2 ）出现故障后，查看 MaxScale 如何应对，及故障服务器重新">
+Read Uncommitted（读取未提交内容）
+
+在该隔离级别，所有事务都可以看到其他未提交事务的执行结果。本隔离级别很少用于实际应用，因为它的性能也不比其他级别好多少。读取未提交的数据，也被称之为脏读（Dirty R">
 <meta property="og:type" content="article">
-<meta property="og:title" content="MaxScale 在 slave 有故障后如何处理？">
-<meta property="og:url" content="http://icyxp.github.io/blog/2016/08/maxscale-02.html">
+<meta property="og:title" content="MySQL事务隔离级别">
+<meta property="og:url" content="http://icyxp.github.io/blog/2016/07/mysql-mysql-transaction-level.html">
 <meta property="og:site_name" content="Devops">
-<meta property="og:description" content="前言之前介绍了 MaxScale 可以实现 Mysql 的读写分离和读负载均衡，那么当 slave 出现故障后，MaxScale 会如何处理呢？
-例如有 3 台数据库服务器，一主二从的结构，数据库名称分别为 master, slave1, slave2
-现在我们实验以下两种情况：
+<meta property="og:description" content="四类隔离级别SQL标准定义了4类隔离级别，包括了一些具体规则，用来限定事务内外的哪些改变是可见的，哪些是不可见的。低级别的隔离级一般支持更高的并发处理，并拥有更低的系统开销。
 
-当一台从服务器（ slave1 或者 slave2 ）出现故障后，查看 MaxScale 如何应对，及故障服务器重新">
-<meta property="og:image" content="http://icyxp.github.io/images/maxscale_08.png">
-<meta property="og:image" content="http://icyxp.github.io/images/maxscale_09.png">
-<meta property="og:image" content="http://icyxp.github.io/images/maxscale_10.png">
-<meta property="og:image" content="http://icyxp.github.io/images/maxscale_11.png">
-<meta property="og:image" content="http://icyxp.github.io/images/maxscale_12.png">
-<meta property="og:image" content="http://icyxp.github.io/images/maxscale_13.png">
-<meta property="og:image" content="http://icyxp.github.io/images/maxscale_14.png">
-<meta property="og:image" content="http://icyxp.github.io/images/maxscale_15.png">
-<meta property="og:image" content="http://icyxp.github.io/images/maxscale_16.png">
-<meta property="og:image" content="http://icyxp.github.io/images/maxscale_17.png">
-<meta property="og:updated_time" content="2016-08-16T02:12:34.000Z">
+Read Uncommitted（读取未提交内容）
+
+在该隔离级别，所有事务都可以看到其他未提交事务的执行结果。本隔离级别很少用于实际应用，因为它的性能也不比其他级别好多少。读取未提交的数据，也被称之为脏读（Dirty R">
+<meta property="og:updated_time" content="2016-07-11T09:23:50.000Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="MaxScale 在 slave 有故障后如何处理？">
-<meta name="twitter:description" content="前言之前介绍了 MaxScale 可以实现 Mysql 的读写分离和读负载均衡，那么当 slave 出现故障后，MaxScale 会如何处理呢？
-例如有 3 台数据库服务器，一主二从的结构，数据库名称分别为 master, slave1, slave2
-现在我们实验以下两种情况：
+<meta name="twitter:title" content="MySQL事务隔离级别">
+<meta name="twitter:description" content="四类隔离级别SQL标准定义了4类隔离级别，包括了一些具体规则，用来限定事务内外的哪些改变是可见的，哪些是不可见的。低级别的隔离级一般支持更高的并发处理，并拥有更低的系统开销。
 
-当一台从服务器（ slave1 或者 slave2 ）出现故障后，查看 MaxScale 如何应对，及故障服务器重新">
-<meta name="twitter:image" content="http://icyxp.github.io/images/maxscale_08.png">
+Read Uncommitted（读取未提交内容）
+
+在该隔离级别，所有事务都可以看到其他未提交事务的执行结果。本隔离级别很少用于实际应用，因为它的性能也不比其他级别好多少。读取未提交的数据，也被称之为脏读（Dirty R">
 
 
 
@@ -138,7 +125,7 @@
   };
 </script>
 
-  <title> MaxScale 在 slave 有故障后如何处理？ | Devops </title>
+  <title> MySQL事务隔离级别 | Devops </title>
 </head>
 
 <body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
@@ -301,7 +288,7 @@
             
             
               
-                MaxScale 在 slave 有故障后如何处理？
+                MySQL事务隔离级别
               
             
           </h1>
@@ -313,8 +300,8 @@
               <i class="fa fa-calendar-o"></i>
             </span>
             <span class="post-meta-item-text">发表于</span>
-            <time itemprop="dateCreated" datetime="2016-08-16T10:30:00+08:00" content="2016-08-16">
-              2016-08-16
+            <time itemprop="dateCreated" datetime="2016-07-11T17:21:00+08:00" content="2016-07-11">
+              2016-07-11
             </time>
           </span>
 
@@ -334,18 +321,6 @@
 
                 
                 
-                  ， 
-                
-
-              
-                <span itemprop="about" itemscope itemtype="https://schema.org/Thing">
-                  <a href="/categories/mysql/读写分离/" itemprop="url" rel="index">
-                    <span itemprop="name">读写分离</span>
-                  </a>
-                </span>
-
-                
-                
 
               
             </span>
@@ -355,8 +330,8 @@
             
               <span class="post-comments-count">
                 &nbsp; | &nbsp;
-                <a href="/blog/2016/08/maxscale-02.html#comments" itemprop="discussionUrl">
-                  <span class="post-comments-count ds-thread-count" data-thread-key="/blog/2016/08/maxscale-02.html" itemprop="commentsCount"></span>
+                <a href="/blog/2016/07/mysql-mysql-transaction-level.html#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count ds-thread-count" data-thread-key="/blog/2016/07/mysql-mysql-transaction-level.html" itemprop="commentsCount"></span>
                 </a>
               </span>
             
@@ -379,57 +354,68 @@
       
 
       
-        <h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>之前介绍了 <a href="/blog/2016/08/maxscale-01.html">MaxScale</a> 可以实现 Mysql 的读写分离和读负载均衡，那么当 slave 出现故障后，MaxScale 会如何处理呢？</p>
-<p>例如有 3 台数据库服务器，一主二从的结构，数据库名称分别为 master, slave1, slave2</p>
-<p>现在我们实验以下两种情况：</p>
-<ol>
-<li>当一台从服务器（ slave1 或者 slave2 ）出现故障后，查看 MaxScale 如何应对，及故障服务器重新上线后的情况</li>
-<li>当两台从服务器（ slave1 和 slave2 ）都出现故障后，查看 MaxScale 如何应对，及故障服务器重新上线后的情况</li>
-</ol>
-<h2 id="准备"><a href="#准备" class="headerlink" title="准备"></a>准备</h2><p>为了更深入的查看 MaxScale 的状态，需要把 MaxScale 的日志打开</p>
-<p>修改配置文件<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">vi /etc/maxscale.cnf</span><br></pre></td></tr></table></figure></p>
-<p>找到 [maxscale] 部分，这里用来进行全局设置，在其中添加日志配置<br><figure class="highlight ini"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">log_info</span>=<span class="number">1</span></span><br><span class="line"><span class="attr">logdir</span>=/tmp/</span><br></pre></td></tr></table></figure></p>
-<p>通过开启 log_info 级别，可以看到 MaxScale 的路由日志</p>
-<p>修改配置后，重启 MaxScale </p>
-<h2 id="实验过程"><a href="#实验过程" class="headerlink" title="实验过程"></a>实验过程</h2><a id="more"></a>
-<h3 id="单个-slave-故障的情况"><a href="#单个-slave-故障的情况" class="headerlink" title="单个 slave 故障的情况"></a>单个 slave 故障的情况</h3><p>初始状态是一切正常<br><img src="/images/maxscale_08.png" alt="Maxscale"></p>
-<p>停掉 slave2 的复制，登录 slave2 的 mysql 执行<br><figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">mysql&gt; stop slave;</span><br></pre></td></tr></table></figure></p>
-<p>查看 MaxScale 服务器状态<br><img src="/images/maxscale_09.png" alt="Maxscale"></p>
-<p>slave2 已经失效了</p>
-<p>查看日志信息<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">cat /tmp/maxscale1.log</span><br><span class="line"><span class="comment">#尾部显示：</span></span><br><span class="line">2016-08-15 12:26:02   notice : Server changed state: slave2[172.17.0.4:3306]: lost_slave</span><br></pre></td></tr></table></figure></p>
-<p>提示 slave2 已经丢失</p>
-<p>查看客户端查询结果<br><img src="/images/maxscale_10.png" alt="Maxscale"></p>
-<p>查询操作全都转到了 <code>slave1</code></p>
-<p>可以看到， 在有 slave 故障后，MaxScale 会自动进行排除，不再向其转发请求</p>
-<p>下面看下 slave2 再次<strong>上线后的情况</strong></p>
-<p>登录 slave2 的 mysql 执行<br><figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">mysql&gt; start slave;</span><br></pre></td></tr></table></figure></p>
-<p>查看 MaxScale 服务器状态<br><img src="/images/maxscale_11.png" alt="Maxscale"></p>
-<p>恢复了正常状态，重新识别到了 slave2</p>
-<p>查看日志信息，显示：<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">2016-08-15 12:32:36   notice : Server changed state: slave2[172.17.0.4:3306]: new_slave</span><br></pre></td></tr></table></figure></p>
-<p>查看客户端查询结果<br><img src="/images/maxscale_12.png" alt="Maxscale"></p>
-<p>slave2 又可以正常接受查询请求</p>
-<p>通过实验可以看到，在部分 slave 发生故障时，MaxScale 可以自动识别出来，并移除路由列表，当故障恢复重新上线后，MaxScale 也能自动将其加入路由，过程透明</p>
-<h3 id="全部-slave-故障的情况"><a href="#全部-slave-故障的情况" class="headerlink" title="全部 slave 故障的情况"></a>全部 slave 故障的情况</h3><p>分别登陆 slave1 和 slave2 的 mysql，执行停止复制的命令<br><figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">mysql&gt; stop slave;</span><br></pre></td></tr></table></figure></p>
-<p>查看 MaxScale 服务器状态<br><img src="/images/maxscale_13.png" alt="Maxscale"></p>
-<p>发现各个服务器的角色都识别不出来了</p>
-<p>查看日志<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">2016-08-15 12:44:11   notice : Server changed state: master[172.17.0.2:3306]: lost_master</span><br><span class="line">2016-08-15 12:44:11   notice : Server changed state: slave1[172.17.0.3:3306]: lost_slave</span><br><span class="line">2016-08-15 12:44:11   notice : Server changed state: slave2[172.17.0.4:3306]: lost_slave</span><br><span class="line">2016-08-15 12:44:11   error  : No Master can be determined. Last known was 172.17.0.2:3306</span><br></pre></td></tr></table></figure></p>
-<p>从日志中看到，MaxScale 发现2个slave 和 master 都丢了，然后报错：没有 master 了</p>
-<p>客户端连接 MaxScale 时也失败了<br><img src="/images/maxscale_14.png" alt="Maxscale"></p>
-<p>说明从服务器全部失效后，会导致 master 也无法识别，使整个数据库服务都失效了</p>
-<p>对于 slave 全部失效的情况，能否让 master 还可用？这样至少可以正常提供数据库服务</p>
-<p>这需要修改 MaxScale 的配置，告诉 MaxScale 我们需要一个稳定的 master</p>
-<h4 id="处理过程"><a href="#处理过程" class="headerlink" title="处理过程"></a>处理过程</h4><p>先恢复两个 slave，让集群回到正常状态，登陆两个 slave 的mysql<br><figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">mysql&gt; start slave;</span><br></pre></td></tr></table></figure></p>
-<p>修改 MaxScale 配置文件，添加新的配置<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">vi /etc/maxscale.cnf</span><br></pre></td></tr></table></figure></p>
-<p>找到 [MySQL Monitor] 部分，添加：<br><figure class="highlight ini"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">detect_stale_master</span>=<span class="literal">true</span></span><br></pre></td></tr></table></figure></p>
-<p>保存退出，然后重启 MaxScale</p>
-<h4 id="验证"><a href="#验证" class="headerlink" title="验证"></a>验证</h4><p>停掉两台 slave ，查看 MaxScale 服务器状态<br><img src="/images/maxscale_15.png" alt="Maxscale"></p>
-<p>可以看到，虽然 slave 都无法识别了，但 master 还在，并提示处于稳定状态</p>
-<p>客户端执行请求<br><img src="/images/maxscale_16.png" alt="Maxscale"></p>
-<p>客户端可以连接 MaxScale，而且请求都转到了 master 上，说明 slave 全部失效时，由 master 支撑了全部请求</p>
-<p>当恢复两个 slave 后，整体状态自动恢复正常，从客户端执行请求时，又可以转到 slave 上<br><img src="/images/maxscale_17.png" alt="Maxscale"></p>
-<h4 id="小结"><a href="#小结" class="headerlink" title="小结"></a>小结</h4><p>通过测试发现，在部分 slave 故障情况下，对于客户端是完全透明的，当全部 slave 故障时，经过简单的配置，MaxScale 也可以很好的处理</p>
-<hr>
-<p>来源：杜亦舒</p>
+        <h2 id="四类隔离级别"><a href="#四类隔离级别" class="headerlink" title="四类隔离级别"></a>四类隔离级别</h2><p>SQL标准定义了4类隔离级别，包括了一些具体规则，用来限定事务内外的哪些改变是可见的，哪些是不可见的。低级别的隔离级一般支持更高的并发处理，并拥有更低的系统开销。</p>
+<ul>
+<li>Read Uncommitted（读取未提交内容）</li>
+</ul>
+<p>在该隔离级别，所有事务都可以看到其他未提交事务的执行结果。本隔离级别很少用于实际应用，因为它的性能也不比其他级别好多少。读取未提交的数据，也被称之为脏读（Dirty Read）。 </p>
+<ul>
+<li>Read Committed（读取提交内容）</li>
+</ul>
+<p>这是大多数数据库系统的默认隔离级别（但不是MySQL默认的）。它满足了隔离的简单定义：一个事务只能看见已经提交事务所做的改变。这种隔离级别 也支持所谓的不可重复读（Nonrepeatable Read），因为同一事务的其他实例在该实例处理其间可能会有新的commit，所以同一select可能返回不同结果。</p>
+<ul>
+<li>Repeatable Read（可重读）</li>
+</ul>
+<p>这是MySQL的默认事务隔离级别，它确保同一事务的多个实例在并发读取数据时，会看到同样的数据行。不过理论上，这会导致另一个棘手的问题：幻读 （Phantom Read）。简单的说，幻读指当用户读取某一范围的数据行时，另一个事务又在该范围内插入了新行，当用户再读取该范围的数据行时，会发现有新的“幻影” 行。InnoDB和Falcon存储引擎通过多版本并发控制（MVCC，Multiversion Concurrency Control）机制解决了该问题。</p>
+<ul>
+<li>Serializable（可串行化）</li>
+</ul>
+<p>这是最高的隔离级别，它通过强制事务排序，使之不可能相互冲突，从而解决幻读问题。简言之，它是在每个读的数据行上加上共享锁。在这个级别，可能导致大量的超时现象和锁竞争。<br><a id="more"></a></p>
+<h2 id="隔离级别与一致性"><a href="#隔离级别与一致性" class="headerlink" title="隔离级别与一致性"></a>隔离级别与一致性</h2><p>这四种隔离级别采取不同的锁类型来实现，若读取的是同一个数据的话，就容易发生问题。例如：</p>
+<ul>
+<li>脏读(Drity Read)：某个事务已更新一份数据，另一个事务在此时读取了同一份数据，由于某些原因，前一个RollBack了操作，则后一个事务所读取的数据就会是不正确的。</li>
+<li>不可重复读(Non-repeatable read):在一个事务的两次查询之中数据不一致，这可能是两次查询过程中间插入了一个事务更新的原有的数据。</li>
+<li>幻读(Phantom Read):在一个事务的两次查询中数据笔数不一致，例如有一个事务查询了几列(Row)数据，而另一个事务却在此时插入了新的几列数据，先前的事务在接下来的查询中，就会发现有几列数据是它先前所没有的。</li>
+</ul>
+<p>在MySQL中，实现了这四种隔离级别，分别有可能产生问题如下所示：</p>
+<table>
+<thead>
+<tr>
+<th style="text-align:left">隔离级别</th>
+<th style="text-align:left">脏读</th>
+<th style="text-align:left">不可重复读</th>
+<th style="text-align:left">幻读</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left">读未提交(Read Uncommitted)</td>
+<td style="text-align:left">yes</td>
+<td style="text-align:left">yes</td>
+<td style="text-align:left">yes</td>
+</tr>
+<tr>
+<td style="text-align:left">读已提交(Read Committed)</td>
+<td style="text-align:left">no</td>
+<td style="text-align:left">yes</td>
+<td style="text-align:left">yes</td>
+</tr>
+<tr>
+<td style="text-align:left">可重复读(Repeatable Read)</td>
+<td style="text-align:left">no</td>
+<td style="text-align:left">no</td>
+<td style="text-align:left">yes</td>
+</tr>
+<tr>
+<td style="text-align:left">可串行化(Serializable)</td>
+<td style="text-align:left">no</td>
+<td style="text-align:left">no</td>
+<td style="text-align:left">no</td>
+</tr>
+</tbody>
+</table>
+<h2 id="设置当前隔离级别"><a href="#设置当前隔离级别" class="headerlink" title="设置当前隔离级别"></a>设置当前隔离级别</h2><figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">-- 取消autocommit</span></span><br><span class="line"><span class="keyword">set</span> autocommit=<span class="number">0</span></span><br><span class="line"><span class="keyword">show</span> <span class="keyword">variables</span> <span class="keyword">like</span> <span class="string">"%autocommit%"</span>;</span><br><span class="line"> </span><br><span class="line"><span class="comment">-- 查看隔离级别</span></span><br><span class="line"><span class="keyword">SELECT</span> @@global.tx_isolation;</span><br><span class="line"><span class="keyword">SELECT</span> @@session.tx_isolation;</span><br><span class="line"><span class="keyword">SELECT</span> @@tx_isolation;</span><br><span class="line"> </span><br><span class="line"><span class="keyword">show</span> <span class="keyword">variables</span> <span class="keyword">like</span> <span class="string">'%iso%'</span>;</span><br><span class="line">+<span class="comment">---------------+-----------------+</span></span><br><span class="line">| Variable_name | Value           |</span><br><span class="line">+<span class="comment">---------------+-----------------+</span></span><br><span class="line">| tx_isolation  | REPEATABLE-READ |</span><br><span class="line">+<span class="comment">---------------+-----------------+</span></span><br><span class="line"> </span><br><span class="line"><span class="keyword">show</span> <span class="keyword">global</span> <span class="keyword">variables</span> <span class="keyword">like</span> <span class="string">'%iso%'</span>;</span><br><span class="line">+<span class="comment">---------------+-----------------+</span></span><br><span class="line">| Variable_name | Value           |</span><br><span class="line">+<span class="comment">---------------+-----------------+</span></span><br><span class="line">| tx_isolation  | REPEATABLE-READ |</span><br><span class="line">+<span class="comment">---------------+-----------------+</span></span><br><span class="line"> </span><br><span class="line"><span class="comment">-- 设置隔离级别</span></span><br><span class="line"><span class="keyword">SET</span> <span class="keyword">SESSION</span> <span class="keyword">TRANSACTION</span> <span class="keyword">ISOLATION</span> <span class="keyword">LEVEL</span> <span class="keyword">read</span> uncommitted;</span><br><span class="line"><span class="keyword">SET</span> <span class="keyword">SESSION</span> <span class="keyword">TRANSACTION</span> <span class="keyword">ISOLATION</span> <span class="keyword">LEVEL</span> <span class="keyword">read</span> committed;</span><br><span class="line"><span class="keyword">SET</span> <span class="keyword">SESSION</span> <span class="keyword">TRANSACTION</span> <span class="keyword">ISOLATION</span> <span class="keyword">LEVEL</span> repeatable <span class="keyword">read</span>;</span><br><span class="line"><span class="keyword">SET</span> <span class="keyword">SESSION</span> <span class="keyword">TRANSACTION</span> <span class="keyword">ISOLATION</span> <span class="keyword">LEVEL</span> <span class="keyword">serializable</span>;</span><br><span class="line"> </span><br><span class="line"><span class="comment">-- 事务操作</span></span><br><span class="line"><span class="keyword">start</span> <span class="keyword">transaction</span>;</span><br><span class="line"><span class="keyword">SELECT</span> * <span class="keyword">FROM</span> text.tx;</span><br><span class="line"><span class="keyword">commit</span>;</span><br><span class="line"> </span><br><span class="line"><span class="keyword">start</span> <span class="keyword">transaction</span>;</span><br><span class="line"><span class="keyword">SELECT</span> * <span class="keyword">FROM</span> text.tx;</span><br><span class="line"><span class="keyword">update</span> text.tx <span class="keyword">set</span> <span class="keyword">num</span> =<span class="number">10</span> <span class="keyword">where</span> <span class="keyword">id</span> = <span class="number">1</span>;</span><br><span class="line"><span class="keyword">insert</span> <span class="keyword">into</span> text.tx(<span class="keyword">id</span>,<span class="keyword">num</span>) <span class="keyword">values</span>(<span class="number">9</span>,<span class="number">9</span>);</span><br><span class="line"><span class="keyword">rollback</span>;</span><br><span class="line"><span class="keyword">commit</span>;</span><br></pre></td></tr></table></figure>
+<h2 id="my-cnf设置"><a href="#my-cnf设置" class="headerlink" title="my.cnf设置"></a>my.cnf设置</h2><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># MySQL支持4种事务隔离级别，他们分别是：</span></span><br><span class="line"><span class="comment"># READ-UNCOMMITTED, READ-COMMITTED, REPEATABLE-READ, SERIALIZABLE.</span></span><br><span class="line"><span class="comment"># 如没有指定，MySQL默认采用的是REPEATABLE-READ，ORACLE默认的是READ-COMMITTED</span></span><br><span class="line">transaction_isolation = REPEATABLE-READ</span><br></pre></td></tr></table></figure>
 
       
     </div>
@@ -453,9 +439,7 @@
           
             <a href="/tags/mysql/" rel="tag">#mysql</a>
           
-            <a href="/tags/maxscale/" rel="tag">#maxscale</a>
-          
-            <a href="/tags/中间件/" rel="tag">#中间件</a>
+            <a href="/tags/事务/" rel="tag">#事务</a>
           
         </div>
       
@@ -464,13 +448,17 @@
         <div class="post-nav">
           <div class="post-nav-next post-nav-item">
             
-              <a href="/blog/2016/08/maxscale-01.html" rel="next" title="Mysql 读写分离中间件 MaxScale">
-                <i class="fa fa-chevron-left"></i> Mysql 读写分离中间件 MaxScale
+              <a href="/blog/2016/07/mysql-mysql-auto-increment-primary-key.html" rel="next" title="MySQL为什么需要一个自增主键">
+                <i class="fa fa-chevron-left"></i> MySQL为什么需要一个自增主键
               </a>
             
           </div>
 
           <div class="post-nav-prev post-nav-item">
+            
+              <a href="/blog/2016/07/nginx-localtion-rewrite.html" rel="prev" title="nginx配置location与rewrite规则教程">
+                nginx配置location与rewrite规则教程 <i class="fa fa-chevron-right"></i>
+              </a>
             
           </div>
         </div>
@@ -519,8 +507,8 @@
           
   <div class="comments" id="comments">
     
-      <div class="ds-thread" data-thread-key="/blog/2016/08/maxscale-02.html"
-           data-title="MaxScale 在 slave 有故障后如何处理？" data-url="http://icyxp.github.io/blog/2016/08/maxscale-02.html">
+      <div class="ds-thread" data-thread-key="/blog/2016/07/mysql-mysql-transaction-level.html"
+           data-title="MySQL事务隔离级别" data-url="http://icyxp.github.io/blog/2016/07/mysql-mysql-transaction-level.html">
       </div>
     
   </div>
@@ -669,7 +657,7 @@
               
             
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#前言"><span class="nav-number">1.</span> <span class="nav-text">前言</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#准备"><span class="nav-number">2.</span> <span class="nav-text">准备</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#实验过程"><span class="nav-number">3.</span> <span class="nav-text">实验过程</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#单个-slave-故障的情况"><span class="nav-number">3.1.</span> <span class="nav-text">单个 slave 故障的情况</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#全部-slave-故障的情况"><span class="nav-number">3.2.</span> <span class="nav-text">全部 slave 故障的情况</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#处理过程"><span class="nav-number">3.2.1.</span> <span class="nav-text">处理过程</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#验证"><span class="nav-number">3.2.2.</span> <span class="nav-text">验证</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#小结"><span class="nav-number">3.2.3.</span> <span class="nav-text">小结</span></a></li></ol></li></ol></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#四类隔离级别"><span class="nav-number">1.</span> <span class="nav-text">四类隔离级别</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#隔离级别与一致性"><span class="nav-number">2.</span> <span class="nav-text">隔离级别与一致性</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#设置当前隔离级别"><span class="nav-number">3.</span> <span class="nav-text">设置当前隔离级别</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#my-cnf设置"><span class="nav-number">4.</span> <span class="nav-text">my.cnf设置</span></a></li></ol></div>
             
           </div>
         </section>

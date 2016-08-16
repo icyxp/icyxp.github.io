@@ -68,7 +68,7 @@
 <link href="/css/main.css?v=5.0.1" rel="stylesheet" type="text/css" />
 
 
-  <meta name="keywords" content="mysql,事务," />
+  <meta name="keywords" content="mysql,maxscale,中间件," />
 
 
 
@@ -86,28 +86,36 @@
 
 
 
-<meta name="description" content="四类隔离级别SQL标准定义了4类隔离级别，包括了一些具体规则，用来限定事务内外的哪些改变是可见的，哪些是不可见的。低级别的隔离级一般支持更高的并发处理，并拥有更低的系统开销。
-
-Read Uncommitted（读取未提交内容）
-
-在该隔离级别，所有事务都可以看到其他未提交事务的执行结果。本隔离级别很少用于实际应用，因为它的性能也不比其他级别好多少。读取未提交的数据，也被称之为脏读（Dirty R">
+<meta name="description" content="MaxScale 是干什么的？配置好了 Mysql 的主从复制结构后，我们希望实现读写分离，把读操作分散到从服务器中，并且对多个从服务器能实现负载均衡
+读写分离和负载均衡是 Mysql 集群的基础需求，MaxScale 就可以帮着我们方便的实现这些功能
+MaxScale 的基础构成
+MaxScale 是 Mysql 的兄弟公司 MariaDB 开发的，现在已经发展得非常成熟
+MaxScale 是插">
 <meta property="og:type" content="article">
-<meta property="og:title" content="MySQL事务隔离级别">
-<meta property="og:url" content="http://icyxp.github.io/blog/2016/07/mysql-transaction-level.html">
+<meta property="og:title" content="Mysql 读写分离中间件 MaxScale">
+<meta property="og:url" content="http://icyxp.github.io/blog/2016/08/mysql-maxscale-01.html">
 <meta property="og:site_name" content="Devops">
-<meta property="og:description" content="四类隔离级别SQL标准定义了4类隔离级别，包括了一些具体规则，用来限定事务内外的哪些改变是可见的，哪些是不可见的。低级别的隔离级一般支持更高的并发处理，并拥有更低的系统开销。
-
-Read Uncommitted（读取未提交内容）
-
-在该隔离级别，所有事务都可以看到其他未提交事务的执行结果。本隔离级别很少用于实际应用，因为它的性能也不比其他级别好多少。读取未提交的数据，也被称之为脏读（Dirty R">
-<meta property="og:updated_time" content="2016-07-11T09:23:50.000Z">
+<meta property="og:description" content="MaxScale 是干什么的？配置好了 Mysql 的主从复制结构后，我们希望实现读写分离，把读操作分散到从服务器中，并且对多个从服务器能实现负载均衡
+读写分离和负载均衡是 Mysql 集群的基础需求，MaxScale 就可以帮着我们方便的实现这些功能
+MaxScale 的基础构成
+MaxScale 是 Mysql 的兄弟公司 MariaDB 开发的，现在已经发展得非常成熟
+MaxScale 是插">
+<meta property="og:image" content="http://icyxp.github.io/images/maxscale_01.png">
+<meta property="og:image" content="http://icyxp.github.io/images/maxscale_02.png">
+<meta property="og:image" content="http://icyxp.github.io/images/maxscale_03.png">
+<meta property="og:image" content="http://icyxp.github.io/images/maxscale_04.png">
+<meta property="og:image" content="http://icyxp.github.io/images/maxscale_05.png">
+<meta property="og:image" content="http://icyxp.github.io/images/maxscale_06.png">
+<meta property="og:image" content="http://icyxp.github.io/images/maxscale_07.png">
+<meta property="og:updated_time" content="2016-08-16T01:57:30.000Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="MySQL事务隔离级别">
-<meta name="twitter:description" content="四类隔离级别SQL标准定义了4类隔离级别，包括了一些具体规则，用来限定事务内外的哪些改变是可见的，哪些是不可见的。低级别的隔离级一般支持更高的并发处理，并拥有更低的系统开销。
-
-Read Uncommitted（读取未提交内容）
-
-在该隔离级别，所有事务都可以看到其他未提交事务的执行结果。本隔离级别很少用于实际应用，因为它的性能也不比其他级别好多少。读取未提交的数据，也被称之为脏读（Dirty R">
+<meta name="twitter:title" content="Mysql 读写分离中间件 MaxScale">
+<meta name="twitter:description" content="MaxScale 是干什么的？配置好了 Mysql 的主从复制结构后，我们希望实现读写分离，把读操作分散到从服务器中，并且对多个从服务器能实现负载均衡
+读写分离和负载均衡是 Mysql 集群的基础需求，MaxScale 就可以帮着我们方便的实现这些功能
+MaxScale 的基础构成
+MaxScale 是 Mysql 的兄弟公司 MariaDB 开发的，现在已经发展得非常成熟
+MaxScale 是插">
+<meta name="twitter:image" content="http://icyxp.github.io/images/maxscale_01.png">
 
 
 
@@ -125,7 +133,7 @@ Read Uncommitted（读取未提交内容）
   };
 </script>
 
-  <title> MySQL事务隔离级别 | Devops </title>
+  <title> Mysql 读写分离中间件 MaxScale | Devops </title>
 </head>
 
 <body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
@@ -288,7 +296,7 @@ Read Uncommitted（读取未提交内容）
             
             
               
-                MySQL事务隔离级别
+                Mysql 读写分离中间件 MaxScale
               
             
           </h1>
@@ -300,8 +308,8 @@ Read Uncommitted（读取未提交内容）
               <i class="fa fa-calendar-o"></i>
             </span>
             <span class="post-meta-item-text">发表于</span>
-            <time itemprop="dateCreated" datetime="2016-07-11T17:21:00+08:00" content="2016-07-11">
-              2016-07-11
+            <time itemprop="dateCreated" datetime="2016-08-16T10:00:00+08:00" content="2016-08-16">
+              2016-08-16
             </time>
           </span>
 
@@ -321,6 +329,18 @@ Read Uncommitted（读取未提交内容）
 
                 
                 
+                  ， 
+                
+
+              
+                <span itemprop="about" itemscope itemtype="https://schema.org/Thing">
+                  <a href="/categories/mysql/读写分离/" itemprop="url" rel="index">
+                    <span itemprop="name">读写分离</span>
+                  </a>
+                </span>
+
+                
+                
 
               
             </span>
@@ -330,8 +350,8 @@ Read Uncommitted（读取未提交内容）
             
               <span class="post-comments-count">
                 &nbsp; | &nbsp;
-                <a href="/blog/2016/07/mysql-transaction-level.html#comments" itemprop="discussionUrl">
-                  <span class="post-comments-count ds-thread-count" data-thread-key="/blog/2016/07/mysql-transaction-level.html" itemprop="commentsCount"></span>
+                <a href="/blog/2016/08/mysql-maxscale-01.html#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count ds-thread-count" data-thread-key="/blog/2016/08/mysql-maxscale-01.html" itemprop="commentsCount"></span>
                 </a>
               </span>
             
@@ -354,68 +374,59 @@ Read Uncommitted（读取未提交内容）
       
 
       
-        <h2 id="四类隔离级别"><a href="#四类隔离级别" class="headerlink" title="四类隔离级别"></a>四类隔离级别</h2><p>SQL标准定义了4类隔离级别，包括了一些具体规则，用来限定事务内外的哪些改变是可见的，哪些是不可见的。低级别的隔离级一般支持更高的并发处理，并拥有更低的系统开销。</p>
-<ul>
-<li>Read Uncommitted（读取未提交内容）</li>
+        <h2 id="MaxScale-是干什么的？"><a href="#MaxScale-是干什么的？" class="headerlink" title="MaxScale 是干什么的？"></a>MaxScale 是干什么的？</h2><p>配置好了 Mysql 的主从复制结构后，我们希望实现读写分离，把读操作分散到从服务器中，并且对多个从服务器能实现负载均衡</p>
+<p><strong>读写分离</strong>和<strong>负载均衡</strong>是 Mysql 集群的基础需求，<strong>MaxScale</strong> 就可以帮着我们方便的实现这些功能<br><img src="/images/maxscale_01.png" alt="Maxscale"></p>
+<h2 id="MaxScale-的基础构成"><a href="#MaxScale-的基础构成" class="headerlink" title="MaxScale 的基础构成"></a>MaxScale 的基础构成</h2><ul>
+<li>MaxScale 是 Mysql 的兄弟公司 MariaDB 开发的，现在已经发展得非常成熟</li>
+<li>MaxScale 是插件式结构，允许用户开发适合自己的插件</li>
+<li>MaxScale 目前提供的插件功能分为<strong>5类</strong></li>
 </ul>
-<p>在该隔离级别，所有事务都可以看到其他未提交事务的执行结果。本隔离级别很少用于实际应用，因为它的性能也不比其他级别好多少。读取未提交的数据，也被称之为脏读（Dirty Read）。 </p>
+<h3 id="认证插件"><a href="#认证插件" class="headerlink" title="认证插件"></a>认证插件</h3><p>提供了登录认证功能，MaxScale 会读取并缓存数据库中 user 表中的信息，当有连接进来时，先从缓存信息中进行验证，如果没有此用户，会从后端数据库中更新信息，再次进行验证</p>
+<h3 id="协议插件"><a href="#协议插件" class="headerlink" title="协议插件"></a>协议插件</h3><p>包括客户端连接协议，和连接数据库的协议</p>
+<h3 id="路由插件"><a href="#路由插件" class="headerlink" title="路由插件"></a>路由插件</h3><p>决定如何把客户端的请求转发给后端数据库服务器，读写分离和负载均衡的功能就是由这个模块实现的</p>
+<h3 id="监控插件"><a href="#监控插件" class="headerlink" title="监控插件"></a>监控插件</h3><p>对各个数据库服务器进行监控，例如发现某个数据库服务器响应很慢，那么就不向其转发请求了</p>
+<h3 id="日志和过滤插件"><a href="#日志和过滤插件" class="headerlink" title="日志和过滤插件"></a>日志和过滤插件</h3><p>提供简单的数据库防火墙功能，可以对SQL进行过滤和容错</p>
+<a id="more"></a>
+<h2 id="MaxScale-的安装使用"><a href="#MaxScale-的安装使用" class="headerlink" title="MaxScale 的安装使用"></a>MaxScale 的安装使用</h2><p>例如有 3 台数据库服务器，是一主二从的结构</p>
+<h3 id="过程概述"><a href="#过程概述" class="headerlink" title="过程概述"></a>过程概述</h3><ol>
+<li>配置好集群环境</li>
+<li>下载安装 MaxScale</li>
+<li>配置 MaxScale，添加各数据库信息</li>
+<li>启动 MaxScale，查看是否正确连接数据库</li>
+<li>客户端连接 MaxScale，进行测试</li>
+</ol>
+<h3 id="详细过程"><a href="#详细过程" class="headerlink" title="详细过程"></a>详细过程</h3><h4 id="配置一主二从的集群环境"><a href="#配置一主二从的集群环境" class="headerlink" title="配置一主二从的集群环境"></a>配置一主二从的集群环境</h4><p>准备3台服务器，安装 Mysql，配置一主二从的复制结构<br>主从复制的配置过程略过</p>
+<h4 id="安装-MaxScale"><a href="#安装-MaxScale" class="headerlink" title="安装 MaxScale"></a>安装 MaxScale</h4><p>最好在另一台服务器上安装，如果资源不足，可以和某个 Mysql 放在一起</p>
+<p>MaxScale 的下载地址<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">https://downloads.mariadb.com/files/MaxScale</span><br></pre></td></tr></table></figure></p>
+<p>根据自己的服务器选择合适的安装包</p>
+<p>以 centos 7 为例 安装步骤如下：<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">yum install libaio.x86_64 libaio-devel.x86_64 novacom-server.x86_64 libedit -y</span><br><span class="line">rpm -ivh maxscale-1.4.3-1.centos.7.x86_64.rpm</span><br></pre></td></tr></table></figure></p>
+<h4 id="配置-MaxScale"><a href="#配置-MaxScale" class="headerlink" title="配置 MaxScale"></a>配置 MaxScale</h4><p>在开始配置之前，需要在 master 中为 MaxScale 创建两个用户，用于监控模块和路由模块</p>
+<p>创建监控用户<br><figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">mysql&gt; create user scalemon@'%' identified by "111111";</span><br><span class="line">mysql&gt; grant replication slave, replication client on *.* to scalemon@'%';</span><br></pre></td></tr></table></figure></p>
+<p>创建路由用户<br><figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">mysql&gt; create user maxscale@'%' identified by "111111";</span><br><span class="line">mysql&gt; grant select on mysql.* to maxscale@'%';</span><br></pre></td></tr></table></figure></p>
+<p>用户创建完成后，开始配置<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">vi /etc/maxscale.cnf</span><br></pre></td></tr></table></figure></p>
+<p>找到 [server1] 部分，修改其中的 address 和 port，指向 master 的 IP 和端口</p>
+<p>复制2次 [server1] 的整块儿内容，改为 [server2] 与 [server3]，同样修改其中的 address 和 port，分别指向 slave1 和 slave2<br><img src="/images/maxscale_02.png" alt="Maxscale"></p>
+<p>找到 <code>[MySQL Monitor]</code> 部分，修改 servers 为 server1,server2,server3，修改 user 和 passwd 为之前创建的监控用户的信息（scalemon,111111）<br><img src="/images/maxscale_03.png" alt="Maxscale"></p>
+<p>找到 <code>[Read-Write Service]</code> 部分，修改 servers 为 server1,server2,server3，修改 user 和 passwd 为之前创建的路由用户的信息（maxscale,111111）<br><img src="/images/maxscale_04.png" alt="Maxscale"></p>
+<p>由于我们使用了 <code>[Read-Write Service]</code>，需要删除另一个服务 <code>[Read-Only Service]</code>，删除其整块儿内容即可</p>
+<p>配置完成，保存并退出编辑器</p>
+<h4 id="启动-MaxScale"><a href="#启动-MaxScale" class="headerlink" title="启动 MaxScale"></a>启动 MaxScale</h4><p>执行启动命令<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">maxscale --config=/etc/maxscale.cnf</span><br></pre></td></tr></table></figure></p>
+<p>查看 MaxScale 的响应端口是否已经就绪<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">netstat -ntelp</span><br></pre></td></tr></table></figure></p>
+<p><img src="/images/maxscale_05.png" alt="Maxscale"></p>
 <ul>
-<li>Read Committed（读取提交内容）</li>
+<li>4006 是连接 MaxScale 时使用的端口</li>
+<li>6603 是 MaxScale 管理器的端口</li>
 </ul>
-<p>这是大多数数据库系统的默认隔离级别（但不是MySQL默认的）。它满足了隔离的简单定义：一个事务只能看见已经提交事务所做的改变。这种隔离级别 也支持所谓的不可重复读（Nonrepeatable Read），因为同一事务的其他实例在该实例处理其间可能会有新的commit，所以同一select可能返回不同结果。</p>
-<ul>
-<li>Repeatable Read（可重读）</li>
-</ul>
-<p>这是MySQL的默认事务隔离级别，它确保同一事务的多个实例在并发读取数据时，会看到同样的数据行。不过理论上，这会导致另一个棘手的问题：幻读 （Phantom Read）。简单的说，幻读指当用户读取某一范围的数据行时，另一个事务又在该范围内插入了新行，当用户再读取该范围的数据行时，会发现有新的“幻影” 行。InnoDB和Falcon存储引擎通过多版本并发控制（MVCC，Multiversion Concurrency Control）机制解决了该问题。</p>
-<ul>
-<li>Serializable（可串行化）</li>
-</ul>
-<p>这是最高的隔离级别，它通过强制事务排序，使之不可能相互冲突，从而解决幻读问题。简言之，它是在每个读的数据行上加上共享锁。在这个级别，可能导致大量的超时现象和锁竞争。<br><a id="more"></a></p>
-<h2 id="隔离级别与一致性"><a href="#隔离级别与一致性" class="headerlink" title="隔离级别与一致性"></a>隔离级别与一致性</h2><p>这四种隔离级别采取不同的锁类型来实现，若读取的是同一个数据的话，就容易发生问题。例如：</p>
-<ul>
-<li>脏读(Drity Read)：某个事务已更新一份数据，另一个事务在此时读取了同一份数据，由于某些原因，前一个RollBack了操作，则后一个事务所读取的数据就会是不正确的。</li>
-<li>不可重复读(Non-repeatable read):在一个事务的两次查询之中数据不一致，这可能是两次查询过程中间插入了一个事务更新的原有的数据。</li>
-<li>幻读(Phantom Read):在一个事务的两次查询中数据笔数不一致，例如有一个事务查询了几列(Row)数据，而另一个事务却在此时插入了新的几列数据，先前的事务在接下来的查询中，就会发现有几列数据是它先前所没有的。</li>
-</ul>
-<p>在MySQL中，实现了这四种隔离级别，分别有可能产生问题如下所示：</p>
-<table>
-<thead>
-<tr>
-<th style="text-align:left">隔离级别</th>
-<th style="text-align:left">脏读</th>
-<th style="text-align:left">不可重复读</th>
-<th style="text-align:left">幻读</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td style="text-align:left">读未提交(Read Uncommitted)</td>
-<td style="text-align:left">yes</td>
-<td style="text-align:left">yes</td>
-<td style="text-align:left">yes</td>
-</tr>
-<tr>
-<td style="text-align:left">读已提交(Read Committed)</td>
-<td style="text-align:left">no</td>
-<td style="text-align:left">yes</td>
-<td style="text-align:left">yes</td>
-</tr>
-<tr>
-<td style="text-align:left">可重复读(Repeatable Read)</td>
-<td style="text-align:left">no</td>
-<td style="text-align:left">no</td>
-<td style="text-align:left">yes</td>
-</tr>
-<tr>
-<td style="text-align:left">可串行化(Serializable)</td>
-<td style="text-align:left">no</td>
-<td style="text-align:left">no</td>
-<td style="text-align:left">no</td>
-</tr>
-</tbody>
-</table>
-<h2 id="设置当前隔离级别"><a href="#设置当前隔离级别" class="headerlink" title="设置当前隔离级别"></a>设置当前隔离级别</h2><figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">-- 取消autocommit</span></span><br><span class="line"><span class="keyword">set</span> autocommit=<span class="number">0</span></span><br><span class="line"><span class="keyword">show</span> <span class="keyword">variables</span> <span class="keyword">like</span> <span class="string">"%autocommit%"</span>;</span><br><span class="line"> </span><br><span class="line"><span class="comment">-- 查看隔离级别</span></span><br><span class="line"><span class="keyword">SELECT</span> @@global.tx_isolation;</span><br><span class="line"><span class="keyword">SELECT</span> @@session.tx_isolation;</span><br><span class="line"><span class="keyword">SELECT</span> @@tx_isolation;</span><br><span class="line"> </span><br><span class="line"><span class="keyword">show</span> <span class="keyword">variables</span> <span class="keyword">like</span> <span class="string">'%iso%'</span>;</span><br><span class="line">+<span class="comment">---------------+-----------------+</span></span><br><span class="line">| Variable_name | Value           |</span><br><span class="line">+<span class="comment">---------------+-----------------+</span></span><br><span class="line">| tx_isolation  | REPEATABLE-READ |</span><br><span class="line">+<span class="comment">---------------+-----------------+</span></span><br><span class="line"> </span><br><span class="line"><span class="keyword">show</span> <span class="keyword">global</span> <span class="keyword">variables</span> <span class="keyword">like</span> <span class="string">'%iso%'</span>;</span><br><span class="line">+<span class="comment">---------------+-----------------+</span></span><br><span class="line">| Variable_name | Value           |</span><br><span class="line">+<span class="comment">---------------+-----------------+</span></span><br><span class="line">| tx_isolation  | REPEATABLE-READ |</span><br><span class="line">+<span class="comment">---------------+-----------------+</span></span><br><span class="line"> </span><br><span class="line"><span class="comment">-- 设置隔离级别</span></span><br><span class="line"><span class="keyword">SET</span> <span class="keyword">SESSION</span> <span class="keyword">TRANSACTION</span> <span class="keyword">ISOLATION</span> <span class="keyword">LEVEL</span> <span class="keyword">read</span> uncommitted;</span><br><span class="line"><span class="keyword">SET</span> <span class="keyword">SESSION</span> <span class="keyword">TRANSACTION</span> <span class="keyword">ISOLATION</span> <span class="keyword">LEVEL</span> <span class="keyword">read</span> committed;</span><br><span class="line"><span class="keyword">SET</span> <span class="keyword">SESSION</span> <span class="keyword">TRANSACTION</span> <span class="keyword">ISOLATION</span> <span class="keyword">LEVEL</span> repeatable <span class="keyword">read</span>;</span><br><span class="line"><span class="keyword">SET</span> <span class="keyword">SESSION</span> <span class="keyword">TRANSACTION</span> <span class="keyword">ISOLATION</span> <span class="keyword">LEVEL</span> <span class="keyword">serializable</span>;</span><br><span class="line"> </span><br><span class="line"><span class="comment">-- 事务操作</span></span><br><span class="line"><span class="keyword">start</span> <span class="keyword">transaction</span>;</span><br><span class="line"><span class="keyword">SELECT</span> * <span class="keyword">FROM</span> text.tx;</span><br><span class="line"><span class="keyword">commit</span>;</span><br><span class="line"> </span><br><span class="line"><span class="keyword">start</span> <span class="keyword">transaction</span>;</span><br><span class="line"><span class="keyword">SELECT</span> * <span class="keyword">FROM</span> text.tx;</span><br><span class="line"><span class="keyword">update</span> text.tx <span class="keyword">set</span> <span class="keyword">num</span> =<span class="number">10</span> <span class="keyword">where</span> <span class="keyword">id</span> = <span class="number">1</span>;</span><br><span class="line"><span class="keyword">insert</span> <span class="keyword">into</span> text.tx(<span class="keyword">id</span>,<span class="keyword">num</span>) <span class="keyword">values</span>(<span class="number">9</span>,<span class="number">9</span>);</span><br><span class="line"><span class="keyword">rollback</span>;</span><br><span class="line"><span class="keyword">commit</span>;</span><br></pre></td></tr></table></figure>
-<h2 id="my-cnf设置"><a href="#my-cnf设置" class="headerlink" title="my.cnf设置"></a>my.cnf设置</h2><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># MySQL支持4种事务隔离级别，他们分别是：</span></span><br><span class="line"><span class="comment"># READ-UNCOMMITTED, READ-COMMITTED, REPEATABLE-READ, SERIALIZABLE.</span></span><br><span class="line"><span class="comment"># 如没有指定，MySQL默认采用的是REPEATABLE-READ，ORACLE默认的是READ-COMMITTED</span></span><br><span class="line">transaction_isolation = REPEATABLE-READ</span><br></pre></td></tr></table></figure>
+<p>登录 MaxScale 管理器，查看一下数据库连接状态，默认的用户名和密码是 admin/mariadb<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">maxadmin --user=admin --password=mariadb</span><br><span class="line">MaxScale&gt; list servers</span><br></pre></td></tr></table></figure></p>
+<p><img src="/images/maxscale_06.png" alt="Maxscale"></p>
+<p>可以看到，MaxScale 已经连接到了 master 和 slave</p>
+<h4 id="测试"><a href="#测试" class="headerlink" title="测试"></a>测试</h4><p>先在 master 上创建一个测试用户<br><figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">mysql&gt; grant ALL PRIVILEGES on *.* to rtest@"%" Identified by "111111";</span><br></pre></td></tr></table></figure></p>
+<p>使用 Mysql 客户端到连接 MaxScale<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">mysql -h MaxScale所在的IP -P 4006 -u rtest -p111111</span><br></pre></td></tr></table></figure></p>
+<p>执行查看数据库服务器名的操作来知道当前实际所在的数据库<br><img src="/images/maxscale_07.png" alt="Maxscale"></p>
+<p>开启事务后，就自动路由到了 master，普通的查询操作，是在 slave上</p>
+<p>MaxScale 的配置完成了</p>
+<hr>
+<p>来源：杜亦舒</p>
 
       
     </div>
@@ -439,7 +450,9 @@ Read Uncommitted（读取未提交内容）
           
             <a href="/tags/mysql/" rel="tag">#mysql</a>
           
-            <a href="/tags/事务/" rel="tag">#事务</a>
+            <a href="/tags/maxscale/" rel="tag">#maxscale</a>
+          
+            <a href="/tags/中间件/" rel="tag">#中间件</a>
           
         </div>
       
@@ -448,16 +461,16 @@ Read Uncommitted（读取未提交内容）
         <div class="post-nav">
           <div class="post-nav-next post-nav-item">
             
-              <a href="/blog/2016/07/mysql-auto-increment-primary-key.html" rel="next" title="MySQL为什么需要一个自增主键">
-                <i class="fa fa-chevron-left"></i> MySQL为什么需要一个自增主键
+              <a href="/blog/2016/08/mysql-ha-load-balance-mysql-master-slave-architecture.html" rel="next" title="双机高可用-负载均衡-MySQL(读写分离、主从自动切换)架构设计">
+                <i class="fa fa-chevron-left"></i> 双机高可用-负载均衡-MySQL(读写分离、主从自动切换)架构设计
               </a>
             
           </div>
 
           <div class="post-nav-prev post-nav-item">
             
-              <a href="/blog/2016/07/nginx-localtion-rewrite.html" rel="prev" title="nginx配置location与rewrite规则教程">
-                nginx配置location与rewrite规则教程 <i class="fa fa-chevron-right"></i>
+              <a href="/blog/2016/08/mysql-maxscale-02.html" rel="prev" title="MaxScale 在 slave 有故障后如何处理？">
+                MaxScale 在 slave 有故障后如何处理？ <i class="fa fa-chevron-right"></i>
               </a>
             
           </div>
@@ -507,8 +520,8 @@ Read Uncommitted（读取未提交内容）
           
   <div class="comments" id="comments">
     
-      <div class="ds-thread" data-thread-key="/blog/2016/07/mysql-transaction-level.html"
-           data-title="MySQL事务隔离级别" data-url="http://icyxp.github.io/blog/2016/07/mysql-transaction-level.html">
+      <div class="ds-thread" data-thread-key="/blog/2016/08/mysql-maxscale-01.html"
+           data-title="Mysql 读写分离中间件 MaxScale" data-url="http://icyxp.github.io/blog/2016/08/mysql-maxscale-01.html">
       </div>
     
   </div>
@@ -657,7 +670,7 @@ Read Uncommitted（读取未提交内容）
               
             
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#四类隔离级别"><span class="nav-number">1.</span> <span class="nav-text">四类隔离级别</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#隔离级别与一致性"><span class="nav-number">2.</span> <span class="nav-text">隔离级别与一致性</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#设置当前隔离级别"><span class="nav-number">3.</span> <span class="nav-text">设置当前隔离级别</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#my-cnf设置"><span class="nav-number">4.</span> <span class="nav-text">my.cnf设置</span></a></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#MaxScale-是干什么的？"><span class="nav-number">1.</span> <span class="nav-text">MaxScale 是干什么的？</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#MaxScale-的基础构成"><span class="nav-number">2.</span> <span class="nav-text">MaxScale 的基础构成</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#认证插件"><span class="nav-number">2.1.</span> <span class="nav-text">认证插件</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#协议插件"><span class="nav-number">2.2.</span> <span class="nav-text">协议插件</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#路由插件"><span class="nav-number">2.3.</span> <span class="nav-text">路由插件</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#监控插件"><span class="nav-number">2.4.</span> <span class="nav-text">监控插件</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#日志和过滤插件"><span class="nav-number">2.5.</span> <span class="nav-text">日志和过滤插件</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#MaxScale-的安装使用"><span class="nav-number">3.</span> <span class="nav-text">MaxScale 的安装使用</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#过程概述"><span class="nav-number">3.1.</span> <span class="nav-text">过程概述</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#详细过程"><span class="nav-number">3.2.</span> <span class="nav-text">详细过程</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#配置一主二从的集群环境"><span class="nav-number">3.2.1.</span> <span class="nav-text">配置一主二从的集群环境</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#安装-MaxScale"><span class="nav-number">3.2.2.</span> <span class="nav-text">安装 MaxScale</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#配置-MaxScale"><span class="nav-number">3.2.3.</span> <span class="nav-text">配置 MaxScale</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#启动-MaxScale"><span class="nav-number">3.2.4.</span> <span class="nav-text">启动 MaxScale</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#测试"><span class="nav-number">3.2.5.</span> <span class="nav-text">测试</span></a></li></ol></li></ol></li></ol></div>
             
           </div>
         </section>

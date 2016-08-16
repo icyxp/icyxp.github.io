@@ -17,8 +17,8 @@
   
   <entry>
     <title>MaxScale 在 slave 有故障后如何处理？</title>
-    <link href="http://icyxp.github.io//blog/2016/08/maxscale-02.html"/>
-    <id>http://icyxp.github.io//blog/2016/08/maxscale-02.html</id>
+    <link href="http://icyxp.github.io//blog/2016/08/mysql-maxscale-02.html"/>
+    <id>http://icyxp.github.io//blog/2016/08/mysql-maxscale-02.html</id>
     <published>2016-08-16T02:30:00.000Z</published>
     <updated>2016-08-16T02:12:34.000Z</updated>
     
@@ -108,8 +108,8 @@
   
   <entry>
     <title>Mysql 读写分离中间件 MaxScale</title>
-    <link href="http://icyxp.github.io//blog/2016/08/maxscale-01.html"/>
-    <id>http://icyxp.github.io//blog/2016/08/maxscale-01.html</id>
+    <link href="http://icyxp.github.io//blog/2016/08/mysql-maxscale-01.html"/>
+    <id>http://icyxp.github.io//blog/2016/08/mysql-maxscale-01.html</id>
     <published>2016-08-16T02:00:00.000Z</published>
     <updated>2016-08-16T01:57:30.000Z</updated>
     
@@ -200,8 +200,8 @@
   
   <entry>
     <title>双机高可用-负载均衡-MySQL(读写分离、主从自动切换)架构设计</title>
-    <link href="http://icyxp.github.io//blog/2016/08/ha-load-balance-mysql-master-slave-architecture.html"/>
-    <id>http://icyxp.github.io//blog/2016/08/ha-load-balance-mysql-master-slave-architecture.html</id>
+    <link href="http://icyxp.github.io//blog/2016/08/mysql-ha-load-balance-mysql-master-slave-architecture.html"/>
+    <id>http://icyxp.github.io//blog/2016/08/mysql-ha-load-balance-mysql-master-slave-architecture.html</id>
     <published>2016-08-09T02:00:00.000Z</published>
     <updated>2016-08-09T02:45:01.000Z</updated>
     
@@ -457,8 +457,8 @@
   
   <entry>
     <title>MySQL数据库开发规范</title>
-    <link href="http://icyxp.github.io//blog/2016/07/mysq-develop-standard.html"/>
-    <id>http://icyxp.github.io//blog/2016/07/mysq-develop-standard.html</id>
+    <link href="http://icyxp.github.io//blog/2016/07/mysql-mysql-develop-standard.html"/>
+    <id>http://icyxp.github.io//blog/2016/07/mysql-mysql-develop-standard.html</id>
     <published>2016-07-15T07:15:00.000Z</published>
     <updated>2016-07-15T07:55:32.000Z</updated>
     
@@ -666,8 +666,8 @@
   
   <entry>
     <title>Advanced MySQL Query Tuning</title>
-    <link href="http://icyxp.github.io//blog/2016/07/mysql-query.html"/>
-    <id>http://icyxp.github.io//blog/2016/07/mysql-query.html</id>
+    <link href="http://icyxp.github.io//blog/2016/07/mysql-mysql-query.html"/>
+    <id>http://icyxp.github.io//blog/2016/07/mysql-mysql-query.html</id>
     <published>2016-07-15T03:30:00.000Z</published>
     <updated>2016-07-15T03:30:34.000Z</updated>
     
@@ -860,8 +860,8 @@
   
   <entry>
     <title>MySQL事务隔离级别</title>
-    <link href="http://icyxp.github.io//blog/2016/07/mysql-transaction-level.html"/>
-    <id>http://icyxp.github.io//blog/2016/07/mysql-transaction-level.html</id>
+    <link href="http://icyxp.github.io//blog/2016/07/mysql-mysql-transaction-level.html"/>
+    <id>http://icyxp.github.io//blog/2016/07/mysql-mysql-transaction-level.html</id>
     <published>2016-07-11T09:21:00.000Z</published>
     <updated>2016-07-11T09:23:50.000Z</updated>
     
@@ -962,8 +962,8 @@
   
   <entry>
     <title>MySQL为什么需要一个自增主键</title>
-    <link href="http://icyxp.github.io//blog/2016/07/mysql-auto-increment-primary-key.html"/>
-    <id>http://icyxp.github.io//blog/2016/07/mysql-auto-increment-primary-key.html</id>
+    <link href="http://icyxp.github.io//blog/2016/07/mysql-mysql-auto-increment-primary-key.html"/>
+    <id>http://icyxp.github.io//blog/2016/07/mysql-mysql-auto-increment-primary-key.html</id>
     <published>2016-07-04T09:38:00.000Z</published>
     <updated>2016-07-04T12:52:21.000Z</updated>
     

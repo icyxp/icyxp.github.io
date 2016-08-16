@@ -5,7 +5,7 @@
     
     <entry>
       <title><![CDATA[MaxScale 在 slave 有故障后如何处理？]]></title>
-      <url>http://icyxp.github.io/blog/2016/08/maxscale-02.html</url>
+      <url>http://icyxp.github.io/blog/2016/08/mysql-maxscale-02.html</url>
       <content type="html"><![CDATA[<h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>之前介绍了 <a href="/blog/2016/08/maxscale-01.html">MaxScale</a> 可以实现 Mysql 的读写分离和读负载均衡，那么当 slave 出现故障后，MaxScale 会如何处理呢？</p>
 <p>例如有 3 台数据库服务器，一主二从的结构，数据库名称分别为 master, slave1, slave2</p>
 <p>现在我们实验以下两种情况：</p>
@@ -62,7 +62,7 @@
     
     <entry>
       <title><![CDATA[Mysql 读写分离中间件 MaxScale]]></title>
-      <url>http://icyxp.github.io/blog/2016/08/maxscale-01.html</url>
+      <url>http://icyxp.github.io/blog/2016/08/mysql-maxscale-01.html</url>
       <content type="html"><![CDATA[<h2 id="MaxScale-是干什么的？"><a href="#MaxScale-是干什么的？" class="headerlink" title="MaxScale 是干什么的？"></a>MaxScale 是干什么的？</h2><p>配置好了 Mysql 的主从复制结构后，我们希望实现读写分离，把读操作分散到从服务器中，并且对多个从服务器能实现负载均衡</p>
 <p><strong>读写分离</strong>和<strong>负载均衡</strong>是 Mysql 集群的基础需求，<strong>MaxScale</strong> 就可以帮着我们方便的实现这些功能<br><img src="/images/maxscale_01.png" alt="Maxscale"></p>
 <h2 id="MaxScale-的基础构成"><a href="#MaxScale-的基础构成" class="headerlink" title="MaxScale 的基础构成"></a>MaxScale 的基础构成</h2><ul>
@@ -121,7 +121,7 @@
     
     <entry>
       <title><![CDATA[双机高可用-负载均衡-MySQL(读写分离、主从自动切换)架构设计]]></title>
-      <url>http://icyxp.github.io/blog/2016/08/ha-load-balance-mysql-master-slave-architecture.html</url>
+      <url>http://icyxp.github.io/blog/2016/08/mysql-ha-load-balance-mysql-master-slave-architecture.html</url>
       <content type="html"><![CDATA[<h2 id="架构简介"><a href="#架构简介" class="headerlink" title="架构简介"></a>架构简介</h2><p>只有两台机器，需要实现其中一台死机之后另一台能接管这台机器的服务，并且在两台机器正常服务时，两台机器都能用上。如何设计这样的架构场景。<br><img src="/images/high_availability.png" alt="High Availability"></p>
 <p>此架构主要是由keepalived实现双机高可用，维护了一个外网VIP，一个内网VIP。正常情况时，外网VIP和内网VIP都绑定在server1服务器，web请求发送到server1的nginx，nginx对于静态资源请求就直接在本机检索并返回，对于php的动态请求，则负载均衡到server1和server2。对于SQL请求，会将此类请求发送到Atlas MySQL中间件，Atlas接收到请求之后，把涉及写操作的请求发送到内网VIP，读请求操作发送到mysql从，这样就实现了读写分离。</p>
 <p>当主服务器server1宕机时，keepalived检测到后，立即把外网VIP和内网VIP绑定到server2，并把server2的mysql切换成主库。此时由于外网VIP已经转移到了server2，web请求将发送给server2的nginx。nginx检测到server1宕机，不再把请求转发到server1的php-fpm。之后的sql请求照常发送给本地的atlas，atlas把写操作发送给内网VIP，读操作发送给mysql从，由于内网VIP已经绑定到server2了，server2的mysql同时接受写操作和读操作。</p>
@@ -290,7 +290,7 @@
     
     <entry>
       <title><![CDATA[MySQL数据库开发规范]]></title>
-      <url>http://icyxp.github.io/blog/2016/07/mysq-develop-standard.html</url>
+      <url>http://icyxp.github.io/blog/2016/07/mysql-mysql-develop-standard.html</url>
       <content type="html"><![CDATA[<h2 id="命名规范"><a href="#命名规范" class="headerlink" title="命名规范"></a>命名规范</h2><h3 id="库名、表名、字段名必须使用小写字母，并采用下划线分割"><a href="#库名、表名、字段名必须使用小写字母，并采用下划线分割" class="headerlink" title="库名、表名、字段名必须使用小写字母，并采用下划线分割"></a>库名、表名、字段名必须使用小写字母，并采用下划线分割</h3><ul>
 <li>MySQL有配置参数lower_case_table_names=1，即库表名以小写存储，大小写不敏感。如果是0，则库表名以实际情况存储，大小写敏感；如果是2，以实际情况存储，但以小写比较。</li>
 <li>如果大小写混合使用，可能存在abc，Abc，ABC等多个表共存，容易导致混乱。</li>
@@ -467,7 +467,7 @@
     
     <entry>
       <title><![CDATA[Advanced MySQL Query Tuning]]></title>
-      <url>http://icyxp.github.io/blog/2016/07/mysql-query.html</url>
+      <url>http://icyxp.github.io/blog/2016/07/mysql-mysql-query.html</url>
       <content type="html"><![CDATA[<iframe src="//www.slideshare.net/slideshow/embed_code/key/3HLJJcJmM9KLGT" width="100%" height="550" frameborder="0" marginwidth="0" marginheight="0" scrolling="no" allowfullscreen> </iframe>
 
 <p>Youtube: <a href="https://www.youtube.com/watch?v=TPFibi2G_oo" target="_blank" rel="external">https://www.youtube.com/watch?v=TPFibi2G_oo</a></p>
@@ -620,7 +620,7 @@
     
     <entry>
       <title><![CDATA[MySQL事务隔离级别]]></title>
-      <url>http://icyxp.github.io/blog/2016/07/mysql-transaction-level.html</url>
+      <url>http://icyxp.github.io/blog/2016/07/mysql-mysql-transaction-level.html</url>
       <content type="html"><![CDATA[<h2 id="四类隔离级别"><a href="#四类隔离级别" class="headerlink" title="四类隔离级别"></a>四类隔离级别</h2><p>SQL标准定义了4类隔离级别，包括了一些具体规则，用来限定事务内外的哪些改变是可见的，哪些是不可见的。低级别的隔离级一般支持更高的并发处理，并拥有更低的系统开销。</p>
 <ul>
 <li>Read Uncommitted（读取未提交内容）</li>
@@ -688,7 +688,7 @@
     
     <entry>
       <title><![CDATA[MySQL为什么需要一个自增主键]]></title>
-      <url>http://icyxp.github.io/blog/2016/07/mysql-auto-increment-primary-key.html</url>
+      <url>http://icyxp.github.io/blog/2016/07/mysql-mysql-auto-increment-primary-key.html</url>
       <content type="html"><![CDATA[<h2 id="主键"><a href="#主键" class="headerlink" title="主键"></a>主键</h2><p>表中每一行都应该有可以唯一标识自己的一列（或一组列）。</p>
 <p>一个顾客可以使用顾客编号列，而订单可以使用订单ID，雇员可以使用雇员ID 或 雇员社会保险号。</p>
 <p>主键（primary key） 一列（或一组列），其值能够唯一区分表中的每个行。<br>唯一标识表中每行的这个列（或这组列）称为主键。<strong><code>没有主键，更新或删除表中特定行很困难，因为没有安全的方法保证只设计相关的行。</code></strong></p>

@@ -2,21 +2,21 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   
   <url>
-    <loc>http://icyxp.github.io/blog/2016/08/maxscale-02.html</loc>
+    <loc>http://icyxp.github.io/blog/2016/08/mysql-maxscale-02.html</loc>
     
     <lastmod>2016-08-16T02:12:34.000Z</lastmod>
     
   </url>
   
   <url>
-    <loc>http://icyxp.github.io/blog/2016/08/maxscale-01.html</loc>
+    <loc>http://icyxp.github.io/blog/2016/08/mysql-maxscale-01.html</loc>
     
     <lastmod>2016-08-16T01:57:30.000Z</lastmod>
     
   </url>
   
   <url>
-    <loc>http://icyxp.github.io/blog/2016/08/ha-load-balance-mysql-master-slave-architecture.html</loc>
+    <loc>http://icyxp.github.io/blog/2016/08/mysql-ha-load-balance-mysql-master-slave-architecture.html</loc>
     
     <lastmod>2016-08-09T02:45:01.000Z</lastmod>
     
@@ -30,14 +30,14 @@
   </url>
   
   <url>
-    <loc>http://icyxp.github.io/blog/2016/07/mysq-develop-standard.html</loc>
+    <loc>http://icyxp.github.io/blog/2016/07/mysql-mysql-develop-standard.html</loc>
     
     <lastmod>2016-07-15T07:55:32.000Z</lastmod>
     
   </url>
   
   <url>
-    <loc>http://icyxp.github.io/blog/2016/07/mysql-query.html</loc>
+    <loc>http://icyxp.github.io/blog/2016/07/mysql-mysql-query.html</loc>
     
     <lastmod>2016-07-15T03:30:34.000Z</lastmod>
     
@@ -51,14 +51,14 @@
   </url>
   
   <url>
-    <loc>http://icyxp.github.io/blog/2016/07/mysql-transaction-level.html</loc>
+    <loc>http://icyxp.github.io/blog/2016/07/mysql-mysql-transaction-level.html</loc>
     
     <lastmod>2016-07-11T09:23:50.000Z</lastmod>
     
   </url>
   
   <url>
-    <loc>http://icyxp.github.io/blog/2016/07/mysql-auto-increment-primary-key.html</loc>
+    <loc>http://icyxp.github.io/blog/2016/07/mysql-mysql-auto-increment-primary-key.html</loc>
     
     <lastmod>2016-07-04T12:52:21.000Z</lastmod>
     

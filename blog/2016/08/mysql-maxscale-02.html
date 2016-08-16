@@ -86,36 +86,39 @@
 
 
 
-<meta name="description" content="MaxScale 是干什么的？配置好了 Mysql 的主从复制结构后，我们希望实现读写分离，把读操作分散到从服务器中，并且对多个从服务器能实现负载均衡
-读写分离和负载均衡是 Mysql 集群的基础需求，MaxScale 就可以帮着我们方便的实现这些功能
-MaxScale 的基础构成
-MaxScale 是 Mysql 的兄弟公司 MariaDB 开发的，现在已经发展得非常成熟
-MaxScale 是插">
+<meta name="description" content="前言之前介绍了 MaxScale 可以实现 Mysql 的读写分离和读负载均衡，那么当 slave 出现故障后，MaxScale 会如何处理呢？
+例如有 3 台数据库服务器，一主二从的结构，数据库名称分别为 master, slave1, slave2
+现在我们实验以下两种情况：
+
+当一台从服务器（ slave1 或者 slave2 ）出现故障后，查看 MaxScale 如何应对，及故障服务器重新">
 <meta property="og:type" content="article">
-<meta property="og:title" content="Mysql 读写分离中间件 MaxScale">
-<meta property="og:url" content="http://icyxp.github.io/blog/2016/08/maxscale-01.html">
+<meta property="og:title" content="MaxScale 在 slave 有故障后如何处理？">
+<meta property="og:url" content="http://icyxp.github.io/blog/2016/08/mysql-maxscale-02.html">
 <meta property="og:site_name" content="Devops">
-<meta property="og:description" content="MaxScale 是干什么的？配置好了 Mysql 的主从复制结构后，我们希望实现读写分离，把读操作分散到从服务器中，并且对多个从服务器能实现负载均衡
-读写分离和负载均衡是 Mysql 集群的基础需求，MaxScale 就可以帮着我们方便的实现这些功能
-MaxScale 的基础构成
-MaxScale 是 Mysql 的兄弟公司 MariaDB 开发的，现在已经发展得非常成熟
-MaxScale 是插">
-<meta property="og:image" content="http://icyxp.github.io/images/maxscale_01.png">
-<meta property="og:image" content="http://icyxp.github.io/images/maxscale_02.png">
-<meta property="og:image" content="http://icyxp.github.io/images/maxscale_03.png">
-<meta property="og:image" content="http://icyxp.github.io/images/maxscale_04.png">
-<meta property="og:image" content="http://icyxp.github.io/images/maxscale_05.png">
-<meta property="og:image" content="http://icyxp.github.io/images/maxscale_06.png">
-<meta property="og:image" content="http://icyxp.github.io/images/maxscale_07.png">
-<meta property="og:updated_time" content="2016-08-16T01:57:30.000Z">
+<meta property="og:description" content="前言之前介绍了 MaxScale 可以实现 Mysql 的读写分离和读负载均衡，那么当 slave 出现故障后，MaxScale 会如何处理呢？
+例如有 3 台数据库服务器，一主二从的结构，数据库名称分别为 master, slave1, slave2
+现在我们实验以下两种情况：
+
+当一台从服务器（ slave1 或者 slave2 ）出现故障后，查看 MaxScale 如何应对，及故障服务器重新">
+<meta property="og:image" content="http://icyxp.github.io/images/maxscale_08.png">
+<meta property="og:image" content="http://icyxp.github.io/images/maxscale_09.png">
+<meta property="og:image" content="http://icyxp.github.io/images/maxscale_10.png">
+<meta property="og:image" content="http://icyxp.github.io/images/maxscale_11.png">
+<meta property="og:image" content="http://icyxp.github.io/images/maxscale_12.png">
+<meta property="og:image" content="http://icyxp.github.io/images/maxscale_13.png">
+<meta property="og:image" content="http://icyxp.github.io/images/maxscale_14.png">
+<meta property="og:image" content="http://icyxp.github.io/images/maxscale_15.png">
+<meta property="og:image" content="http://icyxp.github.io/images/maxscale_16.png">
+<meta property="og:image" content="http://icyxp.github.io/images/maxscale_17.png">
+<meta property="og:updated_time" content="2016-08-16T02:12:34.000Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="Mysql 读写分离中间件 MaxScale">
-<meta name="twitter:description" content="MaxScale 是干什么的？配置好了 Mysql 的主从复制结构后，我们希望实现读写分离，把读操作分散到从服务器中，并且对多个从服务器能实现负载均衡
-读写分离和负载均衡是 Mysql 集群的基础需求，MaxScale 就可以帮着我们方便的实现这些功能
-MaxScale 的基础构成
-MaxScale 是 Mysql 的兄弟公司 MariaDB 开发的，现在已经发展得非常成熟
-MaxScale 是插">
-<meta name="twitter:image" content="http://icyxp.github.io/images/maxscale_01.png">
+<meta name="twitter:title" content="MaxScale 在 slave 有故障后如何处理？">
+<meta name="twitter:description" content="前言之前介绍了 MaxScale 可以实现 Mysql 的读写分离和读负载均衡，那么当 slave 出现故障后，MaxScale 会如何处理呢？
+例如有 3 台数据库服务器，一主二从的结构，数据库名称分别为 master, slave1, slave2
+现在我们实验以下两种情况：
+
+当一台从服务器（ slave1 或者 slave2 ）出现故障后，查看 MaxScale 如何应对，及故障服务器重新">
+<meta name="twitter:image" content="http://icyxp.github.io/images/maxscale_08.png">
 
 
 
@@ -133,7 +136,7 @@ MaxScale 是插">
   };
 </script>
 
-  <title> Mysql 读写分离中间件 MaxScale | Devops </title>
+  <title> MaxScale 在 slave 有故障后如何处理？ | Devops </title>
 </head>
 
 <body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
@@ -296,7 +299,7 @@ MaxScale 是插">
             
             
               
-                Mysql 读写分离中间件 MaxScale
+                MaxScale 在 slave 有故障后如何处理？
               
             
           </h1>
@@ -308,7 +311,7 @@ MaxScale 是插">
               <i class="fa fa-calendar-o"></i>
             </span>
             <span class="post-meta-item-text">发表于</span>
-            <time itemprop="dateCreated" datetime="2016-08-16T10:00:00+08:00" content="2016-08-16">
+            <time itemprop="dateCreated" datetime="2016-08-16T10:30:00+08:00" content="2016-08-16">
               2016-08-16
             </time>
           </span>
@@ -350,8 +353,8 @@ MaxScale 是插">
             
               <span class="post-comments-count">
                 &nbsp; | &nbsp;
-                <a href="/blog/2016/08/maxscale-01.html#comments" itemprop="discussionUrl">
-                  <span class="post-comments-count ds-thread-count" data-thread-key="/blog/2016/08/maxscale-01.html" itemprop="commentsCount"></span>
+                <a href="/blog/2016/08/mysql-maxscale-02.html#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count ds-thread-count" data-thread-key="/blog/2016/08/mysql-maxscale-02.html" itemprop="commentsCount"></span>
                 </a>
               </span>
             
@@ -374,57 +377,55 @@ MaxScale 是插">
       
 
       
-        <h2 id="MaxScale-是干什么的？"><a href="#MaxScale-是干什么的？" class="headerlink" title="MaxScale 是干什么的？"></a>MaxScale 是干什么的？</h2><p>配置好了 Mysql 的主从复制结构后，我们希望实现读写分离，把读操作分散到从服务器中，并且对多个从服务器能实现负载均衡</p>
-<p><strong>读写分离</strong>和<strong>负载均衡</strong>是 Mysql 集群的基础需求，<strong>MaxScale</strong> 就可以帮着我们方便的实现这些功能<br><img src="/images/maxscale_01.png" alt="Maxscale"></p>
-<h2 id="MaxScale-的基础构成"><a href="#MaxScale-的基础构成" class="headerlink" title="MaxScale 的基础构成"></a>MaxScale 的基础构成</h2><ul>
-<li>MaxScale 是 Mysql 的兄弟公司 MariaDB 开发的，现在已经发展得非常成熟</li>
-<li>MaxScale 是插件式结构，允许用户开发适合自己的插件</li>
-<li>MaxScale 目前提供的插件功能分为<strong>5类</strong></li>
-</ul>
-<h3 id="认证插件"><a href="#认证插件" class="headerlink" title="认证插件"></a>认证插件</h3><p>提供了登录认证功能，MaxScale 会读取并缓存数据库中 user 表中的信息，当有连接进来时，先从缓存信息中进行验证，如果没有此用户，会从后端数据库中更新信息，再次进行验证</p>
-<h3 id="协议插件"><a href="#协议插件" class="headerlink" title="协议插件"></a>协议插件</h3><p>包括客户端连接协议，和连接数据库的协议</p>
-<h3 id="路由插件"><a href="#路由插件" class="headerlink" title="路由插件"></a>路由插件</h3><p>决定如何把客户端的请求转发给后端数据库服务器，读写分离和负载均衡的功能就是由这个模块实现的</p>
-<h3 id="监控插件"><a href="#监控插件" class="headerlink" title="监控插件"></a>监控插件</h3><p>对各个数据库服务器进行监控，例如发现某个数据库服务器响应很慢，那么就不向其转发请求了</p>
-<h3 id="日志和过滤插件"><a href="#日志和过滤插件" class="headerlink" title="日志和过滤插件"></a>日志和过滤插件</h3><p>提供简单的数据库防火墙功能，可以对SQL进行过滤和容错</p>
-<a id="more"></a>
-<h2 id="MaxScale-的安装使用"><a href="#MaxScale-的安装使用" class="headerlink" title="MaxScale 的安装使用"></a>MaxScale 的安装使用</h2><p>例如有 3 台数据库服务器，是一主二从的结构</p>
-<h3 id="过程概述"><a href="#过程概述" class="headerlink" title="过程概述"></a>过程概述</h3><ol>
-<li>配置好集群环境</li>
-<li>下载安装 MaxScale</li>
-<li>配置 MaxScale，添加各数据库信息</li>
-<li>启动 MaxScale，查看是否正确连接数据库</li>
-<li>客户端连接 MaxScale，进行测试</li>
+        <h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>之前介绍了 <a href="/blog/2016/08/maxscale-01.html">MaxScale</a> 可以实现 Mysql 的读写分离和读负载均衡，那么当 slave 出现故障后，MaxScale 会如何处理呢？</p>
+<p>例如有 3 台数据库服务器，一主二从的结构，数据库名称分别为 master, slave1, slave2</p>
+<p>现在我们实验以下两种情况：</p>
+<ol>
+<li>当一台从服务器（ slave1 或者 slave2 ）出现故障后，查看 MaxScale 如何应对，及故障服务器重新上线后的情况</li>
+<li>当两台从服务器（ slave1 和 slave2 ）都出现故障后，查看 MaxScale 如何应对，及故障服务器重新上线后的情况</li>
 </ol>
-<h3 id="详细过程"><a href="#详细过程" class="headerlink" title="详细过程"></a>详细过程</h3><h4 id="配置一主二从的集群环境"><a href="#配置一主二从的集群环境" class="headerlink" title="配置一主二从的集群环境"></a>配置一主二从的集群环境</h4><p>准备3台服务器，安装 Mysql，配置一主二从的复制结构<br>主从复制的配置过程略过</p>
-<h4 id="安装-MaxScale"><a href="#安装-MaxScale" class="headerlink" title="安装 MaxScale"></a>安装 MaxScale</h4><p>最好在另一台服务器上安装，如果资源不足，可以和某个 Mysql 放在一起</p>
-<p>MaxScale 的下载地址<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">https://downloads.mariadb.com/files/MaxScale</span><br></pre></td></tr></table></figure></p>
-<p>根据自己的服务器选择合适的安装包</p>
-<p>以 centos 7 为例 安装步骤如下：<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">yum install libaio.x86_64 libaio-devel.x86_64 novacom-server.x86_64 libedit -y</span><br><span class="line">rpm -ivh maxscale-1.4.3-1.centos.7.x86_64.rpm</span><br></pre></td></tr></table></figure></p>
-<h4 id="配置-MaxScale"><a href="#配置-MaxScale" class="headerlink" title="配置 MaxScale"></a>配置 MaxScale</h4><p>在开始配置之前，需要在 master 中为 MaxScale 创建两个用户，用于监控模块和路由模块</p>
-<p>创建监控用户<br><figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">mysql&gt; create user scalemon@'%' identified by "111111";</span><br><span class="line">mysql&gt; grant replication slave, replication client on *.* to scalemon@'%';</span><br></pre></td></tr></table></figure></p>
-<p>创建路由用户<br><figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">mysql&gt; create user maxscale@'%' identified by "111111";</span><br><span class="line">mysql&gt; grant select on mysql.* to maxscale@'%';</span><br></pre></td></tr></table></figure></p>
-<p>用户创建完成后，开始配置<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">vi /etc/maxscale.cnf</span><br></pre></td></tr></table></figure></p>
-<p>找到 [server1] 部分，修改其中的 address 和 port，指向 master 的 IP 和端口</p>
-<p>复制2次 [server1] 的整块儿内容，改为 [server2] 与 [server3]，同样修改其中的 address 和 port，分别指向 slave1 和 slave2<br><img src="/images/maxscale_02.png" alt="Maxscale"></p>
-<p>找到 <code>[MySQL Monitor]</code> 部分，修改 servers 为 server1,server2,server3，修改 user 和 passwd 为之前创建的监控用户的信息（scalemon,111111）<br><img src="/images/maxscale_03.png" alt="Maxscale"></p>
-<p>找到 <code>[Read-Write Service]</code> 部分，修改 servers 为 server1,server2,server3，修改 user 和 passwd 为之前创建的路由用户的信息（maxscale,111111）<br><img src="/images/maxscale_04.png" alt="Maxscale"></p>
-<p>由于我们使用了 <code>[Read-Write Service]</code>，需要删除另一个服务 <code>[Read-Only Service]</code>，删除其整块儿内容即可</p>
-<p>配置完成，保存并退出编辑器</p>
-<h4 id="启动-MaxScale"><a href="#启动-MaxScale" class="headerlink" title="启动 MaxScale"></a>启动 MaxScale</h4><p>执行启动命令<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">maxscale --config=/etc/maxscale.cnf</span><br></pre></td></tr></table></figure></p>
-<p>查看 MaxScale 的响应端口是否已经就绪<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">netstat -ntelp</span><br></pre></td></tr></table></figure></p>
-<p><img src="/images/maxscale_05.png" alt="Maxscale"></p>
-<ul>
-<li>4006 是连接 MaxScale 时使用的端口</li>
-<li>6603 是 MaxScale 管理器的端口</li>
-</ul>
-<p>登录 MaxScale 管理器，查看一下数据库连接状态，默认的用户名和密码是 admin/mariadb<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">maxadmin --user=admin --password=mariadb</span><br><span class="line">MaxScale&gt; list servers</span><br></pre></td></tr></table></figure></p>
-<p><img src="/images/maxscale_06.png" alt="Maxscale"></p>
-<p>可以看到，MaxScale 已经连接到了 master 和 slave</p>
-<h4 id="测试"><a href="#测试" class="headerlink" title="测试"></a>测试</h4><p>先在 master 上创建一个测试用户<br><figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">mysql&gt; grant ALL PRIVILEGES on *.* to rtest@"%" Identified by "111111";</span><br></pre></td></tr></table></figure></p>
-<p>使用 Mysql 客户端到连接 MaxScale<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">mysql -h MaxScale所在的IP -P 4006 -u rtest -p111111</span><br></pre></td></tr></table></figure></p>
-<p>执行查看数据库服务器名的操作来知道当前实际所在的数据库<br><img src="/images/maxscale_07.png" alt="Maxscale"></p>
-<p>开启事务后，就自动路由到了 master，普通的查询操作，是在 slave上</p>
-<p>MaxScale 的配置完成了</p>
+<h2 id="准备"><a href="#准备" class="headerlink" title="准备"></a>准备</h2><p>为了更深入的查看 MaxScale 的状态，需要把 MaxScale 的日志打开</p>
+<p>修改配置文件<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">vi /etc/maxscale.cnf</span><br></pre></td></tr></table></figure></p>
+<p>找到 [maxscale] 部分，这里用来进行全局设置，在其中添加日志配置<br><figure class="highlight ini"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">log_info</span>=<span class="number">1</span></span><br><span class="line"><span class="attr">logdir</span>=/tmp/</span><br></pre></td></tr></table></figure></p>
+<p>通过开启 log_info 级别，可以看到 MaxScale 的路由日志</p>
+<p>修改配置后，重启 MaxScale </p>
+<h2 id="实验过程"><a href="#实验过程" class="headerlink" title="实验过程"></a>实验过程</h2><a id="more"></a>
+<h3 id="单个-slave-故障的情况"><a href="#单个-slave-故障的情况" class="headerlink" title="单个 slave 故障的情况"></a>单个 slave 故障的情况</h3><p>初始状态是一切正常<br><img src="/images/maxscale_08.png" alt="Maxscale"></p>
+<p>停掉 slave2 的复制，登录 slave2 的 mysql 执行<br><figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">mysql&gt; stop slave;</span><br></pre></td></tr></table></figure></p>
+<p>查看 MaxScale 服务器状态<br><img src="/images/maxscale_09.png" alt="Maxscale"></p>
+<p>slave2 已经失效了</p>
+<p>查看日志信息<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">cat /tmp/maxscale1.log</span><br><span class="line"><span class="comment">#尾部显示：</span></span><br><span class="line">2016-08-15 12:26:02   notice : Server changed state: slave2[172.17.0.4:3306]: lost_slave</span><br></pre></td></tr></table></figure></p>
+<p>提示 slave2 已经丢失</p>
+<p>查看客户端查询结果<br><img src="/images/maxscale_10.png" alt="Maxscale"></p>
+<p>查询操作全都转到了 <code>slave1</code></p>
+<p>可以看到， 在有 slave 故障后，MaxScale 会自动进行排除，不再向其转发请求</p>
+<p>下面看下 slave2 再次<strong>上线后的情况</strong></p>
+<p>登录 slave2 的 mysql 执行<br><figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">mysql&gt; start slave;</span><br></pre></td></tr></table></figure></p>
+<p>查看 MaxScale 服务器状态<br><img src="/images/maxscale_11.png" alt="Maxscale"></p>
+<p>恢复了正常状态，重新识别到了 slave2</p>
+<p>查看日志信息，显示：<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">2016-08-15 12:32:36   notice : Server changed state: slave2[172.17.0.4:3306]: new_slave</span><br></pre></td></tr></table></figure></p>
+<p>查看客户端查询结果<br><img src="/images/maxscale_12.png" alt="Maxscale"></p>
+<p>slave2 又可以正常接受查询请求</p>
+<p>通过实验可以看到，在部分 slave 发生故障时，MaxScale 可以自动识别出来，并移除路由列表，当故障恢复重新上线后，MaxScale 也能自动将其加入路由，过程透明</p>
+<h3 id="全部-slave-故障的情况"><a href="#全部-slave-故障的情况" class="headerlink" title="全部 slave 故障的情况"></a>全部 slave 故障的情况</h3><p>分别登陆 slave1 和 slave2 的 mysql，执行停止复制的命令<br><figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">mysql&gt; stop slave;</span><br></pre></td></tr></table></figure></p>
+<p>查看 MaxScale 服务器状态<br><img src="/images/maxscale_13.png" alt="Maxscale"></p>
+<p>发现各个服务器的角色都识别不出来了</p>
+<p>查看日志<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">2016-08-15 12:44:11   notice : Server changed state: master[172.17.0.2:3306]: lost_master</span><br><span class="line">2016-08-15 12:44:11   notice : Server changed state: slave1[172.17.0.3:3306]: lost_slave</span><br><span class="line">2016-08-15 12:44:11   notice : Server changed state: slave2[172.17.0.4:3306]: lost_slave</span><br><span class="line">2016-08-15 12:44:11   error  : No Master can be determined. Last known was 172.17.0.2:3306</span><br></pre></td></tr></table></figure></p>
+<p>从日志中看到，MaxScale 发现2个slave 和 master 都丢了，然后报错：没有 master 了</p>
+<p>客户端连接 MaxScale 时也失败了<br><img src="/images/maxscale_14.png" alt="Maxscale"></p>
+<p>说明从服务器全部失效后，会导致 master 也无法识别，使整个数据库服务都失效了</p>
+<p>对于 slave 全部失效的情况，能否让 master 还可用？这样至少可以正常提供数据库服务</p>
+<p>这需要修改 MaxScale 的配置，告诉 MaxScale 我们需要一个稳定的 master</p>
+<h4 id="处理过程"><a href="#处理过程" class="headerlink" title="处理过程"></a>处理过程</h4><p>先恢复两个 slave，让集群回到正常状态，登陆两个 slave 的mysql<br><figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">mysql&gt; start slave;</span><br></pre></td></tr></table></figure></p>
+<p>修改 MaxScale 配置文件，添加新的配置<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">vi /etc/maxscale.cnf</span><br></pre></td></tr></table></figure></p>
+<p>找到 [MySQL Monitor] 部分，添加：<br><figure class="highlight ini"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">detect_stale_master</span>=<span class="literal">true</span></span><br></pre></td></tr></table></figure></p>
+<p>保存退出，然后重启 MaxScale</p>
+<h4 id="验证"><a href="#验证" class="headerlink" title="验证"></a>验证</h4><p>停掉两台 slave ，查看 MaxScale 服务器状态<br><img src="/images/maxscale_15.png" alt="Maxscale"></p>
+<p>可以看到，虽然 slave 都无法识别了，但 master 还在，并提示处于稳定状态</p>
+<p>客户端执行请求<br><img src="/images/maxscale_16.png" alt="Maxscale"></p>
+<p>客户端可以连接 MaxScale，而且请求都转到了 master 上，说明 slave 全部失效时，由 master 支撑了全部请求</p>
+<p>当恢复两个 slave 后，整体状态自动恢复正常，从客户端执行请求时，又可以转到 slave 上<br><img src="/images/maxscale_17.png" alt="Maxscale"></p>
+<h4 id="小结"><a href="#小结" class="headerlink" title="小结"></a>小结</h4><p>通过测试发现，在部分 slave 故障情况下，对于客户端是完全透明的，当全部 slave 故障时，经过简单的配置，MaxScale 也可以很好的处理</p>
 <hr>
 <p>来源：杜亦舒</p>
 
@@ -461,17 +462,13 @@ MaxScale 是插">
         <div class="post-nav">
           <div class="post-nav-next post-nav-item">
             
-              <a href="/blog/2016/08/ha-load-balance-mysql-master-slave-architecture.html" rel="next" title="双机高可用-负载均衡-MySQL(读写分离、主从自动切换)架构设计">
-                <i class="fa fa-chevron-left"></i> 双机高可用-负载均衡-MySQL(读写分离、主从自动切换)架构设计
+              <a href="/blog/2016/08/mysql-maxscale-01.html" rel="next" title="Mysql 读写分离中间件 MaxScale">
+                <i class="fa fa-chevron-left"></i> Mysql 读写分离中间件 MaxScale
               </a>
             
           </div>
 
           <div class="post-nav-prev post-nav-item">
-            
-              <a href="/blog/2016/08/maxscale-02.html" rel="prev" title="MaxScale 在 slave 有故障后如何处理？">
-                MaxScale 在 slave 有故障后如何处理？ <i class="fa fa-chevron-right"></i>
-              </a>
             
           </div>
         </div>
@@ -520,8 +517,8 @@ MaxScale 是插">
           
   <div class="comments" id="comments">
     
-      <div class="ds-thread" data-thread-key="/blog/2016/08/maxscale-01.html"
-           data-title="Mysql 读写分离中间件 MaxScale" data-url="http://icyxp.github.io/blog/2016/08/maxscale-01.html">
+      <div class="ds-thread" data-thread-key="/blog/2016/08/mysql-maxscale-02.html"
+           data-title="MaxScale 在 slave 有故障后如何处理？" data-url="http://icyxp.github.io/blog/2016/08/mysql-maxscale-02.html">
       </div>
     
   </div>
@@ -670,7 +667,7 @@ MaxScale 是插">
               
             
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#MaxScale-是干什么的？"><span class="nav-number">1.</span> <span class="nav-text">MaxScale 是干什么的？</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#MaxScale-的基础构成"><span class="nav-number">2.</span> <span class="nav-text">MaxScale 的基础构成</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#认证插件"><span class="nav-number">2.1.</span> <span class="nav-text">认证插件</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#协议插件"><span class="nav-number">2.2.</span> <span class="nav-text">协议插件</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#路由插件"><span class="nav-number">2.3.</span> <span class="nav-text">路由插件</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#监控插件"><span class="nav-number">2.4.</span> <span class="nav-text">监控插件</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#日志和过滤插件"><span class="nav-number">2.5.</span> <span class="nav-text">日志和过滤插件</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#MaxScale-的安装使用"><span class="nav-number">3.</span> <span class="nav-text">MaxScale 的安装使用</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#过程概述"><span class="nav-number">3.1.</span> <span class="nav-text">过程概述</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#详细过程"><span class="nav-number">3.2.</span> <span class="nav-text">详细过程</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#配置一主二从的集群环境"><span class="nav-number">3.2.1.</span> <span class="nav-text">配置一主二从的集群环境</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#安装-MaxScale"><span class="nav-number">3.2.2.</span> <span class="nav-text">安装 MaxScale</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#配置-MaxScale"><span class="nav-number">3.2.3.</span> <span class="nav-text">配置 MaxScale</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#启动-MaxScale"><span class="nav-number">3.2.4.</span> <span class="nav-text">启动 MaxScale</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#测试"><span class="nav-number">3.2.5.</span> <span class="nav-text">测试</span></a></li></ol></li></ol></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#前言"><span class="nav-number">1.</span> <span class="nav-text">前言</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#准备"><span class="nav-number">2.</span> <span class="nav-text">准备</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#实验过程"><span class="nav-number">3.</span> <span class="nav-text">实验过程</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#单个-slave-故障的情况"><span class="nav-number">3.1.</span> <span class="nav-text">单个 slave 故障的情况</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#全部-slave-故障的情况"><span class="nav-number">3.2.</span> <span class="nav-text">全部 slave 故障的情况</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#处理过程"><span class="nav-number">3.2.1.</span> <span class="nav-text">处理过程</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#验证"><span class="nav-number">3.2.2.</span> <span class="nav-text">验证</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#小结"><span class="nav-number">3.2.3.</span> <span class="nav-text">小结</span></a></li></ol></li></ol></li></ol></div>
             
           </div>
         </section>
