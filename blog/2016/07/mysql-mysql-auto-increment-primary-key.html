@@ -88,7 +88,7 @@
 
 <meta name="description" content="主键表中每一行都应该有可以唯一标识自己的一列（或一组列）。
 一个顾客可以使用顾客编号列，而订单可以使用订单ID，雇员可以使用雇员ID 或 雇员社会保险号。
-主键（primary key） 一列（或一组列），其值能够唯一区分表中的每个行。唯一标识表中每行的这个列（或这组列）称为主键。没有主键，更新或删除表中特定行很困难，因为没有安全的方法保证只设计相关的行。
+主键（primary key） 一列（或一组列），其值能够唯一区分表中的每个行。唯一标识表中每行的这个列（或这组列）称为主键。没有主键，更新或删除表中特定行很困难，因为没有安全的方法保证只涉及相关的行。
 虽然并不总是都需要主键，但大多数数据库设">
 <meta property="og:type" content="article">
 <meta property="og:title" content="MySQL为什么需要一个自增主键">
@@ -96,16 +96,16 @@
 <meta property="og:site_name" content="Devops">
 <meta property="og:description" content="主键表中每一行都应该有可以唯一标识自己的一列（或一组列）。
 一个顾客可以使用顾客编号列，而订单可以使用订单ID，雇员可以使用雇员ID 或 雇员社会保险号。
-主键（primary key） 一列（或一组列），其值能够唯一区分表中的每个行。唯一标识表中每行的这个列（或这组列）称为主键。没有主键，更新或删除表中特定行很困难，因为没有安全的方法保证只设计相关的行。
+主键（primary key） 一列（或一组列），其值能够唯一区分表中的每个行。唯一标识表中每行的这个列（或这组列）称为主键。没有主键，更新或删除表中特定行很困难，因为没有安全的方法保证只涉及相关的行。
 虽然并不总是都需要主键，但大多数数据库设">
 <meta property="og:image" content="http://icyxp.github.io/images/mysql_aipk_1.jpg">
 <meta property="og:image" content="http://icyxp.github.io/images/mysql_aipk_2.jpg">
-<meta property="og:updated_time" content="2016-07-04T12:52:21.000Z">
+<meta property="og:updated_time" content="2016-08-18T01:54:45.000Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="MySQL为什么需要一个自增主键">
 <meta name="twitter:description" content="主键表中每一行都应该有可以唯一标识自己的一列（或一组列）。
 一个顾客可以使用顾客编号列，而订单可以使用订单ID，雇员可以使用雇员ID 或 雇员社会保险号。
-主键（primary key） 一列（或一组列），其值能够唯一区分表中的每个行。唯一标识表中每行的这个列（或这组列）称为主键。没有主键，更新或删除表中特定行很困难，因为没有安全的方法保证只设计相关的行。
+主键（primary key） 一列（或一组列），其值能够唯一区分表中的每个行。唯一标识表中每行的这个列（或这组列）称为主键。没有主键，更新或删除表中特定行很困难，因为没有安全的方法保证只涉及相关的行。
 虽然并不总是都需要主键，但大多数数据库设">
 <meta name="twitter:image" content="http://icyxp.github.io/images/mysql_aipk_1.jpg">
 
@@ -356,7 +356,7 @@
       
         <h2 id="主键"><a href="#主键" class="headerlink" title="主键"></a>主键</h2><p>表中每一行都应该有可以唯一标识自己的一列（或一组列）。</p>
 <p>一个顾客可以使用顾客编号列，而订单可以使用订单ID，雇员可以使用雇员ID 或 雇员社会保险号。</p>
-<p>主键（primary key） 一列（或一组列），其值能够唯一区分表中的每个行。<br>唯一标识表中每行的这个列（或这组列）称为主键。<strong><code>没有主键，更新或删除表中特定行很困难，因为没有安全的方法保证只设计相关的行。</code></strong></p>
+<p>主键（primary key） 一列（或一组列），其值能够唯一区分表中的每个行。<br>唯一标识表中每行的这个列（或这组列）称为主键。<strong><code>没有主键，更新或删除表中特定行很困难，因为没有安全的方法保证只涉及相关的行。</code></strong></p>
 <p>虽然并不总是都需要主键，但大多数数据库设计人员都应保证他们创建的每个表有一个主键，以便于以后数据操纵和管理</p>
 <p>表中的任何列都可以作为主键，只要它满足一下条件:<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">任何两行都不具有相同的主键值</span><br><span class="line">每个行都必须具有一个主键值（主键列不允许NULL值）</span><br></pre></td></tr></table></figure></p>
 <p>主键值规范：这里列出的规则是MySQL本身强制实施的。</p>
