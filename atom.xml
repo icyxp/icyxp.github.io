@@ -5,7 +5,7 @@
   <link href="/atom.xml" rel="self"/>
   
   <link href="http://icyxp.github.io/"/>
-  <updated>2016-08-16T02:12:34.000Z</updated>
+  <updated>2016-09-29T11:37:49.000Z</updated>
   <id>http://icyxp.github.io/</id>
   
   <author>
@@ -14,6 +14,72 @@
   </author>
   
   <generator uri="http://hexo.io/">Hexo</generator>
+  
+  <entry>
+    <title>MySQL too many connection 问题分析</title>
+    <link href="http://icyxp.github.io//blog/2016/09/mysql-mysql-sleep.html"/>
+    <id>http://icyxp.github.io//blog/2016/09/mysql-mysql-sleep.html</id>
+    <published>2016-09-29T11:00:00.000Z</published>
+    <updated>2016-09-29T11:37:49.000Z</updated>
+    
+    <content type="html">&lt;h2 id=&quot;问题缘由&quot;&gt;&lt;a href=&quot;#问题缘由&quot; class=&quot;headerlink&quot; title=&quot;问题缘由&quot;&gt;&lt;/a&gt;问题缘由&lt;/h2&gt;&lt;p&gt;线上一个网站在运行一段时间后，页面打开速度变慢随之出现&lt;code&gt;502 bad gateway&lt;/code&gt;的错误。&lt;/p&gt;
+&lt;h2 id=&quot;问题分析&quot;&gt;&lt;a href=&quot;#问题分析&quot; class=&quot;headerlink&quot; title=&quot;问题分析&quot;&gt;&lt;/a&gt;问题分析&lt;/h2&gt;&lt;p&gt;由&lt;code&gt;502 bad gateway&lt;/code&gt;的错误，我们知道就是nginx链接后端的php，而php程序没有及时返回，造成了超时。&lt;br&gt;那么造成php超时的原因也有多种，比如：&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;php-fpm资源消耗光&lt;/li&gt;
+&lt;li&gt;调用外部资源超时，比如外部的web service、数据库等等&lt;/li&gt;
+&lt;li&gt;….&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;出现问题，我们先登录服务器查看相关日志。&lt;/p&gt;
+&lt;p&gt;结合我们的业务，首先想到了mysql数据库，先查看了一下mysql数据库的状态，通过show full processlist命令发现有大量的链接处于sleep状态。&lt;/p&gt;
+&lt;p&gt;&lt;code&gt;sleep&lt;/code&gt;状态的意思就是说，某个客户端一直占着这个链接，但是什么事也不干，或者是客户端压根儿就已经断开了，而服务端却不知道。&lt;/p&gt;
+&lt;p&gt;我们知道，mysql的连接数是有限制的，比如默认是151个，那么当大量的链接处于sleep状态时，php程序就无法同mysql建立链接，就会发生超时现象。&lt;/p&gt;
+&lt;a id=&quot;more&quot;&gt;&lt;/a&gt;
+&lt;p&gt;那么造成sleep的原因，有三个，下面是mysql手册给出的解释：&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;客户端程序在退出之前没有调用&lt;code&gt;mysql_close()&lt;/code&gt;。[写程序的疏忽，或者数据库的db类库没有自动关闭每次的连接。。。]&lt;/li&gt;
+&lt;li&gt;客户端sleep的时间在&lt;code&gt;wait_timeout&lt;/code&gt;或&lt;code&gt;interactive_timeout&lt;/code&gt;规定的秒内没有发出任何请求到服务器. [类似常连，类似于不完整的tcp ip协议构造，服务端一直认为客户端仍然存在（有可能客户端已经断掉了）]&lt;/li&gt;
+&lt;li&gt;客户端程序在结束之前向服务器发送了请求还没得到返回结果就结束掉了。 [参看：tcp ip协议的三次握手]&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;那么知道了问题所在，就要找到是什么原因导致的sleep线程的存在，&lt;/p&gt;
+&lt;p&gt;通过上面的信息，我们知道是 192.168.1.2这个IP的20318端口和mysql建立的链接，而192.168.1.2正是我们的web服务器，&lt;/p&gt;
+&lt;p&gt;于是ssh登录服务器，通过&lt;code&gt;netstat -tunp&lt;/code&gt;找到端口20318所对应的进程和pid，一看就是php-fpm引起的。&lt;/p&gt;
+&lt;p&gt;下面就是要看一下这个php-fpm是调用的哪一个php文件，找到了具体的php文件就好办了。&lt;/p&gt;
+&lt;p&gt;具体可以通过&lt;code&gt;lsof&lt;/code&gt;列出这个&lt;code&gt;pid&lt;/code&gt;打开的文件，也可以通过&lt;code&gt;strace&lt;/code&gt;跟踪进程的系统调用。&lt;/p&gt;
+&lt;p&gt;下面是lsof的部分输出：&lt;br&gt;&lt;figure class=&quot;highlight bash&quot;&gt;&lt;table&gt;&lt;tr&gt;&lt;td class=&quot;gutter&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;1&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;2&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;3&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;4&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;5&lt;/span&gt;&lt;br&gt;&lt;/pre&gt;&lt;/td&gt;&lt;td class=&quot;code&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;&lt;span class=&quot;comment&quot;&gt;# lsof -p 23018&lt;/span&gt;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;COMMAND   PID   USER   FD   TYPE     DEVICE     SIZE       NODE NAME&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;php-fpm 15687 daemon  cwd    DIR      104,2     4096   69437193 /xxx/daemon.php&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;php-fpm 15687 daemon  rtd    DIR      104,6     4096          2 /&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;php-fpm 15687 daemon  txt    REG      104,5 27714205    3466635 /app/php/sbin/php-fpm&lt;/span&gt;&lt;br&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/figure&gt;&lt;/p&gt;
+&lt;p&gt;从中可以看到，是我们的&lt;code&gt;daemon.php&lt;/code&gt;引起的，这个程序是我们向ios设备推送通知的程序，其中要跟苹果（Apple）的服务器建立链接，可能是苹果服务器不稳定,超时引起的。&lt;/p&gt;
+&lt;p&gt;程序大致流程：&lt;br&gt;&lt;figure class=&quot;highlight php&quot;&gt;&lt;table&gt;&lt;tr&gt;&lt;td class=&quot;gutter&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;1&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;2&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;3&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;4&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;5&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;6&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;7&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;8&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;9&lt;/span&gt;&lt;br&gt;&lt;/pre&gt;&lt;/td&gt;&lt;td class=&quot;code&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;mysql_connect();  &lt;span class=&quot;comment&quot;&gt;//建立链接&lt;/span&gt;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;$queryBid = mysql_query(&lt;span class=&quot;string&quot;&gt;&quot;select bundleId from apps&quot;&lt;/span&gt;);&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;&lt;span class=&quot;keyword&quot;&gt;while&lt;/span&gt; ($row = mysql_fetch_assoc($queryBid)) &amp;#123;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;	&lt;span class=&quot;comment&quot;&gt;//取出通知内容，连接苹果服务器，进行推送&lt;/span&gt;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;	&lt;span class=&quot;comment&quot;&gt;//这里有时候会花一二十分钟，此时mysql服务器那里的连接一直是sleep状态&lt;/span&gt;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;&amp;#125;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;mysql_close();&lt;/span&gt;&lt;br&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/figure&gt;&lt;/p&gt;
+&lt;h2 id=&quot;解决方法&quot;&gt;&lt;a href=&quot;#解决方法&quot; class=&quot;headerlink&quot; title=&quot;解决方法&quot;&gt;&lt;/a&gt;解决方法&lt;/h2&gt;&lt;p&gt;方案一：修改的思路也很简单，我们先通过mysql把数据取出来，之后马上关掉mysql连接，释放mysql资源，剩下的就慢慢干好了。 修改后的程序是这样的：&lt;br&gt;&lt;figure class=&quot;highlight php&quot;&gt;&lt;table&gt;&lt;tr&gt;&lt;td class=&quot;gutter&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;1&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;2&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;3&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;4&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;5&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;6&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;7&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;8&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;9&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;10&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;11&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;12&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;13&lt;/span&gt;&lt;br&gt;&lt;/pre&gt;&lt;/td&gt;&lt;td class=&quot;code&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;mysql_connect();  &lt;span class=&quot;comment&quot;&gt;//建立链接&lt;/span&gt;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;$arr_bid=&lt;span class=&quot;keyword&quot;&gt;array&lt;/span&gt;();&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;$queryBid = mysql_query(&lt;span class=&quot;string&quot;&gt;&quot;select bundleId from apps&quot;&lt;/span&gt;);&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;&lt;span class=&quot;keyword&quot;&gt;while&lt;/span&gt;($row = mysql_fetch_assoc($queryBid)) &amp;#123;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;	$arr_bid[] = $row;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;&amp;#125;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;mysql_close(); &lt;span class=&quot;comment&quot;&gt;//从mysql中取完数据就马上关闭连接&lt;/span&gt;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;&lt;span class=&quot;keyword&quot;&gt;foreach&lt;/span&gt;($arr_bid &lt;span class=&quot;keyword&quot;&gt;as&lt;/span&gt; $row)&amp;#123;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;	&lt;span class=&quot;comment&quot;&gt;//取出通知内容，连接苹果服务器，进行推送&lt;/span&gt;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;	&lt;span class=&quot;comment&quot;&gt;//这里有时候会花一二十分钟&lt;/span&gt;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;&amp;#125;&lt;/span&gt;&lt;br&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/figure&gt;&lt;/p&gt;
+&lt;p&gt;方案二：[不治本，有后遗症]&lt;br&gt;写一个定时脚本，每分钟检查下mysql连接数，超过sleep时间的自动kill掉&lt;br&gt;&lt;figure class=&quot;highlight php&quot;&gt;&lt;table&gt;&lt;tr&gt;&lt;td class=&quot;gutter&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;1&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;2&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;3&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;4&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;5&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;6&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;7&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;8&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;9&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;10&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;11&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;12&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;13&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;14&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;15&lt;/span&gt;&lt;br&gt;&lt;/pre&gt;&lt;/td&gt;&lt;td class=&quot;code&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;&lt;span class=&quot;meta&quot;&gt;&amp;lt;?php&lt;/span&gt;  &lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;define(&lt;span class=&quot;string&quot;&gt;&#39;MAX_SLEEP_TIME&#39;&lt;/span&gt;， &lt;span class=&quot;number&quot;&gt;120&lt;/span&gt;);  &lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;  &lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;$hostname = &lt;span class=&quot;string&quot;&gt;&quot;localhost&quot;&lt;/span&gt;;  &lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;$username = &lt;span class=&quot;string&quot;&gt;&quot;root&quot;&lt;/span&gt;;  &lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;$password = &lt;span class=&quot;string&quot;&gt;&quot;password&quot;&lt;/span&gt;;  &lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;  &lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;$connect = mysql_connect($hostname， $username， $password);  &lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;$result = mysql_query(&lt;span class=&quot;string&quot;&gt;&quot;SHOW PROCESSLIST&quot;&lt;/span&gt;， $connect);  &lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;&lt;span class=&quot;keyword&quot;&gt;while&lt;/span&gt; ($proc = mysql_fetch_assoc($result)) &amp;#123;  &lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;	&lt;span class=&quot;keyword&quot;&gt;if&lt;/span&gt; ($proc[&lt;span class=&quot;string&quot;&gt;&quot;Command&quot;&lt;/span&gt;] == &lt;span class=&quot;string&quot;&gt;&quot;Sleep&quot;&lt;/span&gt; &amp;amp;&amp;amp; $proc[&lt;span class=&quot;string&quot;&gt;&quot;Time&quot;&lt;/span&gt;] &amp;gt; MAX_SLEEP_TIME) &amp;#123;  &lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;	@mysql_query(&lt;span class=&quot;string&quot;&gt;&quot;KILL &quot;&lt;/span&gt; . $proc[&lt;span class=&quot;string&quot;&gt;&quot;Id&quot;&lt;/span&gt;]， $connect);  &lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;&amp;#125;  &lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;&amp;#125;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;mysql_close($connect);&lt;/span&gt;&lt;br&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/figure&gt;&lt;/p&gt;
+&lt;p&gt;加入到crontab定时计划里&lt;br&gt;&lt;figure class=&quot;highlight bash&quot;&gt;&lt;table&gt;&lt;tr&gt;&lt;td class=&quot;gutter&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;1&lt;/span&gt;&lt;br&gt;&lt;/pre&gt;&lt;/td&gt;&lt;td class=&quot;code&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;* * * * * php /usr/&lt;span class=&quot;built_in&quot;&gt;local&lt;/span&gt;/sbin/&lt;span class=&quot;built_in&quot;&gt;kill&lt;/span&gt;-mysql-sleep-proc.php&lt;/span&gt;&lt;br&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/figure&gt;&lt;/p&gt;
+&lt;p&gt;方案二：[不推荐]&lt;br&gt;修改mysql配置&lt;br&gt;&lt;figure class=&quot;highlight bash&quot;&gt;&lt;table&gt;&lt;tr&gt;&lt;td class=&quot;gutter&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;1&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;2&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;3&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;4&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;5&lt;/span&gt;&lt;br&gt;&lt;/pre&gt;&lt;/td&gt;&lt;td class=&quot;code&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;[mysqld]&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;&lt;span class=&quot;built_in&quot;&gt;wait&lt;/span&gt;_timeout=10&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;&lt;span class=&quot;comment&quot;&gt;#或者&lt;/span&gt;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;mysql&amp;gt; &lt;span class=&quot;built_in&quot;&gt;set&lt;/span&gt; global &lt;span class=&quot;built_in&quot;&gt;wait&lt;/span&gt;_timeout=10;&lt;/span&gt;&lt;br&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/figure&gt;&lt;/p&gt;
+</content>
+    
+    <summary type="html">
+    
+      &lt;h2 id=&quot;问题缘由&quot;&gt;&lt;a href=&quot;#问题缘由&quot; class=&quot;headerlink&quot; title=&quot;问题缘由&quot;&gt;&lt;/a&gt;问题缘由&lt;/h2&gt;&lt;p&gt;线上一个网站在运行一段时间后，页面打开速度变慢随之出现&lt;code&gt;502 bad gateway&lt;/code&gt;的错误。&lt;/p&gt;
+&lt;h2 id=&quot;问题分析&quot;&gt;&lt;a href=&quot;#问题分析&quot; class=&quot;headerlink&quot; title=&quot;问题分析&quot;&gt;&lt;/a&gt;问题分析&lt;/h2&gt;&lt;p&gt;由&lt;code&gt;502 bad gateway&lt;/code&gt;的错误，我们知道就是nginx链接后端的php，而php程序没有及时返回，造成了超时。&lt;br&gt;那么造成php超时的原因也有多种，比如：&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;php-fpm资源消耗光&lt;/li&gt;
+&lt;li&gt;调用外部资源超时，比如外部的web service、数据库等等&lt;/li&gt;
+&lt;li&gt;….&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;出现问题，我们先登录服务器查看相关日志。&lt;/p&gt;
+&lt;p&gt;结合我们的业务，首先想到了mysql数据库，先查看了一下mysql数据库的状态，通过show full processlist命令发现有大量的链接处于sleep状态。&lt;/p&gt;
+&lt;p&gt;&lt;code&gt;sleep&lt;/code&gt;状态的意思就是说，某个客户端一直占着这个链接，但是什么事也不干，或者是客户端压根儿就已经断开了，而服务端却不知道。&lt;/p&gt;
+&lt;p&gt;我们知道，mysql的连接数是有限制的，比如默认是151个，那么当大量的链接处于sleep状态时，php程序就无法同mysql建立链接，就会发生超时现象。&lt;/p&gt;
+    
+    </summary>
+    
+      <category term="mysql" scheme="http://icyxp.github.io/categories/mysql/"/>
+    
+    
+      <category term="mysql" scheme="http://icyxp.github.io/tags/mysql/"/>
+    
+      <category term="sleep" scheme="http://icyxp.github.io/tags/sleep/"/>
+    
+      <category term="show full processlist" scheme="http://icyxp.github.io/tags/show-full-processlist/"/>
+    
+  </entry>
   
   <entry>
     <title>MaxScale 在 slave 有故障后如何处理？</title>

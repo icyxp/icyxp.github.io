@@ -68,7 +68,7 @@
 <link href="/css/main.css?v=5.0.1" rel="stylesheet" type="text/css" />
 
 
-  <meta name="keywords" content="系统运维,系统开发,系统架构,网站架构,PHP,DevOps" />
+  <meta name="keywords" content="mysql,sleep,show full processlist," />
 
 
 
@@ -86,15 +86,37 @@
 
 
 
-<meta name="description" content="记录分享生活中的点滴">
-<meta property="og:type" content="website">
-<meta property="og:title" content="Devops">
-<meta property="og:url" content="http://icyxp.github.io/page/3/index.html">
+<meta name="description" content="问题缘由线上一个网站在运行一段时间后，页面打开速度变慢随之出现502 bad gateway的错误。
+问题分析由502 bad gateway的错误，我们知道就是nginx链接后端的php，而php程序没有及时返回，造成了超时。那么造成php超时的原因也有多种，比如：
+
+php-fpm资源消耗光
+调用外部资源超时，比如外部的web service、数据库等等
+….
+
+出现问题，我们先登录服务器查看">
+<meta property="og:type" content="article">
+<meta property="og:title" content="MySQL too many connection 问题分析">
+<meta property="og:url" content="http://icyxp.github.io/blog/2016/09/mysql-mysql-sleep.html">
 <meta property="og:site_name" content="Devops">
-<meta property="og:description" content="记录分享生活中的点滴">
+<meta property="og:description" content="问题缘由线上一个网站在运行一段时间后，页面打开速度变慢随之出现502 bad gateway的错误。
+问题分析由502 bad gateway的错误，我们知道就是nginx链接后端的php，而php程序没有及时返回，造成了超时。那么造成php超时的原因也有多种，比如：
+
+php-fpm资源消耗光
+调用外部资源超时，比如外部的web service、数据库等等
+….
+
+出现问题，我们先登录服务器查看">
+<meta property="og:updated_time" content="2016-09-29T11:37:49.000Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="Devops">
-<meta name="twitter:description" content="记录分享生活中的点滴">
+<meta name="twitter:title" content="MySQL too many connection 问题分析">
+<meta name="twitter:description" content="问题缘由线上一个网站在运行一段时间后，页面打开速度变慢随之出现502 bad gateway的错误。
+问题分析由502 bad gateway的错误，我们知道就是nginx链接后端的php，而php程序没有及时返回，造成了超时。那么造成php超时的原因也有多种，比如：
+
+php-fpm资源消耗光
+调用外部资源超时，比如外部的web service、数据库等等
+….
+
+出现问题，我们先登录服务器查看">
 
 
 
@@ -112,7 +134,7 @@
   };
 </script>
 
-  <title> Devops </title>
+  <title> MySQL too many connection 问题分析 | Devops </title>
 </head>
 
 <body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
@@ -143,9 +165,7 @@
     
   
 
-  <div class="container one-collumn sidebar-position-left 
-   page-home 
- ">
+  <div class="container one-collumn sidebar-position-left page-post-detail ">
     <div class="headband"></div>
 
     <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
@@ -255,9 +275,9 @@
         <div class="content-wrap">
           <div id="content" class="content">
             
-  <section id="posts" class="posts-expand">
+
+  <div id="posts" class="posts-expand">
     
-      
 
   
   
@@ -277,10 +297,7 @@
             
             
               
-                
-                <a class="post-title-link" href="/blog/2016/06/zephir-zephir-02.html" itemprop="url">
-                  Zephir安装和初体验
-                </a>
+                MySQL too many connection 问题分析
               
             
           </h1>
@@ -292,8 +309,8 @@
               <i class="fa fa-calendar-o"></i>
             </span>
             <span class="post-meta-item-text">发表于</span>
-            <time itemprop="dateCreated" datetime="2016-06-30T22:23:00+08:00" content="2016-06-30">
-              2016-06-30
+            <time itemprop="dateCreated" datetime="2016-09-29T19:00:00+08:00" content="2016-09-29">
+              2016-09-29
             </time>
           </span>
 
@@ -306,8 +323,8 @@
               <span class="post-meta-item-text">分类于</span>
               
                 <span itemprop="about" itemscope itemtype="https://schema.org/Thing">
-                  <a href="/categories/zephir/" itemprop="url" rel="index">
-                    <span itemprop="name">zephir</span>
+                  <a href="/categories/mysql/" itemprop="url" rel="index">
+                    <span itemprop="name">mysql</span>
                   </a>
                 </span>
 
@@ -322,8 +339,8 @@
             
               <span class="post-comments-count">
                 &nbsp; | &nbsp;
-                <a href="/blog/2016/06/zephir-zephir-02.html#comments" itemprop="discussionUrl">
-                  <span class="post-comments-count ds-thread-count" data-thread-key="/blog/2016/06/zephir-zephir-02.html" itemprop="commentsCount"></span>
+                <a href="/blog/2016/09/mysql-mysql-sleep.html#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count ds-thread-count" data-thread-key="/blog/2016/09/mysql-mysql-sleep.html" itemprop="commentsCount"></span>
                 </a>
               </span>
             
@@ -346,438 +363,116 @@
       
 
       
-        
-          <h2 id="Zephir安装"><a href="#Zephir安装" class="headerlink" title="Zephir安装"></a>Zephir安装</h2><h3 id="环境依赖"><a href="#环境依赖" class="headerlink" title="环境依赖"></a>环境依赖</h3><p>Zephir主要依赖于下面环境</p>
-<ul>
-<li>gcc &gt;= 4.x/clang &gt;= 3.x</li>
-<li>re2c 0.13或更高版本</li>
-<li>gnu 3.81或更高版本</li>
-<li>autoconf 2.31或更高版本</li>
-<li>automake 1.14或更高版本</li>
-<li>libpcre3</li>
-<li>php开发工具-phpize</li>
-</ul>
-<p>如果你使用Ubuntu，你可以安装所需要的包<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">$ sudo apt-get update</span><br><span class="line">$ sudo apt-get install git gcc make re2c php5 php5-json php5-dev libpcre3-dev</span><br></pre></td></tr></table></figure></p>
-<p>由于Zephir是用PHP编写的，所以你需要安装php<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">$ php -v</span><br><span class="line">PHP 5.6.5 (cli) (built: Jan 24 2015 20:04:31)</span><br><span class="line">Copyright (c) 1997-2014 The PHP Group</span><br><span class="line">Zend Engine v2.6.0, Copyright (c) 1998-2014 Zend Technologies</span><br><span class="line">with Zend OPcache v7.0.4-dev, Copyright (c) 1999-2014, by Zend Technologies</span><br></pre></td></tr></table></figure></p>
-<p>同时也必须确保安装了PHP开发库<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">$ phpize -v</span><br><span class="line">Configuring <span class="keyword">for</span>:</span><br><span class="line">PHP Api Version:         20131106</span><br><span class="line">Zend Module Api No:      20131226</span><br><span class="line">Zend Extension Api No:   220131226</span><br></pre></td></tr></table></figure></p>
-          <div class="post-more-link text-center">
-            <a class="btn" href="/blog/2016/06/zephir-zephir-02.html#more" rel="contents">
-              阅读全文 &raquo;
-            </a>
-          </div>
+        <h2 id="问题缘由"><a href="#问题缘由" class="headerlink" title="问题缘由"></a>问题缘由</h2><p>线上一个网站在运行一段时间后，页面打开速度变慢随之出现<code>502 bad gateway</code>的错误。</p>
+<h2 id="问题分析"><a href="#问题分析" class="headerlink" title="问题分析"></a>问题分析</h2><p>由<code>502 bad gateway</code>的错误，我们知道就是nginx链接后端的php，而php程序没有及时返回，造成了超时。<br>那么造成php超时的原因也有多种，比如：</p>
+<ol>
+<li>php-fpm资源消耗光</li>
+<li>调用外部资源超时，比如外部的web service、数据库等等</li>
+<li>….</li>
+</ol>
+<p>出现问题，我们先登录服务器查看相关日志。</p>
+<p>结合我们的业务，首先想到了mysql数据库，先查看了一下mysql数据库的状态，通过show full processlist命令发现有大量的链接处于sleep状态。</p>
+<p><code>sleep</code>状态的意思就是说，某个客户端一直占着这个链接，但是什么事也不干，或者是客户端压根儿就已经断开了，而服务端却不知道。</p>
+<p>我们知道，mysql的连接数是有限制的，比如默认是151个，那么当大量的链接处于sleep状态时，php程序就无法同mysql建立链接，就会发生超时现象。</p>
+<a id="more"></a>
+<p>那么造成sleep的原因，有三个，下面是mysql手册给出的解释：</p>
+<ol>
+<li>客户端程序在退出之前没有调用<code>mysql_close()</code>。[写程序的疏忽，或者数据库的db类库没有自动关闭每次的连接。。。]</li>
+<li>客户端sleep的时间在<code>wait_timeout</code>或<code>interactive_timeout</code>规定的秒内没有发出任何请求到服务器. [类似常连，类似于不完整的tcp ip协议构造，服务端一直认为客户端仍然存在（有可能客户端已经断掉了）]</li>
+<li>客户端程序在结束之前向服务器发送了请求还没得到返回结果就结束掉了。 [参看：tcp ip协议的三次握手]</li>
+</ol>
+<p>那么知道了问题所在，就要找到是什么原因导致的sleep线程的存在，</p>
+<p>通过上面的信息，我们知道是 192.168.1.2这个IP的20318端口和mysql建立的链接，而192.168.1.2正是我们的web服务器，</p>
+<p>于是ssh登录服务器，通过<code>netstat -tunp</code>找到端口20318所对应的进程和pid，一看就是php-fpm引起的。</p>
+<p>下面就是要看一下这个php-fpm是调用的哪一个php文件，找到了具体的php文件就好办了。</p>
+<p>具体可以通过<code>lsof</code>列出这个<code>pid</code>打开的文件，也可以通过<code>strace</code>跟踪进程的系统调用。</p>
+<p>下面是lsof的部分输出：<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># lsof -p 23018</span></span><br><span class="line">COMMAND   PID   USER   FD   TYPE     DEVICE     SIZE       NODE NAME</span><br><span class="line">php-fpm 15687 daemon  cwd    DIR      104,2     4096   69437193 /xxx/daemon.php</span><br><span class="line">php-fpm 15687 daemon  rtd    DIR      104,6     4096          2 /</span><br><span class="line">php-fpm 15687 daemon  txt    REG      104,5 27714205    3466635 /app/php/sbin/php-fpm</span><br></pre></td></tr></table></figure></p>
+<p>从中可以看到，是我们的<code>daemon.php</code>引起的，这个程序是我们向ios设备推送通知的程序，其中要跟苹果（Apple）的服务器建立链接，可能是苹果服务器不稳定,超时引起的。</p>
+<p>程序大致流程：<br><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">mysql_connect();  <span class="comment">//建立链接</span></span><br><span class="line"></span><br><span class="line">$queryBid = mysql_query(<span class="string">"select bundleId from apps"</span>);</span><br><span class="line"><span class="keyword">while</span> ($row = mysql_fetch_assoc($queryBid)) &#123;</span><br><span class="line">	<span class="comment">//取出通知内容，连接苹果服务器，进行推送</span></span><br><span class="line">	<span class="comment">//这里有时候会花一二十分钟，此时mysql服务器那里的连接一直是sleep状态</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">mysql_close();</span><br></pre></td></tr></table></figure></p>
+<h2 id="解决方法"><a href="#解决方法" class="headerlink" title="解决方法"></a>解决方法</h2><p>方案一：修改的思路也很简单，我们先通过mysql把数据取出来，之后马上关掉mysql连接，释放mysql资源，剩下的就慢慢干好了。 修改后的程序是这样的：<br><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">mysql_connect();  <span class="comment">//建立链接</span></span><br><span class="line"></span><br><span class="line">$arr_bid=<span class="keyword">array</span>();</span><br><span class="line">$queryBid = mysql_query(<span class="string">"select bundleId from apps"</span>);</span><br><span class="line"><span class="keyword">while</span>($row = mysql_fetch_assoc($queryBid)) &#123;</span><br><span class="line">	$arr_bid[] = $row;</span><br><span class="line">&#125;</span><br><span class="line">mysql_close(); <span class="comment">//从mysql中取完数据就马上关闭连接</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">foreach</span>($arr_bid <span class="keyword">as</span> $row)&#123;</span><br><span class="line">	<span class="comment">//取出通知内容，连接苹果服务器，进行推送</span></span><br><span class="line">	<span class="comment">//这里有时候会花一二十分钟</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>方案二：[不治本，有后遗症]<br>写一个定时脚本，每分钟检查下mysql连接数，超过sleep时间的自动kill掉<br><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span>  </span><br><span class="line">define(<span class="string">'MAX_SLEEP_TIME'</span>， <span class="number">120</span>);  </span><br><span class="line">  </span><br><span class="line">$hostname = <span class="string">"localhost"</span>;  </span><br><span class="line">$username = <span class="string">"root"</span>;  </span><br><span class="line">$password = <span class="string">"password"</span>;  </span><br><span class="line">  </span><br><span class="line">$connect = mysql_connect($hostname， $username， $password);  </span><br><span class="line">$result = mysql_query(<span class="string">"SHOW PROCESSLIST"</span>， $connect);  </span><br><span class="line"><span class="keyword">while</span> ($proc = mysql_fetch_assoc($result)) &#123;  </span><br><span class="line">	<span class="keyword">if</span> ($proc[<span class="string">"Command"</span>] == <span class="string">"Sleep"</span> &amp;&amp; $proc[<span class="string">"Time"</span>] &gt; MAX_SLEEP_TIME) &#123;  </span><br><span class="line">	@mysql_query(<span class="string">"KILL "</span> . $proc[<span class="string">"Id"</span>]， $connect);  </span><br><span class="line">&#125;  </span><br><span class="line">&#125;</span><br><span class="line">mysql_close($connect);</span><br></pre></td></tr></table></figure></p>
+<p>加入到crontab定时计划里<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">* * * * * php /usr/<span class="built_in">local</span>/sbin/<span class="built_in">kill</span>-mysql-sleep-proc.php</span><br></pre></td></tr></table></figure></p>
+<p>方案二：[不推荐]<br>修改mysql配置<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">[mysqld]</span><br><span class="line"><span class="built_in">wait</span>_timeout=10</span><br><span class="line"></span><br><span class="line"><span class="comment">#或者</span></span><br><span class="line">mysql&gt; <span class="built_in">set</span> global <span class="built_in">wait</span>_timeout=10;</span><br></pre></td></tr></table></figure></p>
+
+      
+    </div>
+
+    <div>
+      
         
       
     </div>
 
     <div>
       
-    </div>
+        
 
-    <div>
       
     </div>
 
     <footer class="post-footer">
       
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-
-
-    
-      
-
-  
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-            
-            
-              
-                
-                <a class="post-title-link" href="/blog/2016/06/zephir-zephir-01.html" itemprop="url">
-                  Zephir介绍
-                </a>
-              
-            
-          </h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            <span class="post-meta-item-icon">
-              <i class="fa fa-calendar-o"></i>
-            </span>
-            <span class="post-meta-item-text">发表于</span>
-            <time itemprop="dateCreated" datetime="2016-06-30T21:18:00+08:00" content="2016-06-30">
-              2016-06-30
-            </time>
-          </span>
-
+        <div class="post-tags">
           
-            <span class="post-category" >
-              &nbsp; | &nbsp;
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-              
-                <span itemprop="about" itemscope itemtype="https://schema.org/Thing">
-                  <a href="/categories/zephir/" itemprop="url" rel="index">
-                    <span itemprop="name">zephir</span>
-                  </a>
-                </span>
-
-                
-                
-
-              
-            </span>
+            <a href="/tags/mysql/" rel="tag">#mysql</a>
           
-
+            <a href="/tags/sleep/" rel="tag">#sleep</a>
           
-            
-              <span class="post-comments-count">
-                &nbsp; | &nbsp;
-                <a href="/blog/2016/06/zephir-zephir-01.html#comments" itemprop="discussionUrl">
-                  <span class="post-comments-count ds-thread-count" data-thread-key="/blog/2016/06/zephir-zephir-01.html" itemprop="commentsCount"></span>
-                </a>
-              </span>
-            
-          
-
-          
-
-          
-          
-
+            <a href="/tags/show-full-processlist/" rel="tag">#show full processlist</a>
           
         </div>
-      </header>
-    
-
-
-    <div class="post-body" itemprop="articleBody">
-
-      
       
 
       
-        
-          <h2 id="zephir介绍"><a href="#zephir介绍" class="headerlink" title="zephir介绍"></a>zephir介绍</h2><p>Zephir是一种可以让PHP开发者尝试编写和编译可以被PHP执行代码的一种语言。它是动态/静态类型，它的一些特性对于PHP 开发者来说是非常的相似的。</p>
-<p>Zephir的名字是取自Zend Engine/PHP/Intermediate的缩写。建议发音为zephyr相同。事实上Zephir的创造者发音为zaefire_.</p>
-<h3 id="简单易于开发"><a href="#简单易于开发" class="headerlink" title="简单易于开发"></a>简单易于开发</h3><p>相信大家和我有一样的经历，看到了yaf和phalcon在想为什么C语言的拓展框架可以这么的快，我自己能不能写一个出来呢？然后屁颠屁颠的跑去找资料找大神了解，大神说你去看一下 “PHP扩展开发及内核应用”，结果大家都知道醉了。</p>
-<p>主要原因是需要对C相对的熟悉并且对PHP内核API也要很熟悉，我觉得这已经不是门槛的问题了是太平洋的距离，就草草结束了研究。</p>
-<p>当遇到zephir首先了解的就是复杂程度，结果花了10分钟就跟着流程做了一个小DEMO，就这点看来就开发效率这点看来无可厚非的的高效快速，大家感受一下。<br>
-          <div class="post-more-link text-center">
-            <a class="btn" href="/blog/2016/06/zephir-zephir-01.html#more" rel="contents">
-              阅读全文 &raquo;
-            </a>
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/blog/2016/08/mysql-maxscale-02.html" rel="next" title="MaxScale 在 slave 有故障后如何处理？">
+                <i class="fa fa-chevron-left"></i> MaxScale 在 slave 有故障后如何处理？
+              </a>
+            
           </div>
-        
-      
-    </div>
 
-    <div>
-      
-    </div>
-
-    <div>
-      
-    </div>
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-
-
-    
-      
-
-  
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
+          <div class="post-nav-prev post-nav-item">
             
-            
-              
-                
-                <a class="post-title-link" href="/blog/2016/06/cache-server.html" itemprop="url">
-                  Cache 应用中的服务过载案例研究
-                </a>
-              
-            
-          </h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            <span class="post-meta-item-icon">
-              <i class="fa fa-calendar-o"></i>
-            </span>
-            <span class="post-meta-item-text">发表于</span>
-            <time itemprop="dateCreated" datetime="2016-06-29T00:00:00+08:00" content="2016-06-29">
-              2016-06-29
-            </time>
-          </span>
-
-          
-            <span class="post-category" >
-              &nbsp; | &nbsp;
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-              
-                <span itemprop="about" itemscope itemtype="https://schema.org/Thing">
-                  <a href="/categories/架构/" itemprop="url" rel="index">
-                    <span itemprop="name">架构</span>
-                  </a>
-                </span>
-
-                
-                
-
-              
-            </span>
-          
-
-          
-            
-              <span class="post-comments-count">
-                &nbsp; | &nbsp;
-                <a href="/blog/2016/06/cache-server.html#comments" itemprop="discussionUrl">
-                  <span class="post-comments-count ds-thread-count" data-thread-key="/blog/2016/06/cache-server.html" itemprop="commentsCount"></span>
-                </a>
-              </span>
-            
-          
-
-          
-
-          
-          
-
-          
+          </div>
         </div>
-      </header>
-    
-
-
-    <div class="post-body" itemprop="articleBody">
-
-      
       
 
       
-        
-          <p>简单地说，过载是外部请求对系统的访问量突然激增，造成请求堆积，服务不可用，最终导致系统崩溃。本文主要分析引入Cache可能造成的服务过载，并讨论相关的预防、恢复策略。</p>
-<p>Cache在现代系统中使用广泛，由此引入的服务过载隐患无处不在，但却非常隐蔽，容易被忽视。本文希望能为开发者在设计和编写相关类型应用，以及服务过载发生处理时能够有章可循。</p>
-<h2 id="一个服务过载案例"><a href="#一个服务过载案例" class="headerlink" title="一个服务过载案例"></a>一个服务过载案例</h2><p>本文讨论的案例是指存在正常调用关系的两个系统（假设调用方为A系统，服务方为B系统），A系统对B系统的访问突然超出B系统的承受能力，造成B系统崩溃。造成服务过载的原因很多，这里分析的是严重依赖Cache的系统服务过载。首先来看一种包含Cache的体系结构（如下图所示）。<br><img src="/images/2_cache.png" alt="Cache应用体系结构"></p>
-<p>A系统依赖B系统的读服务，A系统是60台机器组成的集群，B系统是6台机器组成的集群，之所以6台机器能够扛住60台机器的访问，是因为A系统并不是每次都访问B，而是首先请求Cache，只有Cache的相应数据失效时才会请求B。<br>
-          <div class="post-more-link text-center">
-            <a class="btn" href="/blog/2016/06/cache-server.html#more" rel="contents">
-              阅读全文 &raquo;
-            </a>
-          </div>
-        
-      
-    </div>
-
-    <div>
-      
-    </div>
-
-    <div>
-      
-    </div>
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
       
     </footer>
   </article>
 
 
-    
+
+    <div class="post-spread">
       
+        <!-- JiaThis Button BEGIN -->
+<div class="jiathis_style">
+  <a class="jiathis_button_tsina"></a>
+  <a class="jiathis_button_tqq"></a>
+  <a class="jiathis_button_weixin"></a>
+  <a class="jiathis_button_cqq"></a>
+  <a class="jiathis_button_douban"></a>
+  <a class="jiathis_button_renren"></a>
+  <a class="jiathis_button_qzone"></a>
+  <a class="jiathis_button_kaixin001"></a>
+  <a class="jiathis_button_copy"></a>
+  <a href="http://www.jiathis.com/share" class="jiathis jiathis_txt jiathis_separator jtico jtico_jiathis" target="_blank"></a>
+  <a class="jiathis_counter_style"></a>
+</div>
+<script type="text/javascript" >
+  var jiathis_config={
+    hideMore:false
+  }
+</script>
+<script type="text/javascript" src="http://v3.jiathis.com/code/jia.js" charset="utf-8"></script>
+<!-- JiaThis Button END -->
 
-  
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-            
-            
-              
-                
-                <a class="post-title-link" href="/blog/2016/06/iptables-forward-internet-share.html" itemprop="url">
-                  通过iptables实现端口转发与内网共享上网
-                </a>
-              
-            
-          </h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            <span class="post-meta-item-icon">
-              <i class="fa fa-calendar-o"></i>
-            </span>
-            <span class="post-meta-item-text">发表于</span>
-            <time itemprop="dateCreated" datetime="2016-06-21T00:00:00+08:00" content="2016-06-21">
-              2016-06-21
-            </time>
-          </span>
-
-          
-            <span class="post-category" >
-              &nbsp; | &nbsp;
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-              
-                <span itemprop="about" itemscope itemtype="https://schema.org/Thing">
-                  <a href="/categories/Linux/" itemprop="url" rel="index">
-                    <span itemprop="name">Linux</span>
-                  </a>
-                </span>
-
-                
-                
-
-              
-            </span>
-          
-
-          
-            
-              <span class="post-comments-count">
-                &nbsp; | &nbsp;
-                <a href="/blog/2016/06/iptables-forward-internet-share.html#comments" itemprop="discussionUrl">
-                  <span class="post-comments-count ds-thread-count" data-thread-key="/blog/2016/06/iptables-forward-internet-share.html" itemprop="commentsCount"></span>
-                </a>
-              </span>
-            
-          
-
-          
-
-          
-          
-
-          
-        </div>
-      </header>
-    
-
-
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          <p>iptables是一个Linux下优秀的nat+防火墙工具，我使用该工具以较低配置的传统pc配置了一个灵活强劲的防火墙+nat系统,小有心得，看了网上也有很多这方面的文章，但是似乎要么说的比较少，要么就是比较偏，内容不全，容易误导，我研究了一段时间的iptables同时也用了很久，有点滴经验，写来供大家参考，同时也备日后自己翻阅。</p>
-<p>首先要说明的是，iptables操作的是2.4以上内核的netfilter。所以需要linux的内核在2.4以上。其功能与安全性远远比其前辈ipfwadm,ipchains强大，iptables大致是工作在OSI七层的二、三、四层，其前辈ipchains不能单独实现对tcp/udp port以及对mac地址的的定义与操作，所以我想ipchains应该是仅仅工作在三层上的。</p>
-<h2 id="netfilter工作流程"><a href="#netfilter工作流程" class="headerlink" title="netfilter工作流程"></a>netfilter工作流程</h2><p>我们先简单介绍一下netfilter的大致工作流程，也就是一个数据包（或者叫分组、packet,我个人习惯叫包）在到达linux的网络接口的时候 （网卡）如何处理这个包，然后再介绍一下如何用iptables改变或者说控制对这个数据包进行操作。</p>
-<ul>
-<li>netfilter内部分为三个表，分别是 filter,nat,mangle，每个表又有不同的操作链（Chains）。</li>
-<li>在filter（过滤）表中，也就是他的 防火墙功能 的这个表，定义了三个 Chain。分别是INPUT,FORWARD,OUTPUT。也就是对包的入、转发、出进行定义的三个过滤链。对于这个filter表的操作和控制也是我们实现防火墙功能的一个重要手段</li>
-<li>在nat(Network Address Translation、网络地址翻译)表中，也就是我们用以实现地址转换和端口转发功能的这个表，定义了PREROUTING, POSTROUTING,OUTPUT三个链,下面我们会对这三个链作详细的说明</li>
-<li>而netfilter的mangle表则是一个自定义表，里面包括上面 的filter以及nat表中的各种chains，它可以让我们进行一些自定义的操作，同时这个mangle表中的chains在netfilter对包 的处理流程中处在一个比较优先的位置。
-          <div class="post-more-link text-center">
-            <a class="btn" href="/blog/2016/06/iptables-forward-internet-share.html#more" rel="contents">
-              阅读全文 &raquo;
-            </a>
-          </div>
-        
       
     </div>
-
-    <div>
-      
-    </div>
-
-    <div>
-      
-    </div>
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-
-
-    
-  </section>
-
-  
-  <nav class="pagination">
-    <a class="extend prev" rel="prev" href="/page/2/"><i class="fa fa-angle-left"></i></a><a class="page-number" href="/">1</a><a class="page-number" href="/page/2/">2</a><span class="page-number current">3</span>
-  </nav>
-
+  </div>
 
 
           </div>
@@ -785,6 +480,14 @@
 
 
           
+  <div class="comments" id="comments">
+    
+      <div class="ds-thread" data-thread-key="/blog/2016/09/mysql-mysql-sleep.html"
+           data-title="MySQL too many connection 问题分析" data-url="http://icyxp.github.io/blog/2016/09/mysql-mysql-sleep.html">
+      </div>
+    
+  </div>
+
 
         </div>
         
@@ -804,8 +507,17 @@
       
 
       
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap" >
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview">
+            站点概览
+          </li>
+        </ul>
+      
 
-      <section class="site-overview sidebar-panel  sidebar-panel-active ">
+      <section class="site-overview sidebar-panel ">
         <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
           <img class="site-author-image" itemprop="image"
                src="/images/avatar.jpg"
@@ -914,6 +626,17 @@
       </section>
 
       
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+            
+              
+            
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#问题缘由"><span class="nav-number">1.</span> <span class="nav-text">问题缘由</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#问题分析"><span class="nav-number">2.</span> <span class="nav-text">问题分析</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#解决方法"><span class="nav-number">3.</span> <span class="nav-text">解决方法</span></a></li></ol></div>
+            
+          </div>
+        </section>
+      
 
     </div>
   </aside>
@@ -998,6 +721,10 @@
   
 
   
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.0.1"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.0.1"></script>
+
+
 
   
 
