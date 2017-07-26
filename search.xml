@@ -4,6 +4,53 @@
   
     
     <entry>
+      <title><![CDATA[一语点醒技术人：你不是Google]]></title>
+      <url>http://icyxp.github.io/blog/2017/07/gossip-%E4%BD%A0%E4%B8%8D%E6%98%AFGoogle.html</url>
+      <content type="html"><![CDATA[<p><img src="/images/gossip/01/cover.png" alt="01"></p>
+<h2 id="简介"><a href="#简介" class="headerlink" title="简介"></a>简介</h2><p>在为问题寻找解决方案时要先充分了解问题本身，而不是一味地盲目崇拜那些巨头公司。Ozan Onay以Amazon、LinkedIn和Google为例，为执迷不悟的人敲响警钟。以下内容已获得作者翻译授权，查看原文：<a href="https://blog.bradfieldcs.com/you-are-not-google-84912cf44afb" target="_blank" rel="external">You Are Not Google</a>。</p>
+<p>软件工程师总是着迷于荒唐古怪的事。我们看起来似乎很理性，但在面对技术选型时，总是陷入抓狂——从Hacker News到各种博客，像一只飞蛾一样，来回折腾，最后精疲力尽，无助地飞向一团亮光，跪倒在它的前面——那就是我们一直在寻找的东西。</p>
+<p>真正理性的人不是这样做决定的。不过工程师一贯如此，比如决定是否使用MapReduce。</p>
+<p>Joe Hellerstein在他的大学数据库教程视频中说道：</p>
+<blockquote>
+<p>世界上只有差不多5个公司需要运行这么大规模的作业。至于其他公司……他们使用了所有的IO来实现不必要的容错。在2000年代，人们狂热地追随着Google：“我们要做Google做过的每一件事，因为我们也运行着世界上最大的互联网数据服务。”</p>
+</blockquote>
+<p>超出实际需求的容错没有什么问题，但我们却为此付出了的惨重的代价：不仅增加了IO，还有可能让原先成熟的系统——包含了事务、索引和查询优化器——变得破碎不堪。这是一个多么严重的历史倒退！有多少个Hadoop用户是有意识地做出这种决定的？有多少人知道他们的决定到底是不是一个明智之举？</p>
+<p>MapReduce已经成为一个众矢之的，那些盲目崇拜者也意识到事情不对劲。但这种情况却普遍存在：虽然你使用了大公司的技术，但你的情况却与他们大不一样，而且你的决定并没有经过深思熟虑，你只是习以为常地认为，模仿巨头公司就一定也能给你带来同样的财富。</p>
+<p>是的，这又是一篇劝大家“不要盲目崇拜”的文章。不过这次我列出了一长串有用的清单，或许能够帮助你们做出更好的决定。</p>
+<a id="more"></a>
+<h2 id="很酷的技术？UNPHAT"><a href="#很酷的技术？UNPHAT" class="headerlink" title="很酷的技术？UNPHAT"></a>很酷的技术？UNPHAT</h2><p>如果你还在使用Google搜索新技术来重建你的软件架构，那么我建议你不要再这么做了。相反，你可以考虑应用UNPHAT原则。</p>
+<ol>
+<li>在彻底了解（Understand）你的问题之前，不要急着去寻找解决方案。你的目标应该是在问题领域内“解决”问题，而不是在方案领域内解决问题。</li>
+<li>列出（eNumerate）多种方案，不要只把眼睛盯在你最喜欢的方案上。</li>
+<li>选择一个候选方案，并阅读相关论文（Paper）。</li>
+<li>了解候选方案的产生背景（Historical context）。</li>
+<li>比较优点（Advantages）和缺点，扬长避短。</li>
+<li>思考（Think）！冷静地思考候选方案是否适合用于解决你的问题。要出现怎样异常的情况才会让你改变注意？例如，数据要少到什么程度才会让你打消使用Hadoop的念头？</li>
+</ol>
+<h2 id="你不是Amazon"><a href="#你不是Amazon" class="headerlink" title="你不是Amazon"></a>你不是Amazon</h2><p>UNPHAT原则十分直截了当。最近我与一个公司有过一次对话，这个公司打算在一个读密集的系统里使用Cassandra，他们的数据是在夜间加载到系统里的。</p>
+<p>他们阅读了Dynamo的相关论文，并且知道Cassandra是最接近Dynamo的一个产品。我们知道，这些分布式数据库优先保证写可用性（Amazon是不会让“添加到购物车”这种操作出现失败的）。为了达到这个目的，他们在一致性以及几乎所有在传统RDBMS中出现过的特性上做出了妥协。但这家公司其实没有必要优先考虑写可用性，因为他们每天只有一次写入操作，只是数据量比较大。</p>
+<p>他们之所以考虑使用Cassandra，是因为PostgreSQL查询需要耗费几分钟的时间。他们认为是硬件的问题，经过排查，我们发现数据表里有5000万条数据，每条数据最多80个字节。如果从SSD上整块地读取所有数据大概需要5秒钟，这个不算快，但比起实际的查询，它要快上两个数量级。</p>
+<p>我真的很想多问他们几个问题（了解问题！），在问题变得愈加严重时，我为他们准备了5个方案（列出多个候选方案！），不过很显然，Cassandra对于他们来说完全是一个错误的方案。他们只需要耐心地做一些调优，比如对部分数据重新建模，或许可以考虑使用（当然也有可能没有）其他技术……但一定不是这种写高可用的键值存储系统，Amazon当初创建Cassandra是用来解决他们的购物车问题的！</p>
+<h2 id="你不是LinkedIn"><a href="#你不是LinkedIn" class="headerlink" title="你不是LinkedIn"></a>你不是LinkedIn</h2><p>我发现一个学生创办的小公司居然在他们的系统里使用Kafka，这让我感到很惊讶。因为据我所知，他们每天只有很少的事务需要处理——最好的情况下，一天最多只有几百个。这样的吞吐量几乎可以直接记在记事本上。</p>
+<p>Kafka被设计用于处理LinkedIn内部的吞吐量，那可是一个天文数字。即使是在几年前，这个数字已经达到了每天数万亿，在高峰时段每秒钟需要处理1000万个消息。不过Kafka也可以用于处理低吞吐量的负载，或许再低10个数量级？</p>
+<p>或许工程师们在做决定时确实是基于他们的预期需求，并且也很了解Kafka的适用场景。但我猜测他们是抵挡不住社区对Kafka的追捧，并没有仔细想过Kafka是否适合他们。要知道，那可是10个数量级的差距！</p>
+<h2 id="再一次，你不是Amazon"><a href="#再一次，你不是Amazon" class="headerlink" title="再一次，你不是Amazon"></a>再一次，你不是Amazon</h2><p>比Amazon的分布式数据库更为著名的是它的可伸缩架构模式，也就是面向服务架构。Werner Vogels在2006年的一次访谈中指出，Amazon在2001年时就意识到他们的前端需要横向伸缩，而面向服务架构有助于他们实现前端伸缩。工程师们面面相觑，最后只有少数几个工程师着手去做这件事情，而几乎没有人愿意将他们的静态网页拆分成小型的服务。</p>
+<p>不过Amazon还是决定向SOA转型，他们当时有7800个员工和30亿美元的销售规模。</p>
+<p>当然，并不是说你也要等到有7800个员工的时候才能转向SOA……只是你要多想想，它真的能解决你的问题吗？你的问题的根源是什么？可以通过其他的方式解决它们吗？</p>
+<p>如果你告诉我说，你那50个人的公司打算转向SOA，那么我不禁感到疑惑：为什么很多大型的公司仍然在乐此不彼地使用具有模块化的大型单体应用？</p>
+<h2 id="甚至Google也不是Google"><a href="#甚至Google也不是Google" class="headerlink" title="甚至Google也不是Google"></a>甚至Google也不是Google</h2><p>使用Hadoop和Spark这样的大规模数据流引擎会非常有趣，但在很多情况下，传统的DBMS更适合当前的负载，有时候数据量小到可以直接放进内存。你是否愿意花10,000美金去购买1TB的内存？如果你有十亿个用户，每个用户仅能使用1KB的内存，所以你的投入远远不够。</p>
+<p>或许你的负载大到需要把数据写回磁盘。那么你需要多少磁盘？你到底有多少数据量？Google之所以要创建GFS和MapReduce，是要解决整个Web的计算问题，比如重建整个Web的搜索索引。</p>
+<p>或许你已经阅读过GFS和MapReduce的论文，Google的部分问题在于吞吐量，而不是容量，他们之所以需要分布式的存储，是因为从磁盘读取字节流要花费太多的时间。那么你在2017年需要使用多少设备吞吐量？你一定不需要像Google那么大的吞吐量，所以你可能会考虑使用更好的设备。如果都用上SSD会给你增加多少成本？</p>
+<p>或许你还想要伸缩性。但你有仔细算过吗，你的数据增长速度会快过SSD降价的速度吗？在你的数据撑爆所有的机器之前，你的业务会有多少增长？截止2016年，Stack Exchange每天要处理2亿个请求，但是他们只用了4个SQL Server，一个用于Stack Overflow，一个用于其他用途，另外两个作为备份复本。</p>
+<p>或许你在应用UNPHAT原则之后，仍然决定要使用Hadoop或Spark。或许你的决定是对的，但关键的是你要用对工具。Google非常明白这个道理，当他们意识到MapReduce不再适合用于构建索引之后，他们就不再使用它。</p>
+<h2 id="先了解你的问题"><a href="#先了解你的问题" class="headerlink" title="先了解你的问题"></a>先了解你的问题</h2><p>我所说的也不是什么新观点，不过或许UNPHAT对于你们来说已经足够了。如果你觉得还不够，可以听听Rich Hickey的演讲“<a href="https://www.youtube.com/watch?v=f84n5oFoZBc" target="_blank" rel="external">吊床驱动开发</a>”，或者看看Polya的书《<a href="https://www.amazon.com/How-Solve-Mathematical-Princeton-Science/dp/069111966X?ie=UTF8&amp;%2aVersion%2a=1&amp;%2aentries%2a=0" target="_blank" rel="external">How to Solve It</a>》， 或者学习一下Hamming的课程“<a href="https://www.youtube.com/playlist?list=PL2FF649D0C4407B30" target="_blank" rel="external">The Art of Doing Science and Engineering</a>”。我恳请你们一定要多思考！在尝试解决问题之前先对它们有充分的了解。最后送上Polya的一个金句名言：</p>
+<blockquote>
+<p>回答一个你不了解的问题是愚蠢的，到达一个你不期望的终点是悲哀的。</p>
+</blockquote>
+]]></content>
+    </entry>
+    
+    <entry>
       <title><![CDATA[高负载微服务系统的诞生过程]]></title>
       <url>http://icyxp.github.io/blog/2017/07/microservice-%E9%AB%98%E8%B4%9F%E8%BD%BD%E5%BE%AE%E6%9C%8D%E5%8A%A1%E7%B3%BB%E7%BB%9F%E7%9A%84%E8%AF%9E%E7%94%9F%E8%BF%87%E7%A8%8B.html</url>
       <content type="html"><![CDATA[<p><img src="/images/ms/02/cover.png" alt="封面"></p>
