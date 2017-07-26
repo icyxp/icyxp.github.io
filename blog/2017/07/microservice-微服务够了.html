@@ -1,0 +1,903 @@
+<!doctype html>
+
+
+
+  
+
+
+<html class="theme-next muse use-motion">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/vendors/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+  
+  
+  
+  
+
+  
+    
+    
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+    
+    
+    <link href="//fonts.googleapis.com/css?family=Lato:300,300italic,400,400italic,700,700italic&subset=latin,latin-ext" rel="stylesheet" type="text/css">
+  
+
+
+
+
+
+
+<link href="/vendors/font-awesome/css/font-awesome.min.css?v=4.4.0" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.0.1" rel="stylesheet" type="text/css" />
+
+
+  <meta name="keywords" content="微服务,microservice," />
+
+
+
+
+
+  <link rel="alternate" href="/atom.xml" title="Devops" type="application/atom+xml" />
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico?v=5.0.1" />
+
+
+
+
+
+
+<meta name="description" content="前言  资深架构师Adam Drake在他的博客上分享了他对微服务的看法,他 从自己的经验出发,结合Martin Fowler对微服务的见解,帮助想要采用 微服务的公司重新审视微服务。以下内容已获得作者翻译授权,查看英文 原文 Enough with the microservices。
+简介  关于微服务的优势和劣势已经有过太多的讨论,不过我仍然看到很多 成长型初创公司对它进行着盲目崇拜。冒着">
+<meta property="og:type" content="article">
+<meta property="og:title" content="微服务，够了">
+<meta property="og:url" content="http://icyxp.github.io/blog/2017/07/microservice-微服务够了.html">
+<meta property="og:site_name" content="Devops">
+<meta property="og:description" content="前言  资深架构师Adam Drake在他的博客上分享了他对微服务的看法,他 从自己的经验出发,结合Martin Fowler对微服务的见解,帮助想要采用 微服务的公司重新审视微服务。以下内容已获得作者翻译授权,查看英文 原文 Enough with the microservices。
+简介  关于微服务的优势和劣势已经有过太多的讨论,不过我仍然看到很多 成长型初创公司对它进行着盲目崇拜。冒着">
+<meta property="og:image" content="http://icyxp.github.io/images/ms/01/cover.png">
+<meta property="og:updated_time" content="2017-07-26T14:00:54.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="微服务，够了">
+<meta name="twitter:description" content="前言  资深架构师Adam Drake在他的博客上分享了他对微服务的看法,他 从自己的经验出发,结合Martin Fowler对微服务的见解,帮助想要采用 微服务的公司重新审视微服务。以下内容已获得作者翻译授权,查看英文 原文 Enough with the microservices。
+简介  关于微服务的优势和劣势已经有过太多的讨论,不过我仍然看到很多 成长型初创公司对它进行着盲目崇拜。冒着">
+<meta name="twitter:image" content="http://icyxp.github.io/images/ms/01/cover.png">
+
+
+
+<script type="text/javascript" id="hexo.configuration">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    scheme: 'Muse',
+    sidebar: {"position":"left","display":"post"},
+    fancybox: true,
+    motion: true,
+    duoshuo: {
+      userId: 0,
+      author: '博主'
+    }
+  };
+</script>
+
+  <title> 微服务，够了 | Devops </title>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+
+
+
+  <script type="text/javascript">
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "//hm.baidu.com/hm.js?7bfa7aba4938440964dd1a348aed977e";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+
+
+
+
+
+
+
+  
+  
+    
+  
+
+  <div class="container one-collumn sidebar-position-left page-post-detail ">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-meta ">
+  
+
+  <div class="custom-logo-site-title">
+    <a href="/"  class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <span class="site-title">Devops</span>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+  <p class="site-subtitle">网站架构|系统架构</p>
+</div>
+
+<div class="site-nav-toggle">
+  <button>
+    <span class="btn-bar"></span>
+    <span class="btn-bar"></span>
+    <span class="btn-bar"></span>
+  </button>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br />
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />
+            
+            标签
+          </a>
+        </li>
+      
+
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="#" class="popup-trigger">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br />
+            
+            搜索
+          </a>
+        </li>
+      
+    </ul>
+  
+
+  
+    <div class="site-search">
+      
+  <div class="popup">
+ <span class="search-icon fa fa-search"></span>
+ <input type="text" id="local-search-input">
+ <div id="local-search-result"></div>
+ <span class="popup-btn-close">close</span>
+</div>
+
+
+    </div>
+  
+</nav>
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+            
+            
+              
+                微服务，够了
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            <span class="post-meta-item-icon">
+              <i class="fa fa-calendar-o"></i>
+            </span>
+            <span class="post-meta-item-text">发表于</span>
+            <time itemprop="dateCreated" datetime="2017-07-26T21:00:00+08:00" content="2017-07-26">
+              2017-07-26
+            </time>
+          </span>
+
+          
+            <span class="post-category" >
+              &nbsp; | &nbsp;
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+              
+                <span itemprop="about" itemscope itemtype="https://schema.org/Thing">
+                  <a href="/categories/微服务/" itemprop="url" rel="index">
+                    <span itemprop="name">微服务</span>
+                  </a>
+                </span>
+
+                
+                
+
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                &nbsp; | &nbsp;
+                <a href="/blog/2017/07/microservice-微服务够了.html#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count ds-thread-count" data-thread-key="/blog/2017/07/microservice-微服务够了.html" itemprop="commentsCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+
+          
+          
+
+          
+        </div>
+      </header>
+    
+
+
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p><img src="/images/ms/01/cover.png" alt="01"></p>
+<h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>  资深架构师<a href="https://twitter.com/aadrake" target="_blank" rel="external">Adam Drake</a>在他的博客上分享了他对微服务的看法,他 从自己的经验出发,结合Martin Fowler对微服务的见解,帮助想要采用 微服务的公司重新审视微服务。以下内容已获得作者翻译授权,查看英文 原文 <a href="https://aadrake.com/posts/2017-05-20-enough-with-the-microservices.html" target="_blank" rel="external">Enough with the microservices</a>。</p>
+<h2 id="简介"><a href="#简介" class="headerlink" title="简介"></a>简介</h2><p>  关于微服务的优势和劣势已经有过太多的讨论,不过我仍然看到很多 成长型初创公司对它进行着盲目崇拜。冒着“重复发明轮子”的风险(Martin Fowler已经写过“Microservice Premium”的文章),我想把我的一些 想法写下来,在必要的时候可以发给客户,也希望能够帮助人们避免犯下我之前见过的那些错误。在进行架构或技术选型时,将网络上找到的一些所谓的最佳实践文章作为指南,一旦做出了错误的决定,就要付出惨重的代价。如果能够帮助哪怕一个公司避免犯下这种错误,那么写这篇文章都是值得的。</p>
+<p>  如今微服务是个热门技术,微服务架构一直以来都存在(面向服务架构也算是吧?),但对于我所见过的大部分公司来说,微服务不仅浪费了他们的时间,分散了他们的注意力,而且让事情变得更糟糕。</p>
+<p>  这听起来似乎很奇怪,因为大部分关于微服务的文章都会肯定微服务 的各种好处,比如解耦系统、更好的伸缩性、消除开发团队之间的依赖, 等等。如果你的公司有 Uber、Airbnb、Facebook 或 Twitter 那样的规模, 那么就没有什么问题。我曾经帮助一些大型组织转型到微服务架构,包括 搭建消息系统和采用一些能够提升伸缩性的技术。不过,对于成长型初创 公司来说,很少需要这些技术和服务。</p>
+<p>  Russ Miles在他的《<a href="http://www.russmiles.com/essais/8-ways-to-lose-at-microservices-adoption" target="_blank" rel="external">让微服务失效的八种方式</a>》这篇文章中表达了 他的首要观点,而在我看来,这些场景却到处可见。成长型初创公司总是 想模仿那些大公司的最佳实践,用它们来弥补自身的不足。但是,最佳实 践是要视情况而定的。有些东西对于 Facebook 来说是最佳实践,但对于 只有不到百人的初创公司来说,它们就不一定也是最佳实践。</p>
+<p>  如果你的公司比那些大公司小一些,在一定程度上你仍然能够从微服务架构中获益。但是,对于成长型初创公司来说,大规模地迁移到微服务是一种过错,而且对技术人来说是不公平的。</p>
+<a id="more"></a>
+<h2 id="为什么选择微服务"><a href="#为什么选择微服务" class="headerlink" title="为什么选择微服务?"></a>为什么选择微服务?</h2><p>  一般来说,成长型初创公司采用微服务架构最主要的目的为了减少或消除开发团队之间的依赖,或者提升系统处理大流量负载的能力(比如伸缩性)。开发人员经常抱怨的问题和常见的症状包括合并冲突、由未完整实现的功能引起的部署错误以及伸缩性问题。接下来让我们逐个说明这些问题。</p>
+<h2 id="依赖"><a href="#依赖" class="headerlink" title="依赖"></a>依赖</h2><p>  在初创公司的早期阶段,开发团队规模不大,使用的技术也很简单。人们在一起工作,不会出现混乱,要实现一些功能也比较快。一切看起来都很美好。</p>
+<p>  随着公司的不断发展,开发团队也在壮大,代码库也在增长,然后就出现了多个团队在同一个代码库上工作的情况。这些团队的大部分成员都是公司早期的员工。因为初创公司的早期员工一般都是初级开发人员,他们并没有意识到一个问题,那就是在团队规模增长和代码库增长的同时,沟通效率也需要随之提升。对于缺乏经验的技术人员来说,他们倾向于通过技术问题来解决人的问题,并希望通过微服务来减少开发团队之间的依赖和耦合。</p>
+<p>  实际上,他们真正需要做的是通过有效的沟通来解决人的问题。当一个初创公司有多个开发团队时,团队之间需要协调,团队成员需要知道每个人都在做什么,他们需要协作。在这样规模的企业里,软件开发其实具备了社交的性质。如果团队之间缺乏沟通或者缺乏信息分享,不管用不用微服务,一样存在依赖问题,而就算使用了微服务,也仍然存在负面的技术问题。</p>
+<p>  将代码模块化作为解决这个问题的技术方案,确实能够缓解软件开发固有的团队依赖问题,但团队间的沟通仍然要随着团队规模的增长而不断改进。</p>
+<p>  不要混淆了解耦和分布式二者的含义。由模块和接口组成的单体可以帮助你达到解耦的目的,而且你也应该这么做。你没有必要把应用程序拆分成分布式的多个独立服务,在模块间定义清晰的接口同样能达到解耦的目的。</p>
+<h2 id="部分功能实现"><a href="#部分功能实现" class="headerlink" title="部分功能实现"></a>部分功能实现</h2><p>  微服务里需要用到<a href="https://en.wikipedia.org/wiki/Feature_toggle" target="_blank" rel="external">功能标志</a> (feature flag),微服务开发人员需要熟悉这种技术。特别是在进行快速开发(下面会深入讨论)的时候,你可能需要部署一些功能,这些功能在某些平台上还没有实现,或者前端已经完全实现,但后端还没有。随着公司的发展,部署和运维系统变得越来越自动化和复杂,功能标志也变得越来越重要。</p>
+<h2 id="水平伸缩"><a href="#水平伸缩" class="headerlink" title="水平伸缩"></a>水平伸缩</h2><p>  通过部署同一个微服务的多个实例来获得伸缩性,这是微服务的优点 之一。不过,大多数过早采用微服务的公司在这些微服务背后使用了同一 个存储系统。也就是说,这些服务具备了伸缩性,但整个应用并不具备伸 缩性。如果你正打算使用这样的伸缩方式,那为什么不直接在负载均衡器 后面部署多个单体实例呢?你可以用更简单的方式达到相同的目的。再者, 水平伸缩应该被作为杀手锏来使用。你首先要关注的应该是如何提升应用 程序的性能。一些简单的优化常常能带来数百倍的性能提升,这里也包括 如何正确地使用其他服务。例如,我在一篇博文里提到的<a href="https://aadrake.com/posts/2017-05-15-redis-performance-triage-handbook.html" target="_blank" rel="external">Redis性能诊断</a>。</p>
+<h2 id="我们为微服务做好准备了吗"><a href="#我们为微服务做好准备了吗" class="headerlink" title="我们为微服务做好准备了吗?"></a>我们为微服务做好准备了吗?</h2><p>  在讨论架构选型时,人们经常会忽略这个问题,但其实却是最重要的。 高级技术人员在了解了开发人员或业务人员的抱怨或痛点之后,在网上找 寻找解决方案,他们总是宣称能解决这些问题。但在这些信誓旦旦的观点 背后,有很多需要注意的地方。微服务有利也有弊。如果你的企业足够成 熟,并且具有一定的技术积累,那么采用微服务所面临的挑战会小很多, 并且能够带来更多正面好处。那么怎样才算已经为微服务做好准备了呢? Martin Fowler在多年前表达了他对<a href="https://martinfowler.com/bliki/MicroservicePrerequisites.html" target="_blank" rel="external">微服务先决条件</a>的看法,但是从我的 经验来看,大多数成长型初创公司完全忽略了他的观点。Martin 的观点 是一个很好的切入点,让我们来逐个说明。</p>
+<p>  我敢说,大部分成长型初创公司几乎连一个先决条件都无法满足,更不用说满足所有的条件了。如果你的技术团队不具备快速配置、部署和监控能力,那么在迁移到微服务前必须先获得这些能力。接下来让我们更详细地讨论这些先决条件。</p>
+<h2 id="快速配置"><a href="#快速配置" class="headerlink" title="快速配置"></a>快速配置</h2><p>  如果你的开发团队里只有少数几个人可以配置新服务、虚拟环境或其 他配套设施,那说明你们还没有为微服务做好准备。你的每个团队里都应 该要有几个这样的人,他们具备了配置基础设施和部署服务的能力,而且 不需要求助于外部。要注意,光是有一个 DevOps 团队并不意味着你在实 施 DevOps。开发人员应该参与管理与应用程序相关的组件,包括基础设施。</p>
+<p>  类似的,如果你没有灵活的基础设施(易于伸缩并且可以由团队里的不同人员来管理)来支撑当前的架构,那么在迁移到微服务前必须先解决这个问题。你当然可以在裸机上运行微服务,以更低的成本获得出众的性能,但在服务的运维和部署方面也必须具备灵活性。</p>
+<h2 id="基本的监控"><a href="#基本的监控" class="headerlink" title="基本的监控"></a>基本的监控</h2><p>  如果你不曾对你的单体应用进行过性能监控,那么在迁移到微服务时, 你的日子会很难过。你需要熟悉系统级别的度量指标(比如 CPU 和内存)、 应用级别的度量指标(比如端点的请求延迟或端点的错误)和业务级别的 度量指标(比如每秒事务数或每秒收益),这样才可以更好地理解系统的 性能。在性能方面,微服务生态系统比单体系统要复杂得多,就更不用提 诊断问题的复杂性了。你可以搭建一个监控系统(如 Prometheus),在 将单体应用拆分成微服务之前对应用做一些增强,以便进行监控。</p>
+<h2 id="快速部署"><a href="#快速部署" class="headerlink" title="快速部署"></a>快速部署</h2><p>  如果你的单体系统没有一个很好的持续集成流程和部署系统,那么要 集成和部署好你的微服务几乎是件不可能的事。想象一下这样的场景:10 个团队和 100 个服务,它们都需要进行手动测试和部署,然后再将这些工 作与测试和部署一个单体所需要的工作进行对比。100 个服务会出现多少 种问题?而单体系统呢?这些先决条件很好地说明了微服务的复杂性。</p>
+<p>  Phil Calcado在Fowler的先决条件清单里添加了一些东西,不过我 认为它们更像是重要的扩展,而不是真正的先决条件。</p>
+<h2 id="如果我们具备了这些先决条件呢"><a href="#如果我们具备了这些先决条件呢" class="headerlink" title="如果我们具备了这些先决条件呢?"></a>如果我们具备了这些先决条件呢?</h2><p>  就算具备了这些条件,仍然需要注意微服务的负面因素,确保微服务能够为你的业务带来真正的价值。事实上,很多技术人员对微服务中存在的<a href="https://en.wikipedia.org/wiki/Fallacies_of_distributed_computing" target="_blank" rel="external">分布式计算谬论</a>视而不见,但为了确保能够成功,这些问题是必须要考虑到的。对于大部分成长型初创公司来说,基于各种原因,他们应该避免使用微服务。</p>
+<h2 id="运营成本的增加"><a href="#运营成本的增加" class="headerlink" title="运营成本的增加"></a>运营成本的增加</h2><p>  快速部署这一先决条件已经涵盖了一部分成本,除此之外,对 微服务进行容器化(可能使用 Docker)和使用容器编排系统(比如 Kubernetes)也需要耗费很多成本。Docker 和 Kubernetes 都是很优秀的 技术,但是对于大部分成长型初创公司来说,它们都是一种负担。我见过 初创公司使用 rsync 作为部署和编排工具,我也见过很多的初创公司陷入 运维工具的复杂性泥潭里,他们因此浪费了很多时间,而这些时间本来可 以用于为用户开发更多的功能。</p>
+<h2 id="你的应用会被拖慢"><a href="#你的应用会被拖慢" class="headerlink" title="你的应用会被拖慢"></a>你的应用会被拖慢</h2><p>  如果你的单体系统里包含了多个模块,并且在模块间定义了良好的 API,那么 API 之间的交互就几乎没有什么额外开销。但对于微服务来说 就不是这么一回事了,因为它们一般运行在不同的机器上,它们之间需要 通过网络进行交互。这样会在一定程度上拖慢整个系统。如果一个请求需 要多个服务进行同步交互,那么情况会变得更加糟糕。我曾经工作过的一 个公司,他们需要调用将近 10 个服务才能处理完某些请求。处理请求的 每一个步骤都需要额外的网络开销和延迟,但实际上,他们可以把这些服 务放在单个软件包里,按照不同的模块来区分,或者把它们设计成异步的。这样可以为他们节省大量的基础设施成本。</p>
+<h2 id="本地开发变得更加困难"><a href="#本地开发变得更加困难" class="headerlink" title="本地开发变得更加困难"></a>本地开发变得更加困难</h2><p>  如果你有一个单体应用,后端只有一个数据库,那么在开发过程中, 在本地运行这个应用是很容易的。如果你有 100 个服务,并使用了多个数 据存储系统,而且它们之间互相依赖,那么本地开发就会变成一个噩梦。即使是 Docker 也无法把你从这种复杂性泥潭中拯救出来。虽然事情原本 可以简单一些,不过仍然需要处理依赖问题。理论上说,微服务不存在这 些问题,因为微服务被认为是相互独立的。不过,对于成长型初创公司来说,就不是这么一回事了。技术人员一般需要在本地运行所有(或者几乎 所有)的服务才能进行新功能的开发和测试。这种复杂性是对资源的巨大浪费。</p>
+<h2 id="难以伸缩"><a href="#难以伸缩" class="headerlink" title="难以伸缩"></a>难以伸缩</h2><p>  对单体系统进行伸缩的最简单方式是在负载均衡器后面部署单体系 统的多个实例。在流量增长的情况下,这是一种非常简单的伸缩方式, 而且从运维角度来讲,它的复杂性是最低的。你的系统在编排平台(如 <a href="https://aws.amazon.com/cn/elasticbeanstalk/" target="_blank" rel="external">Elastic Beanstalk</a>)上运行的时间越长越好,你和你的团队就可以集中 精力开发客户需要的东西,而不是忙于解决部署管道问题。使用合适的 CI/CD 系统可以缓解这个问题,但在微服务生态系统里,事情要复杂得多, 而且这些复杂性所造成的麻烦已经超过了它们所能带来的好处。</p>
+<h2 id="然后呢"><a href="#然后呢" class="headerlink" title="然后呢?"></a>然后呢?</h2><p>  如果你刚好身处一个成长型初创公司里,需要对架构做一些调整,而微服务似乎不能解决你的问题,这个时候应该怎么办?</p>
+<p>  Fowler 提出的先决条件可以说是技术领域的<a href="https://en.wikipedia.org/wiki/Capability_Maturity_Model" target="_blank" rel="external">能力成熟度模型</a>, Fowler 在他的文章里对成熟度模型进行过介绍。如果这种成熟度模型对于公司来说是说得通的,那么我们可以按照 Fowler 提出的先决条件,并使用其他的一些中间步骤为向微服务迁移做好准备。下面的内容引用自 Fowler 的文章。</p>
+<p>  关键是你要认识到,成熟度模型的评估结果并不代表你的当前水平,它们只是在告诉你需要做哪些工作才能朝着改进的目标前进。你当前的水平只是一种中间工作,用于确定下一步该获得什么样的技能。</p>
+<p>  那么,我们该做出怎样的改进,以及如何达成这些目标?我们需要经过一些简单的步骤,其中前面两步就可以解决很多在向微服务迁移过程中会出现的问题,而且不会带来相关的复杂性。</p>
+<ul>
+<li>清理应用程序。确保应用程序具有良好的自动化测试套件,并使 用了最新版本的软件包、框架和编程语言。</li>
+<li>重构应用程序,把它拆分成多个模块,为模块定义清晰的API。不 要让外部代码直接触及模块内部,所有的交互都应该通过模块提 供的API来进行。</li>
+<li>从应用程序中选择一个模块,并把它拆分成独立的应用程序,部 署在相同的主机上。你可以从中获得一些好处,而不会带来太多 的运维麻烦。不过,你仍然需要解决这两个应用之间的交互问 题,虽然它们都部署在同一个主机上。不过你可以无视微服务架 构里固有的网络分区问题和分布式系统的可用性问题。</li>
+<li>把独立出来的模块移动到不同的主机上。现在,你需要处理跨网 络交互问题,不过这样可以让这两个系统之间的耦合降得更低。</li>
+<li>如果有可能,可以重构数据存储系统,让另一个主机上的模块负 责自己的数据存储。</li>
+</ul>
+<p>在我所见过的公司里,如果他们能够完成前面两个步骤就算万事大吉了。如果他们能够完成前面两个步骤,那么剩下的步骤一般不会像他们最初想象的那么重要了。如果你决定在这个过程的某个点上停下来,而系统仍然具有可维护性和比刚开始时更好的状态,那么就再好不过了。</p>
+<h2 id="结尾"><a href="#结尾" class="headerlink" title="结尾"></a>结尾</h2><p>  我不能说这些想法都是独一无二的,也不能说是我所独有的。我只是 从其他遭遇了相同问题的人那里收集想法,并连同观察到的现象在这里作 了一次总结。还有其他很多比我更有经验的人也写过这方面的文章,他们 剖析地更加深入,比如Sander Mak写的有关模块和<a href="https://www.oreilly.com/ideas/modules-vs-microservices" target="_blank" rel="external">微服务的文章</a>。不管 怎样,对于正在考虑对他们的未来架构做出调整的公司来说,这些经验都 是非常重要的。认真地思考每一个问题,确保微服务对你们的组织来说是 一个正确的选择。</p>
+<p>  最起码在完成了上述的前面两个步骤之后,再慎重考虑一下微服务对于你的组织来说是否是正确的方向。你之前的很多问题可能会迎刃而解。</p>
+
+      
+    </div>
+
+    <div>
+      
+        
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/微服务/" rel="tag">#微服务</a>
+          
+            <a href="/tags/microservice/" rel="tag">#microservice</a>
+          
+        </div>
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/blog/2017/07/mysql-mysql-performance-monitoring.html" rel="next" title="MySQL性能监控慢日志分析利器">
+                <i class="fa fa-chevron-left"></i> MySQL性能监控慢日志分析利器
+              </a>
+            
+          </div>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/blog/2017/07/microservice-高负载微服务系统的诞生过程.html" rel="prev" title="高负载微服务系统的诞生过程">
+                高负载微服务系统的诞生过程 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </article>
+
+
+
+    <div class="post-spread">
+      
+        <!-- JiaThis Button BEGIN -->
+<div class="jiathis_style">
+  <a class="jiathis_button_tsina"></a>
+  <a class="jiathis_button_tqq"></a>
+  <a class="jiathis_button_weixin"></a>
+  <a class="jiathis_button_cqq"></a>
+  <a class="jiathis_button_douban"></a>
+  <a class="jiathis_button_renren"></a>
+  <a class="jiathis_button_qzone"></a>
+  <a class="jiathis_button_kaixin001"></a>
+  <a class="jiathis_button_copy"></a>
+  <a href="http://www.jiathis.com/share" class="jiathis jiathis_txt jiathis_separator jtico jtico_jiathis" target="_blank"></a>
+  <a class="jiathis_counter_style"></a>
+</div>
+<script type="text/javascript" >
+  var jiathis_config={
+    hideMore:false
+  }
+</script>
+<script type="text/javascript" src="http://v3.jiathis.com/code/jia.js" charset="utf-8"></script>
+<!-- JiaThis Button END -->
+
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+  <div class="comments" id="comments">
+    
+      <div class="ds-thread" data-thread-key="/blog/2017/07/microservice-微服务够了.html"
+           data-title="微服务，够了" data-url="http://icyxp.github.io/blog/2017/07/microservice-微服务够了.html">
+      </div>
+    
+  </div>
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap" >
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview sidebar-panel ">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+          <img class="site-author-image" itemprop="image"
+               src="/images/avatar.jpg"
+               alt="icyboy" />
+          <p class="site-author-name" itemprop="name">icyboy</p>
+          <p class="site-description motion-element" itemprop="description">记录分享生活中的点滴</p>
+        </div>
+        <nav class="site-state motion-element">
+          <div class="site-state-item site-state-posts">
+            <a href="/archives">
+              <span class="site-state-item-count">17</span>
+              <span class="site-state-item-name">日志</span>
+            </a>
+          </div>
+
+          
+            <div class="site-state-item site-state-categories">
+              <a href="/categories">
+                <span class="site-state-item-count">11</span>
+                <span class="site-state-item-name">分类</span>
+              </a>
+            </div>
+          
+
+          
+            <div class="site-state-item site-state-tags">
+              <a href="/tags">
+                <span class="site-state-item-count">25</span>
+                <span class="site-state-item-name">标签</span>
+              </a>
+            </div>
+          
+
+        </nav>
+
+        
+          <div class="feed-link motion-element">
+            <a href="/atom.xml" rel="alternate">
+              <i class="fa fa-rss"></i>
+              RSS
+            </a>
+          </div>
+        
+
+        <div class="links-of-author motion-element">
+          
+            
+              <span class="links-of-author-item">
+                <a href="https://github.com/icyxp" target="_blank" title="GitHub">
+                  
+                    <i class="fa fa-fw fa-github"></i>
+                  
+                  GitHub
+                </a>
+              </span>
+            
+              <span class="links-of-author-item">
+                <a href="http://weibo.com/joysteam" target="_blank" title="微博">
+                  
+                    <i class="fa fa-fw fa-globe"></i>
+                  
+                  微博
+                </a>
+              </span>
+            
+              <span class="links-of-author-item">
+                <a href="http://www.zhihu.com/people/xupeng" target="_blank" title="知乎">
+                  
+                    <i class="fa fa-fw fa-globe"></i>
+                  
+                  知乎
+                </a>
+              </span>
+            
+          
+        </div>
+
+        
+        
+
+        
+        
+          <div class="links-of-blogroll motion-element links-of-blogroll-inline">
+            <div class="links-of-blogroll-title">
+              <i class="fa  fa-fw fa-globe"></i>
+              友情链接
+            </div>
+            <ul class="links-of-blogroll-list">
+              
+                <li class="links-of-blogroll-item">
+                  <a href="http://www.zjgsmt.com" title="张家港水蜜桃" target="_blank">张家港水蜜桃</a>
+                </li>
+              
+                <li class="links-of-blogroll-item">
+                  <a href="http://devops.jiunile.com" title="DevOps" target="_blank">DevOps</a>
+                </li>
+              
+                <li class="links-of-blogroll-item">
+                  <a href="http://blog.jiunile.com" title="运维开发" target="_blank">运维开发</a>
+                </li>
+              
+            </ul>
+          </div>
+        
+
+      </section>
+
+      
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+            
+              
+            
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#前言"><span class="nav-number">1.</span> <span class="nav-text">前言</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#简介"><span class="nav-number">2.</span> <span class="nav-text">简介</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#为什么选择微服务"><span class="nav-number">3.</span> <span class="nav-text">为什么选择微服务?</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#依赖"><span class="nav-number">4.</span> <span class="nav-text">依赖</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#部分功能实现"><span class="nav-number">5.</span> <span class="nav-text">部分功能实现</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#水平伸缩"><span class="nav-number">6.</span> <span class="nav-text">水平伸缩</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#我们为微服务做好准备了吗"><span class="nav-number">7.</span> <span class="nav-text">我们为微服务做好准备了吗?</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#快速配置"><span class="nav-number">8.</span> <span class="nav-text">快速配置</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#基本的监控"><span class="nav-number">9.</span> <span class="nav-text">基本的监控</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#快速部署"><span class="nav-number">10.</span> <span class="nav-text">快速部署</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#如果我们具备了这些先决条件呢"><span class="nav-number">11.</span> <span class="nav-text">如果我们具备了这些先决条件呢?</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#运营成本的增加"><span class="nav-number">12.</span> <span class="nav-text">运营成本的增加</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#你的应用会被拖慢"><span class="nav-number">13.</span> <span class="nav-text">你的应用会被拖慢</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#本地开发变得更加困难"><span class="nav-number">14.</span> <span class="nav-text">本地开发变得更加困难</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#难以伸缩"><span class="nav-number">15.</span> <span class="nav-text">难以伸缩</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#然后呢"><span class="nav-number">16.</span> <span class="nav-text">然后呢?</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#结尾"><span class="nav-number">17.</span> <span class="nav-text">结尾</span></a></li></ol></div>
+            
+          </div>
+        </section>
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright" >
+  
+  &copy;  2016 - 
+  <span itemprop="copyrightYear">2017</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">icyboy</span>
+</div>
+
+        
+
+        
+      </div>
+    </footer>
+
+    <div class="back-to-top">
+      <i class="fa fa-arrow-up"></i>
+    </div>
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+  
+  <script type="text/javascript" src="/vendors/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script type="text/javascript" src="/vendors/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+
+  
+  <script type="text/javascript" src="/vendors/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+
+  
+  <script type="text/javascript" src="/vendors/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/vendors/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/vendors/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.0.1"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.0.1"></script>
+
+  <script type="text/javascript" src="/js/src/love.js?v=5.0.1"></script>
+
+  <script type="text/javascript" src="/js/src/particle.js?v=5.0.1"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.0.1"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.0.1"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.0.1"></script>
+
+
+
+  
+
+  
+    
+  
+
+  <script type="text/javascript">
+    var duoshuoQuery = {short_name:"icyboy"};
+    (function() {
+      var ds = document.createElement('script');
+      ds.type = 'text/javascript';ds.async = true;
+      ds.id = 'duoshuo-script';
+      ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
+      ds.charset = 'UTF-8';
+      (document.getElementsByTagName('head')[0]
+      || document.getElementsByTagName('body')[0]).appendChild(ds);
+    })();
+  </script>
+
+  
+    
+  
+
+
+
+
+
+  
+  
+  <script type="text/javascript">
+    // Popup Window;
+    var isfetched = false;
+    // Search DB path;
+    var search_path = "search.xml";
+    if (search_path.length == 0) {
+       search_path = "search.xml";
+    }
+    var path = "/" + search_path;
+    // monitor main search box;
+
+    function proceedsearch() {
+      $("body").append('<div class="popoverlay">').css('overflow', 'hidden');
+      $('.popup').toggle();
+
+    }
+    // search function;
+    var searchFunc = function(path, search_id, content_id) {
+    'use strict';
+    $.ajax({
+        url: path,
+        dataType: "xml",
+        async: true,
+        success: function( xmlResponse ) {
+            // get the contents from search data
+            isfetched = true;
+            $('.popup').detach().appendTo('.header-inner');
+            var datas = $( "entry", xmlResponse ).map(function() {
+                return {
+                    title: $( "title", this ).text(),
+                    content: $("content",this).text(),
+                    url: $( "url" , this).text()
+                };
+            }).get();
+            var $input = document.getElementById(search_id);
+            var $resultContent = document.getElementById(content_id);
+            $input.addEventListener('input', function(){
+                var matchcounts = 0;
+                var str='<ul class=\"search-result-list\">';                
+                var keywords = this.value.trim().toLowerCase().split(/[\s\-]+/);
+                $resultContent.innerHTML = "";
+                if (this.value.trim().length > 1) {
+                // perform local searching
+                datas.forEach(function(data) {
+                    var isMatch = true;
+                    var content_index = [];
+                    var data_title = data.title.trim().toLowerCase();
+                    var data_content = data.content.trim().replace(/<[^>]+>/g,"").toLowerCase();
+                    var data_url = data.url;
+                    var index_title = -1;
+                    var index_content = -1;
+                    var first_occur = -1;
+                    // only match artiles with not empty titles and contents
+                    if(data_title != '' && data_content != '') {
+                        keywords.forEach(function(keyword, i) {
+                            index_title = data_title.indexOf(keyword);
+                            index_content = data_content.indexOf(keyword);
+                            if( index_title < 0 && index_content < 0 ){
+                                isMatch = false;
+                            } else {
+                                if (index_content < 0) {
+                                    index_content = 0;
+                                }
+                                if (i == 0) {
+                                    first_occur = index_content;
+                                }
+                            }
+                        });
+                    }
+                    // show search results
+                    if (isMatch) {
+                        matchcounts += 1;
+                        str += "<li><a href='"+ data_url +"' class='search-result-title'>"+ data_title +"</a>";
+                        var content = data.content.trim().replace(/<[^>]+>/g,"");
+                        if (first_occur >= 0) {
+                            // cut out 100 characters
+                            var start = first_occur - 20;
+                            var end = first_occur + 80;
+                            if(start < 0){
+                                start = 0;
+                            }
+                            if(start == 0){
+                                end = 50;
+                            }
+                            if(end > content.length){
+                                end = content.length;
+                            }
+                            var match_content = content.substring(start, end);
+                            // highlight all keywords
+                            keywords.forEach(function(keyword){
+                                var regS = new RegExp(keyword, "gi");
+                                match_content = match_content.replace(regS, "<b class=\"search-keyword\">"+keyword+"</b>");
+                            });
+                            
+                            str += "<p class=\"search-result\">" + match_content +"...</p>"
+                        }
+                        str += "</li>";
+                    }
+                })};
+                str += "</ul>";
+                if (matchcounts == 0) { str = '<div id="no-result"><i class="fa fa-frown-o fa-5x" /></div>' }
+                if (keywords == "") { str = '<div id="no-result"><i class="fa fa-search fa-5x" /></div>' }
+                $resultContent.innerHTML = str;
+            });
+            proceedsearch();
+        }
+    });}
+
+    // handle and trigger popup window;
+    $('.popup-trigger').mousedown(function(e) {
+      e.stopPropagation();
+      if (isfetched == false) {
+        searchFunc(path, 'local-search-input', 'local-search-result');
+      } else {
+        proceedsearch();
+      };
+
+    });
+
+    $('.popup-btn-close').click(function(e){
+      $('.popup').hide();
+      $(".popoverlay").remove();
+      $('body').css('overflow', '');
+    });
+    $('.popup').click(function(e){
+      e.stopPropagation();
+    });
+  </script>
+
+  
+
+  
+
+  
+
+</body>
+</html>

@@ -1,0 +1,1006 @@
+<!doctype html>
+
+
+
+  
+
+
+<html class="theme-next muse use-motion">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/vendors/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+  
+  
+  
+  
+
+  
+    
+    
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+    
+    
+    <link href="//fonts.googleapis.com/css?family=Lato:300,300italic,400,400italic,700,700italic&subset=latin,latin-ext" rel="stylesheet" type="text/css">
+  
+
+
+
+
+
+
+<link href="/vendors/font-awesome/css/font-awesome.min.css?v=4.4.0" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.0.1" rel="stylesheet" type="text/css" />
+
+
+  <meta name="keywords" content="微服务,microservice,高负载," />
+
+
+
+
+
+  <link rel="alternate" href="/atom.xml" title="Devops" type="application/atom+xml" />
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico?v=5.0.1" />
+
+
+
+
+
+
+<meta name="description" content="简介在2016 LighLoad++大会上，“M-Tex”的开发经理Vadim Madison讲述了从一个由数百个微服务组成的系统到包含数千个微服务的高负载项目的发展历程。本文已获得翻译授权，查看英文原文：Microservices in a High-Load Project 。
+我将告诉大家我们是如何开始一个高负载微服务项目的。在讲述我们的经历之前，先让我们简单地自我介绍一下。
+简单地说，我">
+<meta property="og:type" content="article">
+<meta property="og:title" content="高负载微服务系统的诞生过程">
+<meta property="og:url" content="http://icyxp.github.io/blog/2017/07/microservice-高负载微服务系统的诞生过程.html">
+<meta property="og:site_name" content="Devops">
+<meta property="og:description" content="简介在2016 LighLoad++大会上，“M-Tex”的开发经理Vadim Madison讲述了从一个由数百个微服务组成的系统到包含数千个微服务的高负载项目的发展历程。本文已获得翻译授权，查看英文原文：Microservices in a High-Load Project 。
+我将告诉大家我们是如何开始一个高负载微服务项目的。在讲述我们的经历之前，先让我们简单地自我介绍一下。
+简单地说，我">
+<meta property="og:image" content="http://icyxp.github.io/images/ms/02/cover.png">
+<meta property="og:image" content="http://icyxp.github.io/images/ms/02/00.jpg">
+<meta property="og:image" content="http://icyxp.github.io/images/ms/02/01.jpg">
+<meta property="og:image" content="http://icyxp.github.io/images/ms/02/02.jpg">
+<meta property="og:image" content="http://icyxp.github.io/images/ms/02/03.jpg">
+<meta property="og:image" content="http://icyxp.github.io/images/ms/02/04.jpg">
+<meta property="og:image" content="http://icyxp.github.io/images/ms/02/05.jpg">
+<meta property="og:image" content="http://icyxp.github.io/images/ms/02/06.jpg">
+<meta property="og:image" content="http://icyxp.github.io/images/ms/02/07.jpg">
+<meta property="og:image" content="http://icyxp.github.io/images/ms/02/08.jpg">
+<meta property="og:image" content="http://icyxp.github.io/images/ms/02/09.jpg">
+<meta property="og:image" content="http://icyxp.github.io/images/ms/02/10.jpg">
+<meta property="og:image" content="http://icyxp.github.io/images/ms/02/11.jpg">
+<meta property="og:image" content="http://icyxp.github.io/images/ms/02/12.jpg">
+<meta property="og:image" content="http://icyxp.github.io/images/ms/02/13.jpg">
+<meta property="og:image" content="http://icyxp.github.io/images/ms/02/14.jpg">
+<meta property="og:image" content="http://icyxp.github.io/images/ms/02/16.jpg">
+<meta property="og:image" content="http://icyxp.github.io/images/ms/02/17.jpg">
+<meta property="og:image" content="http://icyxp.github.io/images/ms/02/18.jpg">
+<meta property="og:image" content="http://icyxp.github.io/images/ms/02/19.jpg">
+<meta property="og:image" content="http://icyxp.github.io/images/ms/02/20.jpg">
+<meta property="og:image" content="http://icyxp.github.io/images/ms/02/21.jpg">
+<meta property="og:image" content="http://icyxp.github.io/images/ms/02/22.jpg">
+<meta property="og:image" content="http://icyxp.github.io/images/ms/02/23.jpg">
+<meta property="og:image" content="http://icyxp.github.io/images/ms/02/24.jpg">
+<meta property="og:image" content="http://icyxp.github.io/images/ms/02/25.jpg">
+<meta property="og:image" content="http://icyxp.github.io/images/ms/02/26.jpg">
+<meta property="og:image" content="http://icyxp.github.io/images/ms/02/27.jpg">
+<meta property="og:image" content="http://icyxp.github.io/images/ms/02/28.jpg">
+<meta property="og:image" content="http://icyxp.github.io/images/ms/02/29.jpg">
+<meta property="og:image" content="http://icyxp.github.io/images/ms/02/30.jpg">
+<meta property="og:image" content="http://icyxp.github.io/images/ms/02/31.jpg">
+<meta property="og:image" content="http://icyxp.github.io/images/ms/02/32.jpg">
+<meta property="og:image" content="http://icyxp.github.io/images/ms/02/33.jpg">
+<meta property="og:image" content="http://icyxp.github.io/images/ms/02/34.jpg">
+<meta property="og:image" content="http://icyxp.github.io/images/ms/02/35.jpg">
+<meta property="og:image" content="http://icyxp.github.io/images/ms/02/36.jpg">
+<meta property="og:updated_time" content="2017-07-26T14:33:05.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="高负载微服务系统的诞生过程">
+<meta name="twitter:description" content="简介在2016 LighLoad++大会上，“M-Tex”的开发经理Vadim Madison讲述了从一个由数百个微服务组成的系统到包含数千个微服务的高负载项目的发展历程。本文已获得翻译授权，查看英文原文：Microservices in a High-Load Project 。
+我将告诉大家我们是如何开始一个高负载微服务项目的。在讲述我们的经历之前，先让我们简单地自我介绍一下。
+简单地说，我">
+<meta name="twitter:image" content="http://icyxp.github.io/images/ms/02/cover.png">
+
+
+
+<script type="text/javascript" id="hexo.configuration">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    scheme: 'Muse',
+    sidebar: {"position":"left","display":"post"},
+    fancybox: true,
+    motion: true,
+    duoshuo: {
+      userId: 0,
+      author: '博主'
+    }
+  };
+</script>
+
+  <title> 高负载微服务系统的诞生过程 | Devops </title>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+
+
+
+  <script type="text/javascript">
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "//hm.baidu.com/hm.js?7bfa7aba4938440964dd1a348aed977e";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+
+
+
+
+
+
+
+  
+  
+    
+  
+
+  <div class="container one-collumn sidebar-position-left page-post-detail ">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-meta ">
+  
+
+  <div class="custom-logo-site-title">
+    <a href="/"  class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <span class="site-title">Devops</span>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+  <p class="site-subtitle">网站架构|系统架构</p>
+</div>
+
+<div class="site-nav-toggle">
+  <button>
+    <span class="btn-bar"></span>
+    <span class="btn-bar"></span>
+    <span class="btn-bar"></span>
+  </button>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br />
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />
+            
+            标签
+          </a>
+        </li>
+      
+
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="#" class="popup-trigger">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br />
+            
+            搜索
+          </a>
+        </li>
+      
+    </ul>
+  
+
+  
+    <div class="site-search">
+      
+  <div class="popup">
+ <span class="search-icon fa fa-search"></span>
+ <input type="text" id="local-search-input">
+ <div id="local-search-result"></div>
+ <span class="popup-btn-close">close</span>
+</div>
+
+
+    </div>
+  
+</nav>
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+            
+            
+              
+                高负载微服务系统的诞生过程
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            <span class="post-meta-item-icon">
+              <i class="fa fa-calendar-o"></i>
+            </span>
+            <span class="post-meta-item-text">发表于</span>
+            <time itemprop="dateCreated" datetime="2017-07-26T22:00:00+08:00" content="2017-07-26">
+              2017-07-26
+            </time>
+          </span>
+
+          
+            <span class="post-category" >
+              &nbsp; | &nbsp;
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+              
+                <span itemprop="about" itemscope itemtype="https://schema.org/Thing">
+                  <a href="/categories/微服务/" itemprop="url" rel="index">
+                    <span itemprop="name">微服务</span>
+                  </a>
+                </span>
+
+                
+                
+
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                &nbsp; | &nbsp;
+                <a href="/blog/2017/07/microservice-高负载微服务系统的诞生过程.html#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count ds-thread-count" data-thread-key="/blog/2017/07/microservice-高负载微服务系统的诞生过程.html" itemprop="commentsCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+
+          
+          
+
+          
+        </div>
+      </header>
+    
+
+
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p><img src="/images/ms/02/cover.png" alt="封面"></p>
+<h2 id="简介"><a href="#简介" class="headerlink" title="简介"></a>简介</h2><p>在2016 <a href="http://highload.co/" target="_blank" rel="external">LighLoad++</a>大会上，“M-Tex”的开发经理Vadim Madison讲述了从一个由数百个微服务组成的系统到包含数千个微服务的高负载项目的发展历程。本文已获得翻译授权，查看英文原文：<a href="https://kukuruku.co/post/microservices-in-a-high-load-project/" target="_blank" rel="external">Microservices in a High-Load Project</a> 。</p>
+<p>我将告诉大家我们是如何开始一个高负载微服务项目的。在讲述我们的经历之前，先让我们简单地自我介绍一下。</p>
+<p>简单地说，我们从事视频输出方面的工作——我们提供实时的视频。我们负责“NTV-Plus”和“Match TV”频道的视频平台。该平台有30万的并发用户，每小时输出300TB的内容。这是一个很有意思的任务。那么我们是如何做到的呢？</p>
+<p>这背后都有哪些故事？这些故事都是关于项目的开发和成长，关于我们对项目的思考。总而言之，是关于如何提升项目的伸缩能力，承受更大的负载，在不宕机和不丢失关键特性的情况下为客户提供更多的功能。我们总是希望能够满足客户的需求。当然，这也涉及到我们是如何实现这一切，以及这一切是如何开始的。</p>
+<a id="more"></a>
+<p><strong>在最开始，我们有两台运行在Docker集群里的服务器，数据库运行在相同机器的容器里。没有专用的存储，基础设施非常简单。</strong></p>
+<p>我们就是这样开始的，只有两台运行在Docker集群里的服务器。那个时候，数据库也运行在同一个集群里。我们的基础设施里没有什么专用的组件，十分简单。<br><img src="/images/ms/02/00.jpg" alt="00"></p>
+<p>我们的基础设施最主要的组件就是Docker和TeamCity，我们用它们来交付和构建代码。</p>
+<p>在接下来的时期——我称其为我们的发展中期——是我们项目发展的关键时期。我们拥有了80台服务器，并在一组特殊的机器上为数据库搭建了一个单独的专用集群。我们开始使用基于CEPH的分布式存储，并开始思考服务之间的交互问题，同时要更新我们的监控系统。</p>
+<p>现在，让我们来看看我们在这一时期都做了哪些事情。Docker集群里已经有数百台服务器，微服务就运行在它们上面。这个时候，我们开始根据数据总线和逻辑分离原则将我们的系统拆分成服务子系统。当微服务越来越多时，我们决定拆分我们的系统，这样维护起来就容易得多（也更容易理解）。<br><img src="/images/ms/02/01.jpg" alt="01"></p>
+<p>这张图展示的是我们系统其中的一小部分。这部分系统负责视频剪切。半年前，我在“RIT++”也展示过类似的图片。那个时候只有17个绿色的微服务，而现在有28个绿色的微服务。这些服务只占我们整个系统的二十分之一，所以可以想象我们系统大致的规模有多大。</p>
+<h2 id="深入细节"><a href="#深入细节" class="headerlink" title="深入细节"></a>深入细节</h2><p>服务间的通信是一件很有趣的事情。一般来说，我们应该尽可能提升服务间通信效率。我们使用了<a href="https://developers.google.com/protocol-buffers/" target="_blank" rel="external">protobuf</a>，我们认为它就是我们需要的东西。</p>
+<p>它看起来是这样的：<br><img src="/images/ms/02/02.jpg" alt="02"></p>
+<p>微服务的前面有一个负载均衡器。请求到达前端，或者直接发送给提供了JSON API的服务。protobuf被用于内部服务之间的交互。</p>
+<p>protobuf真是一个好东西。它为消息提供了很好的压缩率。现如今有很多框架，只要使用很小的开销就能实现序列化和反序列化。我们可以将其视为有条件的请求类型。</p>
+<p>但如果从微服务角度来看，我们会发现，微服务之间也存在某种私有的协议。如果只有一两个或者五个微服务，我们可以为每个微服务打开一个控制台，通过它们来访问微服务，并获得响应结果。如果出现了问题，我们可以对其进行诊断。不过这在一定程度上让微服务的支持工作变得复杂。</p>
+<p>在一定时期内，这倒不是什么问题，因为并没有太多的微服务。另外，Google发布了<a href="https://grpc.io/" target="_blank" rel="external">gRPC</a>。在那个时候，gRPC满足了所有我们想做的事情。于是我们逐渐迁移到gRPC。于是我们的技术栈里出现了另一个组件。<br><img src="/images/ms/02/03.jpg" alt="03"></p>
+<p>实现的细节也是很有趣的。gRPC默认是基于HTTP/2的。如果你的环境相对稳定，应用程序不怎么发生变更，也不需要在机器间迁移，那么gRCP对于你来说就是个不错的东西。另外，gRPC支持很多客户端和服务器端的编程语言。</p>
+<p>现在，我们从微服务角度来看待这个问题。从一方面来看，gRPC是一个好东西，但从另一方面来看，它也有不足之处。当我们开始对日志进行标准化（这样就可以将它们聚合到一个独立的系统里）时，我们发现，从gRPC中抽取日志非常麻烦。</p>
+<p>于是，我们决定开发自己的日志系统。它解析消息，并将它们转成我们需要的格式。这样我们才可以获得我们想要的日志。还有一个问题，添加新的微服务会让服务间的依赖变得更加复杂。这是微服务一直存在的问题，这也是除版本问题之外的另一个具有一定复杂性的问题。</p>
+<p>于是，我们开始考虑使用JSON。在很长的一段时间里，我们无法相信，在使用了紧凑的二进制协议之后会转回使用JSON。有一天，我们看到一篇文章，来自<a href="http://engineering.dailymotion.com/" target="_blank" rel="external">DailyMotion</a>的一个家伙在文章里提到了同样的事情：“我们知道该如何使用JSON，每个人都可以使用JSON。既然如此，为什么还要自寻烦恼呢？”<br><img src="/images/ms/02/04.jpg" alt="04"></p>
+<p>于是，我们逐渐从gRPC转向我们自己实现的JSON。我们保留了HTTP/2，它与JSON组合起来可以带来更快的速度。</p>
+<p>现在，我们具备了所有必要的特性。我们可以通过cURL访问我们的服务。我们的QA团队使用<a href="https://www.getpostman.com/" target="_blank" rel="external">Postman</a>，所以他们也感觉很满意。一切都变得简单起来。这是一个有争议性的决定，但却为我们带来了很多好处。</p>
+<p>JSON唯一的缺点就是它的紧凑性不足。根据我们的测试结果，它与MessagePack之间有30%的差距。不过对于一个支持系统来说，这不算是个大问题。</p>
+<p>况且，我们在转到JSON之后还获得了更多的特性，比如协议版本。有时候，当我们在新版本的协议上使用protobuf时，客户端也必须改用protobuf。如果你有数百个服务，就算只有10%的服务进行了迁移，这也会引起很大的连锁反应。你在一个服务上做了一些变更，就会有十多个服务也需要跟着改动。</p>
+<p>因此，我们就会面临这样的一种情况，一个服务的开发人员已经发布了第五个、第六个，甚至第七个版本，但生产环境里仍然在运行第四个版本，就因为其他相关服务的开发人员有他们自己的优先级和截止日期。他们无法持续地更新他们的服务，并使用新版本的协议。所以，新版本的服务虽然发布了，但还派不上用场。然后，我们却要以一种很奇怪的方式来修复旧版本的bug，这让支持工作变得更加复杂。</p>
+<p>最后，我们决定停止发布新版本的协议。我们提供协议的基础版本，可以往里面添加少量的属性。服务的消费者开始使用JSON schema。</p>
+<p>标准看起来是这样的：<br><img src="/images/ms/02/05.jpg" alt="05"></p>
+<p>我们没有使用版本1、2和3，而是只使用版本1和指向它的schema。<br><img src="/images/ms/02/06.jpg" alt="06"></p>
+<p>这是从我们服务返回的一个典型的响应结果。它是一个内容管理器，返回有关广播的信息。这里有一个消费者schema的例子。<br><img src="/images/ms/02/07.jpg" alt="07"></p>
+<p>最底下的字符串最有意思，也就是”required”那块。我们可以看到，这个服务只需要4个字段——id、content、date和status。如果我们使用了这个schema，那么消费者就只会得到这样的数据。<br><img src="/images/ms/02/08.jpg" alt="08"></p>
+<p>它们可以被用在每一个协议版本里，从第一个版本到后来的每一个变更版本。这样，在版本之间迁移就容易很多。在我们发布新版本之后，客户端的迁移就会简单很多。</p>
+<p>下一个重要的议题是系统的稳定性问题。这是微服务和其他任何一个系统都需要面临的问题（在微服务架构里，我们可以更强烈地感觉到它的重要性）。系统总会在某个时候变得不稳定。</p>
+<p>如果服务间的调用链只包含了一两个服务，那么就没有什么问题。在这种情况下，你看不出单体和分布式系统之间有多大区别。但当调用链里包含了5到7个调用，那么问题就会接踵而至。你根本不知道为什么会这样，也不知道能做些什么。在这种情况下，调试会变得很困难。在单体系统里，你可以通过逐步调试来找出错误。但对于微服务来说，网络不稳定性或高负载下的性能不稳定性也会对微服务造成影响。特别是对于拥有大量节点的分布式系统来说，这些情况就更加显而易见了。<br><img src="/images/ms/02/09.jpg" alt="09"></p>
+<p>在一开始，我们采用了传统的办法。我们监控所有的东西，查看问题和问题的发生点，然后尝试尽快修复它们。我们将微服务的度量指标收集到一个独立的数据库里。我们使用<a href="https://github.com/python-diamond/Diamond" target="_blank" rel="external">Diamond</a>来收集系统度量指标。我们使用<a href="https://github.com/google/cadvisor" target="_blank" rel="external">cAdvisor</a>来分析容器的资源使用情况和性能特征。所有的结果都被保存到<a href="https://github.com/influxdata/influxdb" target="_blank" rel="external">InfluxDB</a>，然后我们在Grafana里创建仪表盘。<br><img src="/images/ms/02/10.jpg" alt="10"></p>
+<p>于是，我们现在的基础设施里又多了三个组件。</p>
+<p>我们比以往更加关注所发生的一切。我们对问题的反应速度更快了。不过，这并没有阻止问题的出现。</p>
+<p>奇怪的是，微服务架构的主要问题出在那些不稳定的服务上。它们有的今天运行正常，明天就不行，而且有各种各样的原因。如果服务出现超载，而你继续向它发送负载，它就会宕机一段时间。如果它在一段时间不提供服务，负载就会下降，然后它就又活过来了。这类系统很难维护，也很难知道到底出了什么问题。</p>
+<p>最后，我们决定把这些服务停掉，而不是让它们来回折腾。我们因此需要改变服务的实现方式。</p>
+<p>我们做了一件很重要的事情。我们对每个服务接收的请求数量设定了一个上限。每个服务知道自己可以处理多少个来自客户端的请求（我们稍后会详细说明）。如果请求数量达到上限，服务将抛出503 Service Unavailable异常。客户端知道这个节点无法提供服务，就会选择另一个节点。</p>
+<p>当系统出现问题时，我们就可以通过这种方式来减少请求时间。另外，我们也提升了服务的稳定性。</p>
+<p>我们引入了第二种模式——<strong>回路断路器</strong>（Circuit Breaker）。我们在客户端实现了这种模式。</p>
+<p>假设有一个服务A，它有4个可以访问的服务B的实例。它向注册中心索要服务B的地址：“给我这些服务的地址”。它得到了服务B的4个地址。服务A向第一个服务B的实例发起了请求。第一个服务B实例正常返回响应。服务A将其标记为可访问：“是的，我可以访问它”。然后，服务A向第二个服务B实例发起请求，不过它没有在期望的时间内得到响应。我们禁用了这个实例，然后向下一个实例发起请求。下一个实例因为某些原因返回了不正确的协议版本。于是我们也将其禁用，然后转向第四个实例。</p>
+<p>总得来说，只有一半的服务能够为客户端提供服务。于是服务A将会向能够正常返回响应的两个服务发起请求。而另外两个无法满足要求的实例被禁用了一段时间。</p>
+<p>我们通过这种方式来提升性能的稳定性。如果服务出现了问题，我们就将其关闭，并发出告警，然后尝试找出问题所在。</p>
+<p>因为引入了回路断路器模式，我们的基础设施里又多了一个组件——<a href="https://github.com/Netflix/Hystrix" target="_blank" rel="external">Hystrix</a>。<br><img src="/images/ms/02/11.jpg" alt="11"></p>
+<p>Hystrix不仅实现了回路断路器模式，它也有助于我们了解系统里出现了哪些问题：<br><img src="/images/ms/02/12.jpg" alt="12"></p>
+<p>圆环的大小表示服务与其他组件之间的流量大小。颜色表示系统的健康状况。如果圆环是绿色的，那么说明一切正常。如果圆环是红色的，那么就有问题了。</p>
+<p>如果一个服务应该被停掉，那么它看起来是这个样子的。圆环是打开的。<br><img src="/images/ms/02/13.jpg" alt="13"></p>
+<p>我们的系统变得相对稳定。每个服务至少都有两个可用的实例，这样我们就可以选择停掉其中的一个。不过，尽管是这样，我们仍然不知道我们的系统究竟发生了什么问题。在处理请求期间如果出现了问题，我们应该怎样才能知道问题的根源是什么呢？</p>
+<p>这是一个标准的请求：<br><img src="/images/ms/02/14.jpg" alt="14"></p>
+<p>这是一个处理链条。用户发送请求到第一个服务，然后是第二个。从第二个服务开始，链条将请求发送到第三个和第四个服务。</p>
+<p>然后一个分支不明原因地消失了。在经历了这类场景之后，我们尝试着提升这种场景的可见性，于是我们找到了Appdash。Appdash是一个跟踪服务。<br><img src="/images/ms/02/16.jpg" alt="16"></p>
+<p>它看起来是这个样子的：<br><img src="/images/ms/02/17.jpg" alt="17"></p>
+<p>可以这么说，我们只是想尝试一下，看看它是否适合我们。将它用在我们的系统里是一件很容易的事情，因为我们那个时候使用的是Go语言。Appdash提供了一个开箱即用的包。我们认为Appdash是一个好东西，只是它的实现并不是很适合我们。<br><img src="/images/ms/02/18.jpg" alt="18"></p>
+<p>于是，我们决定使用<a href="http://zipkin.io/" target="_blank" rel="external">Zipkin</a>来代替Appdash。Zipkin是由Twitter开源的。它看起来是这个样子的：<br><img src="/images/ms/02/19.jpg" alt="19"></p>
+<p>我认为这样会更清楚一些。我们可以从中看到一些服务，也可以看到我们的请求是如何通过请求链的，还可以看到请求在每个服务里都做了哪些事情。一方面，我们可以看到服务的总时长和每个分段的时长，另一方面，我们完全可以添加描述服务内容的信息。</p>
+<p>我们可以在这里添加一些与数据库的调用、文件系统的读取、缓存的访问有关的信息，这样就可以知道请求里哪一部分使用了最多的时间。TraceID可以帮助我们做到这一点。稍后我会介绍更多细节。<br><img src="/images/ms/02/20.jpg" alt="20"></p>
+<p>我们就是通过这种方式知道请求在处理过程中发生了什么问题，以及为什么有时候无法被正常处理。刚开始一切都正常，然后突然间，其中的一个出现了问题。我们稍作排查，就知道出问题的服务发生了什么。<br><img src="/images/ms/02/21.jpg" alt="21"></p>
+<p>不久前，一些厂商推出了一个跟踪系统的标准。为了简化系统的实现，主要的几个跟踪系统厂商在如何设计客户端API和客户端类库上达成了一致。现在已经有了<a href="http://opentracing.io/" target="_blank" rel="external">OpenTracing</a>的实现，支持几乎所有的主流开发语言。现在就可以使用它了。</p>
+<p>我们已经有办法知道那些突然间崩溃的服务。我们可以看到其中的某部分在垂死挣扎，但是不知道为什么。光有环境信息是不够的，</p>
+<p>我们还需要日志。是的，这应该成为标准的一部分，它就是Elasticsearch、Logstash和Kibana（ELK）。不过我们对它们做了一些改动。<br><img src="/images/ms/02/22.jpg" alt="22"></p>
+<p>我们并没有将大量的日志直接通过forward传给Logstash，而是先传给syslog，让它把日志聚合到构建机器上，然后再通过forward导入到<strong>Elasticsearch</strong>和<strong>Kibana</strong>。这是一个很标准的流程，那么巧妙的地方在哪里呢？<br><img src="/images/ms/02/23.jpg" alt="23"></p>
+<p>巧妙的是，我们可以在任何可能的地方往日志里加入Zipkin的TraceID。</p>
+<p>这样一来，我们就可以在Kibana仪表盘上看到完整的用户请求执行情况。也就是说，一旦服务进入生产环境，就为运营做好了准备。它已经通过了自动化测试，如果有必要，QA可以再进行手动检查。它应该没有什么问题。如果它出现了问题，那说明有一些先决条件没有得到满足。日志里详细地记录了这些先决条件，通过过滤，我们可以看到某个请求的跟踪信息。我们因此可以快速地查出问题的根源，为我们节省了很多时间。</p>
+<p>我们后来引入了动态调试模式。现在的日志数量还不是很大，大概只有100 GB到150 GB，我记不太清楚具体数字了。不过，这些日志是在正常的日志模式下生成的。如果我们添加更多的细节，那么日志就可能变成TB级别的，处理起来就很耗费资源。</p>
+<p>当我们发现某些服务出现问题，就打开调试模式（通过一个API），看看发生了什么事情。有时候，我们找到出现问题的服务，在不将它关闭的情况下打开调试模式，尝试找出问题所在。</p>
+<p>最后，我们在ELK端查找问题。我们还对关键服务的错误进行聚合。服务知道哪些错误是关键性的，哪些不是关键性的，然后将它们传给<a href="https://sentry.io/" target="_blank" rel="external">Sentry</a>。<br><img src="/images/ms/02/24.jpg" alt="24"></p>
+<p>Sentry能够智能地收集错误日志，并形成度量指标，还会进行一些基本的过滤。我们在很多服务上使用了Sentry。我们从单体应用时期就开始使用它了。</p>
+<p>那么最有趣的问题是，我们是如何进行伸缩的？这里需要先介绍一些概念。我们把每个机器看成一个黑盒。<br><img src="/images/ms/02/25.jpg" alt="25"></p>
+<p>我们有一个编排系统，最开始使用<a href="https://www.nomadproject.io/" target="_blank" rel="external">Nomad</a>。确切地说，应该是<a href="https://www.ansible.com/" target="_blank" rel="external">Ansible</a>。我们自己编写脚本，但光是这些还不能满足要求。那个时候，Nomad的某些版本可以简化我们的工作，于是我们决定迁移到Nomad。<br><img src="/images/ms/02/26.jpg" alt="26"></p>
+<p>同时还使用了<a href="https://www.consul.io/" target="_blank" rel="external">Consul</a>，将它作为服务发现的注册中心。还有Vault，用于存储敏感数据，比如密码、秘钥和其他所有不能保存在Git上的东西。</p>
+<p>这样，所有的机器几乎都变得一模一样。每个机器上都安装了<strong>Docker</strong>，还有<strong>Consul</strong>和<strong>Nomad</strong>代理。总的来说，每一个机器都处于备用状态，可以在任何时候投入使用。如果不用了，我们就让它们下线。如果你构建了云平台，你就可以先准备好机器，在高峰期时将它们打开，在负载下降时将它们关闭。这会节省大量的成本。<br><img src="/images/ms/02/27.jpg" alt="27"></p>
+<p>后来，我们决定从<strong>Nomad</strong>迁移到<a href="https://github.com/kubernetes/kubernetes" target="_blank" rel="external">Kubernetes</a>，<strong>Consul</strong>也因此成为了集中式的配置系统。</p>
+<p>这样一来，部分栈可以进行自动伸缩。那么我们是怎么做的呢？</p>
+<p>第一步，我们对内存、CPU和网络进行限制。<br><img src="/images/ms/02/28.jpg" alt="28"></p>
+<p>我们分别将这三个元素分成三个等级，砍掉其中的一部分。例如，<br><img src="/images/ms/02/29.jpg" alt="29"></p>
+<p>R3-C2-N1，我们已经限定只给某个服务一小部分网络流量、多一点点的CPU和更多的内存。这个服务真的很耗费资源。</p>
+<p>我们在这里使用了助记符，我们的决策服务可以设置很多的组合值，这些值看起来是这样的：<br><img src="/images/ms/02/30.jpg" alt="30"></p>
+<p>事实上，我们还有C4和R4，不过它们已经超出了这些标准的限制。标准看起来是这样的：<br><img src="/images/ms/02/31.jpg" alt="31"></p>
+<p>下一步开始做一些预备工作。我们先确定服务的伸缩类型。</p>
+<p>独立的服务最容易伸缩，它可以进行线性地伸缩。如果用户增长了两倍，我们就运行两倍的服务实例。这就万事大吉了。</p>
+<p>第二种伸缩类型：服务依赖了外部的资源，比如那些使用了数据库的服务。数据库有它自己的容量上限，这个一定要注意。你还要知道，如果系统性能出现衰退，就不应该再增加更多的实例，而且你要知道这种情况会在什么时候发生。</p>
+<p>第三种情况是，服务受到外部系统的牵制。例如，外部的账单系统。就算运行了100个服务实例，它也没办法处理超过500个请求。我们要考虑到这些限制。在确定了服务类型并设置了相应的标记之后，是时候看看它们是如何通过我们的构建管道的。<br><img src="/images/ms/02/32.jpg" alt="32"></p>
+<p>我们在CI服务器上运行了一些单元测试，然后在测试环境运行集成测试，我们的QA团队会对它们做一些检查。在这之后，我们就进入了预生产环境的负载测试。<br><img src="/images/ms/02/33.jpg" alt="33"></p>
+<p>如果是第一种类型的服务，我们使用一个实例，并在这个环境里运行它，给它最大的负载。在运行了几轮之后，我们取其中的最小值，将它存入<strong>InfluxDB</strong>，将它作为该服务的负载上限。</p>
+<p>如果是第二种类型的服务，我们逐渐加大负载，直到出现了性能衰退。我们对这个过程进行评估，如果我们知道该系统的负载，那么就比较当前负载是否已经足够，否则，我们就会设置告警，不会把这个服务发布到生产环境。我们会告诉开发人员：“你们需要分离出一些东西，或者加进去另一个工具，让这个服务可以更好地伸缩。”<br><img src="/images/ms/02/34.jpg" alt="34"></p>
+<p>因为我们知道第三种类型服务的上限，所以我们只运行一个实例。我们也会给它一些负载，看看它可以服务多少个用户。如果我们知道账单系统的上限是1000个请求，并且每个服务实例可以处理200个请求，那么就需要5个实例。</p>
+<p>我们把这些信息都保存到了InfluxDB。我们的决策服务开始派上用场了。它会检查两个边界：上限和下限。如果超出了上限，那么就应该增加服务实例。如果超出下限，那么就减少实例。如果负载下降（比如晚上的时候），我们就不需要这么多机器，可以减少它们的数量，并关掉一部分机器，省下一些费用。</p>
+<p>整体看起来是这样的：<br><img src="/images/ms/02/35.jpg" alt="35"></p>
+<p>每个服务的度量指标表明了它们当前的负载。负载信息被保存到InfluxDB，如果决策服务发现服务实例达到了上限，它会向Nomad和Kubernetes发送命令，要求增加服务实例。有可能在云端已经有可用的实例，或者开始做一些准备工作。不管怎样，发出要求增加新服务实例的告警才是关键所在。</p>
+<p>一些受限的服务如果达到上限，也会发出相关的告警。对于这类情况，我们除了加大等待队列，也做不了其他什么事情。不过最起码我们知道我们很快就会面临这样的问题，并开始做好应对措施。</p>
+<p>这就是我想告诉大家有关伸缩性方面的事情。除了这些，还有另外一个东西——<a href="https://about.gitlab.com/gitlab-ci/" target="_blank" rel="external">Gitlab CI</a>。<br><img src="/images/ms/02/36.jpg" alt="36"></p>
+<p>我们一般是通过TeamCity来开发服务的。后来，我们意识到，所有的服务都有一个共性，这些服务都是不一样的，并且知道自己该如何部署到容器里。要生成这么的项目真的很困难，不过如果使用yml文件来描述它们，并把这个文件与服务放在一起，就会方便很多。虽然我们只做了一些小的改变，不过却为我们带来了非常多的可能性。</p>
+<p>现在，我想说一些一直想对自己说的话。</p>
+<p>关于微服务开发，我建议在一开始就使用<strong>编排系统</strong>。可以使用最简单的编排系统，比如Nomad，通过nomad agent -dev命令启动一个编排系统，包括Consul和其他东西。</p>
+<p>我们仿佛是在一个黑盒子工作。你试图避免被绑定到某台特定的机器上，或者被附加到某台特定机器的文件系统上。这些事情会让你开始重新思考。</p>
+<p>在开发阶段，<strong>每个服务至少需要两个实例</strong>，如果其中一个出现问题，就可以关掉它，由另一个接管继续服务。</p>
+<p>还有一些有关架构的问题。在微服务架构里，<strong>消息总线</strong>是一个非常重要的组件。</p>
+<p>假设你有一个用户注册系统，那么如何以最简单的方式实现它呢？对于注册系统来说，需要创建账户，然后在账单系统里创建一个用户，并为他创建头像和其他东西。你有一组服务，其中的超级服务收到了一个请求，它将请求分发给其他服务。经过几次之后，它就知道该触发哪些服务来完成注册。</p>
+<p>不过，我们可以使用一种更简单、更可靠、更高效的方式来实现。我们使用一个服务来处理注册，它注册了一个用户，然后发送一个事件到消息总线，比如“我已经注册了一个yoghurt，ID是……”。相关的服务会收到这个事件，其中的一个服务会在账单系统里创建一个账户，另一个服务会发送一封欢迎邮件。</p>
+<p>不过，系统会因此失去强一致性。这个时候你没有超级服务，也不知道每个服务的状态。不过，这样的系统很容易维护。</p>
+<p>现在，我再说一些之前提到过的问题。<strong>不要试图修复</strong>出问题的服务。如果某些服务实例出现了问题，将它找出来，然后把流量定向到其他服务实例（可能是新增的实例）上，然后再诊断问题。这样可以显著提升系统的可用性。</p>
+<p>通过<strong>收集度量指标</strong>来了解系统的状态自然不在话下。</p>
+<p>不过要注意，如果你对某个度量指标不了解，不知道怎么使用它，或者它对你来说没有什么意义，就不要收集它。因为有时候，这样的度量指标会有数百万个。你在这些无用的度量指标上面浪费了很多资源和时间。这些是无效的负载。</p>
+<p>如果你认为你需要某些度量指标，那么就收集它们。如果不需要，就不要收集。</p>
+<p>如果你发现了一个问题，不要急着去修复。在很多情况下，<strong>系统会对此作出反应</strong>。当系统需要你采取行动的时候，它会给你发出告警。如果它不要求你在半夜跑去修复问题，那么它就不算是一个告警。它只不过是一种警告，你可以在把它当成一般的问题来处理。</p>
+
+      
+    </div>
+
+    <div>
+      
+        
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/微服务/" rel="tag">#微服务</a>
+          
+            <a href="/tags/microservice/" rel="tag">#microservice</a>
+          
+            <a href="/tags/高负载/" rel="tag">#高负载</a>
+          
+        </div>
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/blog/2017/07/microservice-微服务够了.html" rel="next" title="微服务，够了">
+                <i class="fa fa-chevron-left"></i> 微服务，够了
+              </a>
+            
+          </div>
+
+          <div class="post-nav-prev post-nav-item">
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </article>
+
+
+
+    <div class="post-spread">
+      
+        <!-- JiaThis Button BEGIN -->
+<div class="jiathis_style">
+  <a class="jiathis_button_tsina"></a>
+  <a class="jiathis_button_tqq"></a>
+  <a class="jiathis_button_weixin"></a>
+  <a class="jiathis_button_cqq"></a>
+  <a class="jiathis_button_douban"></a>
+  <a class="jiathis_button_renren"></a>
+  <a class="jiathis_button_qzone"></a>
+  <a class="jiathis_button_kaixin001"></a>
+  <a class="jiathis_button_copy"></a>
+  <a href="http://www.jiathis.com/share" class="jiathis jiathis_txt jiathis_separator jtico jtico_jiathis" target="_blank"></a>
+  <a class="jiathis_counter_style"></a>
+</div>
+<script type="text/javascript" >
+  var jiathis_config={
+    hideMore:false
+  }
+</script>
+<script type="text/javascript" src="http://v3.jiathis.com/code/jia.js" charset="utf-8"></script>
+<!-- JiaThis Button END -->
+
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+  <div class="comments" id="comments">
+    
+      <div class="ds-thread" data-thread-key="/blog/2017/07/microservice-高负载微服务系统的诞生过程.html"
+           data-title="高负载微服务系统的诞生过程" data-url="http://icyxp.github.io/blog/2017/07/microservice-高负载微服务系统的诞生过程.html">
+      </div>
+    
+  </div>
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap" >
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview sidebar-panel ">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+          <img class="site-author-image" itemprop="image"
+               src="/images/avatar.jpg"
+               alt="icyboy" />
+          <p class="site-author-name" itemprop="name">icyboy</p>
+          <p class="site-description motion-element" itemprop="description">记录分享生活中的点滴</p>
+        </div>
+        <nav class="site-state motion-element">
+          <div class="site-state-item site-state-posts">
+            <a href="/archives">
+              <span class="site-state-item-count">17</span>
+              <span class="site-state-item-name">日志</span>
+            </a>
+          </div>
+
+          
+            <div class="site-state-item site-state-categories">
+              <a href="/categories">
+                <span class="site-state-item-count">11</span>
+                <span class="site-state-item-name">分类</span>
+              </a>
+            </div>
+          
+
+          
+            <div class="site-state-item site-state-tags">
+              <a href="/tags">
+                <span class="site-state-item-count">25</span>
+                <span class="site-state-item-name">标签</span>
+              </a>
+            </div>
+          
+
+        </nav>
+
+        
+          <div class="feed-link motion-element">
+            <a href="/atom.xml" rel="alternate">
+              <i class="fa fa-rss"></i>
+              RSS
+            </a>
+          </div>
+        
+
+        <div class="links-of-author motion-element">
+          
+            
+              <span class="links-of-author-item">
+                <a href="https://github.com/icyxp" target="_blank" title="GitHub">
+                  
+                    <i class="fa fa-fw fa-github"></i>
+                  
+                  GitHub
+                </a>
+              </span>
+            
+              <span class="links-of-author-item">
+                <a href="http://weibo.com/joysteam" target="_blank" title="微博">
+                  
+                    <i class="fa fa-fw fa-globe"></i>
+                  
+                  微博
+                </a>
+              </span>
+            
+              <span class="links-of-author-item">
+                <a href="http://www.zhihu.com/people/xupeng" target="_blank" title="知乎">
+                  
+                    <i class="fa fa-fw fa-globe"></i>
+                  
+                  知乎
+                </a>
+              </span>
+            
+          
+        </div>
+
+        
+        
+
+        
+        
+          <div class="links-of-blogroll motion-element links-of-blogroll-inline">
+            <div class="links-of-blogroll-title">
+              <i class="fa  fa-fw fa-globe"></i>
+              友情链接
+            </div>
+            <ul class="links-of-blogroll-list">
+              
+                <li class="links-of-blogroll-item">
+                  <a href="http://www.zjgsmt.com" title="张家港水蜜桃" target="_blank">张家港水蜜桃</a>
+                </li>
+              
+                <li class="links-of-blogroll-item">
+                  <a href="http://devops.jiunile.com" title="DevOps" target="_blank">DevOps</a>
+                </li>
+              
+                <li class="links-of-blogroll-item">
+                  <a href="http://blog.jiunile.com" title="运维开发" target="_blank">运维开发</a>
+                </li>
+              
+            </ul>
+          </div>
+        
+
+      </section>
+
+      
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+            
+              
+            
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#简介"><span class="nav-number">1.</span> <span class="nav-text">简介</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#深入细节"><span class="nav-number">2.</span> <span class="nav-text">深入细节</span></a></li></ol></div>
+            
+          </div>
+        </section>
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright" >
+  
+  &copy;  2016 - 
+  <span itemprop="copyrightYear">2017</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">icyboy</span>
+</div>
+
+        
+
+        
+      </div>
+    </footer>
+
+    <div class="back-to-top">
+      <i class="fa fa-arrow-up"></i>
+    </div>
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+  
+  <script type="text/javascript" src="/vendors/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script type="text/javascript" src="/vendors/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+
+  
+  <script type="text/javascript" src="/vendors/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+
+  
+  <script type="text/javascript" src="/vendors/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/vendors/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/vendors/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.0.1"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.0.1"></script>
+
+  <script type="text/javascript" src="/js/src/love.js?v=5.0.1"></script>
+
+  <script type="text/javascript" src="/js/src/particle.js?v=5.0.1"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.0.1"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.0.1"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.0.1"></script>
+
+
+
+  
+
+  
+    
+  
+
+  <script type="text/javascript">
+    var duoshuoQuery = {short_name:"icyboy"};
+    (function() {
+      var ds = document.createElement('script');
+      ds.type = 'text/javascript';ds.async = true;
+      ds.id = 'duoshuo-script';
+      ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
+      ds.charset = 'UTF-8';
+      (document.getElementsByTagName('head')[0]
+      || document.getElementsByTagName('body')[0]).appendChild(ds);
+    })();
+  </script>
+
+  
+    
+  
+
+
+
+
+
+  
+  
+  <script type="text/javascript">
+    // Popup Window;
+    var isfetched = false;
+    // Search DB path;
+    var search_path = "search.xml";
+    if (search_path.length == 0) {
+       search_path = "search.xml";
+    }
+    var path = "/" + search_path;
+    // monitor main search box;
+
+    function proceedsearch() {
+      $("body").append('<div class="popoverlay">').css('overflow', 'hidden');
+      $('.popup').toggle();
+
+    }
+    // search function;
+    var searchFunc = function(path, search_id, content_id) {
+    'use strict';
+    $.ajax({
+        url: path,
+        dataType: "xml",
+        async: true,
+        success: function( xmlResponse ) {
+            // get the contents from search data
+            isfetched = true;
+            $('.popup').detach().appendTo('.header-inner');
+            var datas = $( "entry", xmlResponse ).map(function() {
+                return {
+                    title: $( "title", this ).text(),
+                    content: $("content",this).text(),
+                    url: $( "url" , this).text()
+                };
+            }).get();
+            var $input = document.getElementById(search_id);
+            var $resultContent = document.getElementById(content_id);
+            $input.addEventListener('input', function(){
+                var matchcounts = 0;
+                var str='<ul class=\"search-result-list\">';                
+                var keywords = this.value.trim().toLowerCase().split(/[\s\-]+/);
+                $resultContent.innerHTML = "";
+                if (this.value.trim().length > 1) {
+                // perform local searching
+                datas.forEach(function(data) {
+                    var isMatch = true;
+                    var content_index = [];
+                    var data_title = data.title.trim().toLowerCase();
+                    var data_content = data.content.trim().replace(/<[^>]+>/g,"").toLowerCase();
+                    var data_url = data.url;
+                    var index_title = -1;
+                    var index_content = -1;
+                    var first_occur = -1;
+                    // only match artiles with not empty titles and contents
+                    if(data_title != '' && data_content != '') {
+                        keywords.forEach(function(keyword, i) {
+                            index_title = data_title.indexOf(keyword);
+                            index_content = data_content.indexOf(keyword);
+                            if( index_title < 0 && index_content < 0 ){
+                                isMatch = false;
+                            } else {
+                                if (index_content < 0) {
+                                    index_content = 0;
+                                }
+                                if (i == 0) {
+                                    first_occur = index_content;
+                                }
+                            }
+                        });
+                    }
+                    // show search results
+                    if (isMatch) {
+                        matchcounts += 1;
+                        str += "<li><a href='"+ data_url +"' class='search-result-title'>"+ data_title +"</a>";
+                        var content = data.content.trim().replace(/<[^>]+>/g,"");
+                        if (first_occur >= 0) {
+                            // cut out 100 characters
+                            var start = first_occur - 20;
+                            var end = first_occur + 80;
+                            if(start < 0){
+                                start = 0;
+                            }
+                            if(start == 0){
+                                end = 50;
+                            }
+                            if(end > content.length){
+                                end = content.length;
+                            }
+                            var match_content = content.substring(start, end);
+                            // highlight all keywords
+                            keywords.forEach(function(keyword){
+                                var regS = new RegExp(keyword, "gi");
+                                match_content = match_content.replace(regS, "<b class=\"search-keyword\">"+keyword+"</b>");
+                            });
+                            
+                            str += "<p class=\"search-result\">" + match_content +"...</p>"
+                        }
+                        str += "</li>";
+                    }
+                })};
+                str += "</ul>";
+                if (matchcounts == 0) { str = '<div id="no-result"><i class="fa fa-frown-o fa-5x" /></div>' }
+                if (keywords == "") { str = '<div id="no-result"><i class="fa fa-search fa-5x" /></div>' }
+                $resultContent.innerHTML = str;
+            });
+            proceedsearch();
+        }
+    });}
+
+    // handle and trigger popup window;
+    $('.popup-trigger').mousedown(function(e) {
+      e.stopPropagation();
+      if (isfetched == false) {
+        searchFunc(path, 'local-search-input', 'local-search-result');
+      } else {
+        proceedsearch();
+      };
+
+    });
+
+    $('.popup-btn-close').click(function(e){
+      $('.popup').hide();
+      $(".popoverlay").remove();
+      $('body').css('overflow', '');
+    });
+    $('.popup').click(function(e){
+      e.stopPropagation();
+    });
+  </script>
+
+  
+
+  
+
+  
+
+</body>
+</html>

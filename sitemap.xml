@@ -2,6 +2,34 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   
   <url>
+    <loc>http://icyxp.github.io/blog/2017/07/microservice-%E9%AB%98%E8%B4%9F%E8%BD%BD%E5%BE%AE%E6%9C%8D%E5%8A%A1%E7%B3%BB%E7%BB%9F%E7%9A%84%E8%AF%9E%E7%94%9F%E8%BF%87%E7%A8%8B.html</loc>
+    
+    <lastmod>2017-07-26T14:33:05.000Z</lastmod>
+    
+  </url>
+  
+  <url>
+    <loc>http://icyxp.github.io/blog/2017/07/microservice-%E5%BE%AE%E6%9C%8D%E5%8A%A1%E5%A4%9F%E4%BA%86.html</loc>
+    
+    <lastmod>2017-07-26T14:00:54.000Z</lastmod>
+    
+  </url>
+  
+  <url>
+    <loc>http://icyxp.github.io/blog/2017/07/mysql-mysql-performance-monitoring.html</loc>
+    
+    <lastmod>2017-07-26T13:08:16.000Z</lastmod>
+    
+  </url>
+  
+  <url>
+    <loc>http://icyxp.github.io/blog/2016/07/mysql-mysql-develop-standard.html</loc>
+    
+    <lastmod>2017-07-26T13:06:13.000Z</lastmod>
+    
+  </url>
+  
+  <url>
     <loc>http://icyxp.github.io/blog/2016/09/mysql-mysql-sleep.html</loc>
     
     <lastmod>2016-09-29T11:40:27.000Z</lastmod>
@@ -40,13 +68,6 @@
     <loc>http://icyxp.github.io/blog/2016/07/lsyncd.html</loc>
     
     <lastmod>2016-07-15T09:57:50.000Z</lastmod>
-    
-  </url>
-  
-  <url>
-    <loc>http://icyxp.github.io/blog/2016/07/mysql-mysql-develop-standard.html</loc>
-    
-    <lastmod>2016-07-15T07:55:32.000Z</lastmod>
     
   </url>
   

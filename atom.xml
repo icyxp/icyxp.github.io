@@ -5,7 +5,7 @@
   <link href="/atom.xml" rel="self"/>
   
   <link href="http://icyxp.github.io/"/>
-  <updated>2016-09-29T11:40:27.000Z</updated>
+  <updated>2017-07-26T14:33:05.000Z</updated>
   <id>http://icyxp.github.io/</id>
   
   <author>
@@ -14,6 +14,265 @@
   </author>
   
   <generator uri="http://hexo.io/">Hexo</generator>
+  
+  <entry>
+    <title>高负载微服务系统的诞生过程</title>
+    <link href="http://icyxp.github.io//blog/2017/07/microservice-%E9%AB%98%E8%B4%9F%E8%BD%BD%E5%BE%AE%E6%9C%8D%E5%8A%A1%E7%B3%BB%E7%BB%9F%E7%9A%84%E8%AF%9E%E7%94%9F%E8%BF%87%E7%A8%8B.html"/>
+    <id>http://icyxp.github.io//blog/2017/07/microservice-高负载微服务系统的诞生过程.html</id>
+    <published>2017-07-26T14:00:00.000Z</published>
+    <updated>2017-07-26T14:33:05.000Z</updated>
+    
+    <content type="html">&lt;p&gt;&lt;img src=&quot;/images/ms/02/cover.png&quot; alt=&quot;封面&quot;&gt;&lt;/p&gt;
+&lt;h2 id=&quot;简介&quot;&gt;&lt;a href=&quot;#简介&quot; class=&quot;headerlink&quot; title=&quot;简介&quot;&gt;&lt;/a&gt;简介&lt;/h2&gt;&lt;p&gt;在2016 &lt;a href=&quot;http://highload.co/&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;LighLoad++&lt;/a&gt;大会上，“M-Tex”的开发经理Vadim Madison讲述了从一个由数百个微服务组成的系统到包含数千个微服务的高负载项目的发展历程。本文已获得翻译授权，查看英文原文：&lt;a href=&quot;https://kukuruku.co/post/microservices-in-a-high-load-project/&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;Microservices in a High-Load Project&lt;/a&gt; 。&lt;/p&gt;
+&lt;p&gt;我将告诉大家我们是如何开始一个高负载微服务项目的。在讲述我们的经历之前，先让我们简单地自我介绍一下。&lt;/p&gt;
+&lt;p&gt;简单地说，我们从事视频输出方面的工作——我们提供实时的视频。我们负责“NTV-Plus”和“Match TV”频道的视频平台。该平台有30万的并发用户，每小时输出300TB的内容。这是一个很有意思的任务。那么我们是如何做到的呢？&lt;/p&gt;
+&lt;p&gt;这背后都有哪些故事？这些故事都是关于项目的开发和成长，关于我们对项目的思考。总而言之，是关于如何提升项目的伸缩能力，承受更大的负载，在不宕机和不丢失关键特性的情况下为客户提供更多的功能。我们总是希望能够满足客户的需求。当然，这也涉及到我们是如何实现这一切，以及这一切是如何开始的。&lt;/p&gt;
+&lt;a id=&quot;more&quot;&gt;&lt;/a&gt;
+&lt;p&gt;&lt;strong&gt;在最开始，我们有两台运行在Docker集群里的服务器，数据库运行在相同机器的容器里。没有专用的存储，基础设施非常简单。&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;我们就是这样开始的，只有两台运行在Docker集群里的服务器。那个时候，数据库也运行在同一个集群里。我们的基础设施里没有什么专用的组件，十分简单。&lt;br&gt;&lt;img src=&quot;/images/ms/02/00.jpg&quot; alt=&quot;00&quot;&gt;&lt;/p&gt;
+&lt;p&gt;我们的基础设施最主要的组件就是Docker和TeamCity，我们用它们来交付和构建代码。&lt;/p&gt;
+&lt;p&gt;在接下来的时期——我称其为我们的发展中期——是我们项目发展的关键时期。我们拥有了80台服务器，并在一组特殊的机器上为数据库搭建了一个单独的专用集群。我们开始使用基于CEPH的分布式存储，并开始思考服务之间的交互问题，同时要更新我们的监控系统。&lt;/p&gt;
+&lt;p&gt;现在，让我们来看看我们在这一时期都做了哪些事情。Docker集群里已经有数百台服务器，微服务就运行在它们上面。这个时候，我们开始根据数据总线和逻辑分离原则将我们的系统拆分成服务子系统。当微服务越来越多时，我们决定拆分我们的系统，这样维护起来就容易得多（也更容易理解）。&lt;br&gt;&lt;img src=&quot;/images/ms/02/01.jpg&quot; alt=&quot;01&quot;&gt;&lt;/p&gt;
+&lt;p&gt;这张图展示的是我们系统其中的一小部分。这部分系统负责视频剪切。半年前，我在“RIT++”也展示过类似的图片。那个时候只有17个绿色的微服务，而现在有28个绿色的微服务。这些服务只占我们整个系统的二十分之一，所以可以想象我们系统大致的规模有多大。&lt;/p&gt;
+&lt;h2 id=&quot;深入细节&quot;&gt;&lt;a href=&quot;#深入细节&quot; class=&quot;headerlink&quot; title=&quot;深入细节&quot;&gt;&lt;/a&gt;深入细节&lt;/h2&gt;&lt;p&gt;服务间的通信是一件很有趣的事情。一般来说，我们应该尽可能提升服务间通信效率。我们使用了&lt;a href=&quot;https://developers.google.com/protocol-buffers/&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;protobuf&lt;/a&gt;，我们认为它就是我们需要的东西。&lt;/p&gt;
+&lt;p&gt;它看起来是这样的：&lt;br&gt;&lt;img src=&quot;/images/ms/02/02.jpg&quot; alt=&quot;02&quot;&gt;&lt;/p&gt;
+&lt;p&gt;微服务的前面有一个负载均衡器。请求到达前端，或者直接发送给提供了JSON API的服务。protobuf被用于内部服务之间的交互。&lt;/p&gt;
+&lt;p&gt;protobuf真是一个好东西。它为消息提供了很好的压缩率。现如今有很多框架，只要使用很小的开销就能实现序列化和反序列化。我们可以将其视为有条件的请求类型。&lt;/p&gt;
+&lt;p&gt;但如果从微服务角度来看，我们会发现，微服务之间也存在某种私有的协议。如果只有一两个或者五个微服务，我们可以为每个微服务打开一个控制台，通过它们来访问微服务，并获得响应结果。如果出现了问题，我们可以对其进行诊断。不过这在一定程度上让微服务的支持工作变得复杂。&lt;/p&gt;
+&lt;p&gt;在一定时期内，这倒不是什么问题，因为并没有太多的微服务。另外，Google发布了&lt;a href=&quot;https://grpc.io/&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;gRPC&lt;/a&gt;。在那个时候，gRPC满足了所有我们想做的事情。于是我们逐渐迁移到gRPC。于是我们的技术栈里出现了另一个组件。&lt;br&gt;&lt;img src=&quot;/images/ms/02/03.jpg&quot; alt=&quot;03&quot;&gt;&lt;/p&gt;
+&lt;p&gt;实现的细节也是很有趣的。gRPC默认是基于HTTP/2的。如果你的环境相对稳定，应用程序不怎么发生变更，也不需要在机器间迁移，那么gRCP对于你来说就是个不错的东西。另外，gRPC支持很多客户端和服务器端的编程语言。&lt;/p&gt;
+&lt;p&gt;现在，我们从微服务角度来看待这个问题。从一方面来看，gRPC是一个好东西，但从另一方面来看，它也有不足之处。当我们开始对日志进行标准化（这样就可以将它们聚合到一个独立的系统里）时，我们发现，从gRPC中抽取日志非常麻烦。&lt;/p&gt;
+&lt;p&gt;于是，我们决定开发自己的日志系统。它解析消息，并将它们转成我们需要的格式。这样我们才可以获得我们想要的日志。还有一个问题，添加新的微服务会让服务间的依赖变得更加复杂。这是微服务一直存在的问题，这也是除版本问题之外的另一个具有一定复杂性的问题。&lt;/p&gt;
+&lt;p&gt;于是，我们开始考虑使用JSON。在很长的一段时间里，我们无法相信，在使用了紧凑的二进制协议之后会转回使用JSON。有一天，我们看到一篇文章，来自&lt;a href=&quot;http://engineering.dailymotion.com/&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;DailyMotion&lt;/a&gt;的一个家伙在文章里提到了同样的事情：“我们知道该如何使用JSON，每个人都可以使用JSON。既然如此，为什么还要自寻烦恼呢？”&lt;br&gt;&lt;img src=&quot;/images/ms/02/04.jpg&quot; alt=&quot;04&quot;&gt;&lt;/p&gt;
+&lt;p&gt;于是，我们逐渐从gRPC转向我们自己实现的JSON。我们保留了HTTP/2，它与JSON组合起来可以带来更快的速度。&lt;/p&gt;
+&lt;p&gt;现在，我们具备了所有必要的特性。我们可以通过cURL访问我们的服务。我们的QA团队使用&lt;a href=&quot;https://www.getpostman.com/&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;Postman&lt;/a&gt;，所以他们也感觉很满意。一切都变得简单起来。这是一个有争议性的决定，但却为我们带来了很多好处。&lt;/p&gt;
+&lt;p&gt;JSON唯一的缺点就是它的紧凑性不足。根据我们的测试结果，它与MessagePack之间有30%的差距。不过对于一个支持系统来说，这不算是个大问题。&lt;/p&gt;
+&lt;p&gt;况且，我们在转到JSON之后还获得了更多的特性，比如协议版本。有时候，当我们在新版本的协议上使用protobuf时，客户端也必须改用protobuf。如果你有数百个服务，就算只有10%的服务进行了迁移，这也会引起很大的连锁反应。你在一个服务上做了一些变更，就会有十多个服务也需要跟着改动。&lt;/p&gt;
+&lt;p&gt;因此，我们就会面临这样的一种情况，一个服务的开发人员已经发布了第五个、第六个，甚至第七个版本，但生产环境里仍然在运行第四个版本，就因为其他相关服务的开发人员有他们自己的优先级和截止日期。他们无法持续地更新他们的服务，并使用新版本的协议。所以，新版本的服务虽然发布了，但还派不上用场。然后，我们却要以一种很奇怪的方式来修复旧版本的bug，这让支持工作变得更加复杂。&lt;/p&gt;
+&lt;p&gt;最后，我们决定停止发布新版本的协议。我们提供协议的基础版本，可以往里面添加少量的属性。服务的消费者开始使用JSON schema。&lt;/p&gt;
+&lt;p&gt;标准看起来是这样的：&lt;br&gt;&lt;img src=&quot;/images/ms/02/05.jpg&quot; alt=&quot;05&quot;&gt;&lt;/p&gt;
+&lt;p&gt;我们没有使用版本1、2和3，而是只使用版本1和指向它的schema。&lt;br&gt;&lt;img src=&quot;/images/ms/02/06.jpg&quot; alt=&quot;06&quot;&gt;&lt;/p&gt;
+&lt;p&gt;这是从我们服务返回的一个典型的响应结果。它是一个内容管理器，返回有关广播的信息。这里有一个消费者schema的例子。&lt;br&gt;&lt;img src=&quot;/images/ms/02/07.jpg&quot; alt=&quot;07&quot;&gt;&lt;/p&gt;
+&lt;p&gt;最底下的字符串最有意思，也就是”required”那块。我们可以看到，这个服务只需要4个字段——id、content、date和status。如果我们使用了这个schema，那么消费者就只会得到这样的数据。&lt;br&gt;&lt;img src=&quot;/images/ms/02/08.jpg&quot; alt=&quot;08&quot;&gt;&lt;/p&gt;
+&lt;p&gt;它们可以被用在每一个协议版本里，从第一个版本到后来的每一个变更版本。这样，在版本之间迁移就容易很多。在我们发布新版本之后，客户端的迁移就会简单很多。&lt;/p&gt;
+&lt;p&gt;下一个重要的议题是系统的稳定性问题。这是微服务和其他任何一个系统都需要面临的问题（在微服务架构里，我们可以更强烈地感觉到它的重要性）。系统总会在某个时候变得不稳定。&lt;/p&gt;
+&lt;p&gt;如果服务间的调用链只包含了一两个服务，那么就没有什么问题。在这种情况下，你看不出单体和分布式系统之间有多大区别。但当调用链里包含了5到7个调用，那么问题就会接踵而至。你根本不知道为什么会这样，也不知道能做些什么。在这种情况下，调试会变得很困难。在单体系统里，你可以通过逐步调试来找出错误。但对于微服务来说，网络不稳定性或高负载下的性能不稳定性也会对微服务造成影响。特别是对于拥有大量节点的分布式系统来说，这些情况就更加显而易见了。&lt;br&gt;&lt;img src=&quot;/images/ms/02/09.jpg&quot; alt=&quot;09&quot;&gt;&lt;/p&gt;
+&lt;p&gt;在一开始，我们采用了传统的办法。我们监控所有的东西，查看问题和问题的发生点，然后尝试尽快修复它们。我们将微服务的度量指标收集到一个独立的数据库里。我们使用&lt;a href=&quot;https://github.com/python-diamond/Diamond&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;Diamond&lt;/a&gt;来收集系统度量指标。我们使用&lt;a href=&quot;https://github.com/google/cadvisor&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;cAdvisor&lt;/a&gt;来分析容器的资源使用情况和性能特征。所有的结果都被保存到&lt;a href=&quot;https://github.com/influxdata/influxdb&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;InfluxDB&lt;/a&gt;，然后我们在Grafana里创建仪表盘。&lt;br&gt;&lt;img src=&quot;/images/ms/02/10.jpg&quot; alt=&quot;10&quot;&gt;&lt;/p&gt;
+&lt;p&gt;于是，我们现在的基础设施里又多了三个组件。&lt;/p&gt;
+&lt;p&gt;我们比以往更加关注所发生的一切。我们对问题的反应速度更快了。不过，这并没有阻止问题的出现。&lt;/p&gt;
+&lt;p&gt;奇怪的是，微服务架构的主要问题出在那些不稳定的服务上。它们有的今天运行正常，明天就不行，而且有各种各样的原因。如果服务出现超载，而你继续向它发送负载，它就会宕机一段时间。如果它在一段时间不提供服务，负载就会下降，然后它就又活过来了。这类系统很难维护，也很难知道到底出了什么问题。&lt;/p&gt;
+&lt;p&gt;最后，我们决定把这些服务停掉，而不是让它们来回折腾。我们因此需要改变服务的实现方式。&lt;/p&gt;
+&lt;p&gt;我们做了一件很重要的事情。我们对每个服务接收的请求数量设定了一个上限。每个服务知道自己可以处理多少个来自客户端的请求（我们稍后会详细说明）。如果请求数量达到上限，服务将抛出503 Service Unavailable异常。客户端知道这个节点无法提供服务，就会选择另一个节点。&lt;/p&gt;
+&lt;p&gt;当系统出现问题时，我们就可以通过这种方式来减少请求时间。另外，我们也提升了服务的稳定性。&lt;/p&gt;
+&lt;p&gt;我们引入了第二种模式——&lt;strong&gt;回路断路器&lt;/strong&gt;（Circuit Breaker）。我们在客户端实现了这种模式。&lt;/p&gt;
+&lt;p&gt;假设有一个服务A，它有4个可以访问的服务B的实例。它向注册中心索要服务B的地址：“给我这些服务的地址”。它得到了服务B的4个地址。服务A向第一个服务B的实例发起了请求。第一个服务B实例正常返回响应。服务A将其标记为可访问：“是的，我可以访问它”。然后，服务A向第二个服务B实例发起请求，不过它没有在期望的时间内得到响应。我们禁用了这个实例，然后向下一个实例发起请求。下一个实例因为某些原因返回了不正确的协议版本。于是我们也将其禁用，然后转向第四个实例。&lt;/p&gt;
+&lt;p&gt;总得来说，只有一半的服务能够为客户端提供服务。于是服务A将会向能够正常返回响应的两个服务发起请求。而另外两个无法满足要求的实例被禁用了一段时间。&lt;/p&gt;
+&lt;p&gt;我们通过这种方式来提升性能的稳定性。如果服务出现了问题，我们就将其关闭，并发出告警，然后尝试找出问题所在。&lt;/p&gt;
+&lt;p&gt;因为引入了回路断路器模式，我们的基础设施里又多了一个组件——&lt;a href=&quot;https://github.com/Netflix/Hystrix&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;Hystrix&lt;/a&gt;。&lt;br&gt;&lt;img src=&quot;/images/ms/02/11.jpg&quot; alt=&quot;11&quot;&gt;&lt;/p&gt;
+&lt;p&gt;Hystrix不仅实现了回路断路器模式，它也有助于我们了解系统里出现了哪些问题：&lt;br&gt;&lt;img src=&quot;/images/ms/02/12.jpg&quot; alt=&quot;12&quot;&gt;&lt;/p&gt;
+&lt;p&gt;圆环的大小表示服务与其他组件之间的流量大小。颜色表示系统的健康状况。如果圆环是绿色的，那么说明一切正常。如果圆环是红色的，那么就有问题了。&lt;/p&gt;
+&lt;p&gt;如果一个服务应该被停掉，那么它看起来是这个样子的。圆环是打开的。&lt;br&gt;&lt;img src=&quot;/images/ms/02/13.jpg&quot; alt=&quot;13&quot;&gt;&lt;/p&gt;
+&lt;p&gt;我们的系统变得相对稳定。每个服务至少都有两个可用的实例，这样我们就可以选择停掉其中的一个。不过，尽管是这样，我们仍然不知道我们的系统究竟发生了什么问题。在处理请求期间如果出现了问题，我们应该怎样才能知道问题的根源是什么呢？&lt;/p&gt;
+&lt;p&gt;这是一个标准的请求：&lt;br&gt;&lt;img src=&quot;/images/ms/02/14.jpg&quot; alt=&quot;14&quot;&gt;&lt;/p&gt;
+&lt;p&gt;这是一个处理链条。用户发送请求到第一个服务，然后是第二个。从第二个服务开始，链条将请求发送到第三个和第四个服务。&lt;/p&gt;
+&lt;p&gt;然后一个分支不明原因地消失了。在经历了这类场景之后，我们尝试着提升这种场景的可见性，于是我们找到了Appdash。Appdash是一个跟踪服务。&lt;br&gt;&lt;img src=&quot;/images/ms/02/16.jpg&quot; alt=&quot;16&quot;&gt;&lt;/p&gt;
+&lt;p&gt;它看起来是这个样子的：&lt;br&gt;&lt;img src=&quot;/images/ms/02/17.jpg&quot; alt=&quot;17&quot;&gt;&lt;/p&gt;
+&lt;p&gt;可以这么说，我们只是想尝试一下，看看它是否适合我们。将它用在我们的系统里是一件很容易的事情，因为我们那个时候使用的是Go语言。Appdash提供了一个开箱即用的包。我们认为Appdash是一个好东西，只是它的实现并不是很适合我们。&lt;br&gt;&lt;img src=&quot;/images/ms/02/18.jpg&quot; alt=&quot;18&quot;&gt;&lt;/p&gt;
+&lt;p&gt;于是，我们决定使用&lt;a href=&quot;http://zipkin.io/&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;Zipkin&lt;/a&gt;来代替Appdash。Zipkin是由Twitter开源的。它看起来是这个样子的：&lt;br&gt;&lt;img src=&quot;/images/ms/02/19.jpg&quot; alt=&quot;19&quot;&gt;&lt;/p&gt;
+&lt;p&gt;我认为这样会更清楚一些。我们可以从中看到一些服务，也可以看到我们的请求是如何通过请求链的，还可以看到请求在每个服务里都做了哪些事情。一方面，我们可以看到服务的总时长和每个分段的时长，另一方面，我们完全可以添加描述服务内容的信息。&lt;/p&gt;
+&lt;p&gt;我们可以在这里添加一些与数据库的调用、文件系统的读取、缓存的访问有关的信息，这样就可以知道请求里哪一部分使用了最多的时间。TraceID可以帮助我们做到这一点。稍后我会介绍更多细节。&lt;br&gt;&lt;img src=&quot;/images/ms/02/20.jpg&quot; alt=&quot;20&quot;&gt;&lt;/p&gt;
+&lt;p&gt;我们就是通过这种方式知道请求在处理过程中发生了什么问题，以及为什么有时候无法被正常处理。刚开始一切都正常，然后突然间，其中的一个出现了问题。我们稍作排查，就知道出问题的服务发生了什么。&lt;br&gt;&lt;img src=&quot;/images/ms/02/21.jpg&quot; alt=&quot;21&quot;&gt;&lt;/p&gt;
+&lt;p&gt;不久前，一些厂商推出了一个跟踪系统的标准。为了简化系统的实现，主要的几个跟踪系统厂商在如何设计客户端API和客户端类库上达成了一致。现在已经有了&lt;a href=&quot;http://opentracing.io/&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;OpenTracing&lt;/a&gt;的实现，支持几乎所有的主流开发语言。现在就可以使用它了。&lt;/p&gt;
+&lt;p&gt;我们已经有办法知道那些突然间崩溃的服务。我们可以看到其中的某部分在垂死挣扎，但是不知道为什么。光有环境信息是不够的，&lt;/p&gt;
+&lt;p&gt;我们还需要日志。是的，这应该成为标准的一部分，它就是Elasticsearch、Logstash和Kibana（ELK）。不过我们对它们做了一些改动。&lt;br&gt;&lt;img src=&quot;/images/ms/02/22.jpg&quot; alt=&quot;22&quot;&gt;&lt;/p&gt;
+&lt;p&gt;我们并没有将大量的日志直接通过forward传给Logstash，而是先传给syslog，让它把日志聚合到构建机器上，然后再通过forward导入到&lt;strong&gt;Elasticsearch&lt;/strong&gt;和&lt;strong&gt;Kibana&lt;/strong&gt;。这是一个很标准的流程，那么巧妙的地方在哪里呢？&lt;br&gt;&lt;img src=&quot;/images/ms/02/23.jpg&quot; alt=&quot;23&quot;&gt;&lt;/p&gt;
+&lt;p&gt;巧妙的是，我们可以在任何可能的地方往日志里加入Zipkin的TraceID。&lt;/p&gt;
+&lt;p&gt;这样一来，我们就可以在Kibana仪表盘上看到完整的用户请求执行情况。也就是说，一旦服务进入生产环境，就为运营做好了准备。它已经通过了自动化测试，如果有必要，QA可以再进行手动检查。它应该没有什么问题。如果它出现了问题，那说明有一些先决条件没有得到满足。日志里详细地记录了这些先决条件，通过过滤，我们可以看到某个请求的跟踪信息。我们因此可以快速地查出问题的根源，为我们节省了很多时间。&lt;/p&gt;
+&lt;p&gt;我们后来引入了动态调试模式。现在的日志数量还不是很大，大概只有100 GB到150 GB，我记不太清楚具体数字了。不过，这些日志是在正常的日志模式下生成的。如果我们添加更多的细节，那么日志就可能变成TB级别的，处理起来就很耗费资源。&lt;/p&gt;
+&lt;p&gt;当我们发现某些服务出现问题，就打开调试模式（通过一个API），看看发生了什么事情。有时候，我们找到出现问题的服务，在不将它关闭的情况下打开调试模式，尝试找出问题所在。&lt;/p&gt;
+&lt;p&gt;最后，我们在ELK端查找问题。我们还对关键服务的错误进行聚合。服务知道哪些错误是关键性的，哪些不是关键性的，然后将它们传给&lt;a href=&quot;https://sentry.io/&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;Sentry&lt;/a&gt;。&lt;br&gt;&lt;img src=&quot;/images/ms/02/24.jpg&quot; alt=&quot;24&quot;&gt;&lt;/p&gt;
+&lt;p&gt;Sentry能够智能地收集错误日志，并形成度量指标，还会进行一些基本的过滤。我们在很多服务上使用了Sentry。我们从单体应用时期就开始使用它了。&lt;/p&gt;
+&lt;p&gt;那么最有趣的问题是，我们是如何进行伸缩的？这里需要先介绍一些概念。我们把每个机器看成一个黑盒。&lt;br&gt;&lt;img src=&quot;/images/ms/02/25.jpg&quot; alt=&quot;25&quot;&gt;&lt;/p&gt;
+&lt;p&gt;我们有一个编排系统，最开始使用&lt;a href=&quot;https://www.nomadproject.io/&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;Nomad&lt;/a&gt;。确切地说，应该是&lt;a href=&quot;https://www.ansible.com/&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;Ansible&lt;/a&gt;。我们自己编写脚本，但光是这些还不能满足要求。那个时候，Nomad的某些版本可以简化我们的工作，于是我们决定迁移到Nomad。&lt;br&gt;&lt;img src=&quot;/images/ms/02/26.jpg&quot; alt=&quot;26&quot;&gt;&lt;/p&gt;
+&lt;p&gt;同时还使用了&lt;a href=&quot;https://www.consul.io/&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;Consul&lt;/a&gt;，将它作为服务发现的注册中心。还有Vault，用于存储敏感数据，比如密码、秘钥和其他所有不能保存在Git上的东西。&lt;/p&gt;
+&lt;p&gt;这样，所有的机器几乎都变得一模一样。每个机器上都安装了&lt;strong&gt;Docker&lt;/strong&gt;，还有&lt;strong&gt;Consul&lt;/strong&gt;和&lt;strong&gt;Nomad&lt;/strong&gt;代理。总的来说，每一个机器都处于备用状态，可以在任何时候投入使用。如果不用了，我们就让它们下线。如果你构建了云平台，你就可以先准备好机器，在高峰期时将它们打开，在负载下降时将它们关闭。这会节省大量的成本。&lt;br&gt;&lt;img src=&quot;/images/ms/02/27.jpg&quot; alt=&quot;27&quot;&gt;&lt;/p&gt;
+&lt;p&gt;后来，我们决定从&lt;strong&gt;Nomad&lt;/strong&gt;迁移到&lt;a href=&quot;https://github.com/kubernetes/kubernetes&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;Kubernetes&lt;/a&gt;，&lt;strong&gt;Consul&lt;/strong&gt;也因此成为了集中式的配置系统。&lt;/p&gt;
+&lt;p&gt;这样一来，部分栈可以进行自动伸缩。那么我们是怎么做的呢？&lt;/p&gt;
+&lt;p&gt;第一步，我们对内存、CPU和网络进行限制。&lt;br&gt;&lt;img src=&quot;/images/ms/02/28.jpg&quot; alt=&quot;28&quot;&gt;&lt;/p&gt;
+&lt;p&gt;我们分别将这三个元素分成三个等级，砍掉其中的一部分。例如，&lt;br&gt;&lt;img src=&quot;/images/ms/02/29.jpg&quot; alt=&quot;29&quot;&gt;&lt;/p&gt;
+&lt;p&gt;R3-C2-N1，我们已经限定只给某个服务一小部分网络流量、多一点点的CPU和更多的内存。这个服务真的很耗费资源。&lt;/p&gt;
+&lt;p&gt;我们在这里使用了助记符，我们的决策服务可以设置很多的组合值，这些值看起来是这样的：&lt;br&gt;&lt;img src=&quot;/images/ms/02/30.jpg&quot; alt=&quot;30&quot;&gt;&lt;/p&gt;
+&lt;p&gt;事实上，我们还有C4和R4，不过它们已经超出了这些标准的限制。标准看起来是这样的：&lt;br&gt;&lt;img src=&quot;/images/ms/02/31.jpg&quot; alt=&quot;31&quot;&gt;&lt;/p&gt;
+&lt;p&gt;下一步开始做一些预备工作。我们先确定服务的伸缩类型。&lt;/p&gt;
+&lt;p&gt;独立的服务最容易伸缩，它可以进行线性地伸缩。如果用户增长了两倍，我们就运行两倍的服务实例。这就万事大吉了。&lt;/p&gt;
+&lt;p&gt;第二种伸缩类型：服务依赖了外部的资源，比如那些使用了数据库的服务。数据库有它自己的容量上限，这个一定要注意。你还要知道，如果系统性能出现衰退，就不应该再增加更多的实例，而且你要知道这种情况会在什么时候发生。&lt;/p&gt;
+&lt;p&gt;第三种情况是，服务受到外部系统的牵制。例如，外部的账单系统。就算运行了100个服务实例，它也没办法处理超过500个请求。我们要考虑到这些限制。在确定了服务类型并设置了相应的标记之后，是时候看看它们是如何通过我们的构建管道的。&lt;br&gt;&lt;img src=&quot;/images/ms/02/32.jpg&quot; alt=&quot;32&quot;&gt;&lt;/p&gt;
+&lt;p&gt;我们在CI服务器上运行了一些单元测试，然后在测试环境运行集成测试，我们的QA团队会对它们做一些检查。在这之后，我们就进入了预生产环境的负载测试。&lt;br&gt;&lt;img src=&quot;/images/ms/02/33.jpg&quot; alt=&quot;33&quot;&gt;&lt;/p&gt;
+&lt;p&gt;如果是第一种类型的服务，我们使用一个实例，并在这个环境里运行它，给它最大的负载。在运行了几轮之后，我们取其中的最小值，将它存入&lt;strong&gt;InfluxDB&lt;/strong&gt;，将它作为该服务的负载上限。&lt;/p&gt;
+&lt;p&gt;如果是第二种类型的服务，我们逐渐加大负载，直到出现了性能衰退。我们对这个过程进行评估，如果我们知道该系统的负载，那么就比较当前负载是否已经足够，否则，我们就会设置告警，不会把这个服务发布到生产环境。我们会告诉开发人员：“你们需要分离出一些东西，或者加进去另一个工具，让这个服务可以更好地伸缩。”&lt;br&gt;&lt;img src=&quot;/images/ms/02/34.jpg&quot; alt=&quot;34&quot;&gt;&lt;/p&gt;
+&lt;p&gt;因为我们知道第三种类型服务的上限，所以我们只运行一个实例。我们也会给它一些负载，看看它可以服务多少个用户。如果我们知道账单系统的上限是1000个请求，并且每个服务实例可以处理200个请求，那么就需要5个实例。&lt;/p&gt;
+&lt;p&gt;我们把这些信息都保存到了InfluxDB。我们的决策服务开始派上用场了。它会检查两个边界：上限和下限。如果超出了上限，那么就应该增加服务实例。如果超出下限，那么就减少实例。如果负载下降（比如晚上的时候），我们就不需要这么多机器，可以减少它们的数量，并关掉一部分机器，省下一些费用。&lt;/p&gt;
+&lt;p&gt;整体看起来是这样的：&lt;br&gt;&lt;img src=&quot;/images/ms/02/35.jpg&quot; alt=&quot;35&quot;&gt;&lt;/p&gt;
+&lt;p&gt;每个服务的度量指标表明了它们当前的负载。负载信息被保存到InfluxDB，如果决策服务发现服务实例达到了上限，它会向Nomad和Kubernetes发送命令，要求增加服务实例。有可能在云端已经有可用的实例，或者开始做一些准备工作。不管怎样，发出要求增加新服务实例的告警才是关键所在。&lt;/p&gt;
+&lt;p&gt;一些受限的服务如果达到上限，也会发出相关的告警。对于这类情况，我们除了加大等待队列，也做不了其他什么事情。不过最起码我们知道我们很快就会面临这样的问题，并开始做好应对措施。&lt;/p&gt;
+&lt;p&gt;这就是我想告诉大家有关伸缩性方面的事情。除了这些，还有另外一个东西——&lt;a href=&quot;https://about.gitlab.com/gitlab-ci/&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;Gitlab CI&lt;/a&gt;。&lt;br&gt;&lt;img src=&quot;/images/ms/02/36.jpg&quot; alt=&quot;36&quot;&gt;&lt;/p&gt;
+&lt;p&gt;我们一般是通过TeamCity来开发服务的。后来，我们意识到，所有的服务都有一个共性，这些服务都是不一样的，并且知道自己该如何部署到容器里。要生成这么的项目真的很困难，不过如果使用yml文件来描述它们，并把这个文件与服务放在一起，就会方便很多。虽然我们只做了一些小的改变，不过却为我们带来了非常多的可能性。&lt;/p&gt;
+&lt;p&gt;现在，我想说一些一直想对自己说的话。&lt;/p&gt;
+&lt;p&gt;关于微服务开发，我建议在一开始就使用&lt;strong&gt;编排系统&lt;/strong&gt;。可以使用最简单的编排系统，比如Nomad，通过nomad agent -dev命令启动一个编排系统，包括Consul和其他东西。&lt;/p&gt;
+&lt;p&gt;我们仿佛是在一个黑盒子工作。你试图避免被绑定到某台特定的机器上，或者被附加到某台特定机器的文件系统上。这些事情会让你开始重新思考。&lt;/p&gt;
+&lt;p&gt;在开发阶段，&lt;strong&gt;每个服务至少需要两个实例&lt;/strong&gt;，如果其中一个出现问题，就可以关掉它，由另一个接管继续服务。&lt;/p&gt;
+&lt;p&gt;还有一些有关架构的问题。在微服务架构里，&lt;strong&gt;消息总线&lt;/strong&gt;是一个非常重要的组件。&lt;/p&gt;
+&lt;p&gt;假设你有一个用户注册系统，那么如何以最简单的方式实现它呢？对于注册系统来说，需要创建账户，然后在账单系统里创建一个用户，并为他创建头像和其他东西。你有一组服务，其中的超级服务收到了一个请求，它将请求分发给其他服务。经过几次之后，它就知道该触发哪些服务来完成注册。&lt;/p&gt;
+&lt;p&gt;不过，我们可以使用一种更简单、更可靠、更高效的方式来实现。我们使用一个服务来处理注册，它注册了一个用户，然后发送一个事件到消息总线，比如“我已经注册了一个yoghurt，ID是……”。相关的服务会收到这个事件，其中的一个服务会在账单系统里创建一个账户，另一个服务会发送一封欢迎邮件。&lt;/p&gt;
+&lt;p&gt;不过，系统会因此失去强一致性。这个时候你没有超级服务，也不知道每个服务的状态。不过，这样的系统很容易维护。&lt;/p&gt;
+&lt;p&gt;现在，我再说一些之前提到过的问题。&lt;strong&gt;不要试图修复&lt;/strong&gt;出问题的服务。如果某些服务实例出现了问题，将它找出来，然后把流量定向到其他服务实例（可能是新增的实例）上，然后再诊断问题。这样可以显著提升系统的可用性。&lt;/p&gt;
+&lt;p&gt;通过&lt;strong&gt;收集度量指标&lt;/strong&gt;来了解系统的状态自然不在话下。&lt;/p&gt;
+&lt;p&gt;不过要注意，如果你对某个度量指标不了解，不知道怎么使用它，或者它对你来说没有什么意义，就不要收集它。因为有时候，这样的度量指标会有数百万个。你在这些无用的度量指标上面浪费了很多资源和时间。这些是无效的负载。&lt;/p&gt;
+&lt;p&gt;如果你认为你需要某些度量指标，那么就收集它们。如果不需要，就不要收集。&lt;/p&gt;
+&lt;p&gt;如果你发现了一个问题，不要急着去修复。在很多情况下，&lt;strong&gt;系统会对此作出反应&lt;/strong&gt;。当系统需要你采取行动的时候，它会给你发出告警。如果它不要求你在半夜跑去修复问题，那么它就不算是一个告警。它只不过是一种警告，你可以在把它当成一般的问题来处理。&lt;/p&gt;
+</content>
+    
+    <summary type="html">
+    
+      &lt;p&gt;&lt;img src=&quot;/images/ms/02/cover.png&quot; alt=&quot;封面&quot;&gt;&lt;/p&gt;
+&lt;h2 id=&quot;简介&quot;&gt;&lt;a href=&quot;#简介&quot; class=&quot;headerlink&quot; title=&quot;简介&quot;&gt;&lt;/a&gt;简介&lt;/h2&gt;&lt;p&gt;在2016 &lt;a href=&quot;http://highload.co/&quot;&gt;LighLoad++&lt;/a&gt;大会上，“M-Tex”的开发经理Vadim Madison讲述了从一个由数百个微服务组成的系统到包含数千个微服务的高负载项目的发展历程。本文已获得翻译授权，查看英文原文：&lt;a href=&quot;https://kukuruku.co/post/microservices-in-a-high-load-project/&quot;&gt;Microservices in a High-Load Project&lt;/a&gt; 。&lt;/p&gt;
+&lt;p&gt;我将告诉大家我们是如何开始一个高负载微服务项目的。在讲述我们的经历之前，先让我们简单地自我介绍一下。&lt;/p&gt;
+&lt;p&gt;简单地说，我们从事视频输出方面的工作——我们提供实时的视频。我们负责“NTV-Plus”和“Match TV”频道的视频平台。该平台有30万的并发用户，每小时输出300TB的内容。这是一个很有意思的任务。那么我们是如何做到的呢？&lt;/p&gt;
+&lt;p&gt;这背后都有哪些故事？这些故事都是关于项目的开发和成长，关于我们对项目的思考。总而言之，是关于如何提升项目的伸缩能力，承受更大的负载，在不宕机和不丢失关键特性的情况下为客户提供更多的功能。我们总是希望能够满足客户的需求。当然，这也涉及到我们是如何实现这一切，以及这一切是如何开始的。&lt;/p&gt;
+    
+    </summary>
+    
+      <category term="微服务" scheme="http://icyxp.github.io/categories/%E5%BE%AE%E6%9C%8D%E5%8A%A1/"/>
+    
+    
+      <category term="微服务" scheme="http://icyxp.github.io/tags/%E5%BE%AE%E6%9C%8D%E5%8A%A1/"/>
+    
+      <category term="microservice" scheme="http://icyxp.github.io/tags/microservice/"/>
+    
+      <category term="高负载" scheme="http://icyxp.github.io/tags/%E9%AB%98%E8%B4%9F%E8%BD%BD/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>微服务，够了</title>
+    <link href="http://icyxp.github.io//blog/2017/07/microservice-%E5%BE%AE%E6%9C%8D%E5%8A%A1%E5%A4%9F%E4%BA%86.html"/>
+    <id>http://icyxp.github.io//blog/2017/07/microservice-微服务够了.html</id>
+    <published>2017-07-26T13:00:00.000Z</published>
+    <updated>2017-07-26T14:00:54.000Z</updated>
+    
+    <content type="html">&lt;p&gt;&lt;img src=&quot;/images/ms/01/cover.png&quot; alt=&quot;01&quot;&gt;&lt;/p&gt;
+&lt;h2 id=&quot;前言&quot;&gt;&lt;a href=&quot;#前言&quot; class=&quot;headerlink&quot; title=&quot;前言&quot;&gt;&lt;/a&gt;前言&lt;/h2&gt;&lt;p&gt;  资深架构师&lt;a href=&quot;https://twitter.com/aadrake&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;Adam Drake&lt;/a&gt;在他的博客上分享了他对微服务的看法,他 从自己的经验出发,结合Martin Fowler对微服务的见解,帮助想要采用 微服务的公司重新审视微服务。以下内容已获得作者翻译授权,查看英文 原文 &lt;a href=&quot;https://aadrake.com/posts/2017-05-20-enough-with-the-microservices.html&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;Enough with the microservices&lt;/a&gt;。&lt;/p&gt;
+&lt;h2 id=&quot;简介&quot;&gt;&lt;a href=&quot;#简介&quot; class=&quot;headerlink&quot; title=&quot;简介&quot;&gt;&lt;/a&gt;简介&lt;/h2&gt;&lt;p&gt;  关于微服务的优势和劣势已经有过太多的讨论,不过我仍然看到很多 成长型初创公司对它进行着盲目崇拜。冒着“重复发明轮子”的风险(Martin Fowler已经写过“Microservice Premium”的文章),我想把我的一些 想法写下来,在必要的时候可以发给客户,也希望能够帮助人们避免犯下我之前见过的那些错误。在进行架构或技术选型时,将网络上找到的一些所谓的最佳实践文章作为指南,一旦做出了错误的决定,就要付出惨重的代价。如果能够帮助哪怕一个公司避免犯下这种错误,那么写这篇文章都是值得的。&lt;/p&gt;
+&lt;p&gt;  如今微服务是个热门技术,微服务架构一直以来都存在(面向服务架构也算是吧?),但对于我所见过的大部分公司来说,微服务不仅浪费了他们的时间,分散了他们的注意力,而且让事情变得更糟糕。&lt;/p&gt;
+&lt;p&gt;  这听起来似乎很奇怪,因为大部分关于微服务的文章都会肯定微服务 的各种好处,比如解耦系统、更好的伸缩性、消除开发团队之间的依赖, 等等。如果你的公司有 Uber、Airbnb、Facebook 或 Twitter 那样的规模, 那么就没有什么问题。我曾经帮助一些大型组织转型到微服务架构,包括 搭建消息系统和采用一些能够提升伸缩性的技术。不过,对于成长型初创 公司来说,很少需要这些技术和服务。&lt;/p&gt;
+&lt;p&gt;  Russ Miles在他的《&lt;a href=&quot;http://www.russmiles.com/essais/8-ways-to-lose-at-microservices-adoption&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;让微服务失效的八种方式&lt;/a&gt;》这篇文章中表达了 他的首要观点,而在我看来,这些场景却到处可见。成长型初创公司总是 想模仿那些大公司的最佳实践,用它们来弥补自身的不足。但是,最佳实 践是要视情况而定的。有些东西对于 Facebook 来说是最佳实践,但对于 只有不到百人的初创公司来说,它们就不一定也是最佳实践。&lt;/p&gt;
+&lt;p&gt;  如果你的公司比那些大公司小一些,在一定程度上你仍然能够从微服务架构中获益。但是,对于成长型初创公司来说,大规模地迁移到微服务是一种过错,而且对技术人来说是不公平的。&lt;/p&gt;
+&lt;a id=&quot;more&quot;&gt;&lt;/a&gt;
+&lt;h2 id=&quot;为什么选择微服务&quot;&gt;&lt;a href=&quot;#为什么选择微服务&quot; class=&quot;headerlink&quot; title=&quot;为什么选择微服务?&quot;&gt;&lt;/a&gt;为什么选择微服务?&lt;/h2&gt;&lt;p&gt;  一般来说,成长型初创公司采用微服务架构最主要的目的为了减少或消除开发团队之间的依赖,或者提升系统处理大流量负载的能力(比如伸缩性)。开发人员经常抱怨的问题和常见的症状包括合并冲突、由未完整实现的功能引起的部署错误以及伸缩性问题。接下来让我们逐个说明这些问题。&lt;/p&gt;
+&lt;h2 id=&quot;依赖&quot;&gt;&lt;a href=&quot;#依赖&quot; class=&quot;headerlink&quot; title=&quot;依赖&quot;&gt;&lt;/a&gt;依赖&lt;/h2&gt;&lt;p&gt;  在初创公司的早期阶段,开发团队规模不大,使用的技术也很简单。人们在一起工作,不会出现混乱,要实现一些功能也比较快。一切看起来都很美好。&lt;/p&gt;
+&lt;p&gt;  随着公司的不断发展,开发团队也在壮大,代码库也在增长,然后就出现了多个团队在同一个代码库上工作的情况。这些团队的大部分成员都是公司早期的员工。因为初创公司的早期员工一般都是初级开发人员,他们并没有意识到一个问题,那就是在团队规模增长和代码库增长的同时,沟通效率也需要随之提升。对于缺乏经验的技术人员来说,他们倾向于通过技术问题来解决人的问题,并希望通过微服务来减少开发团队之间的依赖和耦合。&lt;/p&gt;
+&lt;p&gt;  实际上,他们真正需要做的是通过有效的沟通来解决人的问题。当一个初创公司有多个开发团队时,团队之间需要协调,团队成员需要知道每个人都在做什么,他们需要协作。在这样规模的企业里,软件开发其实具备了社交的性质。如果团队之间缺乏沟通或者缺乏信息分享,不管用不用微服务,一样存在依赖问题,而就算使用了微服务,也仍然存在负面的技术问题。&lt;/p&gt;
+&lt;p&gt;  将代码模块化作为解决这个问题的技术方案,确实能够缓解软件开发固有的团队依赖问题,但团队间的沟通仍然要随着团队规模的增长而不断改进。&lt;/p&gt;
+&lt;p&gt;  不要混淆了解耦和分布式二者的含义。由模块和接口组成的单体可以帮助你达到解耦的目的,而且你也应该这么做。你没有必要把应用程序拆分成分布式的多个独立服务,在模块间定义清晰的接口同样能达到解耦的目的。&lt;/p&gt;
+&lt;h2 id=&quot;部分功能实现&quot;&gt;&lt;a href=&quot;#部分功能实现&quot; class=&quot;headerlink&quot; title=&quot;部分功能实现&quot;&gt;&lt;/a&gt;部分功能实现&lt;/h2&gt;&lt;p&gt;  微服务里需要用到&lt;a href=&quot;https://en.wikipedia.org/wiki/Feature_toggle&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;功能标志&lt;/a&gt; (feature flag),微服务开发人员需要熟悉这种技术。特别是在进行快速开发(下面会深入讨论)的时候,你可能需要部署一些功能,这些功能在某些平台上还没有实现,或者前端已经完全实现,但后端还没有。随着公司的发展,部署和运维系统变得越来越自动化和复杂,功能标志也变得越来越重要。&lt;/p&gt;
+&lt;h2 id=&quot;水平伸缩&quot;&gt;&lt;a href=&quot;#水平伸缩&quot; class=&quot;headerlink&quot; title=&quot;水平伸缩&quot;&gt;&lt;/a&gt;水平伸缩&lt;/h2&gt;&lt;p&gt;  通过部署同一个微服务的多个实例来获得伸缩性,这是微服务的优点 之一。不过,大多数过早采用微服务的公司在这些微服务背后使用了同一 个存储系统。也就是说,这些服务具备了伸缩性,但整个应用并不具备伸 缩性。如果你正打算使用这样的伸缩方式,那为什么不直接在负载均衡器 后面部署多个单体实例呢?你可以用更简单的方式达到相同的目的。再者, 水平伸缩应该被作为杀手锏来使用。你首先要关注的应该是如何提升应用 程序的性能。一些简单的优化常常能带来数百倍的性能提升,这里也包括 如何正确地使用其他服务。例如,我在一篇博文里提到的&lt;a href=&quot;https://aadrake.com/posts/2017-05-15-redis-performance-triage-handbook.html&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;Redis性能诊断&lt;/a&gt;。&lt;/p&gt;
+&lt;h2 id=&quot;我们为微服务做好准备了吗&quot;&gt;&lt;a href=&quot;#我们为微服务做好准备了吗&quot; class=&quot;headerlink&quot; title=&quot;我们为微服务做好准备了吗?&quot;&gt;&lt;/a&gt;我们为微服务做好准备了吗?&lt;/h2&gt;&lt;p&gt;  在讨论架构选型时,人们经常会忽略这个问题,但其实却是最重要的。 高级技术人员在了解了开发人员或业务人员的抱怨或痛点之后,在网上找 寻找解决方案,他们总是宣称能解决这些问题。但在这些信誓旦旦的观点 背后,有很多需要注意的地方。微服务有利也有弊。如果你的企业足够成 熟,并且具有一定的技术积累,那么采用微服务所面临的挑战会小很多, 并且能够带来更多正面好处。那么怎样才算已经为微服务做好准备了呢? Martin Fowler在多年前表达了他对&lt;a href=&quot;https://martinfowler.com/bliki/MicroservicePrerequisites.html&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;微服务先决条件&lt;/a&gt;的看法,但是从我的 经验来看,大多数成长型初创公司完全忽略了他的观点。Martin 的观点 是一个很好的切入点,让我们来逐个说明。&lt;/p&gt;
+&lt;p&gt;  我敢说,大部分成长型初创公司几乎连一个先决条件都无法满足,更不用说满足所有的条件了。如果你的技术团队不具备快速配置、部署和监控能力,那么在迁移到微服务前必须先获得这些能力。接下来让我们更详细地讨论这些先决条件。&lt;/p&gt;
+&lt;h2 id=&quot;快速配置&quot;&gt;&lt;a href=&quot;#快速配置&quot; class=&quot;headerlink&quot; title=&quot;快速配置&quot;&gt;&lt;/a&gt;快速配置&lt;/h2&gt;&lt;p&gt;  如果你的开发团队里只有少数几个人可以配置新服务、虚拟环境或其 他配套设施,那说明你们还没有为微服务做好准备。你的每个团队里都应 该要有几个这样的人,他们具备了配置基础设施和部署服务的能力,而且 不需要求助于外部。要注意,光是有一个 DevOps 团队并不意味着你在实 施 DevOps。开发人员应该参与管理与应用程序相关的组件,包括基础设施。&lt;/p&gt;
+&lt;p&gt;  类似的,如果你没有灵活的基础设施(易于伸缩并且可以由团队里的不同人员来管理)来支撑当前的架构,那么在迁移到微服务前必须先解决这个问题。你当然可以在裸机上运行微服务,以更低的成本获得出众的性能,但在服务的运维和部署方面也必须具备灵活性。&lt;/p&gt;
+&lt;h2 id=&quot;基本的监控&quot;&gt;&lt;a href=&quot;#基本的监控&quot; class=&quot;headerlink&quot; title=&quot;基本的监控&quot;&gt;&lt;/a&gt;基本的监控&lt;/h2&gt;&lt;p&gt;  如果你不曾对你的单体应用进行过性能监控,那么在迁移到微服务时, 你的日子会很难过。你需要熟悉系统级别的度量指标(比如 CPU 和内存)、 应用级别的度量指标(比如端点的请求延迟或端点的错误)和业务级别的 度量指标(比如每秒事务数或每秒收益),这样才可以更好地理解系统的 性能。在性能方面,微服务生态系统比单体系统要复杂得多,就更不用提 诊断问题的复杂性了。你可以搭建一个监控系统(如 Prometheus),在 将单体应用拆分成微服务之前对应用做一些增强,以便进行监控。&lt;/p&gt;
+&lt;h2 id=&quot;快速部署&quot;&gt;&lt;a href=&quot;#快速部署&quot; class=&quot;headerlink&quot; title=&quot;快速部署&quot;&gt;&lt;/a&gt;快速部署&lt;/h2&gt;&lt;p&gt;  如果你的单体系统没有一个很好的持续集成流程和部署系统,那么要 集成和部署好你的微服务几乎是件不可能的事。想象一下这样的场景:10 个团队和 100 个服务,它们都需要进行手动测试和部署,然后再将这些工 作与测试和部署一个单体所需要的工作进行对比。100 个服务会出现多少 种问题?而单体系统呢?这些先决条件很好地说明了微服务的复杂性。&lt;/p&gt;
+&lt;p&gt;  Phil Calcado在Fowler的先决条件清单里添加了一些东西,不过我 认为它们更像是重要的扩展,而不是真正的先决条件。&lt;/p&gt;
+&lt;h2 id=&quot;如果我们具备了这些先决条件呢&quot;&gt;&lt;a href=&quot;#如果我们具备了这些先决条件呢&quot; class=&quot;headerlink&quot; title=&quot;如果我们具备了这些先决条件呢?&quot;&gt;&lt;/a&gt;如果我们具备了这些先决条件呢?&lt;/h2&gt;&lt;p&gt;  就算具备了这些条件,仍然需要注意微服务的负面因素,确保微服务能够为你的业务带来真正的价值。事实上,很多技术人员对微服务中存在的&lt;a href=&quot;https://en.wikipedia.org/wiki/Fallacies_of_distributed_computing&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;分布式计算谬论&lt;/a&gt;视而不见,但为了确保能够成功,这些问题是必须要考虑到的。对于大部分成长型初创公司来说,基于各种原因,他们应该避免使用微服务。&lt;/p&gt;
+&lt;h2 id=&quot;运营成本的增加&quot;&gt;&lt;a href=&quot;#运营成本的增加&quot; class=&quot;headerlink&quot; title=&quot;运营成本的增加&quot;&gt;&lt;/a&gt;运营成本的增加&lt;/h2&gt;&lt;p&gt;  快速部署这一先决条件已经涵盖了一部分成本,除此之外,对 微服务进行容器化(可能使用 Docker)和使用容器编排系统(比如 Kubernetes)也需要耗费很多成本。Docker 和 Kubernetes 都是很优秀的 技术,但是对于大部分成长型初创公司来说,它们都是一种负担。我见过 初创公司使用 rsync 作为部署和编排工具,我也见过很多的初创公司陷入 运维工具的复杂性泥潭里,他们因此浪费了很多时间,而这些时间本来可 以用于为用户开发更多的功能。&lt;/p&gt;
+&lt;h2 id=&quot;你的应用会被拖慢&quot;&gt;&lt;a href=&quot;#你的应用会被拖慢&quot; class=&quot;headerlink&quot; title=&quot;你的应用会被拖慢&quot;&gt;&lt;/a&gt;你的应用会被拖慢&lt;/h2&gt;&lt;p&gt;  如果你的单体系统里包含了多个模块,并且在模块间定义了良好的 API,那么 API 之间的交互就几乎没有什么额外开销。但对于微服务来说 就不是这么一回事了,因为它们一般运行在不同的机器上,它们之间需要 通过网络进行交互。这样会在一定程度上拖慢整个系统。如果一个请求需 要多个服务进行同步交互,那么情况会变得更加糟糕。我曾经工作过的一 个公司,他们需要调用将近 10 个服务才能处理完某些请求。处理请求的 每一个步骤都需要额外的网络开销和延迟,但实际上,他们可以把这些服 务放在单个软件包里,按照不同的模块来区分,或者把它们设计成异步的。这样可以为他们节省大量的基础设施成本。&lt;/p&gt;
+&lt;h2 id=&quot;本地开发变得更加困难&quot;&gt;&lt;a href=&quot;#本地开发变得更加困难&quot; class=&quot;headerlink&quot; title=&quot;本地开发变得更加困难&quot;&gt;&lt;/a&gt;本地开发变得更加困难&lt;/h2&gt;&lt;p&gt;  如果你有一个单体应用,后端只有一个数据库,那么在开发过程中, 在本地运行这个应用是很容易的。如果你有 100 个服务,并使用了多个数 据存储系统,而且它们之间互相依赖,那么本地开发就会变成一个噩梦。即使是 Docker 也无法把你从这种复杂性泥潭中拯救出来。虽然事情原本 可以简单一些,不过仍然需要处理依赖问题。理论上说,微服务不存在这 些问题,因为微服务被认为是相互独立的。不过,对于成长型初创公司来说,就不是这么一回事了。技术人员一般需要在本地运行所有(或者几乎 所有)的服务才能进行新功能的开发和测试。这种复杂性是对资源的巨大浪费。&lt;/p&gt;
+&lt;h2 id=&quot;难以伸缩&quot;&gt;&lt;a href=&quot;#难以伸缩&quot; class=&quot;headerlink&quot; title=&quot;难以伸缩&quot;&gt;&lt;/a&gt;难以伸缩&lt;/h2&gt;&lt;p&gt;  对单体系统进行伸缩的最简单方式是在负载均衡器后面部署单体系 统的多个实例。在流量增长的情况下,这是一种非常简单的伸缩方式, 而且从运维角度来讲,它的复杂性是最低的。你的系统在编排平台(如 &lt;a href=&quot;https://aws.amazon.com/cn/elasticbeanstalk/&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;Elastic Beanstalk&lt;/a&gt;)上运行的时间越长越好,你和你的团队就可以集中 精力开发客户需要的东西,而不是忙于解决部署管道问题。使用合适的 CI/CD 系统可以缓解这个问题,但在微服务生态系统里,事情要复杂得多, 而且这些复杂性所造成的麻烦已经超过了它们所能带来的好处。&lt;/p&gt;
+&lt;h2 id=&quot;然后呢&quot;&gt;&lt;a href=&quot;#然后呢&quot; class=&quot;headerlink&quot; title=&quot;然后呢?&quot;&gt;&lt;/a&gt;然后呢?&lt;/h2&gt;&lt;p&gt;  如果你刚好身处一个成长型初创公司里,需要对架构做一些调整,而微服务似乎不能解决你的问题,这个时候应该怎么办?&lt;/p&gt;
+&lt;p&gt;  Fowler 提出的先决条件可以说是技术领域的&lt;a href=&quot;https://en.wikipedia.org/wiki/Capability_Maturity_Model&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;能力成熟度模型&lt;/a&gt;, Fowler 在他的文章里对成熟度模型进行过介绍。如果这种成熟度模型对于公司来说是说得通的,那么我们可以按照 Fowler 提出的先决条件,并使用其他的一些中间步骤为向微服务迁移做好准备。下面的内容引用自 Fowler 的文章。&lt;/p&gt;
+&lt;p&gt;  关键是你要认识到,成熟度模型的评估结果并不代表你的当前水平,它们只是在告诉你需要做哪些工作才能朝着改进的目标前进。你当前的水平只是一种中间工作,用于确定下一步该获得什么样的技能。&lt;/p&gt;
+&lt;p&gt;  那么,我们该做出怎样的改进,以及如何达成这些目标?我们需要经过一些简单的步骤,其中前面两步就可以解决很多在向微服务迁移过程中会出现的问题,而且不会带来相关的复杂性。&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;清理应用程序。确保应用程序具有良好的自动化测试套件,并使 用了最新版本的软件包、框架和编程语言。&lt;/li&gt;
+&lt;li&gt;重构应用程序,把它拆分成多个模块,为模块定义清晰的API。不 要让外部代码直接触及模块内部,所有的交互都应该通过模块提 供的API来进行。&lt;/li&gt;
+&lt;li&gt;从应用程序中选择一个模块,并把它拆分成独立的应用程序,部 署在相同的主机上。你可以从中获得一些好处,而不会带来太多 的运维麻烦。不过,你仍然需要解决这两个应用之间的交互问 题,虽然它们都部署在同一个主机上。不过你可以无视微服务架 构里固有的网络分区问题和分布式系统的可用性问题。&lt;/li&gt;
+&lt;li&gt;把独立出来的模块移动到不同的主机上。现在,你需要处理跨网 络交互问题,不过这样可以让这两个系统之间的耦合降得更低。&lt;/li&gt;
+&lt;li&gt;如果有可能,可以重构数据存储系统,让另一个主机上的模块负 责自己的数据存储。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;在我所见过的公司里,如果他们能够完成前面两个步骤就算万事大吉了。如果他们能够完成前面两个步骤,那么剩下的步骤一般不会像他们最初想象的那么重要了。如果你决定在这个过程的某个点上停下来,而系统仍然具有可维护性和比刚开始时更好的状态,那么就再好不过了。&lt;/p&gt;
+&lt;h2 id=&quot;结尾&quot;&gt;&lt;a href=&quot;#结尾&quot; class=&quot;headerlink&quot; title=&quot;结尾&quot;&gt;&lt;/a&gt;结尾&lt;/h2&gt;&lt;p&gt;  我不能说这些想法都是独一无二的,也不能说是我所独有的。我只是 从其他遭遇了相同问题的人那里收集想法,并连同观察到的现象在这里作 了一次总结。还有其他很多比我更有经验的人也写过这方面的文章,他们 剖析地更加深入,比如Sander Mak写的有关模块和&lt;a href=&quot;https://www.oreilly.com/ideas/modules-vs-microservices&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;微服务的文章&lt;/a&gt;。不管 怎样,对于正在考虑对他们的未来架构做出调整的公司来说,这些经验都 是非常重要的。认真地思考每一个问题,确保微服务对你们的组织来说是 一个正确的选择。&lt;/p&gt;
+&lt;p&gt;  最起码在完成了上述的前面两个步骤之后,再慎重考虑一下微服务对于你的组织来说是否是正确的方向。你之前的很多问题可能会迎刃而解。&lt;/p&gt;
+</content>
+    
+    <summary type="html">
+    
+      &lt;p&gt;&lt;img src=&quot;/images/ms/01/cover.png&quot; alt=&quot;01&quot;&gt;&lt;/p&gt;
+&lt;h2 id=&quot;前言&quot;&gt;&lt;a href=&quot;#前言&quot; class=&quot;headerlink&quot; title=&quot;前言&quot;&gt;&lt;/a&gt;前言&lt;/h2&gt;&lt;p&gt;  资深架构师&lt;a href=&quot;https://twitter.com/aadrake&quot;&gt;Adam Drake&lt;/a&gt;在他的博客上分享了他对微服务的看法,他 从自己的经验出发,结合Martin Fowler对微服务的见解,帮助想要采用 微服务的公司重新审视微服务。以下内容已获得作者翻译授权,查看英文 原文 &lt;a href=&quot;https://aadrake.com/posts/2017-05-20-enough-with-the-microservices.html&quot;&gt;Enough with the microservices&lt;/a&gt;。&lt;/p&gt;
+&lt;h2 id=&quot;简介&quot;&gt;&lt;a href=&quot;#简介&quot; class=&quot;headerlink&quot; title=&quot;简介&quot;&gt;&lt;/a&gt;简介&lt;/h2&gt;&lt;p&gt;  关于微服务的优势和劣势已经有过太多的讨论,不过我仍然看到很多 成长型初创公司对它进行着盲目崇拜。冒着“重复发明轮子”的风险(Martin Fowler已经写过“Microservice Premium”的文章),我想把我的一些 想法写下来,在必要的时候可以发给客户,也希望能够帮助人们避免犯下我之前见过的那些错误。在进行架构或技术选型时,将网络上找到的一些所谓的最佳实践文章作为指南,一旦做出了错误的决定,就要付出惨重的代价。如果能够帮助哪怕一个公司避免犯下这种错误,那么写这篇文章都是值得的。&lt;/p&gt;
+&lt;p&gt;  如今微服务是个热门技术,微服务架构一直以来都存在(面向服务架构也算是吧?),但对于我所见过的大部分公司来说,微服务不仅浪费了他们的时间,分散了他们的注意力,而且让事情变得更糟糕。&lt;/p&gt;
+&lt;p&gt;  这听起来似乎很奇怪,因为大部分关于微服务的文章都会肯定微服务 的各种好处,比如解耦系统、更好的伸缩性、消除开发团队之间的依赖, 等等。如果你的公司有 Uber、Airbnb、Facebook 或 Twitter 那样的规模, 那么就没有什么问题。我曾经帮助一些大型组织转型到微服务架构,包括 搭建消息系统和采用一些能够提升伸缩性的技术。不过,对于成长型初创 公司来说,很少需要这些技术和服务。&lt;/p&gt;
+&lt;p&gt;  Russ Miles在他的《&lt;a href=&quot;http://www.russmiles.com/essais/8-ways-to-lose-at-microservices-adoption&quot;&gt;让微服务失效的八种方式&lt;/a&gt;》这篇文章中表达了 他的首要观点,而在我看来,这些场景却到处可见。成长型初创公司总是 想模仿那些大公司的最佳实践,用它们来弥补自身的不足。但是,最佳实 践是要视情况而定的。有些东西对于 Facebook 来说是最佳实践,但对于 只有不到百人的初创公司来说,它们就不一定也是最佳实践。&lt;/p&gt;
+&lt;p&gt;  如果你的公司比那些大公司小一些,在一定程度上你仍然能够从微服务架构中获益。但是,对于成长型初创公司来说,大规模地迁移到微服务是一种过错,而且对技术人来说是不公平的。&lt;/p&gt;
+    
+    </summary>
+    
+      <category term="微服务" scheme="http://icyxp.github.io/categories/%E5%BE%AE%E6%9C%8D%E5%8A%A1/"/>
+    
+    
+      <category term="微服务" scheme="http://icyxp.github.io/tags/%E5%BE%AE%E6%9C%8D%E5%8A%A1/"/>
+    
+      <category term="microservice" scheme="http://icyxp.github.io/tags/microservice/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>MySQL性能监控慢日志分析利器</title>
+    <link href="http://icyxp.github.io//blog/2017/07/mysql-mysql-performance-monitoring.html"/>
+    <id>http://icyxp.github.io//blog/2017/07/mysql-mysql-performance-monitoring.html</id>
+    <published>2017-07-26T12:30:00.000Z</published>
+    <updated>2017-07-26T13:08:16.000Z</updated>
+    
+    <content type="html">&lt;h2 id=&quot;简介&quot;&gt;&lt;a href=&quot;#简介&quot; class=&quot;headerlink&quot; title=&quot;简介&quot;&gt;&lt;/a&gt;简介&lt;/h2&gt;&lt;p&gt;入题之前先讲讲为什么写这篇文章，这就不得不提起MySQL与percona，阿里基于mysql开发了AliSQL，写这篇文章的时候阿里已经将其开源，percona是一家领先的MySQL咨询公司，该公司基于mysql开发了Percona Server，Percona Server是一款独立的数据库产品，为用户提供了换出其MySQL安装并换入Percona Server产品的能力。percona除了开发了多款数据库产品，还开发了数据库监控程序：pmm（Percona Monitoring and Management）服务器，我们都知道mysql自身缺乏实时的监控功能，而此时pmm-server就恰好解决了我们这一难题，好了废话不多说，先看一张pmm server的监控图。&lt;br&gt;&lt;img src=&quot;/images/mysql_pmm_1.png&quot; alt=&quot;PMM&quot;&gt;&lt;/p&gt;
+&lt;p&gt;常规的监测项目都有了，最吸引我的一点在于它的慢日志分析功能，如下图所示：&lt;br&gt;&lt;img src=&quot;/images/mysql_pmm_2.png&quot; alt=&quot;PMM&quot;&gt;&lt;/p&gt;
+&lt;a id=&quot;more&quot;&gt;&lt;/a&gt;
+&lt;h2 id=&quot;安装步骤&quot;&gt;&lt;a href=&quot;#安装步骤&quot; class=&quot;headerlink&quot; title=&quot;安装步骤&quot;&gt;&lt;/a&gt;安装步骤&lt;/h2&gt;&lt;h3 id=&quot;1-在vmware或者virtualbox上安装ubuntu14-04-Server镜像，可以选择清华大学的镜像，下载速度快&quot;&gt;&lt;a href=&quot;#1-在vmware或者virtualbox上安装ubuntu14-04-Server镜像，可以选择清华大学的镜像，下载速度快&quot; class=&quot;headerlink&quot; title=&quot;1. 在vmware或者virtualbox上安装ubuntu14.04 Server镜像，可以选择清华大学的镜像，下载速度快&quot;&gt;&lt;/a&gt;1. 在vmware或者virtualbox上安装ubuntu14.04 Server镜像，可以选择清华大学的镜像，下载速度快&lt;/h3&gt;&lt;h3 id=&quot;2-系统装完后接下来就要在ubuntu上安装docker了，执行命令：&quot;&gt;&lt;a href=&quot;#2-系统装完后接下来就要在ubuntu上安装docker了，执行命令：&quot; class=&quot;headerlink&quot; title=&quot;2. 系统装完后接下来就要在ubuntu上安装docker了，执行命令：&quot;&gt;&lt;/a&gt;2. 系统装完后接下来就要在ubuntu上安装docker了，执行命令：&lt;/h3&gt;&lt;figure class=&quot;highlight bash&quot;&gt;&lt;table&gt;&lt;tr&gt;&lt;td class=&quot;gutter&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;1&lt;/span&gt;&lt;br&gt;&lt;/pre&gt;&lt;/td&gt;&lt;td class=&quot;code&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;curl &lt;span class=&quot;_&quot;&gt;-s&lt;/span&gt;SL https://get.daocloud.io/docker | sh&lt;/span&gt;&lt;br&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/figure&gt;
+&lt;p&gt;等待完成即可，这是一种安装docker比较快的方式，而且安装的docker版本也比较高，安装完成后输入docker -v看到下面信息说明安装完成：&lt;br&gt;&lt;code&gt;Docker version 17.04.0-ce, build 4845c56&lt;/code&gt;&lt;/p&gt;
+&lt;h3 id=&quot;3-安装完docker，接下来就需要下载pmm-server的镜像，由于下载国外镜像速度慢而且网络不稳定，这里推荐一个中科大的开源docker镜像：&quot;&gt;&lt;a href=&quot;#3-安装完docker，接下来就需要下载pmm-server的镜像，由于下载国外镜像速度慢而且网络不稳定，这里推荐一个中科大的开源docker镜像：&quot; class=&quot;headerlink&quot; title=&quot;3. 安装完docker，接下来就需要下载pmm server的镜像，由于下载国外镜像速度慢而且网络不稳定，这里推荐一个中科大的开源docker镜像：&quot;&gt;&lt;/a&gt;3. 安装完docker，接下来就需要下载pmm server的镜像，由于下载国外镜像速度慢而且网络不稳定，这里推荐一个中科大的开源docker镜像：&lt;/h3&gt;&lt;p&gt;在 Docker 的启动参数中加入:&lt;br&gt;&lt;figure class=&quot;highlight bash&quot;&gt;&lt;table&gt;&lt;tr&gt;&lt;td class=&quot;gutter&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;1&lt;/span&gt;&lt;br&gt;&lt;/pre&gt;&lt;/td&gt;&lt;td class=&quot;code&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;--registry-mirror=https://docker.mirrors.ustc.edu.cn&lt;/span&gt;&lt;br&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/figure&gt;&lt;/p&gt;
+&lt;p&gt;Ubuntu 用户（包括使用 systemd 的 Ubuntu 15.04）可以修改 /etc/default/docker 文件，加入如下参数：&lt;br&gt;&lt;figure class=&quot;highlight bash&quot;&gt;&lt;table&gt;&lt;tr&gt;&lt;td class=&quot;gutter&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;1&lt;/span&gt;&lt;br&gt;&lt;/pre&gt;&lt;/td&gt;&lt;td class=&quot;code&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;DOCKER_OPTS=&lt;span class=&quot;string&quot;&gt;&quot;--registry-mirror=https://docker.mirrors.ustc.edu.cn&quot;&lt;/span&gt;&lt;/span&gt;&lt;br&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/figure&gt;&lt;/p&gt;
+&lt;p&gt;其他 systemd 用户可以通过执行 sudo systemctl edit docker.service 来修改设置, 覆盖默认的启动参数:&lt;br&gt;&lt;figure class=&quot;highlight bash&quot;&gt;&lt;table&gt;&lt;tr&gt;&lt;td class=&quot;gutter&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;1&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;2&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;3&lt;/span&gt;&lt;br&gt;&lt;/pre&gt;&lt;/td&gt;&lt;td class=&quot;code&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;[Service]&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;ExecStart=&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;ExecStart=/usr/bin/docker &lt;span class=&quot;_&quot;&gt;-d&lt;/span&gt; -H fd:// --registry-mirror=https://docker.mirrors.ustc.edu.cn&lt;/span&gt;&lt;br&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/figure&gt;&lt;/p&gt;
+&lt;h3 id=&quot;4-接下来下载pmm镜像的速度就会大大提升，执行下面命令：&quot;&gt;&lt;a href=&quot;#4-接下来下载pmm镜像的速度就会大大提升，执行下面命令：&quot; class=&quot;headerlink&quot; title=&quot;4. 接下来下载pmm镜像的速度就会大大提升，执行下面命令：&quot;&gt;&lt;/a&gt;4. 接下来下载pmm镜像的速度就会大大提升，执行下面命令：&lt;/h3&gt;&lt;figure class=&quot;highlight bash&quot;&gt;&lt;table&gt;&lt;tr&gt;&lt;td class=&quot;gutter&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;1&lt;/span&gt;&lt;br&gt;&lt;/pre&gt;&lt;/td&gt;&lt;td class=&quot;code&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;docker pull percona/pmm-server:1.2.0&lt;/span&gt;&lt;br&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/figure&gt;
+&lt;p&gt;然后等待完成即可。&lt;/p&gt;
+&lt;h3 id=&quot;5-创建PMM-数据容器：&quot;&gt;&lt;a href=&quot;#5-创建PMM-数据容器：&quot; class=&quot;headerlink&quot; title=&quot;5. 创建PMM 数据容器：&quot;&gt;&lt;/a&gt;5. 创建PMM 数据容器：&lt;/h3&gt;&lt;figure class=&quot;highlight bash&quot;&gt;&lt;table&gt;&lt;tr&gt;&lt;td class=&quot;gutter&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;1&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;2&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;3&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;4&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;5&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;6&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;7&lt;/span&gt;&lt;br&gt;&lt;/pre&gt;&lt;/td&gt;&lt;td class=&quot;code&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;docker create \&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;   -v /opt/prometheus/data \&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;   -v /opt/consul-data \&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;   -v /var/lib/mysql \&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;   -v /var/lib/grafana \&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;   --name pmm-data \&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;   percona/pmm-server:1.2.0 /bin/&lt;span class=&quot;literal&quot;&gt;true&lt;/span&gt;&lt;/span&gt;&lt;br&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/figure&gt;
+&lt;h3 id=&quot;6-运行PMM-server容器&quot;&gt;&lt;a href=&quot;#6-运行PMM-server容器&quot; class=&quot;headerlink&quot; title=&quot;6. 运行PMM server容器:&quot;&gt;&lt;/a&gt;6. 运行PMM server容器:&lt;/h3&gt;&lt;figure class=&quot;highlight bash&quot;&gt;&lt;table&gt;&lt;tr&gt;&lt;td class=&quot;gutter&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;1&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;2&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;3&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;4&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;5&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;6&lt;/span&gt;&lt;br&gt;&lt;/pre&gt;&lt;/td&gt;&lt;td class=&quot;code&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;docker run &lt;span class=&quot;_&quot;&gt;-d&lt;/span&gt; \&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;   -p 80:80 \&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;   --volumes-from pmm-data \&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;   --name pmm-server \&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;   --restart always \&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;   percona/pmm-server:1.2.0&lt;/span&gt;&lt;br&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/figure&gt;
+&lt;h3 id=&quot;7-安装PMM客户端：&quot;&gt;&lt;a href=&quot;#7-安装PMM客户端：&quot; class=&quot;headerlink&quot; title=&quot;7. 安装PMM客户端：&quot;&gt;&lt;/a&gt;7. 安装PMM客户端：&lt;/h3&gt;&lt;figure class=&quot;highlight bash&quot;&gt;&lt;table&gt;&lt;tr&gt;&lt;td class=&quot;gutter&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;1&lt;/span&gt;&lt;br&gt;&lt;/pre&gt;&lt;/td&gt;&lt;td class=&quot;code&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;rpm -ivh https://www.percona.com/downloads/pmm-client/pmm-client-1.2.0/binary/redhat/7/x86_64/pmm-client-1.2.0-1.x86_64.rpm&lt;/span&gt;&lt;br&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/figure&gt;
+&lt;h3 id=&quot;8-连接PMM服务器：&quot;&gt;&lt;a href=&quot;#8-连接PMM服务器：&quot; class=&quot;headerlink&quot; title=&quot;8. 连接PMM服务器：&quot;&gt;&lt;/a&gt;8. 连接PMM服务器：&lt;/h3&gt;&lt;figure class=&quot;highlight bash&quot;&gt;&lt;table&gt;&lt;tr&gt;&lt;td class=&quot;gutter&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;1&lt;/span&gt;&lt;br&gt;&lt;/pre&gt;&lt;/td&gt;&lt;td class=&quot;code&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;pmm-admin config --server pmm服务器主机地址&lt;/span&gt;&lt;br&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/figure&gt;
+&lt;h3 id=&quot;9-配置mysql监控：&quot;&gt;&lt;a href=&quot;#9-配置mysql监控：&quot; class=&quot;headerlink&quot; title=&quot;9. 配置mysql监控：&quot;&gt;&lt;/a&gt;9. 配置mysql监控：&lt;/h3&gt;&lt;figure class=&quot;highlight bash&quot;&gt;&lt;table&gt;&lt;tr&gt;&lt;td class=&quot;gutter&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;1&lt;/span&gt;&lt;br&gt;&lt;/pre&gt;&lt;/td&gt;&lt;td class=&quot;code&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;pmm-admin add mysql --user root --password 123456 --host mysql ip地址 --port 3306 instace3306&lt;/span&gt;&lt;br&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/figure&gt;
+&lt;p&gt;&lt;code&gt;注：pmm-client收的监控数据来源有这么几方面&lt;/code&gt;&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;MySQL所在机器的系统指标&lt;/li&gt;
+&lt;li&gt;MySQL的performance_schema库&lt;/li&gt;
+&lt;li&gt;slow-log(慢查询日志–mysql要开启慢日志功能)&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;&lt;code&gt;如果我们想收集a和c中的指标的话，最好还是将pmm-client部署在MySQL所在机器&lt;/code&gt;&lt;/p&gt;
+&lt;h3 id=&quot;10-至此访问pmm服务器ip地址即可查看接口&quot;&gt;&lt;a href=&quot;#10-至此访问pmm服务器ip地址即可查看接口&quot; class=&quot;headerlink&quot; title=&quot;10. 至此访问pmm服务器ip地址即可查看接口&quot;&gt;&lt;/a&gt;10. 至此访问pmm服务器ip地址即可查看接口&lt;/h3&gt;</content>
+    
+    <summary type="html">
+    
+      &lt;h2 id=&quot;简介&quot;&gt;&lt;a href=&quot;#简介&quot; class=&quot;headerlink&quot; title=&quot;简介&quot;&gt;&lt;/a&gt;简介&lt;/h2&gt;&lt;p&gt;入题之前先讲讲为什么写这篇文章，这就不得不提起MySQL与percona，阿里基于mysql开发了AliSQL，写这篇文章的时候阿里已经将其开源，percona是一家领先的MySQL咨询公司，该公司基于mysql开发了Percona Server，Percona Server是一款独立的数据库产品，为用户提供了换出其MySQL安装并换入Percona Server产品的能力。percona除了开发了多款数据库产品，还开发了数据库监控程序：pmm（Percona Monitoring and Management）服务器，我们都知道mysql自身缺乏实时的监控功能，而此时pmm-server就恰好解决了我们这一难题，好了废话不多说，先看一张pmm server的监控图。&lt;br&gt;&lt;img src=&quot;/images/mysql_pmm_1.png&quot; alt=&quot;PMM&quot;&gt;&lt;/p&gt;
+&lt;p&gt;常规的监测项目都有了，最吸引我的一点在于它的慢日志分析功能，如下图所示：&lt;br&gt;&lt;img src=&quot;/images/mysql_pmm_2.png&quot; alt=&quot;PMM&quot;&gt;&lt;/p&gt;
+    
+    </summary>
+    
+      <category term="mysql" scheme="http://icyxp.github.io/categories/mysql/"/>
+    
+    
+      <category term="mysql" scheme="http://icyxp.github.io/tags/mysql/"/>
+    
+      <category term="性能监控" scheme="http://icyxp.github.io/tags/%E6%80%A7%E8%83%BD%E7%9B%91%E6%8E%A7/"/>
+    
+      <category term="慢日志分析" scheme="http://icyxp.github.io/tags/%E6%85%A2%E6%97%A5%E5%BF%97%E5%88%86%E6%9E%90/"/>
+    
+  </entry>
   
   <entry>
     <title>MySQL too many connection 问题分析</title>
@@ -526,7 +785,7 @@
     <link href="http://icyxp.github.io//blog/2016/07/mysql-mysql-develop-standard.html"/>
     <id>http://icyxp.github.io//blog/2016/07/mysql-mysql-develop-standard.html</id>
     <published>2016-07-15T07:15:00.000Z</published>
-    <updated>2016-07-15T07:55:32.000Z</updated>
+    <updated>2017-07-26T13:06:13.000Z</updated>
     
     <content type="html">&lt;h2 id=&quot;命名规范&quot;&gt;&lt;a href=&quot;#命名规范&quot; class=&quot;headerlink&quot; title=&quot;命名规范&quot;&gt;&lt;/a&gt;命名规范&lt;/h2&gt;&lt;h3 id=&quot;库名、表名、字段名必须使用小写字母，并采用下划线分割&quot;&gt;&lt;a href=&quot;#库名、表名、字段名必须使用小写字母，并采用下划线分割&quot; class=&quot;headerlink&quot; title=&quot;库名、表名、字段名必须使用小写字母，并采用下划线分割&quot;&gt;&lt;/a&gt;库名、表名、字段名必须使用小写字母，并采用下划线分割&lt;/h3&gt;&lt;ul&gt;
 &lt;li&gt;MySQL有配置参数lower_case_table_names=1，即库表名以小写存储，大小写不敏感。如果是0，则库表名以实际情况存储，大小写敏感；如果是2，以实际情况存储，但以小写比较。&lt;/li&gt;
