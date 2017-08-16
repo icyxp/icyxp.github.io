@@ -278,6 +278,140 @@
             
               
                 
+                <a class="post-title-link" href="/blog/2016/06/zephir-zephir-02.html" itemprop="url">
+                  Zephir安装和初体验
+                </a>
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            <span class="post-meta-item-icon">
+              <i class="fa fa-calendar-o"></i>
+            </span>
+            <span class="post-meta-item-text">发表于</span>
+            <time itemprop="dateCreated" datetime="2016-06-30T22:23:00+08:00" content="2016-06-30">
+              2016-06-30
+            </time>
+          </span>
+
+          
+            <span class="post-category" >
+              &nbsp; | &nbsp;
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+              
+                <span itemprop="about" itemscope itemtype="https://schema.org/Thing">
+                  <a href="/categories/zephir/" itemprop="url" rel="index">
+                    <span itemprop="name">zephir</span>
+                  </a>
+                </span>
+
+                
+                
+
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                &nbsp; | &nbsp;
+                <a href="/blog/2016/06/zephir-zephir-02.html#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count ds-thread-count" data-thread-key="/blog/2016/06/zephir-zephir-02.html" itemprop="commentsCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+
+          
+          
+
+          
+        </div>
+      </header>
+    
+
+
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          <h2 id="Zephir安装"><a href="#Zephir安装" class="headerlink" title="Zephir安装"></a>Zephir安装</h2><h3 id="环境依赖"><a href="#环境依赖" class="headerlink" title="环境依赖"></a>环境依赖</h3><p>Zephir主要依赖于下面环境</p>
+<ul>
+<li>gcc &gt;= 4.x/clang &gt;= 3.x</li>
+<li>re2c 0.13或更高版本</li>
+<li>gnu 3.81或更高版本</li>
+<li>autoconf 2.31或更高版本</li>
+<li>automake 1.14或更高版本</li>
+<li>libpcre3</li>
+<li>php开发工具-phpize</li>
+</ul>
+<p>如果你使用Ubuntu，你可以安装所需要的包<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">$ sudo apt-get update</span><br><span class="line">$ sudo apt-get install git gcc make re2c php5 php5-json php5-dev libpcre3-dev</span><br></pre></td></tr></table></figure></p>
+<p>由于Zephir是用PHP编写的，所以你需要安装php<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">$ php -v</span><br><span class="line">PHP 5.6.5 (cli) (built: Jan 24 2015 20:04:31)</span><br><span class="line">Copyright (c) 1997-2014 The PHP Group</span><br><span class="line">Zend Engine v2.6.0, Copyright (c) 1998-2014 Zend Technologies</span><br><span class="line">with Zend OPcache v7.0.4-dev, Copyright (c) 1999-2014, by Zend Technologies</span><br></pre></td></tr></table></figure></p>
+<p>同时也必须确保安装了PHP开发库<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">$ phpize -v</span><br><span class="line">Configuring <span class="keyword">for</span>:</span><br><span class="line">PHP Api Version:         20131106</span><br><span class="line">Zend Module Api No:      20131226</span><br><span class="line">Zend Extension Api No:   220131226</span><br></pre></td></tr></table></figure></p>
+          <div class="post-more-link text-center">
+            <a class="btn" href="/blog/2016/06/zephir-zephir-02.html#more" rel="contents">
+              阅读全文 &raquo;
+            </a>
+          </div>
+        
+      
+    </div>
+
+    <div>
+      
+    </div>
+
+    <div>
+      
+    </div>
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+
+
+    
+      
+
+  
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+            
+            
+              
+                
                 <a class="post-title-link" href="/blog/2016/06/zephir-zephir-01.html" itemprop="url">
                   Zephir介绍
                 </a>
@@ -682,7 +816,7 @@
         <nav class="site-state motion-element">
           <div class="site-state-item site-state-posts">
             <a href="/archives">
-              <span class="site-state-item-count">18</span>
+              <span class="site-state-item-count">19</span>
               <span class="site-state-item-name">日志</span>
             </a>
           </div>
@@ -690,7 +824,7 @@
           
             <div class="site-state-item site-state-categories">
               <a href="/categories">
-                <span class="site-state-item-count">12</span>
+                <span class="site-state-item-count">15</span>
                 <span class="site-state-item-name">分类</span>
               </a>
             </div>
@@ -699,7 +833,7 @@
           
             <div class="site-state-item site-state-tags">
               <a href="/tags">
-                <span class="site-state-item-count">26</span>
+                <span class="site-state-item-count">29</span>
                 <span class="site-state-item-name">标签</span>
               </a>
             </div>

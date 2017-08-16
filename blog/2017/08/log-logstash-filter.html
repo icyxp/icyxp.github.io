@@ -1,0 +1,893 @@
+<!doctype html>
+
+
+
+  
+
+
+<html class="theme-next muse use-motion">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/vendors/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+  
+  
+  
+  
+
+  
+    
+    
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+    
+    
+    <link href="//fonts.googleapis.com/css?family=Lato:300,300italic,400,400italic,700,700italic&subset=latin,latin-ext" rel="stylesheet" type="text/css">
+  
+
+
+
+
+
+
+<link href="/vendors/font-awesome/css/font-awesome.min.css?v=4.4.0" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.0.1" rel="stylesheet" type="text/css" />
+
+
+  <meta name="keywords" content="logstash,日志,ruby," />
+
+
+
+
+
+  <link rel="alternate" href="/atom.xml" title="Devops" type="application/atom+xml" />
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico?v=5.0.1" />
+
+
+
+
+
+
+<meta name="description" content="简介Logstash是一个具有实时管线能力的开源数据收集引擎。在ELK Stack中，通常选择更轻量级的Filebeat收集日志，然后将日志输出到Logstash进行加工处理，再将处理后的日志输出到指定的目标（ElasticSearch，Kafka等）当中。
+Logstash事件的处理管线是inputs → filters → outputs，三个阶段都可以自定义插件，本文主要介绍如何开发自定义需">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Logstash filter插件开发">
+<meta property="og:url" content="http://icyxp.github.io/blog/2017/08/log-logstash-filter.html">
+<meta property="og:site_name" content="Devops">
+<meta property="og:description" content="简介Logstash是一个具有实时管线能力的开源数据收集引擎。在ELK Stack中，通常选择更轻量级的Filebeat收集日志，然后将日志输出到Logstash进行加工处理，再将处理后的日志输出到指定的目标（ElasticSearch，Kafka等）当中。
+Logstash事件的处理管线是inputs → filters → outputs，三个阶段都可以自定义插件，本文主要介绍如何开发自定义需">
+<meta property="og:updated_time" content="2017-08-16T15:30:02.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Logstash filter插件开发">
+<meta name="twitter:description" content="简介Logstash是一个具有实时管线能力的开源数据收集引擎。在ELK Stack中，通常选择更轻量级的Filebeat收集日志，然后将日志输出到Logstash进行加工处理，再将处理后的日志输出到指定的目标（ElasticSearch，Kafka等）当中。
+Logstash事件的处理管线是inputs → filters → outputs，三个阶段都可以自定义插件，本文主要介绍如何开发自定义需">
+
+
+
+<script type="text/javascript" id="hexo.configuration">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    scheme: 'Muse',
+    sidebar: {"position":"left","display":"post"},
+    fancybox: true,
+    motion: true,
+    duoshuo: {
+      userId: 0,
+      author: '博主'
+    }
+  };
+</script>
+
+  <title> Logstash filter插件开发 | Devops </title>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+
+
+
+  <script type="text/javascript">
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "//hm.baidu.com/hm.js?7bfa7aba4938440964dd1a348aed977e";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+
+
+
+
+
+
+
+  
+  
+    
+  
+
+  <div class="container one-collumn sidebar-position-left page-post-detail ">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-meta ">
+  
+
+  <div class="custom-logo-site-title">
+    <a href="/"  class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <span class="site-title">Devops</span>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+  <p class="site-subtitle">网站架构|系统架构</p>
+</div>
+
+<div class="site-nav-toggle">
+  <button>
+    <span class="btn-bar"></span>
+    <span class="btn-bar"></span>
+    <span class="btn-bar"></span>
+  </button>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br />
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />
+            
+            标签
+          </a>
+        </li>
+      
+
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="#" class="popup-trigger">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br />
+            
+            搜索
+          </a>
+        </li>
+      
+    </ul>
+  
+
+  
+    <div class="site-search">
+      
+  <div class="popup">
+ <span class="search-icon fa fa-search"></span>
+ <input type="text" id="local-search-input">
+ <div id="local-search-result"></div>
+ <span class="popup-btn-close">close</span>
+</div>
+
+
+    </div>
+  
+</nav>
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+            
+            
+              
+                Logstash filter插件开发
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            <span class="post-meta-item-icon">
+              <i class="fa fa-calendar-o"></i>
+            </span>
+            <span class="post-meta-item-text">发表于</span>
+            <time itemprop="dateCreated" datetime="2017-08-16T00:00:00+08:00" content="2017-08-16">
+              2017-08-16
+            </time>
+          </span>
+
+          
+            <span class="post-category" >
+              &nbsp; | &nbsp;
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+              
+                <span itemprop="about" itemscope itemtype="https://schema.org/Thing">
+                  <a href="/categories/日志/" itemprop="url" rel="index">
+                    <span itemprop="name">日志</span>
+                  </a>
+                </span>
+
+                
+                
+                  ， 
+                
+
+              
+                <span itemprop="about" itemscope itemtype="https://schema.org/Thing">
+                  <a href="/categories/日志/开发/" itemprop="url" rel="index">
+                    <span itemprop="name">开发</span>
+                  </a>
+                </span>
+
+                
+                
+                  ， 
+                
+
+              
+                <span itemprop="about" itemscope itemtype="https://schema.org/Thing">
+                  <a href="/categories/日志/开发/logstash/" itemprop="url" rel="index">
+                    <span itemprop="name">logstash</span>
+                  </a>
+                </span>
+
+                
+                
+
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                &nbsp; | &nbsp;
+                <a href="/blog/2017/08/log-logstash-filter.html#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count ds-thread-count" data-thread-key="/blog/2017/08/log-logstash-filter.html" itemprop="commentsCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+
+          
+          
+
+          
+        </div>
+      </header>
+    
+
+
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h2 id="简介"><a href="#简介" class="headerlink" title="简介"></a>简介</h2><p>Logstash是一个具有实时管线能力的开源数据收集引擎。在ELK Stack中，通常选择更轻量级的Filebeat收集日志，然后将日志输出到Logstash进行加工处理，再将处理后的日志输出到指定的目标（ElasticSearch，Kafka等）当中。</p>
+<p>Logstash事件的处理管线是inputs → filters → outputs，三个阶段都可以自定义插件，本文主要介绍如何开发自定义需求最多的filter插件。</p>
+<p>Logstash的安装就不详细介绍了，下载传送门：<a href="https://www.elastic.co/downloads/logstash" target="_blank" rel="external">https://www.elastic.co/downloads/logstash</a>。</p>
+<h2 id="前置准备"><a href="#前置准备" class="headerlink" title="前置准备"></a>前置准备</h2><p>我们使用docker来讲解如何给logstash定制一个filter插件，首先，我们下载logstash官方最新版本的镜像。下载方式: <code>docker pull logstash</code>，下载好后我们就来Run这个镜像，命令：<code>docker run -it logstash bash</code>，这样我们就进入到logstash容器中了。接下来我们就安装下两个基本的软件包，一个vim，一个rsyslog，命令如下：<code>apt-get update &amp;&amp; apt-get -y install vim rsyslog &amp;&amp; /etc/init.d/rsysylog start</code>。到此我们的准备工作就完毕了。</p>
+<a id="more"></a>
+<h2 id="生成filter插件"><a href="#生成filter插件" class="headerlink" title="生成filter插件"></a>生成filter插件</h2><p>cd到Logstash的跟目录，使用<code>bin/logstash-plugin</code>生成filter插件模板，如下：<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">cd</span> /usr/share/logstash</span><br><span class="line">mkdir -p vendor/localgems</span><br><span class="line">bin/logstash-plugin generate --type filter --name <span class="built_in">test</span> --path vendor/localgems</span><br><span class="line"><span class="comment">#vendor/localgems 可修改为你自己的路径</span></span><br></pre></td></tr></table></figure></p>
+<p>查看filter插件的目录结构，如下：<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line">root@c11787c4cef3:/usr/share/logstash/vendor/localgems<span class="comment"># tree .</span></span><br><span class="line">.</span><br><span class="line">└── logstash-filter-test</span><br><span class="line">    ├── CHANGELOG.md</span><br><span class="line">    ├── CONTRIBUTORS</span><br><span class="line">    ├── DEVELOPER.md</span><br><span class="line">    ├── Gemfile</span><br><span class="line">    ├── LICENSE</span><br><span class="line">    ├── README.md</span><br><span class="line">    ├── Rakefile</span><br><span class="line">    ├── lib</span><br><span class="line">    │   └── logstash</span><br><span class="line">    │       └── filters</span><br><span class="line">    │           └── test.rb</span><br><span class="line">    ├── logstash-filter-test.gemspec</span><br><span class="line">    ├── spec</span><br><span class="line">    │   ├── filters</span><br><span class="line">    │   │   └── <span class="built_in">test</span>_spec.rb</span><br><span class="line">    │   └── spec_helper.rb</span><br><span class="line">    └── test.conf</span><br><span class="line"></span><br><span class="line">6 directories, 12 files</span><br></pre></td></tr></table></figure></p>
+<h2 id="filter插件初探"><a href="#filter插件初探" class="headerlink" title="filter插件初探"></a>filter插件初探</h2><p>Logstash插件是用ruby写的，查看<code>logstash-filter-test/lib/logstash/filters/test.rb</code>文件，如下：<br><figure class="highlight ruby"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># logstash依赖于UTF-8编码，需要在插件代码开始处添加</span></span><br><span class="line"><span class="comment"># encoding: utf-8</span></span><br><span class="line"></span><br><span class="line"><span class="comment">#引入了插件必备的包</span></span><br><span class="line"><span class="keyword">require</span> <span class="string">"logstash/filters/base"</span></span><br><span class="line"><span class="keyword">require</span> <span class="string">"logstash/namespace"</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 插件继承自Base基类，并配置插件的使用名称</span></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">LogStash::Filters::Test</span> &lt; LogStash::Filters::<span class="title">Base</span></span></span><br><span class="line"></span><br><span class="line">  <span class="comment"># 插件名称，在Logstash配置的filter块中使用</span></span><br><span class="line">  <span class="comment">#filter&#123;</span></span><br><span class="line">  <span class="comment">#  test&#123;</span></span><br><span class="line">  <span class="comment">#      source =&gt; "message"</span></span><br><span class="line">  <span class="comment">#  &#125;</span></span><br><span class="line">  <span class="comment">#&#125;</span></span><br><span class="line">  config_name <span class="string">"test"</span></span><br><span class="line"></span><br><span class="line">  <span class="comment"># 插件参数配置</span></span><br><span class="line">  <span class="comment"># source是插件test的可选参数，默认值是"Hello World!"。</span></span><br><span class="line">  config <span class="symbol">:source</span>, <span class="symbol">:validate</span> =&gt; <span class="symbol">:string</span>, <span class="symbol">:default</span> =&gt; <span class="string">"Hello World!"</span></span><br><span class="line">  <span class="comment"># 下面是参数的通用配置代码</span></span><br><span class="line">  <span class="comment"># config :variable_name, :validate =&gt; :variable_type, :default =&gt; "Default value", :required =&gt; boolean, :deprecated =&gt; boolean, :obsolete =&gt; string</span></span><br><span class="line">  <span class="comment"># :variable_name：参数名称</span></span><br><span class="line">  <span class="comment"># :validate：验证参数类型，如:string, :password, :boolean, :number, :array, :hash, :path等</span></span><br><span class="line">  <span class="comment"># :required：是否必须配置</span></span><br><span class="line">  <span class="comment"># :default：默认值</span></span><br><span class="line">  <span class="comment"># :deprecated：是否废弃</span></span><br><span class="line">  <span class="comment"># :obsolete：声明该配置不再使用，通常提供升级方案</span></span><br><span class="line"></span><br><span class="line">  public</span><br><span class="line">  <span class="function"><span class="keyword">def</span> <span class="title">register</span></span></span><br><span class="line">    <span class="comment"># 方法相当于初始化方法，不需要手动调用，可以在这个方法里面调用配置变量，如<span class="doctag">@message</span>，也可以初始化自己的实例变量。</span></span><br><span class="line">  <span class="keyword">end</span></span><br><span class="line"></span><br><span class="line">  public</span><br><span class="line">  <span class="function"><span class="keyword">def</span> <span class="title">filter</span><span class="params">(event)</span></span></span><br><span class="line">    <span class="comment"># 方法是插件的数据处理逻辑，其中event变量封装了数据流，可以通过接口访问event中的内容，具体参见 https://www.elastic.co/guide/en/logstash/5.1/event-api.html。</span></span><br><span class="line">    <span class="keyword">if</span> (source = event.get(@source))      </span><br><span class="line">      datas = source.split(<span class="string">"|"</span>)</span><br><span class="line">      event.set(<span class="string">"data"</span>, datas[<span class="number">0</span>])</span><br><span class="line">      event.set(<span class="string">"data2"</span>, datas[<span class="number">1</span>])</span><br><span class="line">      event.set(<span class="string">"user"</span>, <span class="string">"xp"</span>)</span><br><span class="line">    <span class="keyword">end</span></span><br><span class="line"></span><br><span class="line">    <span class="comment">#这个方法用于保证Logstash的配置`add_field`, `remove_field`, `add_tag`和`remove_tag`会被正确执行。</span></span><br><span class="line">    filter_matched(event)</span><br><span class="line">  <span class="keyword">end</span> <span class="comment"># def filter</span></span><br><span class="line"><span class="keyword">end</span> <span class="comment"># class LogStash::Filters::Test</span></span><br></pre></td></tr></table></figure></p>
+<p>查看<code>logstash-filter-test/logstash-filter-test.gemspec</code>文件，如下：<br><figure class="highlight ruby"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line">Gem::Specification.new <span class="keyword">do</span> <span class="params">|s|</span></span><br><span class="line">  s.name          = <span class="string">'logstash-filter-test'</span>  </span><br><span class="line">  s.version       = <span class="string">'0.1.0'</span></span><br><span class="line">  s.licenses      = [<span class="string">'Apache License (2.0)'</span>]</span><br><span class="line">  s.summary       = <span class="string">'描述这个插件的概要'</span></span><br><span class="line">  s.description   = <span class="string">'这个插件的详细说明'</span></span><br><span class="line">  s.homepage      = <span class="string">'http://icyxp.github.io'</span></span><br><span class="line">  s.authors       = [<span class="string">'icyboy'</span>]</span><br><span class="line">  s.email         = <span class="string">'icyboy@me.com'</span></span><br><span class="line">  s.require_paths = [<span class="string">'lib'</span>]</span><br><span class="line"></span><br><span class="line">  <span class="comment"># Files</span></span><br><span class="line">  s.files = Dir[<span class="string">'lib/**/*'</span>,<span class="string">'spec/**/*'</span>,<span class="string">'vendor/**/*'</span>,<span class="string">'*.gemspec'</span>,<span class="string">'*.md'</span>,<span class="string">'CONTRIBUTORS'</span>,<span class="string">'Gemfile'</span>,<span class="string">'LICENSE'</span>,<span class="string">'NOTICE.TXT'</span>]</span><br><span class="line">   <span class="comment"># Tests</span></span><br><span class="line">  s.test_files = s.files.grep(<span class="regexp">%r&#123;^(test|spec|features)/&#125;</span>)</span><br><span class="line"></span><br><span class="line">  <span class="comment"># Special flag to let us know this is actually a logstash plugin</span></span><br><span class="line">  s.metadata = &#123; <span class="string">"logstash_plugin"</span> =&gt; <span class="string">"true"</span>, <span class="string">"logstash_group"</span> =&gt; <span class="string">"filter"</span> &#125;</span><br><span class="line"></span><br><span class="line">  <span class="comment"># Gem dependencies</span></span><br><span class="line">  s.add_runtime_dependency <span class="string">"logstash-core-plugin-api"</span>, <span class="string">"~&gt; 2.0"</span></span><br><span class="line">  s.add_development_dependency <span class="string">'logstash-devutils'</span></span><br><span class="line"><span class="keyword">end</span></span><br></pre></td></tr></table></figure></p>
+<h2 id="在Logstash中配置定制的插件"><a href="#在Logstash中配置定制的插件" class="headerlink" title="在Logstash中配置定制的插件"></a>在Logstash中配置定制的插件</h2><p>cd到Logstash根目录下<code>cd /usr/shar/logstash</code>，在<code>Gemfile</code>末尾添加以下配置：<br><figure class="highlight ruby"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">gem <span class="string">"logstash-filter-test"</span>, <span class="symbol">:path</span> =&gt; <span class="string">"vendor/localgems/logstash-filter-test"</span></span><br></pre></td></tr></table></figure></p>
+<h2 id="启动Logstash"><a href="#启动Logstash" class="headerlink" title="启动Logstash"></a>启动Logstash</h2><p>先编写一个配置文件<code>test.conf</code>，这里我使用了rsyslog<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#来源rsyslog</span></span><br><span class="line">input&#123;</span><br><span class="line">    file&#123;</span><br><span class="line">	    path =&gt; <span class="string">"/var/log/messages"</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">#或者可以设置为终端输入</span></span><br><span class="line"><span class="comment">#input&#123;</span></span><br><span class="line"><span class="comment">#    stdin&#123;</span></span><br><span class="line"><span class="comment">#</span></span><br><span class="line"><span class="comment">#    &#125;</span></span><br><span class="line"><span class="comment">#&#125;</span></span><br><span class="line">filter&#123;</span><br><span class="line">    <span class="comment"># 定制的filter插件</span></span><br><span class="line">    <span class="built_in">test</span>&#123;</span><br><span class="line">	    <span class="built_in">source</span> =&gt; <span class="string">"message"</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">#输出到终端</span></span><br><span class="line">output&#123;</span><br><span class="line">    stdout&#123;</span><br><span class="line">        codec =&gt; rubydebug</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>运行起来<code>logstash -f test.conf</code>，然后往rsyslog里写日志你就可以看下如下情况就说明ok了。<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#logger "测试一下"</span></span><br><span class="line">&#123;</span><br><span class="line">          <span class="string">"path"</span> =&gt; <span class="string">"/var/log/messages"</span>,</span><br><span class="line">    <span class="string">"@timestamp"</span> =&gt; 2017-08-16T15:27:46.606Z,</span><br><span class="line">          <span class="string">"data"</span> =&gt; <span class="string">"Aug 16 15:27:45 c11787c4cef3 root: 测试一下"</span>,</span><br><span class="line">         <span class="string">"data2"</span> =&gt; nil,</span><br><span class="line">      <span class="string">"@version"</span> =&gt; <span class="string">"1"</span>,</span><br><span class="line">          <span class="string">"host"</span> =&gt; <span class="string">"c11787c4cef3"</span>,</span><br><span class="line">       <span class="string">"message"</span> =&gt; <span class="string">"Aug 16 15:27:45 c11787c4cef3 root: 测试一下"</span>,</span><br><span class="line">          <span class="string">"user"</span> =&gt; <span class="string">"xp"</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">#logger "测试一下|from by icyboy"</span></span><br><span class="line">&#123;</span><br><span class="line">          <span class="string">"path"</span> =&gt; <span class="string">"/var/log/messages"</span>,</span><br><span class="line">    <span class="string">"@timestamp"</span> =&gt; 2017-08-16T15:28:17.661Z,</span><br><span class="line">          <span class="string">"data"</span> =&gt; <span class="string">"Aug 16 15:28:16 c11787c4cef3 root: 测试一下"</span>,</span><br><span class="line">         <span class="string">"data2"</span> =&gt; <span class="string">"from by icyboy"</span>,</span><br><span class="line">      <span class="string">"@version"</span> =&gt; <span class="string">"1"</span>,</span><br><span class="line">          <span class="string">"host"</span> =&gt; <span class="string">"c11787c4cef3"</span>,</span><br><span class="line">       <span class="string">"message"</span> =&gt; <span class="string">"Aug 16 15:28:16 c11787c4cef3 root: 测试一下|from by icyboy"</span>,</span><br><span class="line">          <span class="string">"user"</span> =&gt; <span class="string">"xp"</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+
+      
+    </div>
+
+    <div>
+      
+        
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/logstash/" rel="tag">#logstash</a>
+          
+            <a href="/tags/日志/" rel="tag">#日志</a>
+          
+            <a href="/tags/ruby/" rel="tag">#ruby</a>
+          
+        </div>
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/blog/2017/07/gossip-你不是Google.html" rel="next" title="一语点醒技术人：你不是Google">
+                <i class="fa fa-chevron-left"></i> 一语点醒技术人：你不是Google
+              </a>
+            
+          </div>
+
+          <div class="post-nav-prev post-nav-item">
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </article>
+
+
+
+    <div class="post-spread">
+      
+        <!-- JiaThis Button BEGIN -->
+<div class="jiathis_style">
+  <a class="jiathis_button_tsina"></a>
+  <a class="jiathis_button_tqq"></a>
+  <a class="jiathis_button_weixin"></a>
+  <a class="jiathis_button_cqq"></a>
+  <a class="jiathis_button_douban"></a>
+  <a class="jiathis_button_renren"></a>
+  <a class="jiathis_button_qzone"></a>
+  <a class="jiathis_button_kaixin001"></a>
+  <a class="jiathis_button_copy"></a>
+  <a href="http://www.jiathis.com/share" class="jiathis jiathis_txt jiathis_separator jtico jtico_jiathis" target="_blank"></a>
+  <a class="jiathis_counter_style"></a>
+</div>
+<script type="text/javascript" >
+  var jiathis_config={
+    hideMore:false
+  }
+</script>
+<script type="text/javascript" src="http://v3.jiathis.com/code/jia.js" charset="utf-8"></script>
+<!-- JiaThis Button END -->
+
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+  <div class="comments" id="comments">
+    
+      <div class="ds-thread" data-thread-key="/blog/2017/08/log-logstash-filter.html"
+           data-title="Logstash filter插件开发" data-url="http://icyxp.github.io/blog/2017/08/log-logstash-filter.html">
+      </div>
+    
+  </div>
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap" >
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview sidebar-panel ">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+          <img class="site-author-image" itemprop="image"
+               src="/images/avatar.jpg"
+               alt="icyboy" />
+          <p class="site-author-name" itemprop="name">icyboy</p>
+          <p class="site-description motion-element" itemprop="description">记录分享生活中的点滴</p>
+        </div>
+        <nav class="site-state motion-element">
+          <div class="site-state-item site-state-posts">
+            <a href="/archives">
+              <span class="site-state-item-count">19</span>
+              <span class="site-state-item-name">日志</span>
+            </a>
+          </div>
+
+          
+            <div class="site-state-item site-state-categories">
+              <a href="/categories">
+                <span class="site-state-item-count">15</span>
+                <span class="site-state-item-name">分类</span>
+              </a>
+            </div>
+          
+
+          
+            <div class="site-state-item site-state-tags">
+              <a href="/tags">
+                <span class="site-state-item-count">29</span>
+                <span class="site-state-item-name">标签</span>
+              </a>
+            </div>
+          
+
+        </nav>
+
+        
+          <div class="feed-link motion-element">
+            <a href="/atom.xml" rel="alternate">
+              <i class="fa fa-rss"></i>
+              RSS
+            </a>
+          </div>
+        
+
+        <div class="links-of-author motion-element">
+          
+            
+              <span class="links-of-author-item">
+                <a href="https://github.com/icyxp" target="_blank" title="GitHub">
+                  
+                    <i class="fa fa-fw fa-github"></i>
+                  
+                  GitHub
+                </a>
+              </span>
+            
+              <span class="links-of-author-item">
+                <a href="http://weibo.com/joysteam" target="_blank" title="微博">
+                  
+                    <i class="fa fa-fw fa-globe"></i>
+                  
+                  微博
+                </a>
+              </span>
+            
+              <span class="links-of-author-item">
+                <a href="http://www.zhihu.com/people/xupeng" target="_blank" title="知乎">
+                  
+                    <i class="fa fa-fw fa-globe"></i>
+                  
+                  知乎
+                </a>
+              </span>
+            
+          
+        </div>
+
+        
+        
+
+        
+        
+          <div class="links-of-blogroll motion-element links-of-blogroll-inline">
+            <div class="links-of-blogroll-title">
+              <i class="fa  fa-fw fa-globe"></i>
+              友情链接
+            </div>
+            <ul class="links-of-blogroll-list">
+              
+                <li class="links-of-blogroll-item">
+                  <a href="http://www.zjgsmt.com" title="张家港水蜜桃" target="_blank">张家港水蜜桃</a>
+                </li>
+              
+                <li class="links-of-blogroll-item">
+                  <a href="http://devops.jiunile.com" title="DevOps" target="_blank">DevOps</a>
+                </li>
+              
+                <li class="links-of-blogroll-item">
+                  <a href="http://blog.jiunile.com" title="运维开发" target="_blank">运维开发</a>
+                </li>
+              
+            </ul>
+          </div>
+        
+
+      </section>
+
+      
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+            
+              
+            
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#简介"><span class="nav-number">1.</span> <span class="nav-text">简介</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#前置准备"><span class="nav-number">2.</span> <span class="nav-text">前置准备</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#生成filter插件"><span class="nav-number">3.</span> <span class="nav-text">生成filter插件</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#filter插件初探"><span class="nav-number">4.</span> <span class="nav-text">filter插件初探</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#在Logstash中配置定制的插件"><span class="nav-number">5.</span> <span class="nav-text">在Logstash中配置定制的插件</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#启动Logstash"><span class="nav-number">6.</span> <span class="nav-text">启动Logstash</span></a></li></ol></div>
+            
+          </div>
+        </section>
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright" >
+  
+  &copy;  2016 - 
+  <span itemprop="copyrightYear">2017</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">icyboy</span>
+</div>
+
+        
+
+        
+      </div>
+    </footer>
+
+    <div class="back-to-top">
+      <i class="fa fa-arrow-up"></i>
+    </div>
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+  
+  <script type="text/javascript" src="/vendors/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script type="text/javascript" src="/vendors/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+
+  
+  <script type="text/javascript" src="/vendors/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+
+  
+  <script type="text/javascript" src="/vendors/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/vendors/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/vendors/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.0.1"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.0.1"></script>
+
+  <script type="text/javascript" src="/js/src/love.js?v=5.0.1"></script>
+
+  <script type="text/javascript" src="/js/src/particle.js?v=5.0.1"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.0.1"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.0.1"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.0.1"></script>
+
+
+
+  
+
+  
+    
+  
+
+  <script type="text/javascript">
+    var duoshuoQuery = {short_name:"icyboy"};
+    (function() {
+      var ds = document.createElement('script');
+      ds.type = 'text/javascript';ds.async = true;
+      ds.id = 'duoshuo-script';
+      ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
+      ds.charset = 'UTF-8';
+      (document.getElementsByTagName('head')[0]
+      || document.getElementsByTagName('body')[0]).appendChild(ds);
+    })();
+  </script>
+
+  
+    
+  
+
+
+
+
+
+  
+  
+  <script type="text/javascript">
+    // Popup Window;
+    var isfetched = false;
+    // Search DB path;
+    var search_path = "search.xml";
+    if (search_path.length == 0) {
+       search_path = "search.xml";
+    }
+    var path = "/" + search_path;
+    // monitor main search box;
+
+    function proceedsearch() {
+      $("body").append('<div class="popoverlay">').css('overflow', 'hidden');
+      $('.popup').toggle();
+
+    }
+    // search function;
+    var searchFunc = function(path, search_id, content_id) {
+    'use strict';
+    $.ajax({
+        url: path,
+        dataType: "xml",
+        async: true,
+        success: function( xmlResponse ) {
+            // get the contents from search data
+            isfetched = true;
+            $('.popup').detach().appendTo('.header-inner');
+            var datas = $( "entry", xmlResponse ).map(function() {
+                return {
+                    title: $( "title", this ).text(),
+                    content: $("content",this).text(),
+                    url: $( "url" , this).text()
+                };
+            }).get();
+            var $input = document.getElementById(search_id);
+            var $resultContent = document.getElementById(content_id);
+            $input.addEventListener('input', function(){
+                var matchcounts = 0;
+                var str='<ul class=\"search-result-list\">';                
+                var keywords = this.value.trim().toLowerCase().split(/[\s\-]+/);
+                $resultContent.innerHTML = "";
+                if (this.value.trim().length > 1) {
+                // perform local searching
+                datas.forEach(function(data) {
+                    var isMatch = true;
+                    var content_index = [];
+                    var data_title = data.title.trim().toLowerCase();
+                    var data_content = data.content.trim().replace(/<[^>]+>/g,"").toLowerCase();
+                    var data_url = data.url;
+                    var index_title = -1;
+                    var index_content = -1;
+                    var first_occur = -1;
+                    // only match artiles with not empty titles and contents
+                    if(data_title != '' && data_content != '') {
+                        keywords.forEach(function(keyword, i) {
+                            index_title = data_title.indexOf(keyword);
+                            index_content = data_content.indexOf(keyword);
+                            if( index_title < 0 && index_content < 0 ){
+                                isMatch = false;
+                            } else {
+                                if (index_content < 0) {
+                                    index_content = 0;
+                                }
+                                if (i == 0) {
+                                    first_occur = index_content;
+                                }
+                            }
+                        });
+                    }
+                    // show search results
+                    if (isMatch) {
+                        matchcounts += 1;
+                        str += "<li><a href='"+ data_url +"' class='search-result-title'>"+ data_title +"</a>";
+                        var content = data.content.trim().replace(/<[^>]+>/g,"");
+                        if (first_occur >= 0) {
+                            // cut out 100 characters
+                            var start = first_occur - 20;
+                            var end = first_occur + 80;
+                            if(start < 0){
+                                start = 0;
+                            }
+                            if(start == 0){
+                                end = 50;
+                            }
+                            if(end > content.length){
+                                end = content.length;
+                            }
+                            var match_content = content.substring(start, end);
+                            // highlight all keywords
+                            keywords.forEach(function(keyword){
+                                var regS = new RegExp(keyword, "gi");
+                                match_content = match_content.replace(regS, "<b class=\"search-keyword\">"+keyword+"</b>");
+                            });
+                            
+                            str += "<p class=\"search-result\">" + match_content +"...</p>"
+                        }
+                        str += "</li>";
+                    }
+                })};
+                str += "</ul>";
+                if (matchcounts == 0) { str = '<div id="no-result"><i class="fa fa-frown-o fa-5x" /></div>' }
+                if (keywords == "") { str = '<div id="no-result"><i class="fa fa-search fa-5x" /></div>' }
+                $resultContent.innerHTML = str;
+            });
+            proceedsearch();
+        }
+    });}
+
+    // handle and trigger popup window;
+    $('.popup-trigger').mousedown(function(e) {
+      e.stopPropagation();
+      if (isfetched == false) {
+        searchFunc(path, 'local-search-input', 'local-search-result');
+      } else {
+        proceedsearch();
+      };
+
+    });
+
+    $('.popup-btn-close').click(function(e){
+      $('.popup').hide();
+      $(".popoverlay").remove();
+      $('body').css('overflow', '');
+    });
+    $('.popup').click(function(e){
+      e.stopPropagation();
+    });
+  </script>
+
+  
+
+  
+
+  
+
+</body>
+</html>
