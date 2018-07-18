@@ -2,6 +2,13 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   
   <url>
+    <loc>http://icyxp.github.io/blog/2017/07/go-%E5%8D%87%E7%BA%A7go1-10-x%E9%97%AE%E9%A2%98.html</loc>
+    
+    <lastmod>2018-07-18T13:04:57.000Z</lastmod>
+    
+  </url>
+  
+  <url>
     <loc>http://icyxp.github.io/blog/2017/08/log-logstash-filter.html</loc>
     
     <lastmod>2017-08-16T15:30:02.000Z</lastmod>
