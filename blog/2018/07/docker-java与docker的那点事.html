@@ -1,0 +1,917 @@
+<!doctype html>
+
+
+
+  
+
+
+<html class="theme-next muse use-motion">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/vendors/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+  
+  
+  
+  
+
+  
+    
+    
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+    
+    
+    <link href="//fonts.googleapis.com/css?family=Lato:300,300italic,400,400italic,700,700italic&subset=latin,latin-ext" rel="stylesheet" type="text/css">
+  
+
+
+
+
+
+
+<link href="/vendors/font-awesome/css/font-awesome.min.css?v=4.4.0" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.0.1" rel="stylesheet" type="text/css" />
+
+
+  <meta name="keywords" content="docker,java,内存," />
+
+
+
+
+
+  <link rel="alternate" href="/atom.xml" title="Devops" type="application/atom+xml" />
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico?v=5.0.1" />
+
+
+
+
+
+
+<meta name="description" content="揭秘Java和Docker不是天然的朋友。 Docker可以设置内存和CPU限制，而Java不能自动检测到。使用Java的Xmx标识（繁琐/重复）或新的实验性JVM标识，我们可以解决这个问题。
+虚拟化中的不匹配Java和Docker的结合并不是完美匹配的，最初的时候离完美匹配有相当大的距离。对于初学者来说，JVM的全部设想就是，虚拟机可以让程序与底层硬件无关。
+那么，把我们的Java应用打包到JV">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Java和Docker限制的那些事儿">
+<meta property="og:url" content="http://icyxp.github.io/blog/2018/07/docker-java与docker的那点事.html">
+<meta property="og:site_name" content="Devops">
+<meta property="og:description" content="揭秘Java和Docker不是天然的朋友。 Docker可以设置内存和CPU限制，而Java不能自动检测到。使用Java的Xmx标识（繁琐/重复）或新的实验性JVM标识，我们可以解决这个问题。
+虚拟化中的不匹配Java和Docker的结合并不是完美匹配的，最初的时候离完美匹配有相当大的距离。对于初学者来说，JVM的全部设想就是，虚拟机可以让程序与底层硬件无关。
+那么，把我们的Java应用打包到JV">
+<meta property="og:updated_time" content="2018-07-18T13:27:38.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Java和Docker限制的那些事儿">
+<meta name="twitter:description" content="揭秘Java和Docker不是天然的朋友。 Docker可以设置内存和CPU限制，而Java不能自动检测到。使用Java的Xmx标识（繁琐/重复）或新的实验性JVM标识，我们可以解决这个问题。
+虚拟化中的不匹配Java和Docker的结合并不是完美匹配的，最初的时候离完美匹配有相当大的距离。对于初学者来说，JVM的全部设想就是，虚拟机可以让程序与底层硬件无关。
+那么，把我们的Java应用打包到JV">
+
+
+
+<script type="text/javascript" id="hexo.configuration">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    scheme: 'Muse',
+    sidebar: {"position":"left","display":"post"},
+    fancybox: true,
+    motion: true,
+    duoshuo: {
+      userId: 0,
+      author: '博主'
+    }
+  };
+</script>
+
+  <title> Java和Docker限制的那些事儿 | Devops </title>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+
+
+
+  <script type="text/javascript">
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "//hm.baidu.com/hm.js?7bfa7aba4938440964dd1a348aed977e";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+
+
+
+
+
+
+
+  
+  
+    
+  
+
+  <div class="container one-collumn sidebar-position-left page-post-detail ">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-meta ">
+  
+
+  <div class="custom-logo-site-title">
+    <a href="/"  class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <span class="site-title">Devops</span>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+  <p class="site-subtitle">网站架构|系统架构</p>
+</div>
+
+<div class="site-nav-toggle">
+  <button>
+    <span class="btn-bar"></span>
+    <span class="btn-bar"></span>
+    <span class="btn-bar"></span>
+  </button>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br />
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />
+            
+            标签
+          </a>
+        </li>
+      
+
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="#" class="popup-trigger">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br />
+            
+            搜索
+          </a>
+        </li>
+      
+    </ul>
+  
+
+  
+    <div class="site-search">
+      
+  <div class="popup">
+ <span class="search-icon fa fa-search"></span>
+ <input type="text" id="local-search-input">
+ <div id="local-search-result"></div>
+ <span class="popup-btn-close">close</span>
+</div>
+
+
+    </div>
+  
+</nav>
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+            
+            
+              
+                Java和Docker限制的那些事儿
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            <span class="post-meta-item-icon">
+              <i class="fa fa-calendar-o"></i>
+            </span>
+            <span class="post-meta-item-text">发表于</span>
+            <time itemprop="dateCreated" datetime="2018-07-18T21:30:00+08:00" content="2018-07-18">
+              2018-07-18
+            </time>
+          </span>
+
+          
+            <span class="post-category" >
+              &nbsp; | &nbsp;
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+              
+                <span itemprop="about" itemscope itemtype="https://schema.org/Thing">
+                  <a href="/categories/docker/" itemprop="url" rel="index">
+                    <span itemprop="name">docker</span>
+                  </a>
+                </span>
+
+                
+                
+
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                &nbsp; | &nbsp;
+                <a href="/blog/2018/07/docker-java与docker的那点事.html#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count ds-thread-count" data-thread-key="/blog/2018/07/docker-java与docker的那点事.html" itemprop="commentsCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+
+          
+          
+
+          
+        </div>
+      </header>
+    
+
+
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h2 id="揭秘"><a href="#揭秘" class="headerlink" title="揭秘"></a>揭秘</h2><p>Java和Docker不是天然的朋友。 Docker可以设置内存和CPU限制，而Java不能自动检测到。使用Java的Xmx标识（繁琐/重复）或新的实验性JVM标识，我们可以解决这个问题。</p>
+<h2 id="虚拟化中的不匹配"><a href="#虚拟化中的不匹配" class="headerlink" title="虚拟化中的不匹配"></a>虚拟化中的不匹配</h2><p>Java和Docker的结合并不是完美匹配的，最初的时候离完美匹配有相当大的距离。对于初学者来说，JVM的全部设想就是，虚拟机可以让程序与底层硬件无关。</p>
+<p>那么，把我们的Java应用打包到JVM中，然后整个再塞进Docker容器中，能给我们带来什么好处呢？大多数情况下，你只是在复制JVMs和Linux容器，除了浪费更多的内存，没任何好处。感觉这样子挺傻的。</p>
+<p>不过，Docker可以把你的程序，设置，特定的JDK，Linux设置和应用服务器，还有其他工具打包在一起，当做一个东西。站在DevOps/Cloud的角度来看，这样一个完整的容器有着更高层次的封装。</p>
+<h3 id="问题一：内存"><a href="#问题一：内存" class="headerlink" title="问题一：内存"></a>问题一：内存</h3><p>时至今日，绝大多数产品级应用仍然在使用Java 8（或者更旧的版本），而这可能会带来问题。Java 8（update 131之前的版本）跟Docker无法很好地一起工作。问题是在你的机器上，JVM的可用内存和CPU数量并不是Docker允许你使用的可用内存和CPU数量。</p>
+<p>比如，如果你限制了你的Docker容器只能使用100MB内存，但是呢，旧版本的Java并不能识别这个限制。Java看不到这个限制。JVM会要求更多内存，而且远超这个限制。如果使用太多内存，Docker将采取行动并杀死容器内的进程！JAVA进程被干掉了，很明显，这并不是我们想要的。</p>
+<p>为了解决这个问题，你需要给Java指定一个最大内存限制。在旧版本的Java（8u131之前），你需要在容器中通过设置-Xmx来限制堆大小。这感觉不太对，你可不想定义这些限制两次，也不太想在你的容器中来定义。</p>
+<p>幸运的是我们现在有了更好的方式来解决这个问题。从Java 9之后（8u131+），JVM增加了如下标志：<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">-XX:+UnlockExperimentalVMOptions -XX:+UseCGroupMemoryLimitForHeap</span><br></pre></td></tr></table></figure></p>
+<p>这些标志强制JVM检查Linux的cgroup配置，Docker是通过cgroup来实现最大内存设置的。现在，如果你的应用到达了Docker设置的限制（比如500MB），JVM是可以看到这个限制的。JVM将会尝试GC操作。如果仍然超过内存限制，JVM就会做它该做的事情，抛出OutOfMemoryException。也就是说，JVM能够看到Docker的这些设置。</p>
+<p>从Java 10之后（参考下面的测试），这些体验标志位是默认开启的，也可以使用-XX:+UseContainerSupport来使能（你可以通过设置-XX:-UseContainerSupport来禁止这些行为）。</p>
+<h3 id="问题二：CPU"><a href="#问题二：CPU" class="headerlink" title="问题二：CPU"></a>问题二：CPU</h3><p>第二个问题是类似的，但它与CPU有关。简而言之，JVM将查看硬件并检测CPU的数量。它会优化你的runtime以使用这些CPUs。但是同样的情况，这里还有另一个不匹配，Docker可能不允许你使用所有这些CPUs。可惜的是，这在Java 8或Java 9中并没有修复，但是在Java 10中得到了解决。</p>
+<p>从Java 10开始，可用的CPUs的计算将采用以不同的方式（默认情况下）解决此问题（同样是通过UseContainerSupport）。<br><a id="more"></a></p>
+<h2 id="Java和Docker的内存处理测试"><a href="#Java和Docker的内存处理测试" class="headerlink" title="Java和Docker的内存处理测试"></a>Java和Docker的内存处理测试</h2><p>作为一个有趣的练习，让我们验证并测试Docker如何使用几个不同的JVM版本/标志甚至不同的JVM来处理内存不足。</p>
+<p>首先，我们创建一个测试应用程序，它只是简单地“吃”内存并且不释放它。<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> java.util.ArrayList;</span><br><span class="line"><span class="keyword">import</span> java.util.List;</span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">MemEat</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> </span>&#123;</span><br><span class="line">        List l = <span class="keyword">new</span> ArrayList&lt;&gt;();</span><br><span class="line">        <span class="keyword">while</span> (<span class="keyword">true</span>) &#123;</span><br><span class="line">            <span class="keyword">byte</span> b[] = <span class="keyword">new</span> <span class="keyword">byte</span>[<span class="number">1048576</span>];</span><br><span class="line">            l.add(b);</span><br><span class="line">            Runtime rt = Runtime.getRuntime();</span><br><span class="line">            System.out.println( <span class="string">"free memory: "</span> + rt.freeMemory() );</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>我们可以启动Docker容器并运行这个应用程序来查看会发生什么。</p>
+<h3 id="测试一：Java-8u111"><a href="#测试一：Java-8u111" class="headerlink" title="测试一：Java 8u111"></a>测试一：Java 8u111</h3><p>首先，我们将从具有旧版本Java 8的容器开始（update 111）。<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker run -m 100m -it java:openjdk-8u111 /bin/bash</span><br></pre></td></tr></table></figure></p>
+<p>我们编译并运行MemEat.java文件：<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">javac MemEat.java</span><br><span class="line">java MemEat</span><br><span class="line">...</span><br><span class="line">free memory: 67194416</span><br><span class="line">free memory: 66145824</span><br><span class="line">free memory: 65097232</span><br><span class="line">Killed</span><br></pre></td></tr></table></figure></p>
+<p>正如所料，Docker已经杀死了我们的Java进程。不是我们想要的（！）。你也可以看到输出，Java认为它仍然有大量的内存需要分配。</p>
+<p>我们可以通过使用-Xmx标志为Java提供最大内存来解决此问题：<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">javac MemEat.java</span><br><span class="line">java -Xmx100m MemEat</span><br><span class="line">...</span><br><span class="line">free memory: 1155664</span><br><span class="line">free memory: 1679936</span><br><span class="line">free memory: 2204208</span><br><span class="line">free memory: 1315752</span><br><span class="line">Exception <span class="keyword">in</span> thread <span class="string">"main"</span> java.lang.OutOfMemoryError: Java heap space</span><br><span class="line">    at MemEat.main(MemEat.java:8)</span><br></pre></td></tr></table></figure></p>
+<p>在提供了我们自己的内存限制之后，进程正常停止，JVM理解它正在运行的限制。然而，问题在于你现在将这些内存限制设置了两次，Docker一次，JVM一次。</p>
+<h3 id="测试二：Java-8u144"><a href="#测试二：Java-8u144" class="headerlink" title="测试二：Java 8u144"></a>测试二：Java 8u144</h3><p>如前所述，随着增加新标志来修复问题，JVM现在可以遵循Docker所提供的设置。我们可以使用版本新一点的JVM来测试它。<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker run -m 100m -it adoptopenjdk/openjdk8 /bin/bash</span><br></pre></td></tr></table></figure></p>
+<p>（在撰写本文时，此OpenJDK Java镜像的版本是Java 8u144）</p>
+<p>接下来，我们再次编译并运行MemEat.java文件，不带任何标志：<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">javac MemEat.java</span><br><span class="line">java MemEat</span><br><span class="line">...</span><br><span class="line">free memory: 67194416</span><br><span class="line">free memory: 66145824</span><br><span class="line">free memory: 65097232</span><br><span class="line">Killed</span><br></pre></td></tr></table></figure></p>
+<p>依然存在同样的问题。但是我们现在可以提供上面提到的实验性标志来试试看：<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">javac MemEat.java</span><br><span class="line">java -XX:+UnlockExperimentalVMOptions -XX:+UseCGroupMemoryLimitForHeap MemEat</span><br><span class="line">...</span><br><span class="line">free memory: 1679936</span><br><span class="line">free memory: 2204208</span><br><span class="line">free memory: 1155616</span><br><span class="line">free memory: 1155600</span><br><span class="line">Exception <span class="keyword">in</span> thread <span class="string">"main"</span> java.lang.OutOfMemoryError: Java heap space</span><br><span class="line">   at MemEat.main(MemEat.java:8)</span><br></pre></td></tr></table></figure></p>
+<p>这一次我们没有告诉JVM限制的是什么，我们只是告诉JVM去检查正确的限制设置！现在感觉好多了。</p>
+<h3 id="测试三：Java-10u23"><a href="#测试三：Java-10u23" class="headerlink" title="测试三：Java 10u23"></a>测试三：Java 10u23</h3><p>有些人在评论和Reddit上提到Java 10通过使实验标志成为新的默认值来解决所有问题。这种行为可以通过禁用此标志来关闭：-XX：-UseContainerSupport。</p>
+<p>当我测试它时，它最初不起作用。在撰写本文时，AdoptAJDK OpenJDK10镜像与jdk-10+23一起打包。这个JVM显然还是不理解UseContainerSupport标志，该进程仍然被Docker杀死。<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker run -m 100m -it adoptopenjdk/openjdk10 /bin/bash</span><br></pre></td></tr></table></figure></p>
+<p>测试了代码（甚至手动提供需要的标志）：<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">javac MemEat.java</span><br><span class="line">java MemEat</span><br><span class="line">...</span><br><span class="line">free memory: 96262112</span><br><span class="line">free memory: 94164960</span><br><span class="line">free memory: 92067808</span><br><span class="line">free memory: 89970656</span><br><span class="line">Killed</span><br><span class="line">java -XX:+UseContainerSupport MemEat</span><br><span class="line">Unrecognized VM option <span class="string">'UseContainerSupport'</span></span><br><span class="line">Error: Could not create the Java Virtual Machine.</span><br><span class="line">Error: A fatal exception has occurred. Program will exit.</span><br></pre></td></tr></table></figure></p>
+<h3 id="测试四：Java-10u46（Nightly）"><a href="#测试四：Java-10u46（Nightly）" class="headerlink" title="测试四：Java 10u46（Nightly）"></a>测试四：Java 10u46（Nightly）</h3><p>我决定尝试AdoptAJDK OpenJDK 10的最新nightly构建。它包含的版本是Java 10+46，而不是Java 10+23。<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker run -m 100m -it adoptopenjdk/openjdk10:nightly /bin/bash</span><br></pre></td></tr></table></figure></p>
+<p>然而，在这个ngithly构建中有一个问题，导出的PATH指向旧的Java 10+23目录，而不是10+46，我们需要修复这个问题。<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">export</span> PATH=<span class="variable">$PATH</span>:/opt/java/openjdk/jdk-10+46/bin/</span><br><span class="line">javac MemEat.java</span><br><span class="line">java MemEat</span><br><span class="line">...</span><br><span class="line">free memory: 3566824</span><br><span class="line">free memory: 2796008</span><br><span class="line">free memory: 1480320</span><br><span class="line">Exception <span class="keyword">in</span> thread <span class="string">"main"</span> java.lang.OutOfMemoryError: Java heap space</span><br><span class="line">  at MemEat.main(MemEat.java:8)</span><br></pre></td></tr></table></figure></p>
+<p>成功！不提供任何标志，Java 10依然可以正确检测到Dockers内存限制。</p>
+<h3 id="测试五：OpenJ9"><a href="#测试五：OpenJ9" class="headerlink" title="测试五：OpenJ9"></a>测试五：OpenJ9</h3><p>我最近也在试用OpenJ9，这个免费的替代JVM已经从IBM J9开源，现在由Eclipse维护。</p>
+<p>请在我的下一篇博文<a href="http://royvanrijn.com/blog/2018/05/openj9-jvm-shootout/" target="_blank" rel="external">http://royvanrijn.com/blog/2018/05/openj9-jvm-shootout/</a>阅读关于OpenJ9的更多信息。</p>
+<p>它运行速度快，内存管理非常好，性能卓越，经常可以为我们的微服务节省多达30-50％的内存。这几乎可以将Spring Boot应用程序定义为’micro’了，其运行时间只有100-200mb，而不是300mb+。我打算尽快就此写一篇关于这方面的文章。</p>
+<p>但令我惊讶的是，OpenJ9还没有类似于Java 8/9/10+中针对cgroup内存限制的标志（backported）的选项。如果我们将以前的测试用例应用到最新的AdoptAJDK OpenJDK 9 + OpenJ9 build：<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker run -m 100m -it adoptopenjdk/openjdk9-openj9 /bin/bash</span><br></pre></td></tr></table></figure></p>
+<p>我们添加OpenJDK标志（OpenJ9会忽略的标志）：<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">java -XX:+UnlockExperimentalVMOptions -XX:+UseCGroupMemoryLimitForHeap MemEat</span><br><span class="line">...</span><br><span class="line">free memory: 83988984</span><br><span class="line">free memory: 82940400</span><br><span class="line">free memory: 81891816</span><br><span class="line">Killed</span><br></pre></td></tr></table></figure></p>
+<p>Oops，JVM再次被Docker杀死。</p>
+<p>我真的希望类似的选项将很快添加到OpenJ9中，因为我希望在生产环境中运行这个选项，而不必指定最大内存两次。 Eclipse/IBM正在努力修复这个问题，已经提了issues，甚至已经针对issues提交了PR。</p>
+<h3 id="更新：（不推荐Hack）"><a href="#更新：（不推荐Hack）" class="headerlink" title="更新：（不推荐Hack）"></a>更新：（不推荐Hack）</h3><p>一个稍微丑陋/hacky的方式来解决这个问题是使用下面的组合标志：<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">java -Xmx`cat /sys/fs/cgroup/memory/memory.limit_<span class="keyword">in</span>_bytes` MemEat</span><br><span class="line">...</span><br><span class="line">free memory: 3171536</span><br><span class="line">free memory: 2127048</span><br><span class="line">free memory: 2397632</span><br><span class="line">free memory: 1344952</span><br><span class="line">JVMDUMP039I Processing dump event <span class="string">"systhrow"</span>, detail <span class="string">"java/lang/OutOfMemoryError"</span> at 2018/05/15 14:04:26 - please wait.</span><br><span class="line">JVMDUMP032I JVM requested System dump using <span class="string">'//core.20180515.140426.125.0001.dmp'</span> <span class="keyword">in</span> response to an event</span><br><span class="line">JVMDUMP010I System dump written to //core.20180515.140426.125.0001.dmp</span><br><span class="line">JVMDUMP032I JVM requested Heap dump using <span class="string">'//heapdump.20180515.140426.125.0002.phd'</span> <span class="keyword">in</span> response to an event</span><br><span class="line">JVMDUMP010I Heap dump written to //heapdump.20180515.140426.125.0002.phd</span><br><span class="line">JVMDUMP032I JVM requested Java dump using <span class="string">'//javacore.20180515.140426.125.0003.txt'</span> <span class="keyword">in</span> response to an event</span><br><span class="line">JVMDUMP010I Java dump written to //javacore.20180515.140426.125.0003.txt</span><br><span class="line">JVMDUMP032I JVM requested Snap dump using <span class="string">'//Snap.20180515.140426.125.0004.trc'</span> <span class="keyword">in</span> response to an event</span><br><span class="line">JVMDUMP010I Snap dump written to //Snap.20180515.140426.125.0004.trc</span><br><span class="line">JVMDUMP013I Processed dump event <span class="string">"systhrow"</span>, detail <span class="string">"java/lang/OutOfMemoryError"</span>.</span><br><span class="line">Exception <span class="keyword">in</span> thread <span class="string">"main"</span> java.lang.OutOfMemoryError: Java heap space</span><br><span class="line">  at MemEat.main(MemEat.java:8)</span><br></pre></td></tr></table></figure></p>
+<p>在这种情况下，堆大小受限于分配给Docker实例的内存，这适用于较旧的JVM和OpenJ9。这当然是错误的，因为容器本身和堆外的JVM的其他部分也使用内存。但它似乎工作，显然Docker在这种情况下是宽松的。也许某些bash大神会做出更好的版本，从其他进程的字节中减去一部分。</p>
+<p>无论如何，不要这样做，它可能无法正常工作。</p>
+<h3 id="测试六：OpenJ9（Nightly）"><a href="#测试六：OpenJ9（Nightly）" class="headerlink" title="测试六：OpenJ9（Nightly）"></a>测试六：OpenJ9（Nightly）</h3><p>有人建议使用OpenJ9的最新nightly版本。<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker run -m 100m -it adoptopenjdk/openjdk9-openj9:nightly /bin/bash</span><br></pre></td></tr></table></figure></p>
+<p>最新的OpenJ9夜间版本，它有两个东西：</p>
+<ol>
+<li>另一个有问题的PATH参数，需要先解决这个问题</li>
+<li>JVM支持新标志UseContainerSupport（就像Java 10一样）</li>
+</ol>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">export</span> PATH=<span class="variable">$PATH</span>:/opt/java/openjdk/jdk-9.0.4+12/bin/</span><br><span class="line">javac MemEat.java</span><br><span class="line">java -XX:+UseContainerSupport MemEat</span><br><span class="line">...</span><br><span class="line">free memory: 5864464</span><br><span class="line">free memory: 4815880</span><br><span class="line">free memory: 3443712</span><br><span class="line">free memory: 2391032</span><br><span class="line">JVMDUMP039I Processing dump event <span class="string">"systhrow"</span>, detail <span class="string">"java/lang/OutOfMemoryError"</span> at 2018/05/15 21:32:07 - please wait.</span><br><span class="line">JVMDUMP032I JVM requested System dump using <span class="string">'//core.20180515.213207.62.0001.dmp'</span> <span class="keyword">in</span> response to an event</span><br><span class="line">JVMDUMP010I System dump written to //core.20180515.213207.62.0001.dmp</span><br><span class="line">JVMDUMP032I JVM requested Heap dump using <span class="string">'//heapdump.20180515.213207.62.0002.phd'</span> <span class="keyword">in</span> response to an event</span><br><span class="line">JVMDUMP010I Heap dump written to //heapdump.20180515.213207.62.0002.phd</span><br><span class="line">JVMDUMP032I JVM requested Java dump using <span class="string">'//javacore.20180515.213207.62.0003.txt'</span> <span class="keyword">in</span> response to an event</span><br><span class="line">JVMDUMP010I Java dump written to //javacore.20180515.213207.62.0003.txt</span><br><span class="line">JVMDUMP032I JVM requested Snap dump using <span class="string">'//Snap.20180515.213207.62.0004.trc'</span> <span class="keyword">in</span> response to an event</span><br><span class="line">JVMDUMP010I Snap dump written to //Snap.20180515.213207.62.0004.trc</span><br><span class="line">JVMDUMP013I Processed dump event <span class="string">"systhrow"</span>, detail <span class="string">"java/lang/OutOfMemoryError"</span>.</span><br><span class="line">Exception <span class="keyword">in</span> thread <span class="string">"main"</span> java.lang.OutOfMemoryError: Java heap space</span><br></pre></td></tr></table></figure>
+<p>TADAAA，正在修复中！</p>
+<p>奇怪的是，这个标志在OpenJ9中默认没有启用，就像它在Java 10中一样。再说一次：确保你测试了这是你想在一个Docker容器中运行Java。</p>
+<h2 id="结论"><a href="#结论" class="headerlink" title="结论"></a>结论</h2><p>简言之：注意资源限制的不匹配。测试你的内存设置和JVM标志，不要假设任何东西。</p>
+<p>如果您在Docker容器中运行Java，请确保你设置了Docker内存限制和在JVM中也做了限制，或者你的JVM能够理解这些限制。</p>
+<p>如果您无法升级您的Java版本，请使用-Xmx设置您自己的限制。</p>
+<p>对于Java 8和Java 9，请更新到最新版本并使用：<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">-XX：+UnlockExperimentalVMOptions -XX：+UseCGroupMemoryLimitForHeap</span><br></pre></td></tr></table></figure></p>
+<p>对于Java 10，确保它支持’UseContainerSupport’（更新到最新版本）。</p>
+<p>对于OpenJ9（我强烈建议使用，可以在生产环境中有效减少内存占用量），现在使用-Xmx设置限制，但很快会出现一个支持UseContainerSupport标志的版本。</p>
+<p>原文链接：<a href="http://royvanrijn.com/blog/2018/05/java-and-docker-memory-limits/" target="_blank" rel="external">http://royvanrijn.com/blog/2018/05/java-and-docker-memory-limits/</a></p>
+
+      
+    </div>
+
+    <div>
+      
+        
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/docker/" rel="tag">#docker</a>
+          
+            <a href="/tags/java/" rel="tag">#java</a>
+          
+            <a href="/tags/内存/" rel="tag">#内存</a>
+          
+        </div>
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/blog/2018/07/go-升级go1-10-x问题.html" rel="next" title="Centos 6.x 上升级go 1.10.3">
+                <i class="fa fa-chevron-left"></i> Centos 6.x 上升级go 1.10.3
+              </a>
+            
+          </div>
+
+          <div class="post-nav-prev post-nav-item">
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </article>
+
+
+
+    <div class="post-spread">
+      
+        <!-- JiaThis Button BEGIN -->
+<div class="jiathis_style">
+  <a class="jiathis_button_tsina"></a>
+  <a class="jiathis_button_tqq"></a>
+  <a class="jiathis_button_weixin"></a>
+  <a class="jiathis_button_cqq"></a>
+  <a class="jiathis_button_douban"></a>
+  <a class="jiathis_button_renren"></a>
+  <a class="jiathis_button_qzone"></a>
+  <a class="jiathis_button_kaixin001"></a>
+  <a class="jiathis_button_copy"></a>
+  <a href="http://www.jiathis.com/share" class="jiathis jiathis_txt jiathis_separator jtico jtico_jiathis" target="_blank"></a>
+  <a class="jiathis_counter_style"></a>
+</div>
+<script type="text/javascript" >
+  var jiathis_config={
+    hideMore:false
+  }
+</script>
+<script type="text/javascript" src="http://v3.jiathis.com/code/jia.js" charset="utf-8"></script>
+<!-- JiaThis Button END -->
+
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+  <div class="comments" id="comments">
+    
+      <div class="ds-thread" data-thread-key="/blog/2018/07/docker-java与docker的那点事.html"
+           data-title="Java和Docker限制的那些事儿" data-url="http://icyxp.github.io/blog/2018/07/docker-java与docker的那点事.html">
+      </div>
+    
+  </div>
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap" >
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview sidebar-panel ">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+          <img class="site-author-image" itemprop="image"
+               src="/images/avatar.jpg"
+               alt="icyboy" />
+          <p class="site-author-name" itemprop="name">icyboy</p>
+          <p class="site-description motion-element" itemprop="description">记录分享生活中的点滴</p>
+        </div>
+        <nav class="site-state motion-element">
+          <div class="site-state-item site-state-posts">
+            <a href="/archives">
+              <span class="site-state-item-count">21</span>
+              <span class="site-state-item-name">日志</span>
+            </a>
+          </div>
+
+          
+            <div class="site-state-item site-state-categories">
+              <a href="/categories">
+                <span class="site-state-item-count">17</span>
+                <span class="site-state-item-name">分类</span>
+              </a>
+            </div>
+          
+
+          
+            <div class="site-state-item site-state-tags">
+              <a href="/tags">
+                <span class="site-state-item-count">35</span>
+                <span class="site-state-item-name">标签</span>
+              </a>
+            </div>
+          
+
+        </nav>
+
+        
+          <div class="feed-link motion-element">
+            <a href="/atom.xml" rel="alternate">
+              <i class="fa fa-rss"></i>
+              RSS
+            </a>
+          </div>
+        
+
+        <div class="links-of-author motion-element">
+          
+            
+              <span class="links-of-author-item">
+                <a href="https://github.com/icyxp" target="_blank" title="GitHub">
+                  
+                    <i class="fa fa-fw fa-github"></i>
+                  
+                  GitHub
+                </a>
+              </span>
+            
+              <span class="links-of-author-item">
+                <a href="http://weibo.com/joysteam" target="_blank" title="微博">
+                  
+                    <i class="fa fa-fw fa-globe"></i>
+                  
+                  微博
+                </a>
+              </span>
+            
+              <span class="links-of-author-item">
+                <a href="http://www.zhihu.com/people/xupeng" target="_blank" title="知乎">
+                  
+                    <i class="fa fa-fw fa-globe"></i>
+                  
+                  知乎
+                </a>
+              </span>
+            
+          
+        </div>
+
+        
+        
+
+        
+        
+          <div class="links-of-blogroll motion-element links-of-blogroll-inline">
+            <div class="links-of-blogroll-title">
+              <i class="fa  fa-fw fa-globe"></i>
+              友情链接
+            </div>
+            <ul class="links-of-blogroll-list">
+              
+                <li class="links-of-blogroll-item">
+                  <a href="http://www.zjgsmt.com" title="张家港水蜜桃" target="_blank">张家港水蜜桃</a>
+                </li>
+              
+                <li class="links-of-blogroll-item">
+                  <a href="http://devops.jiunile.com" title="DevOps" target="_blank">DevOps</a>
+                </li>
+              
+                <li class="links-of-blogroll-item">
+                  <a href="http://blog.jiunile.com" title="运维开发" target="_blank">运维开发</a>
+                </li>
+              
+            </ul>
+          </div>
+        
+
+      </section>
+
+      
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+            
+              
+            
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#揭秘"><span class="nav-number">1.</span> <span class="nav-text">揭秘</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#虚拟化中的不匹配"><span class="nav-number">2.</span> <span class="nav-text">虚拟化中的不匹配</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#问题一：内存"><span class="nav-number">2.1.</span> <span class="nav-text">问题一：内存</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#问题二：CPU"><span class="nav-number">2.2.</span> <span class="nav-text">问题二：CPU</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Java和Docker的内存处理测试"><span class="nav-number">3.</span> <span class="nav-text">Java和Docker的内存处理测试</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#测试一：Java-8u111"><span class="nav-number">3.1.</span> <span class="nav-text">测试一：Java 8u111</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#测试二：Java-8u144"><span class="nav-number">3.2.</span> <span class="nav-text">测试二：Java 8u144</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#测试三：Java-10u23"><span class="nav-number">3.3.</span> <span class="nav-text">测试三：Java 10u23</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#测试四：Java-10u46（Nightly）"><span class="nav-number">3.4.</span> <span class="nav-text">测试四：Java 10u46（Nightly）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#测试五：OpenJ9"><span class="nav-number">3.5.</span> <span class="nav-text">测试五：OpenJ9</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#更新：（不推荐Hack）"><span class="nav-number">3.6.</span> <span class="nav-text">更新：（不推荐Hack）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#测试六：OpenJ9（Nightly）"><span class="nav-number">3.7.</span> <span class="nav-text">测试六：OpenJ9（Nightly）</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#结论"><span class="nav-number">4.</span> <span class="nav-text">结论</span></a></li></ol></div>
+            
+          </div>
+        </section>
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright" >
+  
+  &copy;  2016 - 
+  <span itemprop="copyrightYear">2018</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">icyboy</span>
+</div>
+
+        
+
+        
+      </div>
+    </footer>
+
+    <div class="back-to-top">
+      <i class="fa fa-arrow-up"></i>
+    </div>
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+  
+  <script type="text/javascript" src="/vendors/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script type="text/javascript" src="/vendors/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+
+  
+  <script type="text/javascript" src="/vendors/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+
+  
+  <script type="text/javascript" src="/vendors/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/vendors/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/vendors/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.0.1"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.0.1"></script>
+
+  <script type="text/javascript" src="/js/src/love.js?v=5.0.1"></script>
+
+  <script type="text/javascript" src="/js/src/particle.js?v=5.0.1"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.0.1"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.0.1"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.0.1"></script>
+
+
+
+  
+
+  
+    
+  
+
+  <script type="text/javascript">
+    var duoshuoQuery = {short_name:"icyboy"};
+    (function() {
+      var ds = document.createElement('script');
+      ds.type = 'text/javascript';ds.async = true;
+      ds.id = 'duoshuo-script';
+      ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
+      ds.charset = 'UTF-8';
+      (document.getElementsByTagName('head')[0]
+      || document.getElementsByTagName('body')[0]).appendChild(ds);
+    })();
+  </script>
+
+  
+    
+  
+
+
+
+
+
+  
+  
+  <script type="text/javascript">
+    // Popup Window;
+    var isfetched = false;
+    // Search DB path;
+    var search_path = "search.xml";
+    if (search_path.length == 0) {
+       search_path = "search.xml";
+    }
+    var path = "/" + search_path;
+    // monitor main search box;
+
+    function proceedsearch() {
+      $("body").append('<div class="popoverlay">').css('overflow', 'hidden');
+      $('.popup').toggle();
+
+    }
+    // search function;
+    var searchFunc = function(path, search_id, content_id) {
+    'use strict';
+    $.ajax({
+        url: path,
+        dataType: "xml",
+        async: true,
+        success: function( xmlResponse ) {
+            // get the contents from search data
+            isfetched = true;
+            $('.popup').detach().appendTo('.header-inner');
+            var datas = $( "entry", xmlResponse ).map(function() {
+                return {
+                    title: $( "title", this ).text(),
+                    content: $("content",this).text(),
+                    url: $( "url" , this).text()
+                };
+            }).get();
+            var $input = document.getElementById(search_id);
+            var $resultContent = document.getElementById(content_id);
+            $input.addEventListener('input', function(){
+                var matchcounts = 0;
+                var str='<ul class=\"search-result-list\">';                
+                var keywords = this.value.trim().toLowerCase().split(/[\s\-]+/);
+                $resultContent.innerHTML = "";
+                if (this.value.trim().length > 1) {
+                // perform local searching
+                datas.forEach(function(data) {
+                    var isMatch = true;
+                    var content_index = [];
+                    var data_title = data.title.trim().toLowerCase();
+                    var data_content = data.content.trim().replace(/<[^>]+>/g,"").toLowerCase();
+                    var data_url = data.url;
+                    var index_title = -1;
+                    var index_content = -1;
+                    var first_occur = -1;
+                    // only match artiles with not empty titles and contents
+                    if(data_title != '' && data_content != '') {
+                        keywords.forEach(function(keyword, i) {
+                            index_title = data_title.indexOf(keyword);
+                            index_content = data_content.indexOf(keyword);
+                            if( index_title < 0 && index_content < 0 ){
+                                isMatch = false;
+                            } else {
+                                if (index_content < 0) {
+                                    index_content = 0;
+                                }
+                                if (i == 0) {
+                                    first_occur = index_content;
+                                }
+                            }
+                        });
+                    }
+                    // show search results
+                    if (isMatch) {
+                        matchcounts += 1;
+                        str += "<li><a href='"+ data_url +"' class='search-result-title'>"+ data_title +"</a>";
+                        var content = data.content.trim().replace(/<[^>]+>/g,"");
+                        if (first_occur >= 0) {
+                            // cut out 100 characters
+                            var start = first_occur - 20;
+                            var end = first_occur + 80;
+                            if(start < 0){
+                                start = 0;
+                            }
+                            if(start == 0){
+                                end = 50;
+                            }
+                            if(end > content.length){
+                                end = content.length;
+                            }
+                            var match_content = content.substring(start, end);
+                            // highlight all keywords
+                            keywords.forEach(function(keyword){
+                                var regS = new RegExp(keyword, "gi");
+                                match_content = match_content.replace(regS, "<b class=\"search-keyword\">"+keyword+"</b>");
+                            });
+                            
+                            str += "<p class=\"search-result\">" + match_content +"...</p>"
+                        }
+                        str += "</li>";
+                    }
+                })};
+                str += "</ul>";
+                if (matchcounts == 0) { str = '<div id="no-result"><i class="fa fa-frown-o fa-5x" /></div>' }
+                if (keywords == "") { str = '<div id="no-result"><i class="fa fa-search fa-5x" /></div>' }
+                $resultContent.innerHTML = str;
+            });
+            proceedsearch();
+        }
+    });}
+
+    // handle and trigger popup window;
+    $('.popup-trigger').mousedown(function(e) {
+      e.stopPropagation();
+      if (isfetched == false) {
+        searchFunc(path, 'local-search-input', 'local-search-result');
+      } else {
+        proceedsearch();
+      };
+
+    });
+
+    $('.popup-btn-close').click(function(e){
+      $('.popup').hide();
+      $(".popoverlay").remove();
+      $('body').css('overflow', '');
+    });
+    $('.popup').click(function(e){
+      e.stopPropagation();
+    });
+  </script>
+
+  
+
+  
+
+  
+
+</body>
+</html>
