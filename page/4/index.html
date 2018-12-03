@@ -278,6 +278,135 @@
             
               
                 
+                <a class="post-title-link" href="/blog/2016/07/nginx-localtion-rewrite.html" itemprop="url">
+                  nginx配置location与rewrite规则教程
+                </a>
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            <span class="post-meta-item-icon">
+              <i class="fa fa-calendar-o"></i>
+            </span>
+            <span class="post-meta-item-text">发表于</span>
+            <time itemprop="dateCreated" datetime="2016-07-15T10:30:00+08:00" content="2016-07-15">
+              2016-07-15
+            </time>
+          </span>
+
+          
+            <span class="post-category" >
+              &nbsp; | &nbsp;
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+              
+                <span itemprop="about" itemscope itemtype="https://schema.org/Thing">
+                  <a href="/categories/nginx/" itemprop="url" rel="index">
+                    <span itemprop="name">nginx</span>
+                  </a>
+                </span>
+
+                
+                
+
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                &nbsp; | &nbsp;
+                <a href="/blog/2016/07/nginx-localtion-rewrite.html#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count ds-thread-count" data-thread-key="/blog/2016/07/nginx-localtion-rewrite.html" itemprop="commentsCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+
+          
+          
+
+          
+        </div>
+      </header>
+    
+
+
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          <h2 id="location教程"><a href="#location教程" class="headerlink" title="location教程"></a>location教程</h2><p><strong>示例：</strong><br><figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br></pre></td><td class="code"><pre><span class="line">location  = / &#123;</span><br><span class="line">    # 精确匹配 / ，主机名后面不能带任何字符串</span><br><span class="line">    [ configuration A ] </span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">location  / &#123;</span><br><span class="line">    # 因为所有的地址都以 / 开头，所以这条规则将匹配到所有请求</span><br><span class="line">    # 但是正则和最长字符串会优先匹配</span><br><span class="line">    [ configuration B ] </span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">location /documents/ &#123;</span><br><span class="line">    # 匹配任何以 /documents/ 开头的地址，匹配符合以后，还要继续往下搜索</span><br><span class="line">    # 只有后面的正则表达式没有匹配到时，这一条才会采用这一条</span><br><span class="line">    [ configuration C ] </span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">location ~ /documents/Abc &#123;</span><br><span class="line">    # 匹配任何以 /documents/ 开头的地址，匹配符合以后，还要继续往下搜索</span><br><span class="line">    # 只有后面的正则表达式没有匹配到时，这一条才会采用这一条</span><br><span class="line">    [ configuration CC ] </span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">location ^~ /images/ &#123;</span><br><span class="line">    # 匹配任何以 /images/ 开头的地址，匹配符合以后，停止往下搜索正则，采用这一条。</span><br><span class="line">    [ configuration D ] </span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">location ~* \.(gif|jpg|jpeg)$ &#123;</span><br><span class="line">    # 匹配所有以 gif,jpg或jpeg 结尾的请求</span><br><span class="line">    # 然而，所有请求 /images/ 下的图片会被 config D 处理，因为 ^~ 到达不了这一条正则</span><br><span class="line">    [ configuration E ] </span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">location /images/ &#123;</span><br><span class="line">    # 字符匹配到 /images/，继续往下，会发现 ^~ 存在</span><br><span class="line">    [ configuration F ] </span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">location /images/abc &#123;</span><br><span class="line">    # 最长字符匹配到 /images/abc，继续往下，会发现 ^~ 存在</span><br><span class="line">    # F与G的放置顺序是没有关系的</span><br><span class="line">    [ configuration G ] </span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">location ~ /images/abc/ &#123;</span><br><span class="line">    # 只有去掉 config D 才有效：先最长匹配 config G 开头的地址，继续往下搜索，匹配到这一条正则，采用</span><br><span class="line">    [ configuration H ] </span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">location ~* /js/.*/\.js</span><br></pre></td></tr></table></figure></p>
+<ul>
+<li>已=开头表示精确匹配<br>如 A 中只匹配根目录结尾的请求，后面不能带任何字符串。</li>
+<li>^~ 开头表示uri以某个常规字符串开头，不是正则匹配</li>
+<li>~ 开头表示区分大小写的正则匹配</li>
+<li>~* 开头表示不区分大小写的正则匹配</li>
+<li>/ 通用匹配, 如果没有其它匹配,任何请求都会匹配到</li>
+</ul>
+          <div class="post-more-link text-center">
+            <a class="btn" href="/blog/2016/07/nginx-localtion-rewrite.html#more" rel="contents">
+              阅读全文 &raquo;
+            </a>
+          </div>
+        
+      
+    </div>
+
+    <div>
+      
+    </div>
+
+    <div>
+      
+    </div>
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+
+
+    
+      
+
+  
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+            
+            
+              
+                
                 <a class="post-title-link" href="/blog/2016/07/mysql-mysql-transaction-level.html" itemprop="url">
                   MySQL事务隔离级别
                 </a>
@@ -788,131 +917,6 @@
 
 
     
-      
-
-  
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-            
-            
-              
-                
-                <a class="post-title-link" href="/blog/2016/06/cache-server.html" itemprop="url">
-                  Cache 应用中的服务过载案例研究
-                </a>
-              
-            
-          </h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            <span class="post-meta-item-icon">
-              <i class="fa fa-calendar-o"></i>
-            </span>
-            <span class="post-meta-item-text">发表于</span>
-            <time itemprop="dateCreated" datetime="2016-06-29T00:00:00+08:00" content="2016-06-29">
-              2016-06-29
-            </time>
-          </span>
-
-          
-            <span class="post-category" >
-              &nbsp; | &nbsp;
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-              
-                <span itemprop="about" itemscope itemtype="https://schema.org/Thing">
-                  <a href="/categories/架构/" itemprop="url" rel="index">
-                    <span itemprop="name">架构</span>
-                  </a>
-                </span>
-
-                
-                
-
-              
-            </span>
-          
-
-          
-            
-              <span class="post-comments-count">
-                &nbsp; | &nbsp;
-                <a href="/blog/2016/06/cache-server.html#comments" itemprop="discussionUrl">
-                  <span class="post-comments-count ds-thread-count" data-thread-key="/blog/2016/06/cache-server.html" itemprop="commentsCount"></span>
-                </a>
-              </span>
-            
-          
-
-          
-
-          
-          
-
-          
-        </div>
-      </header>
-    
-
-
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          <p>简单地说，过载是外部请求对系统的访问量突然激增，造成请求堆积，服务不可用，最终导致系统崩溃。本文主要分析引入Cache可能造成的服务过载，并讨论相关的预防、恢复策略。</p>
-<p>Cache在现代系统中使用广泛，由此引入的服务过载隐患无处不在，但却非常隐蔽，容易被忽视。本文希望能为开发者在设计和编写相关类型应用，以及服务过载发生处理时能够有章可循。</p>
-<h2 id="一个服务过载案例"><a href="#一个服务过载案例" class="headerlink" title="一个服务过载案例"></a>一个服务过载案例</h2><p>本文讨论的案例是指存在正常调用关系的两个系统（假设调用方为A系统，服务方为B系统），A系统对B系统的访问突然超出B系统的承受能力，造成B系统崩溃。造成服务过载的原因很多，这里分析的是严重依赖Cache的系统服务过载。首先来看一种包含Cache的体系结构（如下图所示）。<br><img src="/images/2_cache.png" alt="Cache应用体系结构"></p>
-<p>A系统依赖B系统的读服务，A系统是60台机器组成的集群，B系统是6台机器组成的集群，之所以6台机器能够扛住60台机器的访问，是因为A系统并不是每次都访问B，而是首先请求Cache，只有Cache的相应数据失效时才会请求B。<br>
-          <div class="post-more-link text-center">
-            <a class="btn" href="/blog/2016/06/cache-server.html#more" rel="contents">
-              阅读全文 &raquo;
-            </a>
-          </div>
-        
-      
-    </div>
-
-    <div>
-      
-    </div>
-
-    <div>
-      
-    </div>
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-
-
-    
   </section>
 
   
@@ -958,7 +962,7 @@
         <nav class="site-state motion-element">
           <div class="site-state-item site-state-posts">
             <a href="/archives">
-              <span class="site-state-item-count">21</span>
+              <span class="site-state-item-count">22</span>
               <span class="site-state-item-name">日志</span>
             </a>
           </div>
@@ -966,7 +970,7 @@
           
             <div class="site-state-item site-state-categories">
               <a href="/categories">
-                <span class="site-state-item-count">17</span>
+                <span class="site-state-item-count">18</span>
                 <span class="site-state-item-name">分类</span>
               </a>
             </div>
@@ -975,7 +979,7 @@
           
             <div class="site-state-item site-state-tags">
               <a href="/tags">
-                <span class="site-state-item-count">35</span>
+                <span class="site-state-item-count">38</span>
                 <span class="site-state-item-name">标签</span>
               </a>
             </div>
