@@ -2,6 +2,13 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   
   <url>
+    <loc>http://icyxp.github.io/pro/k8s/index.html</loc>
+    
+    <lastmod>2018-12-07T14:48:08.000Z</lastmod>
+    
+  </url>
+  
+  <url>
     <loc>http://icyxp.github.io/blog/2018/11/k8s-k8s-pod-life-cycle.html</loc>
     
     <lastmod>2018-12-03T02:14:29.000Z</lastmod>
