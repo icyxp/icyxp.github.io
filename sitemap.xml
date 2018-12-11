@@ -2,9 +2,23 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   
   <url>
+    <loc>http://icyxp.github.io/pro/k8s/index.html</loc>
+    
+    <lastmod>2018-12-11T13:05:24.000Z</lastmod>
+    
+  </url>
+  
+  <url>
+    <loc>http://icyxp.github.io/blog/2018/12/k8s-handling-client-requests-properly-with-kubernetes.html</loc>
+    
+    <lastmod>2018-12-11T13:03:36.000Z</lastmod>
+    
+  </url>
+  
+  <url>
     <loc>http://icyxp.github.io/blog/2018/12/k8s-kubeadm-ca-desc.html</loc>
     
-    <lastmod>2018-12-11T10:34:05.000Z</lastmod>
+    <lastmod>2018-12-11T13:03:00.000Z</lastmod>
     
   </url>
   
@@ -12,13 +26,6 @@
     <loc>http://icyxp.github.io/blog/2018/12/k8s-kubeadm-ca-upgdate.html</loc>
     
     <lastmod>2018-12-11T10:00:28.000Z</lastmod>
-    
-  </url>
-  
-  <url>
-    <loc>http://icyxp.github.io/pro/k8s/index.html</loc>
-    
-    <lastmod>2018-12-10T14:27:11.000Z</lastmod>
     
   </url>
   
