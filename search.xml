@@ -74,7 +74,59 @@
 <p>API Aggregation允许在不修改Kubernetes核心代码的同时扩展Kubernetes API. 开启 API Aggregation 需要在 kube-apiserver 中添加如下配置:<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">--requestheader-client-ca-file=&lt;path to aggregator CA cert&gt;</span><br><span class="line">--requestheader-allowed-names=front-proxy-client</span><br><span class="line">--requestheader-extra-headers-prefix=X-Remote-Extra-</span><br><span class="line">--requestheader-group-headers=X-Remote-Group</span><br><span class="line">--requestheader-username-headers=X-Remote-User</span><br><span class="line">--proxy-client-cert-file=&lt;path to aggregator proxy cert&gt;</span><br><span class="line">--proxy-client-key-file=&lt;path to aggregator proxy key&gt;</span><br></pre></td></tr></table></figure></p>
 <p><strong>官方警告: 除非你了解保护 CA 使用的风险和机制, 否则不要在不通上下文中重用已经使用过的 CA</strong></p>
 <p>如果 kube-proxy 没有和 API server 运行在同一台主机上，那么需要确保启用了如下 apiserver 标记：<code>--enable-aggregator-routing=true</code></p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br></pre></td><td class="code"><pre><span class="line">客户端 ---发起请求---&gt; 代理 ---Add Header:发起请求---&gt; kube-apiserver</span><br><span class="line">                   (客户端证书)                        (服务端证书)</span><br><span class="line">```                   </span><br><span class="line"></span><br><span class="line">kube-apiserver 代理根证书(客户端证书)</span><br><span class="line"></span><br><span class="line">用在`requestheader-client-ca-file`配置选项中, kube-apiserver 使用该证书来验证客户端证书是否为自己所签发</span><br><span class="line"></span><br><span class="line">- /etc/kubernetes/pki/front-proxy-ca.crt</span><br><span class="line">- /etc/kubernetes/pki/front-proxy-ca.key</span><br><span class="line"></span><br><span class="line">由此根证书签发的证书只有一组:</span><br><span class="line"></span><br><span class="line">代理层(如汇聚层aggregator)使用此套代理证书来向 kube-apiserver 请求认证</span><br><span class="line"></span><br><span class="line">1. 代理端使用的客户端证书, 用作代用户与 kube-apiserver 认证</span><br><span class="line">- /etc/kubernetes/pki/front-proxy-client.crt</span><br><span class="line">- /etc/kubernetes/pki/front-proxy-client.key</span><br><span class="line"></span><br><span class="line">参考文档:</span><br><span class="line">- kube-apiserver 配置参数: [https://kubernetes.io/docs/reference/command-line-tools-reference/kube-apiserver](https://kubernetes.io/docs/reference/command-line-tools-reference/kube-apiserver)</span><br><span class="line">- 使用汇聚层扩展 Kubernetes API: [https://kubernetes.io/docs/concepts/extend-kubernetes/api-extension/apiserver-aggregation](https://kubernetes.io/docs/concepts/extend-kubernetes/api-extension/apiserver-aggregation/)</span><br><span class="line">- 配置汇聚层: [https://kubernetes.io/docs/tasks/access-kubernetes-api/configure-aggregation-layer](https://kubernetes.io/docs/tasks/access-kubernetes-api/configure-aggregation-layer/)</span><br><span class="line"></span><br><span class="line">至此, 刨除代理专用的证书外, 还剩下 16-4=12 个文件</span><br><span class="line"></span><br><span class="line">### etcd 集群根证书</span><br><span class="line">etcd集群所用到的证书都保存在`/etc/kubernetes/pki/etcd`这路径下, 很明显, 这一套证书是用来专门给etcd集群服务使用的, 设计以下证书文件</span><br><span class="line"></span><br><span class="line">etcd 集群根证书CA(etcd 所用到的所有证书的签发机构)</span><br><span class="line">- /etc/kubernetes/pki/etcd/ca.crt</span><br><span class="line">- /etc/kubernetes/pki/etcd/ca.key</span><br><span class="line"></span><br><span class="line">由此根证书签发机构签发的证书有:</span><br><span class="line"></span><br><span class="line">1. etcd server 持有的服务端证书</span><br><span class="line">- /etc/kubernetes/pki/etcd/server.crt</span><br><span class="line">- /etc/kubernetes/pki/etcd/server.key</span><br><span class="line"></span><br><span class="line">2. peer 集群中节点互相通信使用的客户端证书</span><br><span class="line">- /etc/kubernetes/pki/etcd/peer.crt</span><br><span class="line">- /etc/kubernetes/pki/etcd/peer.key</span><br><span class="line"></span><br><span class="line">注: Peer：对同一个etcd集群中另外一个Member的称呼</span><br><span class="line"></span><br><span class="line">3. pod 中定义 Liveness 探针使用的客户端证书</span><br><span class="line">    kubeadm 部署的 Kubernetes 集群是以 pod 的方式运行 etcd 服务的, 在该 pod 的定义中, 配置了 Liveness 探活探针</span><br><span class="line">- /etc/kubernetes/pki/etcd/healthcheck-client.crt</span><br><span class="line">- /etc/kubernetes/pki/etcd/healthcheck-client.key</span><br><span class="line">  当你 describe etcd 的 pod 时, 会看到如下一行配置:</span><br><span class="line">```bash</span><br><span class="line">Liveness:       exec [/bin/sh -ec ETCDCTL_API=3 etcdctl --endpoints=https://[127.0.0.1]:2379 --cacert=/etc/kubernetes/pki/etcd/ca.crt --cert=/etc/kubernetes/pki/etcd/healthcheck-client.crt --key=/etc/kubernetes/pki/etcd/healthcheck-client.key get foo] delay=15s timeout=15s period=10s #success=1 #failure=8</span><br></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">客户端 ---发起请求---&gt; 代理 ---Add Header:发起请求---&gt; kube-apiserver</span><br><span class="line">                   (客户端证书)                        (服务端证书)</span><br></pre></td></tr></table></figure>
+<p>kube-apiserver 代理根证书(客户端证书)</p>
+<p>用在<code>requestheader-client-ca-file</code>配置选项中, kube-apiserver 使用该证书来验证客户端证书是否为自己所签发</p>
+<ul>
+<li>/etc/kubernetes/pki/front-proxy-ca.crt</li>
+<li>/etc/kubernetes/pki/front-proxy-ca.key</li>
+</ul>
+<p>由此根证书签发的证书只有一组:</p>
+<p>代理层(如汇聚层aggregator)使用此套代理证书来向 kube-apiserver 请求认证</p>
+<ol>
+<li>代理端使用的客户端证书, 用作代用户与 kube-apiserver 认证</li>
+</ol>
+<ul>
+<li>/etc/kubernetes/pki/front-proxy-client.crt</li>
+<li>/etc/kubernetes/pki/front-proxy-client.key</li>
+</ul>
+<p>参考文档:</p>
+<ul>
+<li>kube-apiserver 配置参数: <a href="https://kubernetes.io/docs/reference/command-line-tools-reference/kube-apiserver" target="_blank" rel="external">https://kubernetes.io/docs/reference/command-line-tools-reference/kube-apiserver</a></li>
+<li>使用汇聚层扩展 Kubernetes API: <a href="https://kubernetes.io/docs/concepts/extend-kubernetes/api-extension/apiserver-aggregation/" target="_blank" rel="external">https://kubernetes.io/docs/concepts/extend-kubernetes/api-extension/apiserver-aggregation</a></li>
+<li>配置汇聚层: <a href="https://kubernetes.io/docs/tasks/access-kubernetes-api/configure-aggregation-layer/" target="_blank" rel="external">https://kubernetes.io/docs/tasks/access-kubernetes-api/configure-aggregation-layer</a></li>
+</ul>
+<p>至此, 刨除代理专用的证书外, 还剩下 16-4=12 个文件</p>
+<h3 id="etcd-集群根证书"><a href="#etcd-集群根证书" class="headerlink" title="etcd 集群根证书"></a>etcd 集群根证书</h3><p>etcd集群所用到的证书都保存在<code>/etc/kubernetes/pki/etcd</code>这路径下, 很明显, 这一套证书是用来专门给etcd集群服务使用的, 设计以下证书文件</p>
+<p>etcd 集群根证书CA(etcd 所用到的所有证书的签发机构)</p>
+<ul>
+<li>/etc/kubernetes/pki/etcd/ca.crt</li>
+<li>/etc/kubernetes/pki/etcd/ca.key</li>
+</ul>
+<p>由此根证书签发机构签发的证书有:</p>
+<ol>
+<li>etcd server 持有的服务端证书</li>
+</ol>
+<ul>
+<li>/etc/kubernetes/pki/etcd/server.crt</li>
+<li>/etc/kubernetes/pki/etcd/server.key</li>
+</ul>
+<ol>
+<li>peer 集群中节点互相通信使用的客户端证书</li>
+</ol>
+<ul>
+<li>/etc/kubernetes/pki/etcd/peer.crt</li>
+<li>/etc/kubernetes/pki/etcd/peer.key</li>
+</ul>
+<p>注: Peer：对同一个etcd集群中另外一个Member的称呼</p>
+<ol>
+<li>pod 中定义 Liveness 探针使用的客户端证书<br> kubeadm 部署的 Kubernetes 集群是以 pod 的方式运行 etcd 服务的, 在该 pod 的定义中, 配置了 Liveness 探活探针</li>
+</ol>
+<ul>
+<li>/etc/kubernetes/pki/etcd/healthcheck-client.crt</li>
+<li>/etc/kubernetes/pki/etcd/healthcheck-client.key<br>当你 describe etcd 的 pod 时, 会看到如下一行配置:<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Liveness:       <span class="built_in">exec</span> [/bin/sh -ec ETCDCTL_API=3 etcdctl --endpoints=https://[127.0.0.1]:2379 --cacert=/etc/kubernetes/pki/etcd/ca.crt --cert=/etc/kubernetes/pki/etcd/healthcheck-client.crt --key=/etc/kubernetes/pki/etcd/healthcheck-client.key get foo] delay=15s timeout=15s period=10s <span class="comment">#success=1 #failure=8</span></span><br></pre></td></tr></table></figure>
+</li>
+</ul>
 <ol>
 <li>配置在 kube-apiserver 中用来与 etcd server 做双向认证的客户端证书</li>
 </ol>
