@@ -5,7 +5,7 @@
   <link href="/atom.xml" rel="self"/>
   
   <link href="http://icyxp.github.io/"/>
-  <updated>2018-12-11T07:33:09.000Z</updated>
+  <updated>2018-12-11T07:39:09.000Z</updated>
   <id>http://icyxp.github.io/</id>
   
   <author>
@@ -20,7 +20,7 @@
     <link href="http://icyxp.github.io//blog/2018/12/k8s-kubeadm-ca-upgdate.html"/>
     <id>http://icyxp.github.io//blog/2018/12/k8s-kubeadm-ca-upgdate.html</id>
     <published>2018-12-11T12:00:00.000Z</published>
-    <updated>2018-12-11T07:33:09.000Z</updated>
+    <updated>2018-12-11T07:39:09.000Z</updated>
     
     <content type="html">&lt;h2 id=&quot;kubeadm证书过期时间调整&quot;&gt;&lt;a href=&quot;#kubeadm证书过期时间调整&quot; class=&quot;headerlink&quot; title=&quot;kubeadm证书过期时间调整&quot;&gt;&lt;/a&gt;kubeadm证书过期时间调整&lt;/h2&gt;&lt;blockquote&gt;
 &lt;p&gt; kubeadm 默认证书为一年，一年过期后，会导致api service不可用，使用过程中会出现：x509: certificate has expired or is not yet valid&lt;/p&gt;
