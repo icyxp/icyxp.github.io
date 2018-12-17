@@ -132,21 +132,21 @@ Hostname
 
 172.19.170.183
 master-1
-私有安装keepalived + haproxy
+私有云安装keepalived + haproxy
 
 
 172.19.170.184
 master-2
-私有安装keepalived + haproxy
+私有云安装keepalived + haproxy
 
 
 172.19.170.185
 master-3
-私有安装keepalived + haproxy
+私有云安装keepalived + haproxy
 
 
 172.19.170.186
-node-1">
+nod">
 <meta property="og:type" content="article">
 <meta property="og:title" content="使用Kubeadm 1.11.x 部署多Master集群">
 <meta property="og:url" content="http://icyxp.github.io/blog/2018/12/k8s-kubeadm-ha-1-11-x.html">
@@ -163,22 +163,22 @@ Hostname
 
 172.19.170.183
 master-1
-私有安装keepalived + haproxy
+私有云安装keepalived + haproxy
 
 
 172.19.170.184
 master-2
-私有安装keepalived + haproxy
+私有云安装keepalived + haproxy
 
 
 172.19.170.185
 master-3
-私有安装keepalived + haproxy
+私有云安装keepalived + haproxy
 
 
 172.19.170.186
-node-1">
-<meta property="og:updated_time" content="2018-12-17T13:52:43.000Z">
+nod">
+<meta property="og:updated_time" content="2018-12-17T14:00:31.000Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="使用Kubeadm 1.11.x 部署多Master集群">
 <meta name="twitter:description" content="环境介绍
@@ -193,21 +193,21 @@ Hostname
 
 172.19.170.183
 master-1
-私有安装keepalived + haproxy
+私有云安装keepalived + haproxy
 
 
 172.19.170.184
 master-2
-私有安装keepalived + haproxy
+私有云安装keepalived + haproxy
 
 
 172.19.170.185
 master-3
-私有安装keepalived + haproxy
+私有云安装keepalived + haproxy
 
 
 172.19.170.186
-node-1">
+nod">
 
 
 
@@ -554,7 +554,7 @@ node-1">
                   <span class="post-meta-item-text">字数统计&#58;</span>
                 
                 <span title="字数统计">
-                  4,779 字
+                  4,782 字
                 </span>
               
 
@@ -603,17 +603,17 @@ node-1">
 <tr>
 <td style="text-align:left">172.19.170.183</td>
 <td style="text-align:left">master-1</td>
-<td style="text-align:left">私有安装keepalived + haproxy</td>
+<td style="text-align:left">私有云安装keepalived + haproxy</td>
 </tr>
 <tr>
 <td style="text-align:left">172.19.170.184</td>
 <td style="text-align:left">master-2</td>
-<td style="text-align:left">私有安装keepalived + haproxy</td>
+<td style="text-align:left">私有云安装keepalived + haproxy</td>
 </tr>
 <tr>
 <td style="text-align:left">172.19.170.185</td>
 <td style="text-align:left">master-3</td>
-<td style="text-align:left">私有安装keepalived + haproxy</td>
+<td style="text-align:left">私有云安装keepalived + haproxy</td>
 </tr>
 <tr>
 <td style="text-align:left">172.19.170.186</td>
@@ -674,7 +674,7 @@ node-1">
 <h3 id="获取加入master集群命令"><a href="#获取加入master集群命令" class="headerlink" title="获取加入master集群命令"></a>获取加入master集群命令</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">kubeadm token create --print-join-command</span><br></pre></td></tr></table></figure>
 <h2 id="初始化所有kubernetes-node"><a href="#初始化所有kubernetes-node" class="headerlink" title="初始化所有kubernetes node"></a>初始化所有kubernetes node</h2><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">docker pull registry.cn-hangzhou.aliyuncs.com/google_containers/pause:3.1</span><br><span class="line">docker tag registry.cn-hangzhou.aliyuncs.com/google_containers/pause:3.1  k8s.gcr.io/pause:3.1</span><br><span class="line"></span><br><span class="line"><span class="comment"># 拉取calico网络对应需要的镜像，拉取比教缓慢</span></span><br><span class="line">docker pull quay.io/calico/typha:v3.2.4</span><br><span class="line">docker pull quay.io/calico/node:v3.2.4</span><br><span class="line">docker pull quay.io/calico/cni:v3.2.4</span><br><span class="line"></span><br><span class="line"><span class="comment"># 加入集群</span></span><br><span class="line">kubeadm join 172.19.170.100:8443 --token mrvxeb.mfr1wx6upq5bbwqt --discovery-token-ca-cert-hash sha256:8ee893d8bf69f1f622f55a983f1401a9f2a236ffa9248894cb614c972de47f48</span><br></pre></td></tr></table></figure>
 <blockquote>
-<p><strong><code>可以在master机器上查看对应的node状态</code></strong></p>
+<p>可以在master机器上查看对应的node状态</p>
 </blockquote>
 <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">kubectl get node</span><br><span class="line">kubectl get pod -n kube-system</span><br></pre></td></tr></table></figure>
 <h2 id="测试"><a href="#测试" class="headerlink" title="测试"></a>测试</h2><h3 id="测试应用和dns是否正常"><a href="#测试应用和dns是否正常" class="headerlink" title="测试应用和dns是否正常"></a>测试应用和dns是否正常</h3><blockquote>
@@ -712,7 +712,7 @@ node-1">
   <p><span>本文标题:</span><a href="/blog/2018/12/k8s-kubeadm-ha-1-11-x.html">使用Kubeadm 1.11.x 部署多Master集群</a></p>
   <p><span>文章作者:</span><a href="/" title="访问 icyboy 的个人博客">icyboy</a></p>
   <p><span>发布时间:</span>2018年12月17日 - 21:00</p>
-  <p><span>最后更新:</span>2018年12月17日 - 21:52</p>
+  <p><span>最后更新:</span>2018年12月17日 - 22:00</p>
   <p><span>原始链接:</span><a href="/blog/2018/12/k8s-kubeadm-ha-1-11-x.html" title="使用Kubeadm 1.11.x 部署多Master集群">http://icyxp.github.io/blog/2018/12/k8s-kubeadm-ha-1-11-x.html</a>
     <span class="copy-path"  title="点击复制文章链接"><i class="fa fa-clipboard" data-clipboard-text="http://icyxp.github.io/blog/2018/12/k8s-kubeadm-ha-1-11-x.html"  aria-label="复制成功！"></i></span>
   </p>

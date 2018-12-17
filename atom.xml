@@ -5,7 +5,7 @@
   <link href="/atom.xml" rel="self"/>
   
   <link href="http://icyxp.github.io/"/>
-  <updated>2018-12-17T13:52:43.000Z</updated>
+  <updated>2018-12-17T14:00:31.000Z</updated>
   <id>http://icyxp.github.io/</id>
   
   <author>
@@ -20,7 +20,7 @@
     <link href="http://icyxp.github.io//blog/2018/12/k8s-kubeadm-ha-1-11-x.html"/>
     <id>http://icyxp.github.io//blog/2018/12/k8s-kubeadm-ha-1-11-x.html</id>
     <published>2018-12-17T13:00:00.000Z</published>
-    <updated>2018-12-17T13:52:43.000Z</updated>
+    <updated>2018-12-17T14:00:31.000Z</updated>
     
     <content type="html">&lt;h2 id=&quot;环境介绍&quot;&gt;&lt;a href=&quot;#环境介绍&quot; class=&quot;headerlink&quot; title=&quot;环境介绍&quot;&gt;&lt;/a&gt;环境介绍&lt;/h2&gt;&lt;table&gt;
 &lt;thead&gt;
@@ -34,17 +34,17 @@
 &lt;tr&gt;
 &lt;td style=&quot;text-align:left&quot;&gt;172.19.170.183&lt;/td&gt;
 &lt;td style=&quot;text-align:left&quot;&gt;master-1&lt;/td&gt;
-&lt;td style=&quot;text-align:left&quot;&gt;私有安装keepalived + haproxy&lt;/td&gt;
+&lt;td style=&quot;text-align:left&quot;&gt;私有云安装keepalived + haproxy&lt;/td&gt;
 &lt;/tr&gt;
 &lt;tr&gt;
 &lt;td style=&quot;text-align:left&quot;&gt;172.19.170.184&lt;/td&gt;
 &lt;td style=&quot;text-align:left&quot;&gt;master-2&lt;/td&gt;
-&lt;td style=&quot;text-align:left&quot;&gt;私有安装keepalived + haproxy&lt;/td&gt;
+&lt;td style=&quot;text-align:left&quot;&gt;私有云安装keepalived + haproxy&lt;/td&gt;
 &lt;/tr&gt;
 &lt;tr&gt;
 &lt;td style=&quot;text-align:left&quot;&gt;172.19.170.185&lt;/td&gt;
 &lt;td style=&quot;text-align:left&quot;&gt;master-3&lt;/td&gt;
-&lt;td style=&quot;text-align:left&quot;&gt;私有安装keepalived + haproxy&lt;/td&gt;
+&lt;td style=&quot;text-align:left&quot;&gt;私有云安装keepalived + haproxy&lt;/td&gt;
 &lt;/tr&gt;
 &lt;tr&gt;
 &lt;td style=&quot;text-align:left&quot;&gt;172.19.170.186&lt;/td&gt;
@@ -105,7 +105,7 @@
 &lt;h3 id=&quot;获取加入master集群命令&quot;&gt;&lt;a href=&quot;#获取加入master集群命令&quot; class=&quot;headerlink&quot; title=&quot;获取加入master集群命令&quot;&gt;&lt;/a&gt;获取加入master集群命令&lt;/h3&gt;&lt;figure class=&quot;highlight bash&quot;&gt;&lt;table&gt;&lt;tr&gt;&lt;td class=&quot;gutter&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;1&lt;/span&gt;&lt;br&gt;&lt;/pre&gt;&lt;/td&gt;&lt;td class=&quot;code&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;kubeadm token create --print-join-command&lt;/span&gt;&lt;br&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/figure&gt;
 &lt;h2 id=&quot;初始化所有kubernetes-node&quot;&gt;&lt;a href=&quot;#初始化所有kubernetes-node&quot; class=&quot;headerlink&quot; title=&quot;初始化所有kubernetes node&quot;&gt;&lt;/a&gt;初始化所有kubernetes node&lt;/h2&gt;&lt;figure class=&quot;highlight bash&quot;&gt;&lt;table&gt;&lt;tr&gt;&lt;td class=&quot;gutter&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;1&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;2&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;3&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;4&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;5&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;6&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;7&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;8&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;9&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;10&lt;/span&gt;&lt;br&gt;&lt;/pre&gt;&lt;/td&gt;&lt;td class=&quot;code&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;docker pull registry.cn-hangzhou.aliyuncs.com/google_containers/pause:3.1&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;docker tag registry.cn-hangzhou.aliyuncs.com/google_containers/pause:3.1  k8s.gcr.io/pause:3.1&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;&lt;span class=&quot;comment&quot;&gt;# 拉取calico网络对应需要的镜像，拉取比教缓慢&lt;/span&gt;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;docker pull quay.io/calico/typha:v3.2.4&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;docker pull quay.io/calico/node:v3.2.4&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;docker pull quay.io/calico/cni:v3.2.4&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;&lt;span class=&quot;comment&quot;&gt;# 加入集群&lt;/span&gt;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;kubeadm join 172.19.170.100:8443 --token mrvxeb.mfr1wx6upq5bbwqt --discovery-token-ca-cert-hash sha256:8ee893d8bf69f1f622f55a983f1401a9f2a236ffa9248894cb614c972de47f48&lt;/span&gt;&lt;br&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/figure&gt;
 &lt;blockquote&gt;
-&lt;p&gt;&lt;strong&gt;&lt;code&gt;可以在master机器上查看对应的node状态&lt;/code&gt;&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;可以在master机器上查看对应的node状态&lt;/p&gt;
 &lt;/blockquote&gt;
 &lt;figure class=&quot;highlight bash&quot;&gt;&lt;table&gt;&lt;tr&gt;&lt;td class=&quot;gutter&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;1&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;2&lt;/span&gt;&lt;br&gt;&lt;/pre&gt;&lt;/td&gt;&lt;td class=&quot;code&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;kubectl get node&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;kubectl get pod -n kube-system&lt;/span&gt;&lt;br&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/figure&gt;
 &lt;h2 id=&quot;测试&quot;&gt;&lt;a href=&quot;#测试&quot; class=&quot;headerlink&quot; title=&quot;测试&quot;&gt;&lt;/a&gt;测试&lt;/h2&gt;&lt;h3 id=&quot;测试应用和dns是否正常&quot;&gt;&lt;a href=&quot;#测试应用和dns是否正常&quot; class=&quot;headerlink&quot; title=&quot;测试应用和dns是否正常&quot;&gt;&lt;/a&gt;测试应用和dns是否正常&lt;/h3&gt;&lt;blockquote&gt;
@@ -129,17 +129,17 @@
 &lt;tr&gt;
 &lt;td style=&quot;text-align:left&quot;&gt;172.19.170.183&lt;/td&gt;
 &lt;td style=&quot;text-align:left&quot;&gt;master-1&lt;/td&gt;
-&lt;td style=&quot;text-align:left&quot;&gt;私有安装keepalived + haproxy&lt;/td&gt;
+&lt;td style=&quot;text-align:left&quot;&gt;私有云安装keepalived + haproxy&lt;/td&gt;
 &lt;/tr&gt;
 &lt;tr&gt;
 &lt;td style=&quot;text-align:left&quot;&gt;172.19.170.184&lt;/td&gt;
 &lt;td style=&quot;text-align:left&quot;&gt;master-2&lt;/td&gt;
-&lt;td style=&quot;text-align:left&quot;&gt;私有安装keepalived + haproxy&lt;/td&gt;
+&lt;td style=&quot;text-align:left&quot;&gt;私有云安装keepalived + haproxy&lt;/td&gt;
 &lt;/tr&gt;
 &lt;tr&gt;
 &lt;td style=&quot;text-align:left&quot;&gt;172.19.170.185&lt;/td&gt;
 &lt;td style=&quot;text-align:left&quot;&gt;master-3&lt;/td&gt;
-&lt;td style=&quot;text-align:left&quot;&gt;私有安装keepalived + haproxy&lt;/td&gt;
+&lt;td style=&quot;text-align:left&quot;&gt;私有云安装keepalived + haproxy&lt;/td&gt;
 &lt;/tr&gt;
 &lt;tr&gt;
 &lt;td style=&quot;text-align:left&quot;&gt;172.19.170.186&lt;/td&gt;
