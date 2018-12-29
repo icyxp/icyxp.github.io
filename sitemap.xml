@@ -2,6 +2,13 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   
   <url>
+    <loc>http://icyxp.github.io/blog/2018/12/k8s-kubeadm-etcd-ha-1-11-x.html</loc>
+    
+    <lastmod>2018-12-29T05:26:15.000Z</lastmod>
+    
+  </url>
+  
+  <url>
     <loc>http://icyxp.github.io/blog/2018/12/k8s-kubeadm-ha-1-12-x.html</loc>
     
     <lastmod>2018-12-19T03:31:11.000Z</lastmod>
