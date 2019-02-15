@@ -2,6 +2,27 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   
   <url>
+    <loc>http://icyxp.github.io/blog/2018/12/k8s-kubeadm-ha-1-12-x.html</loc>
+    
+    <lastmod>2019-02-15T06:43:19.000Z</lastmod>
+    
+  </url>
+  
+  <url>
+    <loc>http://icyxp.github.io/blog/2019/02/k8s-kubeadm-ha-1-13-x.html</loc>
+    
+    <lastmod>2019-02-15T06:42:21.000Z</lastmod>
+    
+  </url>
+  
+  <url>
+    <loc>http://icyxp.github.io/blog/2018/12/k8s-kubeadm-etcd-ha-1-11-x.html</loc>
+    
+    <lastmod>2019-02-15T06:36:22.000Z</lastmod>
+    
+  </url>
+  
+  <url>
     <loc>http://icyxp.github.io/blog/2019/02/k8s-scheduler.html</loc>
     
     <lastmod>2019-02-14T10:28:24.000Z</lastmod>
@@ -19,20 +40,6 @@
     <loc>http://icyxp.github.io/pro/k8s/index.html</loc>
     
     <lastmod>2019-02-14T09:27:42.000Z</lastmod>
-    
-  </url>
-  
-  <url>
-    <loc>http://icyxp.github.io/blog/2018/12/k8s-kubeadm-etcd-ha-1-11-x.html</loc>
-    
-    <lastmod>2018-12-29T05:26:15.000Z</lastmod>
-    
-  </url>
-  
-  <url>
-    <loc>http://icyxp.github.io/blog/2018/12/k8s-kubeadm-ha-1-12-x.html</loc>
-    
-    <lastmod>2018-12-19T03:31:11.000Z</lastmod>
     
   </url>
   
