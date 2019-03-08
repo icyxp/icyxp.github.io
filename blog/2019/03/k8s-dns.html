@@ -107,7 +107,7 @@
 
 
 
-  <meta name="keywords" content="golang,go,升级," />
+  <meta name="keywords" content="k8s,kubedns,coredns," />
 
 
 
@@ -120,37 +120,19 @@
 
 
 
-<meta name="description" content="前提
-目前本地Linux (Centos 6.x) 编译环境还滞留在1.8.x上，为了提升go性能，想将go升级到最新版，但在升级过程中遇到如下问题，故此记录下！忘后续的go友能跳过此坑！
-
-问题描述在Centos 6.x 升级go 1.10.x过程中遇到如下问题：
-
-step1.  下载go 1.10.x 源码
-step2.  解压，进入go/src
-step3.  执行./all.bash">
+<meta name="description" content="前言我们可以通过 Service 生成的ClusterIP(VIP)来访问 Pod 提供的服务，但是在使用的时候还有一个问题：我们怎么知道某个应用的 VIP 呢？比如我们有两个应用，一个是 api 应用，一个是 db 应用，两个应用都是通过Deployment进行管理的，并且都通过 Service 暴露出了端口提供服务。api 需要连接到 db 这个应用，我们只知道 db 应用的名称和 db 对应">
 <meta property="og:type" content="article">
-<meta property="og:title" content="Centos 6.x 上升级go 1.10.3">
-<meta property="og:url" content="http://icyxp.github.io/blog/2018/07/go-升级go1-10-x问题.html">
+<meta property="og:title" content="kubernetes内部DNS剖析">
+<meta property="og:url" content="http://icyxp.github.io/blog/2019/03/k8s-dns.html">
 <meta property="og:site_name" content="CloudNative 架构">
-<meta property="og:description" content="前提
-目前本地Linux (Centos 6.x) 编译环境还滞留在1.8.x上，为了提升go性能，想将go升级到最新版，但在升级过程中遇到如下问题，故此记录下！忘后续的go友能跳过此坑！
-
-问题描述在Centos 6.x 升级go 1.10.x过程中遇到如下问题：
-
-step1.  下载go 1.10.x 源码
-step2.  解压，进入go/src
-step3.  执行./all.bash">
-<meta property="og:updated_time" content="2018-07-18T13:41:55.000Z">
+<meta property="og:description" content="前言我们可以通过 Service 生成的ClusterIP(VIP)来访问 Pod 提供的服务，但是在使用的时候还有一个问题：我们怎么知道某个应用的 VIP 呢？比如我们有两个应用，一个是 api 应用，一个是 db 应用，两个应用都是通过Deployment进行管理的，并且都通过 Service 暴露出了端口提供服务。api 需要连接到 db 这个应用，我们只知道 db 应用的名称和 db 对应">
+<meta property="og:image" content="http://icyxp.github.io/images/k8s/kubedns.jpg">
+<meta property="og:image" content="http://icyxp.github.io/images/k8s/dns.png">
+<meta property="og:updated_time" content="2019-03-08T09:19:41.000Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="Centos 6.x 上升级go 1.10.3">
-<meta name="twitter:description" content="前提
-目前本地Linux (Centos 6.x) 编译环境还滞留在1.8.x上，为了提升go性能，想将go升级到最新版，但在升级过程中遇到如下问题，故此记录下！忘后续的go友能跳过此坑！
-
-问题描述在Centos 6.x 升级go 1.10.x过程中遇到如下问题：
-
-step1.  下载go 1.10.x 源码
-step2.  解压，进入go/src
-step3.  执行./all.bash">
+<meta name="twitter:title" content="kubernetes内部DNS剖析">
+<meta name="twitter:description" content="前言我们可以通过 Service 生成的ClusterIP(VIP)来访问 Pod 提供的服务，但是在使用的时候还有一个问题：我们怎么知道某个应用的 VIP 呢？比如我们有两个应用，一个是 api 应用，一个是 db 应用，两个应用都是通过Deployment进行管理的，并且都通过 Service 暴露出了端口提供服务。api 需要连接到 db 这个应用，我们只知道 db 应用的名称和 db 对应">
+<meta name="twitter:image" content="http://icyxp.github.io/images/k8s/kubedns.jpg">
 
 
 
@@ -180,13 +162,13 @@ step3.  执行./all.bash">
 
 
 
-  <link rel="canonical" href="http://icyxp.github.io/blog/2018/07/go-升级go1-10-x问题.html"/>
+  <link rel="canonical" href="http://icyxp.github.io/blog/2019/03/k8s-dns.html"/>
 
 
 
 
 
-  <title>Centos 6.x 上升级go 1.10.3 | CloudNative 架构</title>
+  <title>kubernetes内部DNS剖析 | CloudNative 架构</title>
   
 
 
@@ -370,7 +352,7 @@ step3.  执行./all.bash">
   
   
   <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://icyxp.github.io/blog/2018/07/go-升级go1-10-x问题.html">
+    <link itemprop="mainEntityOfPage" href="http://icyxp.github.io/blog/2019/03/k8s-dns.html">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="name" content="icyboy">
@@ -387,7 +369,7 @@ step3.  执行./all.bash">
 
         
         
-          <h2 class="post-title" itemprop="name headline">Centos 6.x 上升级go 1.10.3</h2>
+          <h2 class="post-title" itemprop="name headline">kubernetes内部DNS剖析</h2>
         
 
         <div class="post-meta">
@@ -399,8 +381,8 @@ step3.  执行./all.bash">
               
                 <span class="post-meta-item-text">发表于</span>
               
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-07-18T20:30:00+08:00">
-                2018-07-18
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2019-03-08T18:00:00+08:00">
+                2019-03-08
               </time>
             
 
@@ -422,8 +404,19 @@ step3.  执行./all.bash">
               
               
                 <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/golang/" itemprop="url" rel="index">
-                    <span itemprop="name">golang</span>
+                  <a href="/categories/kubernetes/" itemprop="url" rel="index">
+                    <span itemprop="name">kubernetes</span>
+                  </a>
+                </span>
+
+                
+                
+                  ， 
+                
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/kubernetes/dns/" itemprop="url" rel="index">
+                    <span itemprop="name">dns</span>
                   </a>
                 </span>
 
@@ -440,8 +433,8 @@ step3.  执行./all.bash">
                 <span class="post-meta-item-icon">
                   <i class="fa fa-comment-o"></i>
                 </span>
-                <a href="/blog/2018/07/go-升级go1-10-x问题.html#comments" itemprop="discussionUrl">
-                  <span class="post-comments-count valine-comment-count" data-xid="/blog/2018/07/go-升级go1-10-x问题.html" itemprop="commentCount"></span>
+                <a href="/blog/2019/03/k8s-dns.html#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count valine-comment-count" data-xid="/blog/2019/03/k8s-dns.html" itemprop="commentCount"></span>
                 </a>
               </span>
             
@@ -449,7 +442,7 @@ step3.  执行./all.bash">
 
           
           
-             <span id="/blog/2018/07/go-升级go1-10-x问题.html" class="leancloud_visitors" data-flag-title="Centos 6.x 上升级go 1.10.3">
+             <span id="/blog/2019/03/k8s-dns.html" class="leancloud_visitors" data-flag-title="kubernetes内部DNS剖析">
                <span class="post-meta-divider">|</span>
                <span class="post-meta-item-icon">
                  <i class="fa fa-eye"></i>
@@ -475,7 +468,7 @@ step3.  执行./all.bash">
                   <span class="post-meta-item-text">字数统计&#58;</span>
                 
                 <span title="字数统计">
-                  661 字
+                  3,537 字
                 </span>
               
 
@@ -491,7 +484,7 @@ step3.  执行./all.bash">
                   <span class="post-meta-item-text">阅读时长 &asymp;</span>
                 
                 <span title="阅读时长">
-                  3 分钟
+                  15 分钟
                 </span>
               
             </div>
@@ -512,26 +505,68 @@ step3.  执行./all.bash">
       
 
       
-        <h2 id="前提"><a href="#前提" class="headerlink" title="前提"></a>前提</h2><blockquote>
-<p>目前本地Linux (Centos 6.x) 编译环境还滞留在1.8.x上，为了提升go性能，想将go升级到最新版，但在升级过程中遇到如下问题，故此记录下！忘后续的go友能跳过此坑！</p>
-</blockquote>
-<h2 id="问题描述"><a href="#问题描述" class="headerlink" title="问题描述"></a>问题描述</h2><p>在Centos 6.x 升级go 1.10.x过程中遇到如下问题：</p>
+        <h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>我们可以通过 Service 生成的<code>ClusterIP(VIP)</code>来访问 Pod 提供的服务，但是在使用的时候还有一个问题：我们怎么知道某个应用的 VIP 呢？比如我们有两个应用，一个是 api 应用，一个是 db 应用，两个应用都是通过<code>Deployment</code>进行管理的，并且都通过 Service 暴露出了端口提供服务。api 需要连接到 db 这个应用，我们只知道 db 应用的名称和 db 对应的 Service 的名称，但是并不知道它的 VIP 地址，我们前面的 Service 课程中是不是学习到我们通过<code>ClusterIP</code>就可以访问到后面的<code>Pod</code>服务，如果我们知道了 VIP 的地址是不是就行了？</p>
+<h2 id="apiserver"><a href="#apiserver" class="headerlink" title="apiserver"></a>apiserver</h2><p>我们知道可以从 apiserver 中直接查询获取到对应 service 的后端 Endpoints信息，所以最简单的办法是从 apiserver 中直接查询，如果偶尔一个特殊的应用，我们通过<code>apiserver</code>去查询到<code>Service</code>后面的 <code>Endpoints</code>直接使用是没问题的，但是如果每个应用都在启动的时候去查询依赖的服务，这不但增加了应用的复杂度，这也导致了我们的应用需要依赖<code>Kubernetes</code>了，耦合度太高了，不具有通用性。<br><a id="more"></a></p>
+<h2 id="环境变量"><a href="#环境变量" class="headerlink" title="环境变量"></a>环境变量</h2><p>为了解决上面的问题，在之前的版本中，Kubernetes 采用了环境变量的方法，每个 Pod 启动的时候，会通过环境变量设置所有服务的 IP 和 port 信息，这样 Pod 中的应用可以通过读取环境变量来获取依赖服务的地址信息，这种方法使用起来相对简单，但是有一个很大的问题就是依赖的服务必须在 Pod 启动之前就存在，不然是不会被注入到环境变量中的。比如我们首先创建一个 Nginx 服务：(test-nginx.yaml)<br><figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">apiVersion:</span> apps/v1beta1</span><br><span class="line"><span class="attr">kind:</span> Deployment</span><br><span class="line"><span class="attr">metadata:</span></span><br><span class="line"><span class="attr">  name:</span> nginx-deploy</span><br><span class="line"><span class="attr">  labels:</span></span><br><span class="line"><span class="attr">    k8s-app:</span> nginx-demo</span><br><span class="line"><span class="attr">spec:</span></span><br><span class="line"><span class="attr">  replicas:</span> <span class="number">2</span></span><br><span class="line"><span class="attr">  template:</span></span><br><span class="line"><span class="attr">    metadata:</span></span><br><span class="line"><span class="attr">      labels:</span></span><br><span class="line"><span class="attr">        app:</span> nginx</span><br><span class="line"><span class="attr">    spec:</span></span><br><span class="line"><span class="attr">      containers:</span></span><br><span class="line"><span class="attr">      - name:</span> nginx</span><br><span class="line"><span class="attr">        image:</span> nginx:<span class="number">1.7</span><span class="number">.9</span></span><br><span class="line"><span class="attr">        ports:</span></span><br><span class="line"><span class="attr">        - containerPort:</span> <span class="number">80</span></span><br><span class="line"></span><br><span class="line"><span class="meta">---</span></span><br><span class="line"><span class="attr">apiVersion:</span> v1</span><br><span class="line"><span class="attr">kind:</span> Service</span><br><span class="line"><span class="attr">metadata:</span></span><br><span class="line"><span class="attr">  name:</span> nginx-service</span><br><span class="line"><span class="attr">  labels:</span></span><br><span class="line"><span class="attr">    name:</span> nginx-service</span><br><span class="line"><span class="attr">spec:</span></span><br><span class="line"><span class="attr">  ports:</span></span><br><span class="line"><span class="attr">  - port:</span> <span class="number">5000</span></span><br><span class="line"><span class="attr">    targetPort:</span> <span class="number">80</span></span><br><span class="line"><span class="attr">  selector:</span></span><br><span class="line"><span class="attr">    app:</span> nginx</span><br></pre></td></tr></table></figure></p>
+<p>创建上面的服务：<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">$ kubectl create <span class="_">-f</span> <span class="built_in">test</span>-nginx.yaml</span><br><span class="line">deployment.apps <span class="string">"nginx-deploy"</span> created</span><br><span class="line">service <span class="string">"nginx-service"</span> created</span><br><span class="line">$ kubectl get pods</span><br><span class="line">NAME                                      READY     STATUS    RESTARTS   AGE</span><br><span class="line">...</span><br><span class="line">nginx-deploy-75675f5897-47h4t             1/1       Running   0          53s</span><br><span class="line">nginx-deploy-75675f5897-mmm8w             1/1       Running   0          53s</span><br><span class="line">...</span><br><span class="line">$ kubectl get svc</span><br><span class="line">NAME            TYPE        CLUSTER-IP       EXTERNAL-IP   PORT(S)          AGE</span><br><span class="line">...</span><br><span class="line">nginx-service   ClusterIP   10.107.225.42    &lt;none&gt;        5000/TCP         1m</span><br><span class="line">...</span><br></pre></td></tr></table></figure></p>
+<p>我们可以看到两个 Pod 和一个名为 nginx-service 的服务创建成功了，该 Service 监听的端口是 5000，同时它会把流量转发给它代理的所有 Pod（我们这里就是拥有 app: nginx 标签的两个 Pod）。</p>
+<p>现在我们再来创建一个普通的 Pod，观察下该 Pod 中的环境变量是否包含上面的 nginx-service 的服务信息：（test-pod.yaml）<br><figure class="highlight yml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">apiVersion:</span> v1</span><br><span class="line"><span class="attr">kind:</span> Pod</span><br><span class="line"><span class="attr">metadata:</span></span><br><span class="line"><span class="attr">  name:</span> test-pod</span><br><span class="line"><span class="attr">spec:</span></span><br><span class="line"><span class="attr">  containers:</span></span><br><span class="line"><span class="attr">  - name:</span> test-service-pod</span><br><span class="line"><span class="attr">    image:</span> busybox</span><br><span class="line"><span class="attr">    command:</span> [<span class="string">"/bin/sh"</span>, <span class="string">"-c"</span>, <span class="string">"env"</span>]</span><br></pre></td></tr></table></figure></p>
+<p>然后创建该测试的 Pod：<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">$ kubectl create <span class="_">-f</span> <span class="built_in">test</span>-pod.yaml</span><br><span class="line">pod <span class="string">"test-pod"</span> created</span><br></pre></td></tr></table></figure></p>
+<p>等 Pod 创建完成后，我们查看日志信息：<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line">$ kubectl logs <span class="built_in">test</span>-pod</span><br><span class="line">...</span><br><span class="line">KUBERNETES_PORT=tcp://10.96.0.1:443</span><br><span class="line">KUBERNETES_SERVICE_PORT=443</span><br><span class="line">HOSTNAME=<span class="built_in">test</span>-pod</span><br><span class="line">HOME=/root</span><br><span class="line">NGINX_SERVICE_PORT_5000_TCP_ADDR=10.107.225.42</span><br><span class="line">NGINX_SERVICE_PORT_5000_TCP_PORT=5000</span><br><span class="line">NGINX_SERVICE_PORT_5000_TCP_PROTO=tcp</span><br><span class="line">KUBERNETES_PORT_443_TCP_ADDR=10.96.0.1</span><br><span class="line">PATH=/usr/<span class="built_in">local</span>/sbin:/usr/<span class="built_in">local</span>/bin:/usr/sbin:/usr/bin:/sbin:/bin</span><br><span class="line">NGINX_SERVICE_SERVICE_HOST=10.107.225.42</span><br><span class="line">NGINX_SERVICE_PORT_5000_TCP=tcp://10.107.225.42:5000</span><br><span class="line">KUBERNETES_PORT_443_TCP_PORT=443</span><br><span class="line">KUBERNETES_PORT_443_TCP_PROTO=tcp</span><br><span class="line">NGINX_SERVICE_SERVICE_PORT=5000</span><br><span class="line">NGINX_SERVICE_PORT=tcp://10.107.225.42:5000</span><br><span class="line">KUBERNETES_SERVICE_PORT_HTTPS=443</span><br><span class="line">KUBERNETES_PORT_443_TCP=tcp://10.96.0.1:443</span><br><span class="line">KUBERNETES_SERVICE_HOST=10.96.0.1</span><br><span class="line">PWD=/</span><br><span class="line">...</span><br></pre></td></tr></table></figure></p>
+<p>我们可以看到打印了很多环境变量处理，其中就包括我们刚刚创建的 nginx-service 这个服务，有 HOST、PORT、PROTO、ADDR 等，也包括其他已经存在的 Service 的环境变量，现在如果我们需要在这个 Pod 里面访问 nginx-service 的服务，我们是不是可以直接通过 NGINX_SERVICE_SERVICE_HOST 和 NGINX_SERVICE_SERVICE_PORT 就可以了，但是我们也知道如果这个 Pod 启动起来的时候如果 nginx-service 服务还没启动起来，在环境变量中我们是无法获取到这些信息的，当然我们可以通过 <code>initContainer</code>之类的方法来确保 nginx-service 启动后再启动 Pod，但是这种方法毕竟增加了 Pod 启动的复杂性，所以这不是最优的方法。</p>
+<h2 id="KubeDNS"><a href="#KubeDNS" class="headerlink" title="KubeDNS"></a>KubeDNS</h2><p>由于上面环境变量这种方式的局限性，我们需要一种更加智能的方案，其实我们可以自己想学一种比较理想的方案：那就是可以直接使用 Service 的名称，因为 Service 的名称不会变化，我们不需要去关心分配的<code>ClusterIP</code>的地址，因为这个地址并不是固定不变的，所以如果我们直接使用 Service 的名字，然后对应的<code>ClusterIP</code>地址的转换能够自动完成就很好了。我们知道名字和 IP 直接的转换是不是和我们平时访问的网站非常类似啊？他们之间的转换功能通过<code>DNS</code>就可以解决了，同样的，<code>Kubernetes</code>也提供了<code>DNS</code><br>的方案来解决上面的服务发现的问题。</p>
+<h3 id="kubedns-介绍"><a href="#kubedns-介绍" class="headerlink" title="kubedns 介绍"></a>kubedns 介绍</h3><p>DNS 服务不是一个独立的系统服务，而是作为一种 addon 插件而存在，也就是说不是 Kubernetes 集群必须安装的，当然我们强烈推荐安装，可以将这个插件看成是一种运行在 Kubernetes 集群上的一直比较特殊的应用，现在比较推荐的两个插件：<code>kube-dns</code> 和 <code>CoreDNS</code>。我们在前面使用<code>kubeadm</code>搭建集群的时候直接安装的 kube-dns 插件，如果不记得了可以回头去看一看。当然如果我们想使用<code>CoreDNS</code> 的话也很方便，只需要执行下面的命令即可：<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ kubeadm init --feature-gates=CoreDNS=<span class="literal">true</span></span><br></pre></td></tr></table></figure></p>
+<p>Kubernetes DNS pod 中包括 3 个容器，可以通过 kubectl 工具查看：<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">$ kubectl get pods -n kube-system</span><br><span class="line">NAME                                    READY     STATUS    RESTARTS   AGE</span><br><span class="line">...</span><br><span class="line">kube-dns-5868f69869-zp5kz               3/3       Running   0          19d</span><br><span class="line">...</span><br></pre></td></tr></table></figure></p>
+<p>READY 一栏可以看到是 3/3，用如下命令可以很清楚的看到 kube-dns 包含的3个容器：<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ kubectl describe pod kube-dns-5868f69869-zp5kz -n kube-system</span><br></pre></td></tr></table></figure></p>
+<p>kube-dns、dnsmasq-nanny、sidecar 这3个容器分别实现了什么功能?</p>
 <ul>
-<li>step1.  下载go 1.10.x 源码</li>
-<li>step2.  解压，进入go/src</li>
-<li>step3.  执行./all.bash</li>
+<li>kubedns: kubedns 基于 SkyDNS 库，通过 apiserver 监听 Service 和 Endpoints 的变更事件同时也同步到本地 Cache，实现了一个实时的 Kubernetes 集群内 Service 和 Pod 的 DNS服务发现</li>
+<li>dnsmasq: dsnmasq 容器则实现了 DNS 的缓存功能(在内存中预留一块默认大小为 1G 的地方，保存当前最常用的 DNS 查询记录，如果缓存中没有要查找的记录，它会到 kubedns 中查询，并把结果缓存起来)，通过监听 ConfigMap 来动态生成配置</li>
+<li>sider: sidecar 容器实现了可配置的 DNS 探测，并采集对应的监控指标暴露出来供 prometheus 使用<br><img src="/images/k8s/kubedns.jpg" alt="kubedns"></li>
 </ul>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br></pre></td><td class="code"><pre><span class="line">Building Go cmd/dist using /root/go1.4.</span><br><span class="line">Building Go toolchain1 using /root/go1.4.</span><br><span class="line">Building Go bootstrap cmd/go (go_bootstrap) using Go toolchain1.</span><br><span class="line">Building Go toolchain2 using go_bootstrap and Go toolchain1.</span><br><span class="line">Building Go toolchain3 using go_bootstrap and Go toolchain2.</span><br><span class="line">Building packages and commands <span class="keyword">for</span> linux/amd64.</span><br><span class="line"></span><br><span class="line"><span class="comment">##### Testing packages.</span></span><br><span class="line">.... 过程略长，特此省略</span><br><span class="line">ok      cmd/internal/src    0.001s</span><br><span class="line">ok      cmd/internal/<span class="built_in">test</span>2json    0.097s</span><br><span class="line">ok      cmd/link    1.988s</span><br><span class="line">ok      cmd/link/internal/ld    43.529s</span><br><span class="line">ok      cmd/nm    3.417s</span><br><span class="line">ok      cmd/objdump    1.588s</span><br><span class="line">ok      cmd/pack    1.217s</span><br><span class="line">ok      cmd/trace    0.007s</span><br><span class="line">--- FAIL: TestObjFile (0.01s)</span><br><span class="line">    binutils_test.go:231: SourceLine: unexpected error write |1: broken pipe</span><br><span class="line">FAIL</span><br><span class="line">FAIL    cmd/vendor/github.com/google/pprof/internal/binutils    0.018s</span><br><span class="line">ok      cmd/vendor/github.com/google/pprof/internal/driver    12.194s</span><br><span class="line">ok      cmd/vendor/github.com/google/pprof/internal/elfexec    0.002s</span><br><span class="line">ok      cmd/vendor/github.com/google/pprof/internal/graph    0.002s</span><br><span class="line">ok      cmd/vendor/github.com/google/pprof/internal/measurement    0.002s</span><br><span class="line">ok      cmd/vendor/github.com/google/pprof/internal/report    0.048s</span><br><span class="line">ok      cmd/vendor/github.com/google/pprof/internal/symbolizer    0.004s</span><br><span class="line">ok      cmd/vendor/github.com/google/pprof/internal/symbolz    0.004s</span><br><span class="line">ok      cmd/vendor/github.com/google/pprof/profile    0.045s</span><br><span class="line">ok      cmd/vendor/github.com/ianlancetaylor/demangle    0.012s</span><br><span class="line">ok      cmd/vendor/golang.org/x/arch/arm/armasm    0.007s</span><br><span class="line">ok      cmd/vendor/golang.org/x/arch/arm64/arm64asm    0.043s</span><br><span class="line">ok      cmd/vendor/golang.org/x/arch/ppc64/ppc64asm    0.003s</span><br><span class="line">ok      cmd/vendor/golang.org/x/arch/x86/x86asm    0.064s</span><br><span class="line">ok      cmd/vet    1.205s</span><br><span class="line">ok      cmd/vet/internal/cfg    0.002s</span><br><span class="line">2018/07/18 17:59:22 Failed: <span class="built_in">exit</span> status 1</span><br></pre></td></tr></table></figure>
-<a id="more"></a>
-<h2 id="问题分析"><a href="#问题分析" class="headerlink" title="问题分析"></a>问题分析</h2><p>为什么在执行binutils_test.go 会Failed，最终查看代码原因是因为如下命令引起：<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">120807 3650  execve(<span class="string">"/usr/bin/addr2line"</span>, [<span class="string">"/usr/bin/addr2line"</span>, <span class="string">"-aif"</span>, <span class="string">"-e"</span>, <span class="string">"testdata/exe_linux_64"</span>], [/* 15 vars */] &lt;unfinished ...&gt;</span><br></pre></td></tr></table></figure></p>
-<p>有关生成此命令的源代码可查看如下地址：<a href="https://github.com/google/pprof/blob/a74ae6fb3cd7047c79272e3ea0814b08154a2d3c/internal/binutils/addr2liner.go#L92" target="_blank" rel="external">addr2line</a></p>
-<p>add2line文件来自于包：binutils</p>
-<p>执行命令失败，是因为在CentOS 6.x上，binutils的版本是2.20，<a href="https://sourceware.org/git/gitweb.cgi?p=binutils-gdb.git;a=blob_plain;f=binutils/NEWS;hb=refs/tags/binutils-2_27" target="_blank" rel="external">参考文献</a> ，然后addr2line命令中的-a参数在binutils 2.21版中才添加</p>
-<p>因此，为了解决这个问题，我从源码重新进行编译binutils并将其构建的二进制文件添加到PATH中，然后运行测试，并成功通过。</p>
-<p>编译安装binutils过程如下：<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">wget https://ftp.gnu.org/gnu/binutils/binutils-2.27.tar.gz</span><br><span class="line">tar zxvf binutils-2.27.tar.gz </span><br><span class="line"><span class="built_in">cd</span> binutils-2.27</span><br><span class="line">./configure --prefix=/usr</span><br><span class="line">make </span><br><span class="line">make install</span><br></pre></td></tr></table></figure></p>
+<h3 id="对-Pod-的影响"><a href="#对-Pod-的影响" class="headerlink" title="对 Pod 的影响"></a>对 Pod 的影响</h3><p>DNS Pod 具有静态 IP 并作为 Kubernetes 服务暴露出来。该静态 IP 被分配后，kubelet 会将使用 <code>--cluster-dns = &lt;dns-service-ip&gt;</code>参数配置的 DNS 传递给每个容器。DNS 名称也需要域名，本地域可以使用参数<code>--cluster-domain = &lt;default-local-domain&gt;</code>在<code>kubelet</code>中配置。</p>
+<p>我们说<code>dnsmasq</code>容器通过监听<code>ConfigMap</code>来动态生成配置，可以自定义存根域和上下游域名服务器。</p>
+<p>例如，下面的<code>ConfigMap</code>建立了一个 DNS 配置，它具有一个单独的存根域和两个上游域名服务器：<br><figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">apiVersion:</span> v1</span><br><span class="line"><span class="attr">kind:</span> ConfigMap</span><br><span class="line"><span class="attr">metadata:</span></span><br><span class="line"><span class="attr">  name:</span> kube-dns</span><br><span class="line"><span class="attr">  namespace:</span> kube-system</span><br><span class="line"><span class="attr">data:</span></span><br><span class="line"><span class="attr">  stubDomains:</span> <span class="string">|</span><br><span class="line">    &#123;"jiunile.local": ["192.168.3.108"]&#125;</span><br><span class="line"></span><span class="attr">  upstreamNameservers:</span> <span class="string">|</span><br><span class="line">    ["8.8.8.8", "8.8.4.4"]</span></span><br></pre></td></tr></table></figure></p>
+<p>如何已使用coredns，则通过修改coredns配置信息来调整，如下：<br><figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">apiVersion:</span> v1</span><br><span class="line"><span class="attr">data:</span></span><br><span class="line"><span class="attr">  Corefile:</span> <span class="string">|</span><br><span class="line">    .:53 &#123;</span><br><span class="line">        errors</span><br><span class="line">        health</span><br><span class="line">        kubernetes cluster.local in-addr.arpa ip6.arpa &#123;</span><br><span class="line">           pods insecure</span><br><span class="line">           # 用于解析外部主机主机（外部服务）</span><br><span class="line">           upstream 114.114.114.114 223.5.5.5</span><br><span class="line">           fallthrough in-addr.arpa ip6.arpa</span><br><span class="line">        &#125;</span><br><span class="line">        prometheus :9153</span><br><span class="line">        # 任何不在集群域内的查询将转发到预定义的解析器，默认：/etc/resolv.conf；</span><br><span class="line">        # 在coredns "Deployment"资源中"dnsPolicy"设置为"Default"，即提供dns服务的pod从所在节点继承/etc/resolv.conf，如果节点的上游解析地址与"upstream"一致，则设置任意一个参数即可</span><br><span class="line">        proxy . /etc/resolv.conf</span><br><span class="line">        #proxy . 114.114.114.114 223.5.5.5</span><br><span class="line">        cache 30</span><br><span class="line">        reload</span><br><span class="line">    &#125;</span><br><span class="line">    # 自定义dns记录，对应kube-dns中的stubdomains；</span><br><span class="line">    # 每条记录，单独设置1各zone</span><br><span class="line">    jiunile.local:53 &#123;</span><br><span class="line">        errors</span><br><span class="line">        cache 30</span><br><span class="line">        proxy . 192.168.3.108</span><br><span class="line">    &#125;</span><br><span class="line"></span><span class="attr">kind:</span> ConfigMap</span><br><span class="line"><span class="attr">metadata:</span></span><br><span class="line"><span class="attr">  creationTimestamp:</span> <span class="number">2019</span><span class="bullet">-01</span><span class="bullet">-25</span>T10:<span class="number">19</span>:<span class="number">17</span>Z</span><br><span class="line"><span class="attr">  name:</span> coredns</span><br><span class="line"><span class="attr">  namespace:</span> kube-system</span><br><span class="line"><span class="attr">  resourceVersion:</span> <span class="string">"2637234"</span></span><br><span class="line"><span class="attr">  selfLink:</span> /api/v1/namespaces/kube-system/configmaps/coredns</span><br><span class="line"><span class="attr">  uid:</span> ac30bd36<span class="bullet">-208</span>a<span class="bullet">-11e9</span><span class="bullet">-999</span>a<span class="bullet">-02390</span>c37278e</span><br></pre></td></tr></table></figure></p>
+<p>按如上说明，具有.jiunile.local后缀的 DNS 请求被转发到 DNS 192.168.3.108。Google 公共 DNS 服务器 为上游查询提供服务。下表描述了具有特定域名的查询如何映射到它们的目标 DNS 服务器：<br>| 域名      | 响应查询的服务器  |<br>| :——– | :——– |<br>| kubernetes.default.svc.cluster.local  | kube-dns |<br>| jiunile.local | 自定义 DNS (192.168.3.108) |<br>| widget.com | 上游 DNS (114.114.114.114, 223.5.5.5其中之一) |</p>
+<p>另外我们还可以为每个 Pod 设置 DNS 策略。 当前 Kubernetes 支持两种 Pod 特定的 DNS 策略：“Default” 和 “ClusterFirst”。 可以通过<code>dnsPolicy</code>标志来指定这些策略。</p>
 <blockquote>
-<p><strong><code>特此说明，在Centos 7.x 上能成功避免此坑！！</code></strong></p>
+<p><strong><code>注意</code></strong>：Default 不是默认的 DNS 策略。如果没有显式地指定dnsPolicy，将会使用 ClusterFirst</p>
 </blockquote>
+<ul>
+<li>如果<code>dnsPolicy</code>被设置为 “Default”，则名字解析配置会继承自 Pod 运行所在的节点。自定义上游域名服务器和存根域不能够与这个策略一起使用</li>
+<li>如果<code>dnsPolicy</code>被设置为 “ClusterFirst”，这就要依赖于是否配置了存根域和上游 DNS 服务器<ul>
+<li>未进行自定义配置：没有匹配上配置的集群域名后缀的任何请求，例如 “www.kubernetes.io”，将会被转发到继承自节点的上游域名服务器。<ul>
+<li>进行自定义配置：如果配置了存根域和上游 DNS 服务器（类似于 前面示例 配置的内容），DNS 查询将基于下面的流程对请求进行路由：<ul>
+<li>查询首先被发送到<code>kube-dns</code>中的 DNS 缓存层。</li>
+<li>从缓存层，检查请求的后缀，并根据下面的情况转发到对应的 DNS 上：<ul>
+<li>具有集群后缀的名字（例如 “.cluster.local”）：请求被发送到 kubedns。</li>
+<li>具有存根域后缀的名字（例如 “.jiunile.local”）：请求被发送到配置的自定义 DNS 解析器（例如：监听在 192.168.3.108）。</li>
+<li>未能匹配上后缀的名字（例如 “widget.com”）：请求被转发到上游 DNS（例如：Google 公共 DNS 服务器，114.114.114.114 和 223.5.5.5）。<br><img src="/images/k8s/dns.png" alt="dns"></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<h3 id="域名格式"><a href="#域名格式" class="headerlink" title="域名格式"></a>域名格式</h3><p>我们前面说了如果我们建立的 Service 如果支持域名形式进行解析，就可以解决我们的服务发现的功能，那么利用 kubedns 可以将 Service 生成怎样的 DNS 记录呢？</p>
+<ul>
+<li>普通的 Service：会生成<code>servicename.namespace.svc.cluster.local</code>的域名，会解析到 Service 对应的 ClusterIP 上，在 Pod 之间的调用可以简写成 <code>servicename.namespace</code>，如果处于同一个命名空间下面，甚至可以只写成 servicename 即可访问</li>
+<li>Headless Service：无头服务，就是把 clusterIP 设置为 None 的，会被解析为指定 Pod 的 IP 列表，同样还可以通过<code>podname.servicename.namespace.svc.cluster.local</code>访问到具体的某一个 Pod。</li>
+</ul>
+<blockquote>
+<p>CoreDNS 实现的功能和 KubeDNS 是一致的，不过<code>CoreDNS</code>的所有功能都集成在了同一个容器中，在最新版的1.11.0版本中官方已经推荐使用 <code>CoreDNS</code>了，大家也可以安装CoreDNS来代替 KubeDNS，其他使用方法都是一致的：<a href="https://coredns.io/" target="_blank" rel="external">https://coredns.io/</a></p>
+</blockquote>
+<h2 id="测试"><a href="#测试" class="headerlink" title="测试"></a>测试</h2><p>现在我们来使用一个简单 Pod 来测试下 Service 的域名访问：<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">$ kubectl run --rm -i --tty <span class="built_in">test</span>-dns --image=busybox /bin/sh</span><br><span class="line">If you don<span class="string">'t see a command prompt, try pressing enter.</span><br><span class="line">/ # cat /etc/resolv.conf</span><br><span class="line">nameserver 10.96.0.10</span><br><span class="line">search default.svc.cluster.local svc.cluster.local cluster.local</span><br><span class="line">options ndots:5</span><br><span class="line">/ #</span></span><br></pre></td></tr></table></figure></p>
+<p>我们进入到 Pod 中，查看/etc/resolv.conf中的内容，可以看到 nameserver 的地址10.96.0.10，该 IP 地址即是在安装 kubedns 插件的时候集群分配的一个固定的静态 IP 地址，我们可以通过下面的命令进行查看：<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">$ kubectl get svc kube-dns -n kube-system</span><br><span class="line">NAME       TYPE        CLUSTER-IP   EXTERNAL-IP   PORT(S)         AGE</span><br><span class="line">kube-dns   ClusterIP   10.96.0.10   &lt;none&gt;        53/UDP,53/TCP   62d</span><br></pre></td></tr></table></figure></p>
+<p>也就是说我们这个 Pod 现在默认的 nameserver 就是 kubedns 的地址，现在我们来访问下前面我们创建的 nginx-service 服务：<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">/ <span class="comment"># wget -q -O- nginx-service.default.svc.cluster.local</span></span><br></pre></td></tr></table></figure></p>
+<p>可以看到上面我们使用 wget 命令去访问 nginx-service 服务的域名的时候被 hang 住了，没有得到期望的结果，这是因为上面我们建立 Service 的时候暴露的端口是 5000：<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line">/ <span class="comment"># wget -q -O- nginx-service.default.svc.cluster.local:5000</span></span><br><span class="line">&lt;!DOCTYPE html&gt;</span><br><span class="line">&lt;html&gt;</span><br><span class="line">&lt;head&gt;</span><br><span class="line">&lt;title&gt;Welcome to nginx!&lt;/title&gt;</span><br><span class="line">&lt;style&gt;</span><br><span class="line">    body &#123;</span><br><span class="line">        width: 35em;</span><br><span class="line">        margin: 0 auto;</span><br><span class="line">        font-family: Tahoma, Verdana, Arial, sans-serif;</span><br><span class="line">    &#125;</span><br><span class="line">&lt;/style&gt;</span><br><span class="line">&lt;/head&gt;</span><br><span class="line">&lt;body&gt;</span><br><span class="line">&lt;h1&gt;Welcome to nginx!&lt;/h1&gt;</span><br><span class="line">&lt;p&gt;If you see this page, the nginx web server is successfully installed and</span><br><span class="line">working. Further configuration is required.&lt;/p&gt;</span><br><span class="line"></span><br><span class="line">&lt;p&gt;For online documentation and support please refer to</span><br><span class="line">&lt;a href=<span class="string">"http://nginx.org/"</span>&gt;nginx.org&lt;/a&gt;.&lt;br/&gt;</span><br><span class="line">Commercial support is available at</span><br><span class="line">&lt;a href=<span class="string">"http://nginx.com/"</span>&gt;nginx.com&lt;/a&gt;.&lt;/p&gt;</span><br><span class="line"></span><br><span class="line">&lt;p&gt;&lt;em&gt;Thank you <span class="keyword">for</span> using nginx.&lt;/em&gt;&lt;/p&gt;</span><br><span class="line">&lt;/body&gt;</span><br><span class="line">&lt;/html&gt;</span><br></pre></td></tr></table></figure></p>
+<p>加上 5000 端口，就正常访问到服务，再试一试访问：nginx-service.default.svc、nginx-service.default、nginx-service，不出意外这些域名都可以正常访问到期望的结果。</p>
+<p>到这里我们是不是就实现了在集群内部通过 Service 的域名形式进行互相通信了，大家下去试着看看访问不同 namespace 下面的服务呢？</p>
+<p>来源：阳明的博客</p>
 
       
     </div>
@@ -596,11 +631,11 @@ step3.  执行./all.bash">
       
         <div class="post-tags">
           
-            <a href="/tags/golang/" rel="tag"># golang</a>
+            <a href="/tags/k8s/" rel="tag"># k8s</a>
           
-            <a href="/tags/go/" rel="tag"># go</a>
+            <a href="/tags/kubedns/" rel="tag"># kubedns</a>
           
-            <a href="/tags/升级/" rel="tag"># 升级</a>
+            <a href="/tags/coredns/" rel="tag"># coredns</a>
           
         </div>
       
@@ -613,8 +648,8 @@ step3.  执行./all.bash">
         <div class="post-nav">
           <div class="post-nav-next post-nav-item">
             
-              <a href="/blog/2017/08/log-logstash-filter.html" rel="next" title="Logstash filter插件开发">
-                <i class="fa fa-chevron-left"></i> Logstash filter插件开发
+              <a href="/blog/2019/03/k8s-best-practices.html" rel="next" title="kuberenetes 操作实践">
+                <i class="fa fa-chevron-left"></i> kuberenetes 操作实践
               </a>
             
           </div>
@@ -622,10 +657,6 @@ step3.  执行./all.bash">
           <span class="post-nav-divider"></span>
 
           <div class="post-nav-prev post-nav-item">
-            
-              <a href="/blog/2018/07/docker-java与docker的那点事.html" rel="prev" title="Java和Docker限制的那些事儿">
-                Java和Docker限制的那些事儿 <i class="fa fa-chevron-right"></i>
-              </a>
             
           </div>
         </div>
@@ -815,7 +846,7 @@ step3.  执行./all.bash">
             
 
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#前提"><span class="nav-number">1.</span> <span class="nav-text">前提</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#问题描述"><span class="nav-number">2.</span> <span class="nav-text">问题描述</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#问题分析"><span class="nav-number">3.</span> <span class="nav-text">问题分析</span></a></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#前言"><span class="nav-number">1.</span> <span class="nav-text">前言</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#apiserver"><span class="nav-number">2.</span> <span class="nav-text">apiserver</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#环境变量"><span class="nav-number">3.</span> <span class="nav-text">环境变量</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#KubeDNS"><span class="nav-number">4.</span> <span class="nav-text">KubeDNS</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#kubedns-介绍"><span class="nav-number">4.1.</span> <span class="nav-text">kubedns 介绍</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#对-Pod-的影响"><span class="nav-number">4.2.</span> <span class="nav-text">对 Pod 的影响</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#域名格式"><span class="nav-number">4.3.</span> <span class="nav-text">域名格式</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#测试"><span class="nav-number">5.</span> <span class="nav-text">测试</span></a></li></ol></div>
             
 
           </div>
