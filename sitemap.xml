@@ -2,6 +2,13 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   
   <url>
+    <loc>http://icyxp.github.io/blog/2018/03/k8s-dns.html</loc>
+    
+    <lastmod>2019-03-08T09:16:40.000Z</lastmod>
+    
+  </url>
+  
+  <url>
     <loc>http://icyxp.github.io/blog/2019/03/k8s-best-practices.html</loc>
     
     <lastmod>2019-03-08T03:02:01.000Z</lastmod>
