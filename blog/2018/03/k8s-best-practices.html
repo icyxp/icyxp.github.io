@@ -1,0 +1,1561 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next mist use-motion" lang="zh-Hans">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+<script src="//cdn.bootcss.com/pace/1.0.2/pace.min.js"></script>
+<link href="//cdn.bootcss.com/pace/1.0.2/themes/pink/pace-theme-flash.css" rel="stylesheet">
+<script>
+    (function () {
+        if ('whosyourdaddy2019') {
+            if (prompt('请输入文章密码') !== 'whosyourdaddy2019') {
+                alert('密码错误！');
+                if (history.length === 1) {
+                    location.replace("http://team.jiunile.com"); // 这里替换成你的首页
+                } else {
+                    history.back();
+                }
+            }
+        }
+    })();
+</script>
+<meta name="theme-color" content="#222">
+<style>
+    .pace .pace-progress {
+        background: #1E92FB; /*进度条颜色*/
+        height: 2px;
+    }
+    .pace .pace-progress-inner {
+         box-shadow: 0 0 10px #1E92FB, 0 0 5px     #1E92FB; /*阴影颜色*/
+    }
+    .pace .pace-activity {
+        border-top-color: #1E92FB;    /*上边框颜色*/
+        border-left-color: #1E92FB;    /*左边框颜色*/
+    }
+</style>
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+  <script>
+  (function(i,s,o,g,r,a,m){i["DaoVoiceObject"]=r;i[r]=i[r]||function(){(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;a.charset="utf-8";m.parentNode.insertBefore(a,m)})(window,document,"script",('https:' == document.location.protocol ? 'https:' : 'http:') + "//widget.daovoice.io/widget/0f81ff2f.js","daovoice")
+  daovoice('init', {
+      app_id: "2a2a668f"
+    });
+  daovoice('update');
+  </script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/favicon.ico?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon.ico?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon.ico?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/favicon.ico?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="k8s,kubernetes," />
+
+
+
+
+
+  <link rel="alternate" href="/atom.xml" title="CloudNative 架构" type="application/atom+xml" />
+
+
+
+
+
+
+<meta name="description" content="[TOC]
+常用操作命令常规命令12345678910111213141516# 设置主机名hostnamectl --static set-hostname  xxxx# 获取集群加入信息kubeadm token create --print-join-command# 设置docker仓库口令kubectl create secret docker-registry registry-sec">
+<meta property="og:type" content="article">
+<meta property="og:title" content="kuberenetes 操作实践">
+<meta property="og:url" content="http://icyxp.github.io/blog/2018/03/k8s-best-practices.html">
+<meta property="og:site_name" content="CloudNative 架构">
+<meta property="og:description" content="[TOC]
+常用操作命令常规命令12345678910111213141516# 设置主机名hostnamectl --static set-hostname  xxxx# 获取集群加入信息kubeadm token create --print-join-command# 设置docker仓库口令kubectl create secret docker-registry registry-sec">
+<meta property="og:updated_time" content="2019-04-01T01:34:55.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="kuberenetes 操作实践">
+<meta name="twitter:description" content="[TOC]
+常用操作命令常规命令12345678910111213141516# 设置主机名hostnamectl --static set-hostname  xxxx# 获取集群加入信息kubeadm token create --print-join-command# 设置docker仓库口令kubectl create secret docker-registry registry-sec">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Mist',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://icyxp.github.io/blog/2018/03/k8s-best-practices.html"/>
+
+
+
+
+
+  <title>kuberenetes 操作实践 | CloudNative 架构</title>
+  
+
+
+
+
+
+  <script type="text/javascript">
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "https://hm.baidu.com/hm.js?7bfa7aba4938440964dd1a348aed977e";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+
+
+
+  <!-- 页面点击小红心 -->
+  <script type="text/javascript" src="/js/src/love.js"></script>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+    <a href="https://github.com/icyxp"><a href="https://github.com/icyxp" class="github-corner" aria-label="View source on GitHub"><svg width="80" height="80" viewBox="0 0 250 250" style="fill:#151513; color:#fff; position: absolute; top: 0; border: 0; right: 0;" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path></svg></a><style>.github-corner:hover .octo-arm{animation:octocat-wave 560ms ease-in-out}@keyframes octocat-wave{0%,100%{transform:rotate(0)}20%,60%{transform:rotate(-25deg)}40%,80%{transform:rotate(10deg)}}@media (max-width:500px){.github-corner:hover .octo-arm{animation:none}.github-corner .octo-arm{animation:octocat-wave 560ms ease-in-out}}</style></a>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">CloudNative 架构</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <h1 class="site-subtitle" itemprop="description">CloudNative|云原生应用架构|云原生架构|容器化架构|微服务架构|平台架构|基础架构</h1>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br />
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-k8s">
+          <a href="/pro/k8s/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-heartbeat"></i> <br />
+            
+            k8s离线安装包
+          </a>
+        </li>
+      
+
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="popup-trigger">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br />
+            
+            搜索
+          </a>
+        </li>
+      
+    </ul>
+  
+
+  
+    <div class="site-search">
+      
+  <div class="popup search-popup local-search-popup">
+  <div class="local-search-header clearfix">
+    <span class="search-icon">
+      <i class="fa fa-search"></i>
+    </span>
+    <span class="popup-btn-close">
+      <i class="fa fa-times-circle"></i>
+    </span>
+    <div class="local-search-input-wrapper">
+      <input autocomplete="off"
+             placeholder="搜索..." spellcheck="false"
+             type="text" id="local-search-input">
+    </div>
+  </div>
+  <div id="local-search-result"></div>
+</div>
+
+
+
+    </div>
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://icyxp.github.io/blog/2018/03/k8s-best-practices.html">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="icyboy">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="CloudNative 架构">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h2 class="post-title" itemprop="name headline">kuberenetes 操作实践</h2>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-03-08T12:00:00+08:00">
+                2018-03-08
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/kubernetes/" itemprop="url" rel="index">
+                    <span itemprop="name">kubernetes</span>
+                  </a>
+                </span>
+
+                
+                
+                  ， 
+                
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/kubernetes/实践/" itemprop="url" rel="index">
+                    <span itemprop="name">实践</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+                <a href="/blog/2018/03/k8s-best-practices.html#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count valine-comment-count" data-xid="/blog/2018/03/k8s-best-practices.html" itemprop="commentCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+          
+             <span id="/blog/2018/03/k8s-best-practices.html" class="leancloud_visitors" data-flag-title="kuberenetes 操作实践">
+               <span class="post-meta-divider">|</span>
+               <span class="post-meta-item-icon">
+                 <i class="fa fa-eye"></i>
+               </span>
+               
+                 <span class="post-meta-item-text">热度&#58;</span>
+               
+                 <span class="leancloud-visitors-count"></span>
+		 <span>℃</span>
+             </span>
+          
+
+          
+
+          
+            <div class="post-wordcount">
+              
+                
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-file-word-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">字数统计&#58;</span>
+                
+                <span title="字数统计">
+                  6,806 字
+                </span>
+              
+
+              
+                <span class="post-meta-divider">|</span>
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-clock-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">阅读时长 &asymp;</span>
+                
+                <span title="阅读时长">
+                  34 分钟
+                </span>
+              
+            </div>
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>[TOC]</p>
+<h2 id="常用操作命令"><a href="#常用操作命令" class="headerlink" title="常用操作命令"></a>常用操作命令</h2><h3 id="常规命令"><a href="#常规命令" class="headerlink" title="常规命令"></a>常规命令</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 设置主机名</span></span><br><span class="line">hostnamectl --static <span class="built_in">set</span>-hostname  xxxx</span><br><span class="line"></span><br><span class="line"><span class="comment"># 获取集群加入信息</span></span><br><span class="line">kubeadm token create --print-join-command</span><br><span class="line"></span><br><span class="line"><span class="comment"># 设置docker仓库口令</span></span><br><span class="line">kubectl create secret docker-registry registry-secret --docker-server=registry.cn-shanghai.aliyuncs.com --docker-username=xupeng@patsnap --docker-password=patsnap2019! --docker-email=xupeng@patsnap -n ningbo</span><br><span class="line"></span><br><span class="line"><span class="comment"># etcd key 查看</span></span><br><span class="line">ETCDCTL_API=3 etcdctl \</span><br><span class="line">--endpoints=https://127.0.0.1:2379 \</span><br><span class="line">--cacert /etc/kubernetes/pki/etcd/ca.crt \</span><br><span class="line">--cert /etc/kubernetes/pki/etcd/peer.crt \</span><br><span class="line">--key /etc/kubernetes/pki/etcd/peer.key \</span><br><span class="line">get /registry/minions/ningbo-db --prefix</span><br></pre></td></tr></table></figure>
+<a id="more"></a>
+<h3 id="kubernetes-node-常用操作命令"><a href="#kubernetes-node-常用操作命令" class="headerlink" title="kubernetes node 常用操作命令"></a>kubernetes node 常用操作命令</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#设置node 不可调度</span></span><br><span class="line">kubectl cordon k8s-node-1</span><br><span class="line"></span><br><span class="line"><span class="comment">#驱逐node 上的pod </span></span><br><span class="line">kubectl drain k8s-node-1 --delete-local-data --force --ignore-daemonsets</span><br><span class="line"></span><br><span class="line"><span class="comment">#node 重新加入</span></span><br><span class="line">kubectl uncordon k8s-node-1</span><br><span class="line"></span><br><span class="line"><span class="comment">#删除node</span></span><br><span class="line">kubectl delete node k8s-node-1</span><br><span class="line"></span><br><span class="line"><span class="comment">#设置master不进行调度</span></span><br><span class="line">kubectl taint nodes k8s-master node-role.kubernetes.io/master=:NoSchedule</span><br><span class="line"></span><br><span class="line"><span class="comment"># 设置label</span></span><br><span class="line">kubectl label node k8s-master project=ipms-app</span><br><span class="line"></span><br><span class="line"><span class="comment">#设置role标签</span></span><br><span class="line">kubectl label node k8s-node-01 node-role.kubernetes.io/node=</span><br><span class="line"></span><br><span class="line"><span class="comment">#删除标签</span></span><br><span class="line">kubectl label nodes k8s-master mtype-</span><br></pre></td></tr></table></figure>
+<h2 id="如何调整网络插件"><a href="#如何调整网络插件" class="headerlink" title="如何调整网络插件"></a>如何调整网络插件</h2><blockquote>
+<p>calico网络插件调整，原本没使用IPIP模式，现在需要使用CrossSubnet</p>
+</blockquote>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#先删除原本的calico插件</span></span><br><span class="line">kubectl delete <span class="_">-f</span> calico.yml</span><br><span class="line"></span><br><span class="line"><span class="comment">#修改calico.yaml，将CALICO_IPV4POOL_IPIP调整为CrossSubnet</span></span><br><span class="line"></span><br><span class="line"><span class="comment">#启用calico插件</span></span><br><span class="line">kubectl apply <span class="_">-f</span> calico.yaml</span><br></pre></td></tr></table></figure>
+<h2 id="如何将kubeProxy的iptables修改为ipvs"><a href="#如何将kubeProxy的iptables修改为ipvs" class="headerlink" title="如何将kubeProxy的iptables修改为ipvs"></a>如何将kubeProxy的iptables修改为ipvs</h2><h3 id="1-加载内核模块"><a href="#1-加载内核模块" class="headerlink" title="1. 加载内核模块"></a>1. 加载内核模块</h3><p>查看内核模块是否加载<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">lsmod|grep ip_vs</span><br></pre></td></tr></table></figure></p>
+<p>如果没有加载，使用如下命令加载ipvs相关模块<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">modprobe -- ip_vs</span><br><span class="line">modprobe -- ip_vs_rr</span><br><span class="line">modprobe -- ip_vs_wrr</span><br><span class="line">modprobe -- ip_vs_sh</span><br><span class="line">modprobe -- nf_conntrack_ipv4</span><br></pre></td></tr></table></figure></p>
+<h3 id="2-更改kube-proxy配置"><a href="#2-更改kube-proxy配置" class="headerlink" title="2. 更改kube-proxy配置"></a>2. 更改kube-proxy配置</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">kubectl edit configmap kube-proxy -n kube-system</span><br></pre></td></tr></table></figure>
+<p>找到并修改如下部分的内容<br><figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">enableProfiling:</span> <span class="literal">false</span></span><br><span class="line"><span class="attr">healthzBindAddress:</span> <span class="number">0.0</span><span class="number">.0</span><span class="number">.0</span>:<span class="number">10256</span></span><br><span class="line"><span class="attr">hostnameOverride:</span> <span class="string">""</span></span><br><span class="line"><span class="attr">iptables:</span></span><br><span class="line"><span class="attr">  masqueradeAll:</span> <span class="literal">false</span></span><br><span class="line"><span class="attr">  masqueradeBit:</span> <span class="number">14</span></span><br><span class="line"><span class="attr">  minSyncPeriod:</span> <span class="number">0</span>s</span><br><span class="line"><span class="attr">  syncPeriod:</span> <span class="number">30</span>s</span><br><span class="line"><span class="attr">ipvs:</span></span><br><span class="line"><span class="attr">  excludeCIDRs:</span> <span class="literal">null</span></span><br><span class="line"><span class="attr">  minSyncPeriod:</span> <span class="number">0</span>s</span><br><span class="line"><span class="attr">  scheduler:</span> <span class="string">""</span>  <span class="comment">#=========================&gt; 为空表示默认的负载均衡算法为轮询， rr, wrr, lc, wlc, sh, dh, lblc...</span></span><br><span class="line"><span class="attr">  syncPeriod:</span> <span class="number">30</span>s</span><br><span class="line"><span class="attr">kind:</span> KubeProxyConfiguration</span><br><span class="line"><span class="attr">metricsBindAddress:</span> <span class="number">127.0</span><span class="number">.0</span><span class="number">.1</span>:<span class="number">10249</span></span><br><span class="line"><span class="attr">mode:</span> iptables   <span class="comment">#=========================&gt; 修改此处为ipvs</span></span><br><span class="line"><span class="attr">nodePortAddresses:</span> <span class="literal">null</span></span><br><span class="line"><span class="attr">oomScoreAdj:</span> <span class="bullet">-999</span></span><br><span class="line"><span class="attr">portRange:</span> <span class="string">""</span></span><br><span class="line"><span class="attr">resourceContainer:</span> /kube-proxy</span><br><span class="line"><span class="attr">udpIdleTimeout:</span> <span class="number">250</span>ms</span><br></pre></td></tr></table></figure></p>
+<p>编辑完，保存退出</p>
+<h3 id="3-删除所有kube-proxy的pod"><a href="#3-删除所有kube-proxy的pod" class="headerlink" title="3. 删除所有kube-proxy的pod"></a>3. 删除所有kube-proxy的pod</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">kubectl delete pod $(kubectl get pod -n kube-system | grep kube-proxy | awk -F <span class="string">' '</span> <span class="string">'&#123;print $1&#125;'</span>) -n kube-system</span><br></pre></td></tr></table></figure>
+<h3 id="4-查看kube-proxy的pod日志"><a href="#4-查看kube-proxy的pod日志" class="headerlink" title="4. 查看kube-proxy的pod日志"></a>4. 查看kube-proxy的pod日志</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">kubectl logs kube-proxy-xxx -n kube-system</span><br><span class="line"></span><br><span class="line"><span class="comment">#I0308 02:16:02.980965       1 server_others.go:183] Using ipvs Proxier.</span></span><br><span class="line"><span class="comment">#W0308 02:16:02.991188       1 proxier.go:356] IPVS scheduler not specified, use rr by default</span></span><br><span class="line"><span class="comment">#I0308 02:16:02.991338       1 server_others.go:210] Tearing down inactive rules.</span></span><br><span class="line"><span class="comment">#I0308 02:16:03.022123       1 server.go:448] Version: v1.11.6</span></span><br><span class="line"><span class="comment">#I0308 02:16:03.028801       1 conntrack.go:98] Set sysctl 'net/netfilter/nf_conntrack_max' to 131072</span></span><br><span class="line"><span class="comment">#I0308 02:16:03.029030       1 conntrack.go:52] Setting nf_conntrack_max to 131072</span></span><br><span class="line"><span class="comment">#I0308 02:16:03.029208       1 conntrack.go:98] Set sysctl 'net/netfilter/nf_conntrack_tcp_timeout_established' to 86400</span></span><br><span class="line"><span class="comment">#I0308 02:16:03.029296       1 conntrack.go:98] Set sysctl 'net/netfilter/nf_conntrack_tcp_timeout_close_wait' to 3600</span></span><br><span class="line"><span class="comment">#I0308 02:16:03.029639       1 config.go:102] Starting endpoints config controller</span></span><br><span class="line"><span class="comment">#I0308 02:16:03.029682       1 controller_utils.go:1025] Waiting for caches to sync for endpoints config controller</span></span><br><span class="line"><span class="comment">#I0308 02:16:03.029723       1 config.go:202] Starting service config controller</span></span><br><span class="line"><span class="comment">#I0308 02:16:03.029777       1 controller_utils.go:1025] Waiting for caches to sync for service config controller</span></span><br><span class="line"><span class="comment">#I0308 02:16:03.129930       1 controller_utils.go:1032] Caches are synced for endpoints config controller</span></span><br><span class="line"><span class="comment">#I0308 02:16:03.129931       1 controller_utils.go:1032] Caches are synced for service config controller</span></span><br><span class="line"></span><br><span class="line">看到有 Using ipvs Proxier 即表明切换成功.</span><br></pre></td></tr></table></figure>
+<h3 id="5-安装ipvsadm"><a href="#5-安装ipvsadm" class="headerlink" title="5. 安装ipvsadm"></a>5. 安装ipvsadm</h3><p>使用ipvsadm查看ipvs相关规则，如果没有这个命令可以直接yum安装<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">yum install ipvsadm</span><br></pre></td></tr></table></figure></p>
+<h2 id="kubelet-GC-机制及对应配置"><a href="#kubelet-GC-机制及对应配置" class="headerlink" title="kubelet GC 机制及对应配置"></a>kubelet GC 机制及对应配置</h2><blockquote>
+<p>可通过kubelet gc的能力来自动清理无用的container以及image，从而来释放磁盘空间。kubelet会启动两个GC，分别回收container和image。其中container的回收频率为1分钟一次，而image回收频率为2分钟一次。</p>
+</blockquote>
+<h3 id="容器GC"><a href="#容器GC" class="headerlink" title="容器GC"></a>容器GC</h3><blockquote>
+<p>退出的容器也会继续占用系统资源，比如还会在文件系统存储很多数据、docker 应用也要占用 CPU 和内存去维护这些容器。docker 本身并不会自动删除已经退出的容器，因此 kubelet 就负起了这个责任。kubelet 容器的回收是为了删除已经退出的容器以节省节点的空间，提升性能。容器 GC 虽然有利于空间和性能，但是删除容器也会导致错误现场被清理，不利于 debug 和错误定位，因此不建议把所有退出的容器都删除。因此容器的清理需要一定的策略，主要是告诉 kubelet 你要保存多少已经退出的容器。和容器 GC 有关的可以配置的 kubelet 启动参数 <code>/var/lib/kubelet/config.yaml</code></p>
+</blockquote>
+<ul>
+<li><code>MinimumGCAge</code>：container 结束多长时间之后才能够被回收，默认是一分钟</li>
+<li><code>MaxPerPodContainerCount</code>：每个 container 最终可以保存多少个已经结束的容器，默认是 1，设置为负数表示不做限制</li>
+<li><code>MaxContainerCount</code>：节点上最多能保留多少个结束的容器，默认是 -1，表示不做限制</li>
+</ul>
+<p>gc的步骤如下：</p>
+<ol>
+<li>获取可以清除的容器，这些容器都是非活动的，并且创建时间比 gcPolicy.MinAge 要早</li>
+<li>通过强制执行 gcPolicy.MaxPerPodContainer，为每个pod删除最老的死亡容器</li>
+<li>通过强制执行 gcPolicy.MaxContainers 来移除最老的死亡容器</li>
+<li>获取未准备好且不包含容器的可清除沙箱</li>
+<li>移除可移除的沙箱</li>
+</ol>
+<h3 id="镜像GC"><a href="#镜像GC" class="headerlink" title="镜像GC"></a>镜像GC</h3><blockquote>
+<p>镜像主要占用磁盘空间，虽然 docker 使用镜像分层可以让多个镜像共享存储，但是长时间运行的节点如果下载了很多镜像也会导致占用的存储空间过多。如果镜像导致磁盘被占满，会造成应用无法正常工作。docker 默认也不会做镜像清理，镜像一旦下载就会永远留在本地，除非被手动删除。其实很多镜像并没有被实际使用，这些不用的镜像继续占用空间是非常大的浪费，也是巨大的隐患，因此 kubelet 也会周期性地去清理镜像。镜像的清理和容器不同，是以占用的空间作为标准的，用户可以配置当镜像占据多大比例的存储空间时才进行清理。清理的时候会优先清理最久没有被使用的镜像，镜像被 pull 下来或者被容器使用都会更新它的最近使用时间。启动 kubelet 的时候，可以配置这些参数控制镜像清理的策略 <code>/var/lib/kubelet/config.yaml</code></p>
+</blockquote>
+<ul>
+<li><code>imageMinimumGCAge</code>：镜像最少多久没有被使用才会被清理</li>
+<li><code>imageGCHighThresholdPercent</code>：磁盘使用率的上限，当达到这一使用率的时候会触发镜像清理。默认值为 90%</li>
+<li><code>imageGCLowThresholdPercent</code>：磁盘使用率的下限，每次清理直到使用率低于这个值或者没有可以清理的镜像了才会停止.默认值为 80%</li>
+</ul>
+<p>也就是说，默认情况下，当镜像占满所在盘 90% 容量的时候，kubelet 就会进行清理，一直到镜像占用率低于 80% 为止。</p>
+<h2 id="使用kubeadm进行cluster升级"><a href="#使用kubeadm进行cluster升级" class="headerlink" title="使用kubeadm进行cluster升级"></a>使用kubeadm进行cluster升级</h2><blockquote>
+<p>使用kubeadm 安装好后kubernetes，后续如何进行升级，升级 kubernetes集群，只能逐版本升级。只能从 1.8 升级到 1.9 而不能从 1.8 直接升级到 1.10，升级步骤： 1.8—&gt;1.9.11—&gt;1.10.11—&gt;1.11.5—&gt;1.12.3</p>
+<p>需要注意的地方是，kubernetes从1.11版本开始变化比较大，CoreDNS已作为默认DNS。<br><code>/etc/systemd/system/kubelet.service.d/10-kubeadm.conf</code>中的环境变量被分配为三个文件：<code>/var/lib/kubelet/config.yaml</code> (其中cgroup驱动默认cgroupfs)、<code>/var/lib/kubelet/kubeadm-flags.env</code> (cgroup驱动默认systemd，优先权)、<code>/etc/sysconfig/kubelet</code><br>全新安装的kubernetes集群是有网络CNI配置的，升级安装的是没有CNI配置的，配置文件<code>/var/lib/kubelet/kubeadm-flags.env</code>。依赖的镜像tag抬头从<code>gcr.io/google_containers</code>变成<code>k8s.gcr.io</code>，升级基本使用gcr.io/google<em>containers，全新安装则使用<code>k8s.gcr.io</code>&gt;</em>&lt;</p>
+<p>从1.8开始为kube-proxy组件引入了IPVS模式，1.11版本开始正式支持IPVS，默认不开启，1.12以上版本默认开启，不开启则使用iptables模式</p>
+</blockquote>
+<p>开启IPVS方法如下，并加入开机启动项，ipvsadm -ln可以看到相关Service的ipvs规则<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">cat &gt; /etc/sysconfig/modules/ipvs.modules &lt;&lt;EOF</span><br><span class="line"><span class="meta">#!/bin/bash</span></span><br><span class="line">modprobe -- ip_vs</span><br><span class="line">modprobe -- ip_vs_rr</span><br><span class="line">modprobe -- ip_vs_wrr</span><br><span class="line">modprobe -- ip_vs_sh</span><br><span class="line">modprobe -- nf_conntrack_ipv4</span><br><span class="line">EOF</span><br><span class="line">chmod 755 /etc/sysconfig/modules/ipvs.modules &amp;&amp; bash /etc/sysconfig/modules/ipvs.modules &amp;&amp; lsmod | grep <span class="_">-e</span> ip_vs <span class="_">-e</span> nf_conntrack_ipv4</span><br><span class="line">yum install -y ipset ipvsadm</span><br></pre></td></tr></table></figure></p>
+<h3 id="准备升级镜像"><a href="#准备升级镜像" class="headerlink" title="准备升级镜像"></a>准备升级镜像</h3><p>提前准备好升级所需的镜像image，并打成官方标准tag。<br>master节点需要所有镜像，node节点仅需要proxy、pause镜像</p>
+<h4 id="Master节点下载各版本镜像"><a href="#Master节点下载各版本镜像" class="headerlink" title="Master节点下载各版本镜像"></a>Master节点下载各版本镜像</h4><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#1.9.11</span></span><br><span class="line"><span class="comment">#gcr.io/google_containers/kube-proxy-amd64:v1.9.11</span></span><br><span class="line"><span class="comment">#gcr.io/google_containers/kube-scheduler-amd64:v1.9.11</span></span><br><span class="line"><span class="comment">#gcr.io/google_containers/kube-controller-manager-amd64:v1.9.11</span></span><br><span class="line"><span class="comment">#gcr.io/google_containers/kube-apiserver-amd64:v1.9.11</span></span><br><span class="line"><span class="comment">#gcr.io/google_containers/etcd-amd64:3.1.11</span></span><br><span class="line"><span class="comment">#gcr.io/google_containers/k8s-dns-sidecar-amd64:1.14.7</span></span><br><span class="line"><span class="comment">#gcr.io/google_containers/k8s-dns-kube-dns-amd64:1.14.7</span></span><br><span class="line"><span class="comment">#gcr.io/google_containers/k8s-dns-dnsmasq-nanny-amd64:1.14.7</span></span><br><span class="line"><span class="comment">#gcr.io/google_containers/pause-amd64:3.0</span></span><br><span class="line"></span><br><span class="line"><span class="comment">#1.10.11</span></span><br><span class="line"><span class="comment">#gcr.io/google_containers/kube-proxy-amd64:v1.10.11</span></span><br><span class="line"><span class="comment">#gcr.io/google_containers/kube-scheduler-amd64:v1.10.11</span></span><br><span class="line"><span class="comment">#gcr.io/google_containers/kube-controller-manager-amd64:v1.10.11</span></span><br><span class="line"><span class="comment">#gcr.io/google_containers/kube-apiserver-amd64:v1.10.11</span></span><br><span class="line"><span class="comment">#gcr.io/google_containers/etcd-amd64:3.1.12</span></span><br><span class="line"><span class="comment">#gcr.io/google_containers/k8s-dns-sidecar-amd64:1.14.8</span></span><br><span class="line"><span class="comment">#gcr.io/google_containers/k8s-dns-kube-dns-amd64:1.14.8</span></span><br><span class="line"><span class="comment">#gcr.io/google_containers/k8s-dns-dnsmasq-nanny-amd64:1.14.8</span></span><br><span class="line"><span class="comment">#gcr.io/google_containers/pause-amd64:3.1</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 1.11.5</span></span><br><span class="line"><span class="comment">#k8s.gcr.io/kube-proxy-amd64:v1.11.5</span></span><br><span class="line"><span class="comment">#k8s.gcr.io/kube-scheduler-amd64:v1.11.5</span></span><br><span class="line"><span class="comment">#k8s.gcr.io/kube-controller-manager-amd64:v1.11.5</span></span><br><span class="line"><span class="comment">#k8s.gcr.io/kube-apiserver-amd64:v1.11.5</span></span><br><span class="line"><span class="comment">#k8s.gcr.io/etcd-amd64:3.2.18</span></span><br><span class="line"><span class="comment">#k8s.gcr.io/pause-amd64:3.1</span></span><br><span class="line"><span class="comment">#k8s.gcr.io/pause-amd64:3.1</span></span><br><span class="line"><span class="comment">#k8s.gcr.io/pause:3.1</span></span><br><span class="line"><span class="comment">#k8s.gcr.io/coredns:1.1.3</span></span><br><span class="line"></span><br><span class="line"><span class="comment">#1.12.3</span></span><br><span class="line"><span class="comment">#k8s.gcr.io/kube-proxy:v1.12.3</span></span><br><span class="line"><span class="comment">#k8s.gcr.io/kube-scheduler:v1.12.3</span></span><br><span class="line"><span class="comment">#k8s.gcr.io/kube-controller-manager:v1.12.3</span></span><br><span class="line"><span class="comment">#k8s.gcr.io/kube-apiserver:v1.12.3</span></span><br><span class="line"><span class="comment">#k8s.gcr.io/etcd:3.2.24</span></span><br><span class="line"><span class="comment">#k8s.gcr.io/pause:3.1</span></span><br><span class="line"><span class="comment">#k8s.gcr.io/pause:3.1</span></span><br><span class="line"><span class="comment">#k8s.gcr.io/coredns:1.2.2</span></span><br></pre></td></tr></table></figure>
+<h4 id="Node节点下载各版本镜像"><a href="#Node节点下载各版本镜像" class="headerlink" title="Node节点下载各版本镜像"></a>Node节点下载各版本镜像</h4><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#gcr.io/google_containers/kube-proxy-amd64:v1.9.11</span></span><br><span class="line"><span class="comment">#gcr.io/google_containers/kube-proxy-amd64:v1.10.11</span></span><br><span class="line"><span class="comment">#gcr.io/google_containers/kube-proxy-amd64:v1.11.5</span></span><br><span class="line"><span class="comment">#gcr.io/google_containers/kube-proxy:v1.12.3</span></span><br><span class="line"><span class="comment">#gcr.io/google_containers/pause-amd64:3.0</span></span><br><span class="line"><span class="comment">#gcr.io/google_containers/pause-amd64:3.1</span></span><br><span class="line"><span class="comment">#gcr.io/google_containers/pause:3.1 </span></span><br><span class="line"><span class="comment">#k8s.gcr.io/pause:3.1 </span></span><br><span class="line"><span class="comment">#k8s.gcr.io/pause-amd64:3.1</span></span><br></pre></td></tr></table></figure>
+<h3 id="节点升级"><a href="#节点升级" class="headerlink" title="节点升级"></a>节点升级</h3><p>为了保证业务的正常运行，首先需要把升级kubernetes的节点标记为不可调度，并且将正在运行中的容器移到其他节点（kubernetes集群自身的kube服务与网络weave是无法移走的），在升级完成后恢复调度</p>
+<p>注意：待所有节点升级到1.9版本后，才能再升级至1.10，如此往复</p>
+<h4 id="1-8-1升级到1-9-11"><a href="#1-8-1升级到1-9-11" class="headerlink" title="1.8.1升级到1.9.11"></a>1.8.1升级到1.9.11</h4><h5 id="master节点"><a href="#master节点" class="headerlink" title="master节点"></a>master节点</h5><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#设置升级docker的节点为不可调度，并且将剩余的pod驱逐，通过kubectl get nodes命令看到该节点已被标记不可调度</span></span><br><span class="line">kubectl cordon master其中一台的节点名</span><br><span class="line"></span><br><span class="line"><span class="comment">#忽略了所有的daemonset的pod，并且将剩余的pod驱逐</span></span><br><span class="line">kubectl drain master其中一台的节点名 --ignore-daemonsets --delete-local-data</span><br><span class="line"></span><br><span class="line"><span class="comment">#先升级kubeadm</span></span><br><span class="line">yum install -y kubeadm-1.9.11</span><br><span class="line"></span><br><span class="line"><span class="comment">#保持kubernetes与docker的Cgroup Driver一致。默认不调整kubernetes的cgroup驱动，查询得知为systemd</span></span><br><span class="line">docker info | grep -i cgroup</span><br><span class="line"></span><br><span class="line"><span class="comment">#docker的Cgroup Driver模式是cgroupfs则更改，systemd则不用。（通过docker info | grep Cgroup查看）</span></span><br><span class="line"><span class="comment">#sed -i 's/cgroup-driver=systemd/cgroup-driver=cgroupfs/g' /etc/systemd/system/kubelet.service.d/10-kubeadm.conf  #kubeadm在1.10版本及以下</span></span><br><span class="line"><span class="comment">#echo 'KUBELET_KUBEADM_ARGS=--cgroup-driver=cgroupfs --cni-bin-dir=/opt/cni/bin --cni-conf-dir=/etc/cni/net.d --network-plugin=cni' &gt; /var/lib/kubelet/kubeadm-flags.env  #kubeadm在1.11版本及以上</span></span><br><span class="line"></span><br><span class="line"><span class="comment">#执行升级，确保上面已经准备好镜像image</span></span><br><span class="line">kubeadm upgrade plan</span><br><span class="line">kubeadm upgrade apply v1.9.11</span><br><span class="line"><span class="comment">#看到如下，说明升级成功</span></span><br><span class="line">[upgrade/successful] SUCCESS! Your cluster was upgraded to <span class="string">"v1.9.11"</span>. Enjoy!</span><br><span class="line">[upgrade/kubelet] Now that your control plane is upgraded, please proceed with upgrading your kubelets <span class="keyword">in</span> turn.</span><br><span class="line"></span><br><span class="line"><span class="comment">#容器进行初始化，查看系统服务pod是否恢复正常运行。</span></span><br><span class="line">kubectl get pod -o wide --all-namespaces</span><br><span class="line"></span><br><span class="line"><span class="comment">#升级kubelet kubectl</span></span><br><span class="line">yum install -y kubelet-1.9.11 kubectl-1.9.11</span><br><span class="line"></span><br><span class="line"><span class="comment">#确保容器AGE在一分钟以上，再重启服务</span></span><br><span class="line">systemctl daemon-reload &amp;&amp; systemctl restart kubelet</span><br><span class="line"></span><br><span class="line"><span class="comment">#查看master节点版本已成功升级</span></span><br><span class="line">kubectl get nodes</span><br><span class="line"></span><br><span class="line"><span class="comment">#恢复调度</span></span><br><span class="line">kubectl uncordon master节点名称</span><br></pre></td></tr></table></figure>
+<h5 id="node节点"><a href="#node节点" class="headerlink" title="node节点"></a>node节点</h5><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#设置升级kubernetes的节点为不可调度，并且将剩余的pod驱逐，通过kubectl get nodes命令看到该节点已被标记不可调度</span></span><br><span class="line">kubectl cordon node其中一台的节点名</span><br><span class="line"></span><br><span class="line"><span class="comment">#忽略了所有的daemonset的pod，并且将剩余的pod驱逐</span></span><br><span class="line">kubectl drain node其中一台的节点名 --ignore-daemonsets --delete-local-data</span><br><span class="line"></span><br><span class="line"><span class="comment">#节点上执行，升级kubelet kubeadm kubectl</span></span><br><span class="line">yum install -y kubelet-1.9.11 kubectl-1.9.11 kubeadm-1.9.11</span><br><span class="line"></span><br><span class="line"><span class="comment">#保持kubernetes与docker的Cgroup Driver一致。默认不调整docker的cgroup驱动，查询得知为systemd</span></span><br><span class="line">docker info | grep -i cgroup</span><br><span class="line"></span><br><span class="line"><span class="comment">#docker的Cgroup Driver模式是cgroupfs则更改，systemd则不用。（通过docker info | grep Cgroup查看）</span></span><br><span class="line"><span class="comment">#sed -i 's/cgroup-driver=systemd/cgroup-driver=cgroupfs/g' /etc/systemd/system/kubelet.service.d/10-kubeadm.conf  #kubeadm在1.10版本及以下</span></span><br><span class="line"><span class="comment">#echo 'KUBELET_KUBEADM_ARGS=--cgroup-driver=cgroupfs --cni-bin-dir=/opt/cni/bin --cni-conf-dir=/etc/cni/net.d --network-plugin=cni' &gt; /var/lib/kubelet/kubeadm-flags.env  #kubeadm在1.11版本及以上</span></span><br><span class="line"></span><br><span class="line"><span class="comment">#重启服务</span></span><br><span class="line">systemctl daemon-reload &amp;&amp; systemctl restart kubelet</span><br><span class="line"></span><br><span class="line"><span class="comment">#恢复调度</span></span><br><span class="line">kubectl uncordon node节点名称</span><br></pre></td></tr></table></figure>
+<h4 id="1-9-11升级到1-10-11"><a href="#1-9-11升级到1-10-11" class="headerlink" title="1.9.11升级到1.10.11"></a>1.9.11升级到1.10.11</h4><h5 id="master节点-1"><a href="#master节点-1" class="headerlink" title="master节点"></a>master节点</h5><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#设置升级docker的节点为不可调度，并且将剩余的pod驱逐，通过kubectl get nodes命令看到该节点已被标记不可调度</span></span><br><span class="line">kubectl cordon master其中一台的节点名</span><br><span class="line"></span><br><span class="line"><span class="comment">#忽略了所有的daemonset的pod，并且将剩余的pod驱逐</span></span><br><span class="line">kubectl drain master其中一台的节点名 --ignore-daemonsets --delete-local-data</span><br><span class="line"></span><br><span class="line"><span class="comment">#先升级kubeadm</span></span><br><span class="line">yum install -y kubeadm-1.10.11</span><br><span class="line"></span><br><span class="line"><span class="comment">#保持kubernetes与docker的Cgroup Driver一致。默认不调整kubernetes的cgroup驱动，查询得知为systemd</span></span><br><span class="line">docker info | grep -i cgroup</span><br><span class="line"></span><br><span class="line"><span class="comment">#docker的Cgroup Driver模式是cgroupfs则更改，systemd则不用。（通过docker info | grep Cgroup查看）</span></span><br><span class="line"><span class="comment">#sed -i 's/cgroup-driver=systemd/cgroup-driver=cgroupfs/g' /etc/systemd/system/kubelet.service.d/10-kubeadm.conf  #kubeadm在1.10版本及以下</span></span><br><span class="line"><span class="comment">#echo 'KUBELET_KUBEADM_ARGS=--cgroup-driver=cgroupfs --cni-bin-dir=/opt/cni/bin --cni-conf-dir=/etc/cni/net.d --network-plugin=cni' &gt; /var/lib/kubelet/kubeadm-flags.env  #kubeadm在1.11版本及以上</span></span><br><span class="line"></span><br><span class="line"><span class="comment">#执行升级，确保上面已经准备好镜像image</span></span><br><span class="line">kubeadm upgrade plan</span><br><span class="line">kubeadm upgrade apply v1.10.11</span><br><span class="line"><span class="comment">#看到如下，说明升级成功</span></span><br><span class="line">[upgrade/successful] SUCCESS! Your cluster was upgraded to <span class="string">"v1.10.11"</span>. Enjoy!</span><br><span class="line">[upgrade/kubelet] Now that your control plane is upgraded, please proceed with upgrading your kubelets <span class="keyword">in</span> turn.</span><br><span class="line"></span><br><span class="line"><span class="comment">#容器进行初始化，查看系统服务pod是否恢复正常运行。</span></span><br><span class="line">kubectl get pod -o wide --all-namespaces</span><br><span class="line"></span><br><span class="line"><span class="comment">#升级kubelet kubectl</span></span><br><span class="line">yum install -y kubelet-1.10.11 kubectl-1.10.11</span><br><span class="line"></span><br><span class="line"><span class="comment">#确保容器AGE在一分钟以上，再重启服务</span></span><br><span class="line">systemctl daemon-reload &amp;&amp; systemctl restart kubelet</span><br><span class="line"></span><br><span class="line"><span class="comment">#查看master节点版本已成功升级</span></span><br><span class="line">kubectl get nodes</span><br><span class="line"></span><br><span class="line"><span class="comment">#恢复调度</span></span><br><span class="line">kubectl uncordon master节点名称</span><br></pre></td></tr></table></figure>
+<h5 id="node节点-1"><a href="#node节点-1" class="headerlink" title="node节点"></a>node节点</h5><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#设置升级kubernetes的节点为不可调度，并且将剩余的pod驱逐，通过kubectl get nodes命令看到该节点已被标记不可调度</span></span><br><span class="line">kubectl cordon node其中一台的节点名</span><br><span class="line"></span><br><span class="line"><span class="comment">#忽略了所有的daemonset的pod，并且将剩余的pod驱逐</span></span><br><span class="line">kubectl drain node其中一台的节点名 --ignore-daemonsets --delete-local-data</span><br><span class="line"></span><br><span class="line"><span class="comment">#节点上执行，升级kubelet kubeadm kubectl</span></span><br><span class="line">yum install -y kubelet-1.10.11 kubectl-1.10.11 kubeadm-1.10.11</span><br><span class="line"></span><br><span class="line"><span class="comment">#保持kubernetes与docker的Cgroup Driver一致。默认不调整docker的cgroup驱动，查询得知为systemd</span></span><br><span class="line">docker info | grep -i cgroup</span><br><span class="line"></span><br><span class="line"><span class="comment">#docker的Cgroup Driver模式是cgroupfs则更改，systemd则不用。（通过docker info | grep Cgroup查看）</span></span><br><span class="line"><span class="comment">#sed -i 's/cgroup-driver=systemd/cgroup-driver=cgroupfs/g' /etc/systemd/system/kubelet.service.d/10-kubeadm.conf  #kubeadm在1.10版本及以下</span></span><br><span class="line"><span class="comment">#echo 'KUBELET_KUBEADM_ARGS=--cgroup-driver=cgroupfs --cni-bin-dir=/opt/cni/bin --cni-conf-dir=/etc/cni/net.d --network-plugin=cni' &gt; /var/lib/kubelet/kubeadm-flags.env  #kubeadm在1.11版本及以上</span></span><br><span class="line"></span><br><span class="line"><span class="comment">#重启服务</span></span><br><span class="line">systemctl daemon-reload &amp;&amp; systemctl restart kubelet</span><br><span class="line"></span><br><span class="line"><span class="comment">#恢复调度</span></span><br><span class="line">kubectl uncordon node节点名称</span><br></pre></td></tr></table></figure>
+<h4 id="1-10-11升级到1-11-5"><a href="#1-10-11升级到1-11-5" class="headerlink" title="1.10.11升级到1.11.5"></a>1.10.11升级到1.11.5</h4><h5 id="master节点-2"><a href="#master节点-2" class="headerlink" title="master节点"></a>master节点</h5><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#设置升级docker的节点为不可调度，并且将剩余的pod驱逐，通过kubectl get nodes命令看到该节点已被标记不可调度</span></span><br><span class="line">kubectl cordon master其中一台的节点名</span><br><span class="line"></span><br><span class="line"><span class="comment">#忽略了所有的daemonset的pod，并且将剩余的pod驱逐</span></span><br><span class="line">kubectl drain master其中一台的节点名 --ignore-daemonsets --delete-local-data</span><br><span class="line"></span><br><span class="line"><span class="comment">#先升级kubeadm</span></span><br><span class="line">yum install -y kubeadm-1.11.5</span><br><span class="line"></span><br><span class="line"><span class="comment">#保持kubernetes与docker的Cgroup Driver一致。默认不调整kubernetes的cgroup驱动，查询得知为systemd</span></span><br><span class="line">docker info | grep -i cgroup</span><br><span class="line"></span><br><span class="line"><span class="comment">#docker的Cgroup Driver模式是cgroupfs则更改，systemd则不用。（通过docker info | grep Cgroup查看）</span></span><br><span class="line"><span class="comment">#sed -i 's/cgroup-driver=systemd/cgroup-driver=cgroupfs/g' /etc/systemd/system/kubelet.service.d/10-kubeadm.conf  #kubeadm在1.10版本及以下</span></span><br><span class="line"><span class="comment">#echo 'KUBELET_KUBEADM_ARGS=--cgroup-driver=cgroupfs --cni-bin-dir=/opt/cni/bin --cni-conf-dir=/etc/cni/net.d --network-plugin=cni' &gt; /var/lib/kubelet/kubeadm-flags.env  #kubeadm在1.11版本及以上</span></span><br><span class="line"></span><br><span class="line"><span class="comment">#执行升级，确保上面已经准备好镜像image</span></span><br><span class="line">kubeadm upgrade plan</span><br><span class="line">kubeadm upgrade apply v1.11.5</span><br><span class="line"><span class="comment">#看到如下，说明升级成功</span></span><br><span class="line">[upgrade/successful] SUCCESS! Your cluster was upgraded to <span class="string">"v1.11.5"</span>. Enjoy!</span><br><span class="line">[upgrade/kubelet] Now that your control plane is upgraded, please proceed with upgrading your kubelets <span class="keyword">in</span> turn.</span><br><span class="line"></span><br><span class="line"><span class="comment">#容器进行初始化，查看系统服务pod是否恢复正常运行。</span></span><br><span class="line">kubectl get pod -o wide --all-namespaces</span><br><span class="line"></span><br><span class="line"><span class="comment">#升级kubelet kubectl</span></span><br><span class="line">yum install -y kubelet-1.11.5 kubectl-1.11.5</span><br><span class="line"></span><br><span class="line"><span class="comment">#配置文件/var/lib/kubelet/config.yaml中的cgroupDriver需要保持与docker的Cgroup Driver一致</span></span><br><span class="line"><span class="comment">#sed -i 's/cgroupfs/systemd/g' /var/lib/kubelet/config.yaml</span></span><br><span class="line"></span><br><span class="line"><span class="comment">#配置文件/var/lib/kubelet/kubeadm-flags.env中的cgroupDriver需要保持与docker的Cgroup Driver一致</span></span><br><span class="line"><span class="built_in">echo</span> <span class="string">'KUBELET_KUBEADM_ARGS=--cgroup-driver=systemd --cni-bin-dir=/opt/cni/bin --cni-conf-dir=/etc/cni/net.d --network-plugin=cni'</span> &gt; /var/lib/kubelet/kubeadm-flags.env</span><br><span class="line"></span><br><span class="line"><span class="comment">#确保容器AGE在一分钟以上，再重启服务</span></span><br><span class="line">systemctl daemon-reload &amp;&amp; systemctl restart kubelet</span><br><span class="line"></span><br><span class="line"><span class="comment">#查看master节点版本已成功升级</span></span><br><span class="line">kubectl get nodes</span><br><span class="line"></span><br><span class="line"><span class="comment">#恢复调度</span></span><br><span class="line">kubectl uncordon master节点名称</span><br></pre></td></tr></table></figure>
+<h5 id="node节点-2"><a href="#node节点-2" class="headerlink" title="node节点"></a>node节点</h5><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#设置升级kubernetes的节点为不可调度，并且将剩余的pod驱逐，通过kubectl get nodes命令看到该节点已被标记不可调度</span></span><br><span class="line">kubectl cordon node其中一台的节点名</span><br><span class="line"></span><br><span class="line"><span class="comment">#忽略了所有的daemonset的pod，并且将剩余的pod驱逐</span></span><br><span class="line">kubectl drain node其中一台的节点名 --ignore-daemonsets --delete-local-data</span><br><span class="line"></span><br><span class="line"><span class="comment">#节点上执行，升级kubelet kubeadm kubectl</span></span><br><span class="line">yum install -y kubelet-1.11.5 kubectl-1.11.5 kubeadm-1.11.5</span><br><span class="line"></span><br><span class="line"><span class="comment">#保持kubernetes与docker的Cgroup Driver一致。默认不调整docker的cgroup驱动，查询得知为systemd</span></span><br><span class="line">docker info | grep -i cgroup</span><br><span class="line"></span><br><span class="line"><span class="comment">#docker的Cgroup Driver模式是cgroupfs则更改，systemd则不用。（通过docker info | grep Cgroup查看）</span></span><br><span class="line"><span class="comment">#sed -i 's/cgroup-driver=systemd/cgroup-driver=cgroupfs/g' /etc/systemd/system/kubelet.service.d/10-kubeadm.conf  #kubeadm在1.10版本及以下</span></span><br><span class="line"><span class="comment">#echo 'KUBELET_KUBEADM_ARGS=--cgroup-driver=cgroupfs --cni-bin-dir=/opt/cni/bin --cni-conf-dir=/etc/cni/net.d --network-plugin=cni' &gt; /var/lib/kubelet/kubeadm-flags.env  #kubeadm在1.11版本及以上</span></span><br><span class="line"></span><br><span class="line"><span class="comment">#升级node节点的配置，配置文件/var/lib/kubelet/config.yaml中的cgroupDriver需要保持与docker的Cgroup Driver一致</span></span><br><span class="line">kubeadm upgrade node config --kubelet-version $(kubelet --version | cut <span class="_">-d</span> <span class="string">' '</span> <span class="_">-f</span> 2)</span><br><span class="line"><span class="comment">#sed -i 's/cgroupfs/systemd/g' /var/lib/kubelet/config.yaml</span></span><br><span class="line"></span><br><span class="line"><span class="comment">#配置文件/var/lib/kubelet/kubeadm-flags.env中的cgroupDriver需要保持与docker的Cgroup Driver一致</span></span><br><span class="line"><span class="built_in">echo</span> <span class="string">'KUBELET_KUBEADM_ARGS=--cgroup-driver=systemd --cni-bin-dir=/opt/cni/bin --cni-conf-dir=/etc/cni/net.d --network-plugin=cni'</span> &gt; /var/lib/kubelet/kubeadm-flags.env</span><br><span class="line"></span><br><span class="line"><span class="comment">#重启服务</span></span><br><span class="line">systemctl daemon-reload &amp;&amp; systemctl restart kubelet</span><br><span class="line"></span><br><span class="line"><span class="comment">#恢复调度</span></span><br><span class="line">kubectl uncordon node节点名称</span><br></pre></td></tr></table></figure>
+<h4 id="1-11-5升级到1-12-3"><a href="#1-11-5升级到1-12-3" class="headerlink" title="1.11.5升级到1.12.3"></a>1.11.5升级到1.12.3</h4><h5 id="master节点-3"><a href="#master节点-3" class="headerlink" title="master节点"></a>master节点</h5><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#设置升级docker的节点为不可调度，并且将剩余的pod驱逐，通过kubectl get nodes命令看到该节点已被标记不可调度</span></span><br><span class="line">kubectl cordon master其中一台的节点名</span><br><span class="line"></span><br><span class="line"><span class="comment">#忽略了所有的daemonset的pod，并且将剩余的pod驱逐</span></span><br><span class="line">kubectl drain master其中一台的节点名 --ignore-daemonsets --delete-local-data</span><br><span class="line"></span><br><span class="line"><span class="comment">#先升级kubeadm</span></span><br><span class="line">yum install -y kubeadm-1.12.3</span><br><span class="line"></span><br><span class="line"><span class="comment">#保持kubernetes与docker的Cgroup Driver一致。默认不调整kubernetes的cgroup驱动，查询得知为systemd</span></span><br><span class="line">docker info | grep -i cgroup</span><br><span class="line"></span><br><span class="line"><span class="comment">#docker的Cgroup Driver模式是cgroupfs则更改，systemd则不用。（通过docker info | grep Cgroup查看）</span></span><br><span class="line"><span class="comment">#sed -i 's/cgroup-driver=systemd/cgroup-driver=cgroupfs/g' /etc/systemd/system/kubelet.service.d/10-kubeadm.conf  #kubeadm在1.10版本及以下</span></span><br><span class="line"><span class="comment">#echo 'KUBELET_KUBEADM_ARGS=--cgroup-driver=cgroupfs --cni-bin-dir=/opt/cni/bin --cni-conf-dir=/etc/cni/net.d --network-plugin=cni' &gt; /var/lib/kubelet/kubeadm-flags.env  #kubeadm在1.11版本及以上</span></span><br><span class="line"></span><br><span class="line"><span class="comment">#执行升级，确保上面已经准备好镜像image</span></span><br><span class="line">kubeadm upgrade plan</span><br><span class="line">kubeadm upgrade apply v1.12.3</span><br><span class="line"><span class="comment">#看到如下，说明升级成功</span></span><br><span class="line">[upgrade/successful] SUCCESS! Your cluster was upgraded to <span class="string">"v1.12.3"</span>. Enjoy!</span><br><span class="line">[upgrade/kubelet] Now that your control plane is upgraded, please proceed with upgrading your kubelets <span class="keyword">in</span> turn.</span><br><span class="line"></span><br><span class="line"><span class="comment">#容器进行初始化，查看系统服务pod是否恢复正常运行。</span></span><br><span class="line">kubectl get pod -o wide --all-namespaces</span><br><span class="line"></span><br><span class="line"><span class="comment">#升级kubelet kubectl</span></span><br><span class="line">yum install -y kubelet-1.12.3 kubectl-1.12.3</span><br><span class="line"></span><br><span class="line"><span class="comment">#配置文件/var/lib/kubelet/config.yaml中的cgroupDriver需要保持与docker的Cgroup Driver一致</span></span><br><span class="line"><span class="comment">#sed -i 's/cgroupfs/systemd/g' /var/lib/kubelet/config.yaml</span></span><br><span class="line"></span><br><span class="line"><span class="comment">#配置文件/var/lib/kubelet/kubeadm-flags.env中的cgroupDriver需要保持与docker的Cgroup Driver一致</span></span><br><span class="line"><span class="comment">#echo 'KUBELET_KUBEADM_ARGS=--cgroup-driver=systemd --cni-bin-dir=/opt/cni/bin --cni-conf-dir=/etc/cni/net.d --network-plugin=cni' &gt; /var/lib/kubelet/kubeadm-flags.env</span></span><br><span class="line"></span><br><span class="line"><span class="comment">#确保容器AGE在一分钟以上，再重启服务</span></span><br><span class="line">systemctl daemon-reload &amp;&amp; systemctl restart kubelet</span><br><span class="line"></span><br><span class="line"><span class="comment">#查看master节点版本已成功升级</span></span><br><span class="line">kubectl get nodes</span><br><span class="line"></span><br><span class="line"><span class="comment">#恢复调度</span></span><br><span class="line">kubectl uncordon master节点名称</span><br></pre></td></tr></table></figure>
+<h5 id="node节点-3"><a href="#node节点-3" class="headerlink" title="node节点"></a>node节点</h5><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#设置升级kubernetes的节点为不可调度，并且将剩余的pod驱逐，通过kubectl get nodes命令看到该节点已被标记不可调度</span></span><br><span class="line">kubectl cordon node其中一台的节点名</span><br><span class="line"></span><br><span class="line"><span class="comment">#忽略了所有的daemonset的pod，并且将剩余的pod驱逐</span></span><br><span class="line">kubectl drain node其中一台的节点名 --ignore-daemonsets --delete-local-data</span><br><span class="line"></span><br><span class="line"><span class="comment">#节点上执行，升级kubelet kubeadm kubectl</span></span><br><span class="line">yum install -y kubelet-1.12.3 kubectl-1.12.3 kubeadm-1.12.3</span><br><span class="line"></span><br><span class="line"><span class="comment">#保持kubernetes与docker的Cgroup Driver一致。默认不调整docker的cgroup驱动，查询得知为systemd</span></span><br><span class="line">docker info | grep -i cgroup</span><br><span class="line"></span><br><span class="line"><span class="comment">#docker的Cgroup Driver模式是cgroupfs则更改，systemd则不用。（通过docker info | grep Cgroup查看）</span></span><br><span class="line"><span class="comment">#sed -i 's/cgroup-driver=systemd/cgroup-driver=cgroupfs/g' /etc/systemd/system/kubelet.service.d/10-kubeadm.conf  #kubeadm在1.10版本及以下</span></span><br><span class="line"><span class="comment">#echo 'KUBELET_KUBEADM_ARGS=--cgroup-driver=cgroupfs --cni-bin-dir=/opt/cni/bin --cni-conf-dir=/etc/cni/net.d --network-plugin=cni' &gt; /var/lib/kubelet/kubeadm-flags.env  #kubeadm在1.11版本及以上</span></span><br><span class="line"></span><br><span class="line"><span class="comment">#升级node节点的配置，配置文件/var/lib/kubelet/config.yaml中的cgroupDriver需要保持与docker的Cgroup Driver一致</span></span><br><span class="line">kubeadm upgrade node config --kubelet-version $(kubelet --version | cut <span class="_">-d</span> <span class="string">' '</span> <span class="_">-f</span> 2)</span><br><span class="line"></span><br><span class="line"><span class="comment">#sed -i 's/cgroupfs/systemd/g' /var/lib/kubelet/config.yaml</span></span><br><span class="line"><span class="comment">#配置文件/var/lib/kubelet/kubeadm-flags.env中的cgroupDriver需要保持与docker的Cgroup Driver一致</span></span><br><span class="line"><span class="comment">#echo 'KUBELET_KUBEADM_ARGS=--cgroup-driver=systemd --cni-bin-dir=/opt/cni/bin --cni-conf-dir=/etc/cni/net.d --network-plugin=cni' &gt; /var/lib/kubelet/kubeadm-flags.env</span></span><br><span class="line"></span><br><span class="line"><span class="comment">#重启服务</span></span><br><span class="line">systemctl daemon-reload &amp;&amp; systemctl restart kubelet</span><br><span class="line"></span><br><span class="line"><span class="comment">#恢复调度</span></span><br><span class="line">kubectl uncordon node节点名称</span><br></pre></td></tr></table></figure>
+<h3 id="验证"><a href="#验证" class="headerlink" title="验证"></a>验证</h3><p>验证节点是否正常</p>
+<p>自己通过方法验证吧<br>注意：待所有节点升级到1.9版本后，才能再升级至1.10，如此往复</p>
+<h3 id="清理镜像"><a href="#清理镜像" class="headerlink" title="清理镜像"></a>清理镜像</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#1.8.1</span></span><br><span class="line">images=(kube-proxy-amd64:v1.8.1 kube-scheduler-amd64:v1.8.1 \</span><br><span class="line">kube-controller-manager-amd64:v1.8.1 kube-apiserver-amd64:v1.8.1 \</span><br><span class="line">etcd-amd64:3.0.17 k8s-dns-sidecar-amd64:1.14.5 k8s-dns-kube-dns-amd64:1.14.1 \</span><br><span class="line">k8s-dns-kube-dns-amd64:1.14.5 k8s-dns-dnsmasq-nanny-amd64:1.14.5)</span><br><span class="line"><span class="keyword">for</span> imageName <span class="keyword">in</span> <span class="variable">$&#123;images[@]&#125;</span> ; <span class="keyword">do</span></span><br><span class="line">docker rmi <span class="_">-f</span> gcr.io/google_containers/<span class="variable">$imageName</span></span><br><span class="line"><span class="keyword">done</span></span><br><span class="line"></span><br><span class="line"><span class="comment">#1.9.11</span></span><br><span class="line">images=(kube-proxy-amd64:v1.9.11 kube-scheduler-amd64:v1.9.11 \</span><br><span class="line">kube-controller-manager-amd64:v1.9.11 kube-apiserver-amd64:v1.9.11 \</span><br><span class="line">etcd-amd64:3.1.11 k8s-dns-sidecar-amd64:1.14.7 \</span><br><span class="line">k8s-dns-kube-dns-amd64:1.14.7 k8s-dns-dnsmasq-nanny-amd64:1.14.7)</span><br><span class="line"><span class="keyword">for</span> imageName <span class="keyword">in</span> <span class="variable">$&#123;images[@]&#125;</span> ; <span class="keyword">do</span></span><br><span class="line">docker rmi <span class="_">-f</span> gcr.io/google_containers/<span class="variable">$imageName</span></span><br><span class="line"><span class="keyword">done</span></span><br><span class="line"></span><br><span class="line"><span class="comment">#1.10.11</span></span><br><span class="line">images=(kube-proxy-amd64:v1.10.11 kube-scheduler-amd64:v1.10.11 \</span><br><span class="line">kube-controller-manager-amd64:v1.10.11 kube-apiserver-amd64:v1.10.11 \</span><br><span class="line">etcd-amd64:3.1.12 k8s-dns-sidecar-amd64:1.14.8 k8s-dns-kube-dns-amd64:1.14.8 \</span><br><span class="line">k8s-dns-dnsmasq-nanny-amd64:1.14.8)</span><br><span class="line"><span class="keyword">for</span> imageName <span class="keyword">in</span> <span class="variable">$&#123;images[@]&#125;</span> ; <span class="keyword">do</span></span><br><span class="line">docker rmi <span class="_">-f</span> gcr.io/google_containers/<span class="variable">$imageName</span></span><br><span class="line"><span class="keyword">done</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 1.11.5</span></span><br><span class="line">images=(kube-proxy-amd64:v1.11.5 kube-scheduler-amd64:v1.11.5 \</span><br><span class="line">kube-controller-manager-amd64:v1.11.5 kube-apiserver-amd64:v1.11.5 \</span><br><span class="line">etcd-amd64:3.2.18 coredns:1.1.3)</span><br><span class="line"><span class="keyword">for</span> imageName <span class="keyword">in</span> <span class="variable">$&#123;images[@]&#125;</span> ; <span class="keyword">do</span></span><br><span class="line">docker rmi <span class="_">-f</span> gcr.io/google_containers/<span class="variable">$imageName</span></span><br><span class="line"><span class="keyword">done</span></span><br></pre></td></tr></table></figure>
+<h2 id="kubeadm-init-config-配置"><a href="#kubeadm-init-config-配置" class="headerlink" title="kubeadm init config 配置"></a>kubeadm init config 配置</h2><h3 id="kubeadm-v1-12"><a href="#kubeadm-v1-12" class="headerlink" title="kubeadm v1.12"></a>kubeadm v1.12</h3><figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br><span class="line">128</span><br><span class="line">129</span><br><span class="line">130</span><br><span class="line">131</span><br><span class="line">132</span><br><span class="line">133</span><br><span class="line">134</span><br><span class="line">135</span><br><span class="line">136</span><br><span class="line">137</span><br><span class="line">138</span><br><span class="line">139</span><br><span class="line">140</span><br><span class="line">141</span><br><span class="line">142</span><br><span class="line">143</span><br><span class="line">144</span><br><span class="line">145</span><br><span class="line">146</span><br><span class="line">147</span><br><span class="line">148</span><br><span class="line">149</span><br><span class="line">150</span><br><span class="line">151</span><br><span class="line">152</span><br><span class="line">153</span><br><span class="line">154</span><br><span class="line">155</span><br><span class="line">156</span><br><span class="line">157</span><br><span class="line">158</span><br><span class="line">159</span><br><span class="line">160</span><br><span class="line">161</span><br><span class="line">162</span><br><span class="line">163</span><br><span class="line">164</span><br><span class="line">165</span><br><span class="line">166</span><br><span class="line">167</span><br><span class="line">168</span><br><span class="line">169</span><br><span class="line">170</span><br><span class="line">171</span><br><span class="line">172</span><br><span class="line">173</span><br><span class="line">174</span><br><span class="line">175</span><br><span class="line">176</span><br><span class="line">177</span><br><span class="line">178</span><br><span class="line">179</span><br><span class="line">180</span><br><span class="line">181</span><br><span class="line">182</span><br><span class="line">183</span><br><span class="line">184</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">apiVersion:</span> kubeadm.k8s.io/v1alpha3</span><br><span class="line"><span class="attr">kind:</span> InitConfiguration</span><br><span class="line"><span class="attr">apiEndpoint:</span></span><br><span class="line"><span class="attr">  advertiseAddress:</span> <span class="number">0.0</span><span class="number">.0</span><span class="number">.0</span></span><br><span class="line"><span class="attr">  bindPort:</span> <span class="number">6443</span></span><br><span class="line"><span class="attr">bootstrapTokens:</span></span><br><span class="line"><span class="attr">- groups:</span></span><br><span class="line"><span class="attr">  - system:</span>bootstrappers:kubeadm:default-node-token</span><br><span class="line"><span class="attr">  token:</span> abcdef<span class="number">.0123456789</span>abcdef</span><br><span class="line"><span class="attr">  ttl:</span> <span class="number">24</span>h0m0s</span><br><span class="line"><span class="attr">  usages:</span></span><br><span class="line"><span class="bullet">  -</span> signing</span><br><span class="line"><span class="bullet">  -</span> authentication</span><br><span class="line"><span class="attr">nodeRegistration:</span></span><br><span class="line"><span class="attr">  criSocket:</span> /var/run/containerd/containerd.sock</span><br><span class="line"><span class="attr">  name:</span> master</span><br><span class="line"><span class="attr">  taints:</span></span><br><span class="line"><span class="attr">  - effect:</span> NoSchedule</span><br><span class="line"><span class="attr">    key:</span> node-role.kubernetes.io/master</span><br><span class="line"></span><br><span class="line"><span class="meta">---</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># https://github.com/kubernetes/kubernetes/blob/master/cmd/kubeadm/app/apis/kubeadm/v1beta1/types.go</span></span><br><span class="line"><span class="comment"># https://github.com/kubernetes/kubernetes/blob/master/cmd/kubeadm/app/apis/kubeadm/v1alpha3/types.go</span></span><br><span class="line"><span class="attr">apiVersion:</span> kubeadm.k8s.io/v1alpha3</span><br><span class="line"><span class="attr">kind:</span> ClusterConfiguration</span><br><span class="line"><span class="attr">auditPolicy:</span></span><br><span class="line"><span class="attr">  logDir:</span> /var/log/kubernetes/audit</span><br><span class="line"><span class="attr">  logMaxAge:</span> <span class="number">2</span></span><br><span class="line"><span class="attr">  path:</span> <span class="string">""</span></span><br><span class="line"><span class="attr">certificatesDir:</span> /etc/kubernetes/pki</span><br><span class="line"><span class="attr">clusterName:</span> kubernetes</span><br><span class="line"><span class="attr">controlPlaneEndpoint:</span> <span class="string">""</span></span><br><span class="line"><span class="attr">controllerManagerExtraArgs:</span></span><br><span class="line"><span class="attr">  address:</span> <span class="number">0.0</span><span class="number">.0</span><span class="number">.0</span></span><br><span class="line"><span class="attr">schedulerExtraArgs:</span></span><br><span class="line"><span class="attr">  address:</span> <span class="number">0.0</span><span class="number">.0</span><span class="number">.0</span></span><br><span class="line"><span class="attr">etcd:</span></span><br><span class="line"><span class="attr">  local:</span></span><br><span class="line"><span class="attr">    dataDir:</span> /var/lib/etcd</span><br><span class="line"><span class="attr">    image:</span> <span class="string">""</span></span><br><span class="line"><span class="attr">imageRepository:</span> k8s.gcr.io</span><br><span class="line"><span class="attr">kubernetesVersion:</span> v1<span class="number">.12</span><span class="number">.0</span></span><br><span class="line"><span class="attr">networking:</span></span><br><span class="line"><span class="attr">  dnsDomain:</span> cluster.local</span><br><span class="line"><span class="attr">  podSubnet:</span> <span class="string">""</span></span><br><span class="line"><span class="attr">  serviceSubnet:</span> <span class="number">10.96</span><span class="number">.0</span><span class="number">.0</span>/<span class="number">12</span></span><br><span class="line"><span class="attr">unifiedControlPlaneImage:</span> <span class="string">""</span></span><br><span class="line"></span><br><span class="line"><span class="meta">---</span></span><br><span class="line"></span><br><span class="line"><span class="attr">apiVersion:</span> kubeadm.k8s.io/v1alpha3</span><br><span class="line"><span class="attr">kind:</span> JoinConfiguration</span><br><span class="line"><span class="attr">apiEndpoint:</span></span><br><span class="line"><span class="attr">  advertiseAddress:</span> <span class="number">0.0</span><span class="number">.0</span><span class="number">.0</span></span><br><span class="line"><span class="attr">  bindPort:</span> <span class="number">6443</span></span><br><span class="line"><span class="attr">caCertPath:</span> /etc/kubernetes/pki/ca.crt</span><br><span class="line"><span class="attr">clusterName:</span> kubernetes</span><br><span class="line"><span class="attr">discoveryFile:</span> <span class="string">""</span></span><br><span class="line"><span class="attr">discoveryTimeout:</span> <span class="number">5</span>m0s</span><br><span class="line"><span class="attr">discoveryToken:</span> abcdef<span class="number">.0123456789</span>abcdef</span><br><span class="line"><span class="attr">discoveryTokenAPIServers:</span></span><br><span class="line"><span class="attr">- kube-apiserver:</span><span class="number">6443</span></span><br><span class="line"><span class="attr">discoveryTokenUnsafeSkipCAVerification:</span> <span class="literal">true</span></span><br><span class="line"><span class="attr">nodeRegistration:</span></span><br><span class="line"><span class="attr">  criSocket:</span> /var/run/containerd/containerd.sock</span><br><span class="line"><span class="attr">  name:</span> master</span><br><span class="line"><span class="attr">tlsBootstrapToken:</span> abcdef<span class="number">.0123456789</span>abcdef</span><br><span class="line"><span class="attr">token:</span> abcdef<span class="number">.0123456789</span>abcdef</span><br><span class="line"></span><br><span class="line"><span class="meta">---</span></span><br><span class="line"></span><br><span class="line"><span class="attr">apiVersion:</span> kubeproxy.config.k8s.io/v1alpha1</span><br><span class="line"><span class="attr">kind:</span> KubeProxyConfiguration</span><br><span class="line"><span class="attr">bindAddress:</span> <span class="number">0.0</span><span class="number">.0</span><span class="number">.0</span></span><br><span class="line"><span class="attr">clientConnection:</span></span><br><span class="line"><span class="attr">  acceptContentTypes:</span> <span class="string">""</span></span><br><span class="line"><span class="attr">  burst:</span> <span class="number">10</span></span><br><span class="line"><span class="attr">  contentType:</span> application/vnd.kubernetes.protobuf</span><br><span class="line"><span class="attr">  kubeconfig:</span> /var/lib/kube-proxy/kubeconfig.conf</span><br><span class="line"><span class="attr">  qps:</span> <span class="number">5</span></span><br><span class="line"><span class="attr">clusterCIDR:</span> <span class="string">""</span></span><br><span class="line"><span class="attr">configSyncPeriod:</span> <span class="number">15</span>m0s</span><br><span class="line"><span class="attr">conntrack:</span></span><br><span class="line"><span class="attr">  max:</span> <span class="literal">null</span></span><br><span class="line"><span class="attr">  maxPerCore:</span> <span class="number">32768</span></span><br><span class="line"><span class="attr">  min:</span> <span class="number">131072</span></span><br><span class="line"><span class="attr">  tcpCloseWaitTimeout:</span> <span class="number">1</span>h0m0s</span><br><span class="line"><span class="attr">  tcpEstablishedTimeout:</span> <span class="number">24</span>h0m0s</span><br><span class="line"><span class="attr">enableProfiling:</span> <span class="literal">false</span></span><br><span class="line"><span class="attr">healthzBindAddress:</span> <span class="number">0.0</span><span class="number">.0</span><span class="number">.0</span>:<span class="number">10256</span></span><br><span class="line"><span class="attr">hostnameOverride:</span> <span class="string">""</span></span><br><span class="line"><span class="attr">iptables:</span></span><br><span class="line"><span class="attr">  masqueradeAll:</span> <span class="literal">false</span></span><br><span class="line"><span class="attr">  masqueradeBit:</span> <span class="number">14</span></span><br><span class="line"><span class="attr">  minSyncPeriod:</span> <span class="number">0</span>s</span><br><span class="line"><span class="attr">  syncPeriod:</span> <span class="number">30</span>s</span><br><span class="line"><span class="attr">ipvs:</span></span><br><span class="line"><span class="attr">  excludeCIDRs:</span> <span class="literal">null</span></span><br><span class="line"><span class="attr">  minSyncPeriod:</span> <span class="number">0</span>s</span><br><span class="line"><span class="attr">  scheduler:</span> <span class="string">""</span></span><br><span class="line"><span class="attr">  syncPeriod:</span> <span class="number">30</span>s</span><br><span class="line"><span class="attr">metricsBindAddress:</span> <span class="number">127.0</span><span class="number">.0</span><span class="number">.1</span>:<span class="number">10249</span></span><br><span class="line"><span class="attr">mode:</span> <span class="string">""</span></span><br><span class="line"><span class="attr">nodePortAddresses:</span> <span class="literal">null</span></span><br><span class="line"><span class="attr">oomScoreAdj:</span> <span class="bullet">-999</span></span><br><span class="line"><span class="attr">portRange:</span> <span class="string">""</span></span><br><span class="line"><span class="attr">resourceContainer:</span> /kube-proxy</span><br><span class="line"><span class="attr">udpIdleTimeout:</span> <span class="number">250</span>ms</span><br><span class="line"></span><br><span class="line"><span class="meta">---</span></span><br><span class="line"></span><br><span class="line"><span class="attr">apiVersion:</span> kubelet.config.k8s.io/v1beta1</span><br><span class="line"><span class="attr">kind:</span> KubeletConfiguration</span><br><span class="line"><span class="attr">address:</span> <span class="number">0.0</span><span class="number">.0</span><span class="number">.0</span></span><br><span class="line"><span class="attr">authentication:</span></span><br><span class="line"><span class="attr">  anonymous:</span></span><br><span class="line"><span class="attr">    enabled:</span> <span class="literal">false</span></span><br><span class="line"><span class="attr">  webhook:</span></span><br><span class="line"><span class="attr">    cacheTTL:</span> <span class="number">2</span>m0s</span><br><span class="line"><span class="attr">    enabled:</span> <span class="literal">true</span></span><br><span class="line"><span class="attr">  x509:</span></span><br><span class="line"><span class="attr">    clientCAFile:</span> /etc/kubernetes/pki/ca.crt</span><br><span class="line"><span class="attr">authorization:</span></span><br><span class="line"><span class="attr">  mode:</span> Webhook</span><br><span class="line"><span class="attr">  webhook:</span></span><br><span class="line"><span class="attr">    cacheAuthorizedTTL:</span> <span class="number">5</span>m0s</span><br><span class="line"><span class="attr">    cacheUnauthorizedTTL:</span> <span class="number">30</span>s</span><br><span class="line"><span class="attr">cgroupDriver:</span> cgroupfs</span><br><span class="line"><span class="attr">cgroupsPerQOS:</span> <span class="literal">true</span></span><br><span class="line"><span class="attr">clusterDNS:</span></span><br><span class="line"><span class="bullet">-</span> <span class="number">10.96</span><span class="number">.0</span><span class="number">.10</span></span><br><span class="line"><span class="attr">clusterDomain:</span> cluster.local</span><br><span class="line"><span class="attr">configMapAndSecretChangeDetectionStrategy:</span> Watch</span><br><span class="line"><span class="attr">containerLogMaxFiles:</span> <span class="number">5</span></span><br><span class="line"><span class="attr">containerLogMaxSize:</span> <span class="number">10</span>Mi</span><br><span class="line"><span class="attr">contentType:</span> application/vnd.kubernetes.protobuf</span><br><span class="line"><span class="attr">cpuCFSQuota:</span> <span class="literal">true</span></span><br><span class="line"><span class="attr">cpuCFSQuotaPeriod:</span> <span class="number">100</span>ms</span><br><span class="line"><span class="attr">cpuManagerPolicy:</span> none</span><br><span class="line"><span class="attr">cpuManagerReconcilePeriod:</span> <span class="number">10</span>s</span><br><span class="line"><span class="attr">enableControllerAttachDetach:</span> <span class="literal">true</span></span><br><span class="line"><span class="attr">enableDebuggingHandlers:</span> <span class="literal">true</span></span><br><span class="line"><span class="attr">enforceNodeAllocatable:</span></span><br><span class="line"><span class="bullet">-</span> pods</span><br><span class="line"><span class="attr">eventBurst:</span> <span class="number">10</span></span><br><span class="line"><span class="attr">eventRecordQPS:</span> <span class="number">5</span></span><br><span class="line"><span class="attr">evictionHard:</span></span><br><span class="line">  imagefs.available: <span class="number">15</span>%</span><br><span class="line">  memory.available: <span class="number">100</span>Mi</span><br><span class="line">  nodefs.available: <span class="number">10</span>%</span><br><span class="line">  nodefs.inodesFree: <span class="number">5</span>%</span><br><span class="line"><span class="attr">evictionPressureTransitionPeriod:</span> <span class="number">5</span>m0s</span><br><span class="line"><span class="attr">failSwapOn:</span> <span class="literal">true</span></span><br><span class="line"><span class="attr">fileCheckFrequency:</span> <span class="number">20</span>s</span><br><span class="line"><span class="attr">hairpinMode:</span> promiscuous-bridge</span><br><span class="line"><span class="attr">healthzBindAddress:</span> <span class="number">127.0</span><span class="number">.0</span><span class="number">.1</span></span><br><span class="line"><span class="attr">healthzPort:</span> <span class="number">10248</span></span><br><span class="line"><span class="attr">httpCheckFrequency:</span> <span class="number">20</span>s</span><br><span class="line"><span class="attr">imageGCHighThresholdPercent:</span> <span class="number">85</span></span><br><span class="line"><span class="attr">imageGCLowThresholdPercent:</span> <span class="number">80</span></span><br><span class="line"><span class="attr">imageMinimumGCAge:</span> <span class="number">2</span>m0s</span><br><span class="line"><span class="attr">iptablesDropBit:</span> <span class="number">15</span></span><br><span class="line"><span class="attr">iptablesMasqueradeBit:</span> <span class="number">14</span></span><br><span class="line"><span class="attr">kubeAPIBurst:</span> <span class="number">10</span></span><br><span class="line"><span class="attr">kubeAPIQPS:</span> <span class="number">5</span></span><br><span class="line"><span class="attr">makeIPTablesUtilChains:</span> <span class="literal">true</span></span><br><span class="line"><span class="attr">maxOpenFiles:</span> <span class="number">1000000</span></span><br><span class="line"><span class="attr">maxPods:</span> <span class="number">110</span></span><br><span class="line"><span class="attr">nodeLeaseDurationSeconds:</span> <span class="number">40</span></span><br><span class="line"><span class="attr">nodeStatusUpdateFrequency:</span> <span class="number">10</span>s</span><br><span class="line"><span class="attr">oomScoreAdj:</span> <span class="bullet">-999</span></span><br><span class="line"><span class="attr">podPidsLimit:</span> <span class="bullet">-1</span></span><br><span class="line"><span class="attr">port:</span> <span class="number">10250</span></span><br><span class="line"><span class="attr">registryBurst:</span> <span class="number">10</span></span><br><span class="line"><span class="attr">registryPullQPS:</span> <span class="number">5</span></span><br><span class="line"><span class="attr">resolvConf:</span> /etc/resolv.conf</span><br><span class="line"><span class="attr">rotateCertificates:</span> <span class="literal">true</span></span><br><span class="line"><span class="attr">runtimeRequestTimeout:</span> <span class="number">2</span>m0s</span><br><span class="line"><span class="attr">serializeImagePulls:</span> <span class="literal">true</span></span><br><span class="line"><span class="attr">staticPodPath:</span> /etc/kubernetes/manifests</span><br><span class="line"><span class="attr">streamingConnectionIdleTimeout:</span> <span class="number">4</span>h0m0s</span><br><span class="line"><span class="attr">syncFrequency:</span> <span class="number">1</span>m0s</span><br><span class="line"><span class="attr">volumeStatsAggPeriod:</span> <span class="number">1</span>m0s</span><br></pre></td></tr></table></figure>
+<h2 id="traefik如何设置路由"><a href="#traefik如何设置路由" class="headerlink" title="traefik如何设置路由"></a>traefik如何设置路由</h2><p><a href="http://yunke.science/2018/03/28/Ingress-traefik/" target="_blank" rel="external">http://yunke.science/2018/03/28/Ingress-traefik/</a></p>
+
+      
+    </div>
+    
+    
+    
+
+    <div>
+    
+        <div>
+    
+        <div style="text-align:center;color: #ccc;font-size:14px;">-------------本文结束<i class="fa fa-paw"></i>感谢您的阅读-------------</div>
+    
+</div>
+
+    
+    </div>
+
+    <div>
+      
+        
+<div class="my_post_copyright">
+  <script src="//cdn.bootcss.com/clipboard.js/1.5.10/clipboard.min.js"></script>
+  
+  <!-- JS库 sweetalert 可修改路径 -->
+  <script src="https://cdn.bootcss.com/jquery/2.0.0/jquery.min.js"></script>
+  <script src="https://unpkg.com/sweetalert/dist/sweetalert.min.js"></script>
+  <p><span>本文标题:</span><a href="/blog/2018/03/k8s-best-practices.html">kuberenetes 操作实践</a></p>
+  <p><span>文章作者:</span><a href="/" title="访问 icyboy 的个人博客">icyboy</a></p>
+  <p><span>发布时间:</span>2018年03月08日 - 12:00</p>
+  <p><span>最后更新:</span>2019年04月01日 - 09:34</p>
+  <p><span>原始链接:</span><a href="/blog/2018/03/k8s-best-practices.html" title="kuberenetes 操作实践">http://icyxp.github.io/blog/2018/03/k8s-best-practices.html</a>
+    <span class="copy-path"  title="点击复制文章链接"><i class="fa fa-clipboard" data-clipboard-text="http://icyxp.github.io/blog/2018/03/k8s-best-practices.html"  aria-label="复制成功！"></i></span>
+  </p>
+  <p><span>许可协议:</span><i class="fa fa-creative-commons"></i> <a rel="license" href="https://creativecommons.org/licenses/by-nc-nd/4.0/" target="_blank" title="Attribution-NonCommercial-NoDerivatives 4.0 International (CC BY-NC-ND 4.0)">署名-非商业性使用-禁止演绎 4.0 国际</a> 转载请保留原文链接及作者。</p>  
+</div>
+<script> 
+    var clipboard = new Clipboard('.fa-clipboard');
+    $(".fa-clipboard").click(function(){
+      clipboard.on('success', function(){
+        swal({   
+          title: "",   
+          text: '复制成功',
+          icon: "success", 
+          showConfirmButton: true
+          });
+    });
+    });  
+</script>
+
+
+      
+    </div>
+
+    
+
+    
+      <div>
+        <div style="padding: 10px 0; margin: 20px auto; width: 90%; text-align: center;">
+  <div></div>
+  <button id="rewardButton" disable="enable" onclick="var qr = document.getElementById('QR'); if (qr.style.display === 'none') {qr.style.display='block';} else {qr.style.display='none'}">
+    <span>打赏</span>
+  </button>
+  <div id="QR" style="display: none;">
+
+    
+      <div id="wechat" style="display: inline-block">
+        <img id="wechat_qr" src="/images/wechatpay.jpg" alt="icyboy 微信支付"/>
+        <p>微信支付</p>
+      </div>
+    
+
+    
+      <div id="alipay" style="display: inline-block">
+        <img id="alipay_qr" src="/images/alipay.jpg" alt="icyboy 支付宝"/>
+        <p>支付宝</p>
+      </div>
+    
+
+    
+
+  </div>
+</div>
+
+      </div>
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/k8s/" rel="tag"># k8s</a>
+          
+            <a href="/tags/kubernetes/" rel="tag"># kubernetes</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/blog/2017/08/log-logstash-filter.html" rel="next" title="Logstash filter插件开发">
+                <i class="fa fa-chevron-left"></i> Logstash filter插件开发
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/blog/2018/07/go-升级go1-10-x问题.html" rel="prev" title="Centos 6.x 上升级go 1.10.3">
+                Centos 6.x 上升级go 1.10.3 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+    <div class="comments" id="comments">
+    </div>
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image"
+                src="/images/avatar.jpg"
+                alt="icyboy" />
+            
+              <p class="site-author-name" itemprop="name">icyboy</p>
+              <p class="site-description motion-element" itemprop="description"></p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">37</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-categories">
+                <a href="/categories/index.html">
+                  <span class="site-state-item-count">26</span>
+                  <span class="site-state-item-name">分类</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                <a href="/tags/index.html">
+                  <span class="site-state-item-count">62</span>
+                  <span class="site-state-item-name">标签</span>
+                </a>
+              </div>
+            
+
+          </nav>
+
+          
+            <div class="feed-link motion-element">
+              <a href="/atom.xml" rel="alternate">
+                <i class="fa fa-rss"></i>
+                RSS
+              </a>
+            </div>
+          
+
+          
+            <div class="links-of-author motion-element">
+                
+                  <span class="links-of-author-item">
+                    <a href="https://github.com/icyxp" target="_blank" title="GitHub">
+                      
+                        <i class="fa fa-fw fa-github"></i>GitHub</a>
+                  </span>
+                
+                  <span class="links-of-author-item">
+                    <a href="http://weibo.com/joysteam" target="_blank" title="微博">
+                      
+                        <i class="fa fa-fw fa-weibo"></i>微博</a>
+                  </span>
+                
+                  <span class="links-of-author-item">
+                    <a href="http://www.zhihu.com/people/xupeng" target="_blank" title="知乎">
+                      
+                        <i class="fa fa-fw fa-zhihu"></i>知乎</a>
+                  </span>
+                
+            </div>
+          
+
+          
+          
+
+          
+          
+            <div class="links-of-blogroll motion-element links-of-blogroll-inline">
+              <div class="links-of-blogroll-title">
+                <i class="fa  fa-fw fa-link"></i>
+                友情链接
+              </div>
+              <ul class="links-of-blogroll-list">
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="http://www.zjgsmt.com" title="张家港水蜜桃" target="_blank">张家港水蜜桃</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="http://blog.jiunile.com" title="运维开发" target="_blank">运维开发</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="http://devops.jiunile.com" title="DevOps" target="_blank">DevOps</a>
+                  </li>
+                
+              </ul>
+            </div>
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#常用操作命令"><span class="nav-number">1.</span> <span class="nav-text">常用操作命令</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#常规命令"><span class="nav-number">1.1.</span> <span class="nav-text">常规命令</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#kubernetes-node-常用操作命令"><span class="nav-number">1.2.</span> <span class="nav-text">kubernetes node 常用操作命令</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#如何调整网络插件"><span class="nav-number">2.</span> <span class="nav-text">如何调整网络插件</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#如何将kubeProxy的iptables修改为ipvs"><span class="nav-number">3.</span> <span class="nav-text">如何将kubeProxy的iptables修改为ipvs</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#1-加载内核模块"><span class="nav-number">3.1.</span> <span class="nav-text">1. 加载内核模块</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-更改kube-proxy配置"><span class="nav-number">3.2.</span> <span class="nav-text">2. 更改kube-proxy配置</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-删除所有kube-proxy的pod"><span class="nav-number">3.3.</span> <span class="nav-text">3. 删除所有kube-proxy的pod</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4-查看kube-proxy的pod日志"><span class="nav-number">3.4.</span> <span class="nav-text">4. 查看kube-proxy的pod日志</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#5-安装ipvsadm"><span class="nav-number">3.5.</span> <span class="nav-text">5. 安装ipvsadm</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#kubelet-GC-机制及对应配置"><span class="nav-number">4.</span> <span class="nav-text">kubelet GC 机制及对应配置</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#容器GC"><span class="nav-number">4.1.</span> <span class="nav-text">容器GC</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#镜像GC"><span class="nav-number">4.2.</span> <span class="nav-text">镜像GC</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#使用kubeadm进行cluster升级"><span class="nav-number">5.</span> <span class="nav-text">使用kubeadm进行cluster升级</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#准备升级镜像"><span class="nav-number">5.1.</span> <span class="nav-text">准备升级镜像</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#Master节点下载各版本镜像"><span class="nav-number">5.1.1.</span> <span class="nav-text">Master节点下载各版本镜像</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Node节点下载各版本镜像"><span class="nav-number">5.1.2.</span> <span class="nav-text">Node节点下载各版本镜像</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#节点升级"><span class="nav-number">5.2.</span> <span class="nav-text">节点升级</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#1-8-1升级到1-9-11"><span class="nav-number">5.2.1.</span> <span class="nav-text">1.8.1升级到1.9.11</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#master节点"><span class="nav-number">5.2.1.1.</span> <span class="nav-text">master节点</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#node节点"><span class="nav-number">5.2.1.2.</span> <span class="nav-text">node节点</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#1-9-11升级到1-10-11"><span class="nav-number">5.2.2.</span> <span class="nav-text">1.9.11升级到1.10.11</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#master节点-1"><span class="nav-number">5.2.2.1.</span> <span class="nav-text">master节点</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#node节点-1"><span class="nav-number">5.2.2.2.</span> <span class="nav-text">node节点</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#1-10-11升级到1-11-5"><span class="nav-number">5.2.3.</span> <span class="nav-text">1.10.11升级到1.11.5</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#master节点-2"><span class="nav-number">5.2.3.1.</span> <span class="nav-text">master节点</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#node节点-2"><span class="nav-number">5.2.3.2.</span> <span class="nav-text">node节点</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#1-11-5升级到1-12-3"><span class="nav-number">5.2.4.</span> <span class="nav-text">1.11.5升级到1.12.3</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#master节点-3"><span class="nav-number">5.2.4.1.</span> <span class="nav-text">master节点</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#node节点-3"><span class="nav-number">5.2.4.2.</span> <span class="nav-text">node节点</span></a></li></ol></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#验证"><span class="nav-number">5.3.</span> <span class="nav-text">验证</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#清理镜像"><span class="nav-number">5.4.</span> <span class="nav-text">清理镜像</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#kubeadm-init-config-配置"><span class="nav-number">6.</span> <span class="nav-text">kubeadm init config 配置</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#kubeadm-v1-12"><span class="nav-number">6.1.</span> <span class="nav-text">kubeadm v1.12</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#traefik如何设置路由"><span class="nav-number">7.</span> <span class="nav-text">traefik如何设置路由</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+<div class="copyright">&copy; 2016 &mdash; <span itemprop="copyrightYear">2019</span>
+  <span class="with-love" id="heart">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">icyboy</span>
+
+  
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-area-chart"></i>
+    </span>
+    
+      <span class="post-meta-item-text">Site words total count&#58;</span>
+    
+    <span title="Site words total count">104.2k</span>
+  
+</div>
+
+<div class="powered-by">
+<i class="fa fa-user-md"></i><span id="busuanzi_container_site_uv">
+  本站访客数:<span id="busuanzi_value_site_uv"></span>
+</span>
+</div>
+
+<div class="theme-info">
+  <div class="powered-by"></div>
+  <span class="post-count">博客全站共104.2k字</span>
+</div>
+
+
+
+
+
+
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/canvas-nest/canvas-nest.min.js"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+  <script src="//cdn1.lncld.net/static/js/3.0.4/av-min.js"></script>
+  <script src="//unpkg.com/valine/dist/Valine.min.js"></script>
+  
+  <script type="text/javascript">
+    var GUEST = ['nick','mail','link'];
+    var guest = 'nick,mail,link';
+    guest = guest.split(',').filter(item=>{
+      return GUEST.indexOf(item)>-1;
+    });
+    new Valine({
+        el: '#comments' ,
+        verify: false,
+        notify: false,
+        appId: 'B6yqSmGPw5uBIAfWEqm7Xyws-gzGzoHsz',
+        appKey: '2soiHGUrbGw33caCmkT47236',
+        placeholder: 'Just do it!',
+        avatar:'mm',
+        guest_info:guest,
+        pageSize:'10' || 10,
+    });
+  </script>
+
+
+
+  
+
+  <script type="text/javascript">
+    // Popup Window;
+    var isfetched = false;
+    var isXml = true;
+    // Search DB path;
+    var search_path = "search.xml";
+    if (search_path.length === 0) {
+      search_path = "search.xml";
+    } else if (/json$/i.test(search_path)) {
+      isXml = false;
+    }
+    var path = "/" + search_path;
+    // monitor main search box;
+
+    var onPopupClose = function (e) {
+      $('.popup').hide();
+      $('#local-search-input').val('');
+      $('.search-result-list').remove();
+      $('#no-result').remove();
+      $(".local-search-pop-overlay").remove();
+      $('body').css('overflow', '');
+    }
+
+    function proceedsearch() {
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay"></div>')
+        .css('overflow', 'hidden');
+      $('.search-popup-overlay').click(onPopupClose);
+      $('.popup').toggle();
+      var $localSearchInput = $('#local-search-input');
+      $localSearchInput.attr("autocapitalize", "none");
+      $localSearchInput.attr("autocorrect", "off");
+      $localSearchInput.focus();
+    }
+
+    // search function;
+    var searchFunc = function(path, search_id, content_id) {
+      'use strict';
+
+      // start loading animation
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay">' +
+          '<div id="search-loading-icon">' +
+          '<i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>' +
+          '</div>' +
+          '</div>')
+        .css('overflow', 'hidden');
+      $("#search-loading-icon").css('margin', '20% auto 0 auto').css('text-align', 'center');
+
+      $.ajax({
+        url: path,
+        dataType: isXml ? "xml" : "json",
+        async: true,
+        success: function(res) {
+          // get the contents from search data
+          isfetched = true;
+          $('.popup').detach().appendTo('.header-inner');
+          var datas = isXml ? $("entry", res).map(function() {
+            return {
+              title: $("title", this).text(),
+              content: $("content",this).text(),
+              url: $("url" , this).text()
+            };
+          }).get() : res;
+          var input = document.getElementById(search_id);
+          var resultContent = document.getElementById(content_id);
+          var inputEventFunction = function() {
+            var searchText = input.value.trim().toLowerCase();
+            var keywords = searchText.split(/[\s\-]+/);
+            if (keywords.length > 1) {
+              keywords.push(searchText);
+            }
+            var resultItems = [];
+            if (searchText.length > 0) {
+              // perform local searching
+              datas.forEach(function(data) {
+                var isMatch = false;
+                var hitCount = 0;
+                var searchTextCount = 0;
+                var title = data.title.trim();
+                var titleInLowerCase = title.toLowerCase();
+                var content = data.content.trim().replace(/<[^>]+>/g,"");
+                var contentInLowerCase = content.toLowerCase();
+                var articleUrl = decodeURIComponent(data.url);
+                var indexOfTitle = [];
+                var indexOfContent = [];
+                // only match articles with not empty titles
+                if(title != '') {
+                  keywords.forEach(function(keyword) {
+                    function getIndexByWord(word, text, caseSensitive) {
+                      var wordLen = word.length;
+                      if (wordLen === 0) {
+                        return [];
+                      }
+                      var startPosition = 0, position = [], index = [];
+                      if (!caseSensitive) {
+                        text = text.toLowerCase();
+                        word = word.toLowerCase();
+                      }
+                      while ((position = text.indexOf(word, startPosition)) > -1) {
+                        index.push({position: position, word: word});
+                        startPosition = position + wordLen;
+                      }
+                      return index;
+                    }
+
+                    indexOfTitle = indexOfTitle.concat(getIndexByWord(keyword, titleInLowerCase, false));
+                    indexOfContent = indexOfContent.concat(getIndexByWord(keyword, contentInLowerCase, false));
+                  });
+                  if (indexOfTitle.length > 0 || indexOfContent.length > 0) {
+                    isMatch = true;
+                    hitCount = indexOfTitle.length + indexOfContent.length;
+                  }
+                }
+
+                // show search results
+
+                if (isMatch) {
+                  // sort index by position of keyword
+
+                  [indexOfTitle, indexOfContent].forEach(function (index) {
+                    index.sort(function (itemLeft, itemRight) {
+                      if (itemRight.position !== itemLeft.position) {
+                        return itemRight.position - itemLeft.position;
+                      } else {
+                        return itemLeft.word.length - itemRight.word.length;
+                      }
+                    });
+                  });
+
+                  // merge hits into slices
+
+                  function mergeIntoSlice(text, start, end, index) {
+                    var item = index[index.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    var hits = [];
+                    var searchTextCountInSlice = 0;
+                    while (position + word.length <= end && index.length != 0) {
+                      if (word === searchText) {
+                        searchTextCountInSlice++;
+                      }
+                      hits.push({position: position, length: word.length});
+                      var wordEnd = position + word.length;
+
+                      // move to next position of hit
+
+                      index.pop();
+                      while (index.length != 0) {
+                        item = index[index.length - 1];
+                        position = item.position;
+                        word = item.word;
+                        if (wordEnd > position) {
+                          index.pop();
+                        } else {
+                          break;
+                        }
+                      }
+                    }
+                    searchTextCount += searchTextCountInSlice;
+                    return {
+                      hits: hits,
+                      start: start,
+                      end: end,
+                      searchTextCount: searchTextCountInSlice
+                    };
+                  }
+
+                  var slicesOfTitle = [];
+                  if (indexOfTitle.length != 0) {
+                    slicesOfTitle.push(mergeIntoSlice(title, 0, title.length, indexOfTitle));
+                  }
+
+                  var slicesOfContent = [];
+                  while (indexOfContent.length != 0) {
+                    var item = indexOfContent[indexOfContent.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    // cut out 100 characters
+                    var start = position - 20;
+                    var end = position + 80;
+                    if(start < 0){
+                      start = 0;
+                    }
+                    if (end < position + word.length) {
+                      end = position + word.length;
+                    }
+                    if(end > content.length){
+                      end = content.length;
+                    }
+                    slicesOfContent.push(mergeIntoSlice(content, start, end, indexOfContent));
+                  }
+
+                  // sort slices in content by search text's count and hits' count
+
+                  slicesOfContent.sort(function (sliceLeft, sliceRight) {
+                    if (sliceLeft.searchTextCount !== sliceRight.searchTextCount) {
+                      return sliceRight.searchTextCount - sliceLeft.searchTextCount;
+                    } else if (sliceLeft.hits.length !== sliceRight.hits.length) {
+                      return sliceRight.hits.length - sliceLeft.hits.length;
+                    } else {
+                      return sliceLeft.start - sliceRight.start;
+                    }
+                  });
+
+                  // select top N slices in content
+
+                  var upperBound = parseInt('1');
+                  if (upperBound >= 0) {
+                    slicesOfContent = slicesOfContent.slice(0, upperBound);
+                  }
+
+                  // highlight title and content
+
+                  function highlightKeyword(text, slice) {
+                    var result = '';
+                    var prevEnd = slice.start;
+                    slice.hits.forEach(function (hit) {
+                      result += text.substring(prevEnd, hit.position);
+                      var end = hit.position + hit.length;
+                      result += '<b class="search-keyword">' + text.substring(hit.position, end) + '</b>';
+                      prevEnd = end;
+                    });
+                    result += text.substring(prevEnd, slice.end);
+                    return result;
+                  }
+
+                  var resultItem = '';
+
+                  if (slicesOfTitle.length != 0) {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + highlightKeyword(title, slicesOfTitle[0]) + "</a>";
+                  } else {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + title + "</a>";
+                  }
+
+                  slicesOfContent.forEach(function (slice) {
+                    resultItem += "<a href='" + articleUrl + "'>" +
+                      "<p class=\"search-result\">" + highlightKeyword(content, slice) +
+                      "...</p>" + "</a>";
+                  });
+
+                  resultItem += "</li>";
+                  resultItems.push({
+                    item: resultItem,
+                    searchTextCount: searchTextCount,
+                    hitCount: hitCount,
+                    id: resultItems.length
+                  });
+                }
+              })
+            };
+            if (keywords.length === 1 && keywords[0] === "") {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-search fa-5x" /></div>'
+            } else if (resultItems.length === 0) {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-frown-o fa-5x" /></div>'
+            } else {
+              resultItems.sort(function (resultLeft, resultRight) {
+                if (resultLeft.searchTextCount !== resultRight.searchTextCount) {
+                  return resultRight.searchTextCount - resultLeft.searchTextCount;
+                } else if (resultLeft.hitCount !== resultRight.hitCount) {
+                  return resultRight.hitCount - resultLeft.hitCount;
+                } else {
+                  return resultRight.id - resultLeft.id;
+                }
+              });
+              var searchResultList = '<ul class=\"search-result-list\">';
+              resultItems.forEach(function (result) {
+                searchResultList += result.item;
+              })
+              searchResultList += "</ul>";
+              resultContent.innerHTML = searchResultList;
+            }
+          }
+
+          if ('auto' === 'auto') {
+            input.addEventListener('input', inputEventFunction);
+          } else {
+            $('.search-icon').click(inputEventFunction);
+            input.addEventListener('keypress', function (event) {
+              if (event.keyCode === 13) {
+                inputEventFunction();
+              }
+            });
+          }
+
+          // remove loading animation
+          $(".local-search-pop-overlay").remove();
+          $('body').css('overflow', '');
+
+          proceedsearch();
+        }
+      });
+    }
+
+    // handle and trigger popup window;
+    $('.popup-trigger').click(function(e) {
+      e.stopPropagation();
+      if (isfetched === false) {
+        searchFunc(path, 'local-search-input', 'local-search-result');
+      } else {
+        proceedsearch();
+      };
+    });
+
+    $('.popup-btn-close').click(onPopupClose);
+    $('.popup').click(function(e){
+      e.stopPropagation();
+    });
+    $(document).on('keyup', function (event) {
+      var shouldDismissSearchPopup = event.which === 27 &&
+        $('.search-popup').is(':visible');
+      if (shouldDismissSearchPopup) {
+        onPopupClose();
+      }
+    });
+  </script>
+
+
+
+
+
+  
+
+  
+  <script src="https://cdn1.lncld.net/static/js/av-core-mini-0.6.4.js"></script>
+  <script>AV.initialize("B6yqSmGPw5uBIAfWEqm7Xyws-gzGzoHsz", "2soiHGUrbGw33caCmkT47236");</script>
+  <script>
+    function showTime(Counter) {
+      var query = new AV.Query(Counter);
+      var entries = [];
+      var $visitors = $(".leancloud_visitors");
+
+      $visitors.each(function () {
+        entries.push( $(this).attr("id").trim() );
+      });
+
+      query.containedIn('url', entries);
+      query.find()
+        .done(function (results) {
+          var COUNT_CONTAINER_REF = '.leancloud-visitors-count';
+
+          if (results.length === 0) {
+            $visitors.find(COUNT_CONTAINER_REF).text(0);
+            return;
+          }
+
+          for (var i = 0; i < results.length; i++) {
+            var item = results[i];
+            var url = item.get('url');
+            var time = item.get('time');
+            var element = document.getElementById(url);
+
+            $(element).find(COUNT_CONTAINER_REF).text(time);
+          }
+          for(var i = 0; i < entries.length; i++) {
+            var url = entries[i];
+            var element = document.getElementById(url);
+            var countSpan = $(element).find(COUNT_CONTAINER_REF);
+            if( countSpan.text() == '') {
+              countSpan.text(0);
+            }
+          }
+        })
+        .fail(function (object, error) {
+          console.log("Error: " + error.code + " " + error.message);
+        });
+    }
+
+    function addCount(Counter) {
+      var $visitors = $(".leancloud_visitors");
+      var url = $visitors.attr('id').trim();
+      var title = $visitors.attr('data-flag-title').trim();
+      var query = new AV.Query(Counter);
+
+      query.equalTo("url", url);
+      query.find({
+        success: function(results) {
+          if (results.length > 0) {
+            var counter = results[0];
+            counter.fetchWhenSave(true);
+            counter.increment("time");
+            counter.save(null, {
+              success: function(counter) {
+                var $element = $(document.getElementById(url));
+                $element.find('.leancloud-visitors-count').text(counter.get('time'));
+              },
+              error: function(counter, error) {
+                console.log('Failed to save Visitor num, with error message: ' + error.message);
+              }
+            });
+          } else {
+            var newcounter = new Counter();
+            /* Set ACL */
+            var acl = new AV.ACL();
+            acl.setPublicReadAccess(true);
+            acl.setPublicWriteAccess(true);
+            newcounter.setACL(acl);
+            /* End Set ACL */
+            newcounter.set("title", title);
+            newcounter.set("url", url);
+            newcounter.set("time", 1);
+            newcounter.save(null, {
+              success: function(newcounter) {
+                var $element = $(document.getElementById(url));
+                $element.find('.leancloud-visitors-count').text(newcounter.get('time'));
+              },
+              error: function(newcounter, error) {
+                console.log('Failed to create');
+              }
+            });
+          }
+        },
+        error: function(error) {
+          console.log('Error:' + error.code + " " + error.message);
+        }
+      });
+    }
+
+    $(function() {
+      var Counter = AV.Object.extend("Counter");
+      if ($('.leancloud_visitors').length == 1) {
+        addCount(Counter);
+      } else if ($('.post-title-link').length > 1) {
+        showTime(Counter);
+      }
+    });
+  </script>
+
+
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>
