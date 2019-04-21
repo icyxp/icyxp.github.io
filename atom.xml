@@ -940,11 +940,11 @@
     
       <category term="kubeadm" scheme="http://icyxp.github.io/tags/kubeadm/"/>
     
+      <category term="etcd" scheme="http://icyxp.github.io/tags/etcd/"/>
+    
       <category term="集群" scheme="http://icyxp.github.io/tags/%E9%9B%86%E7%BE%A4/"/>
     
       <category term="ha" scheme="http://icyxp.github.io/tags/ha/"/>
-    
-      <category term="etcd" scheme="http://icyxp.github.io/tags/etcd/"/>
     
   </entry>
   
