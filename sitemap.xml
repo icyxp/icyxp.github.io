@@ -2,23 +2,30 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   
   <url>
-    <loc>http://icyxp.github.io/blog/2019/03/k8s-best-practices.html</loc>
-    
-    <lastmod>2019-04-24T02:52:34.000Z</lastmod>
-    
-  </url>
-  
-  <url>
     <loc>http://icyxp.github.io/pro/k8s/index.html</loc>
     
-    <lastmod>2019-03-20T01:50:23.000Z</lastmod>
+    <lastmod>2019-05-14T02:25:30.000Z</lastmod>
     
   </url>
   
   <url>
     <loc>http://icyxp.github.io/blog/2018/12/k8s-kubeadm-ca-upgdate.html</loc>
     
-    <lastmod>2019-03-20T01:30:27.000Z</lastmod>
+    <lastmod>2019-05-14T02:21:54.000Z</lastmod>
+    
+  </url>
+  
+  <url>
+    <loc>http://icyxp.github.io/blog/2019/05/k8s-kubeadm14-ca-upgrade.html</loc>
+    
+    <lastmod>2019-05-14T02:20:47.000Z</lastmod>
+    
+  </url>
+  
+  <url>
+    <loc>http://icyxp.github.io/blog/2019/03/k8s-best-practices.html</loc>
+    
+    <lastmod>2019-04-24T02:52:34.000Z</lastmod>
     
   </url>
   
