@@ -2,6 +2,13 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   
   <url>
+    <loc>http://icyxp.github.io/blog/2018/12/k8s-kubeadm-ca-upgdate.html</loc>
+    
+    <lastmod>2019-05-14T03:12:00.000Z</lastmod>
+    
+  </url>
+  
+  <url>
     <loc>http://icyxp.github.io/pro/k8s/index.html</loc>
     
     <lastmod>2019-05-14T02:44:45.000Z</lastmod>
@@ -12,13 +19,6 @@
     <loc>http://icyxp.github.io/blog/2019/05/k8s-kubeadm14-ca-upgrade.html</loc>
     
     <lastmod>2019-05-14T02:30:04.000Z</lastmod>
-    
-  </url>
-  
-  <url>
-    <loc>http://icyxp.github.io/blog/2018/12/k8s-kubeadm-ca-upgdate.html</loc>
-    
-    <lastmod>2019-05-14T02:21:54.000Z</lastmod>
     
   </url>
   

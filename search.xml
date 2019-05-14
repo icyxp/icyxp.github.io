@@ -1078,6 +1078,9 @@
 <h2 id="离线一键安装包"><a href="#离线一键安装包" class="headerlink" title="离线一键安装包"></a>离线一键安装包</h2><blockquote>
 <p>k8s 离线一键安装包教程&amp;&amp;地址：<a href="http://team.jiunile.com/pro/k8s/" target="_blank" rel="external">一键安装</a></p>
 </blockquote>
+<h2 id="kubeadm-1-14-证书调整教程"><a href="#kubeadm-1-14-证书调整教程" class="headerlink" title="kubeadm 1.14 证书调整教程"></a>kubeadm 1.14 证书调整教程</h2><blockquote>
+<p><a href="http://team.jiunile.com/blog/2019/05/k8s-kubeadm14-ca-upgrade.html" target="_blank" rel="external">教程地址</a></p>
+</blockquote>
 ]]></content>
     </entry>
     
