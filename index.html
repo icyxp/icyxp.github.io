@@ -485,7 +485,7 @@
                   <span class="post-meta-item-text">字数统计&#58;</span>
                 
                 <span title="字数统计">
-                  714 字
+                  720 字
                 </span>
               
 
@@ -524,7 +524,7 @@
       
         
           <h2 id="问题简述"><a href="#问题简述" class="headerlink" title="问题简述"></a>问题简述</h2><blockquote>
-<p>原本用<code>kubeadm</code>安装的的kubernetes 1.11.x集群升级到1.12.x 后，发现无法将新的node加入到集群中，会出现以下报错信息</p>
+<p>原本用<code>kubeadm</code>安装的的kubernetes 1.11.x集群升级到1.12.x 后（使用<code>kubeadm upgrade</code>升级）发现无法将新的node加入到集群中，会出现以下报错信息</p>
 </blockquote>
 <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">[preflight] running pre-flight checks</span><br><span class="line">    [WARNING RequiredIPVSKernelModulesAvailable]: the IPVS proxier will not be used, because the following required kernel modules are not loaded: [ip_vs_sh ip_vs ip_vs_rr ip_vs_wrr] or no <span class="built_in">builtin</span> kernel ipvs support: map[ip_vs_rr:&#123;&#125; ip_vs_wrr:&#123;&#125; ip_vs_sh:&#123;&#125; nf_conntrack_ipv4:&#123;&#125; ip_vs:&#123;&#125;]</span><br><span class="line">you can solve this problem with following methods:</span><br><span class="line"> 1. Run <span class="string">'modprobe -- '</span> to load missing kernel modules;</span><br><span class="line">2. Provide the missing <span class="built_in">builtin</span> kernel ipvs support</span><br><span class="line"></span><br><span class="line">[discovery] Trying to connect to API Server <span class="string">"172.19.170.254:6443"</span></span><br><span class="line">[discovery] Created cluster-info discovery client, requesting info from <span class="string">"https://172.19.170.254:6443"</span></span><br><span class="line">[discovery] Requesting info from <span class="string">"https://172.19.170.254:6443"</span> again to validate TLS against the pinned public key</span><br><span class="line">[discovery] Cluster info signature and contents are valid and TLS certificate validates against pinned roots, will use API Server <span class="string">"172.19.170.254:6443"</span></span><br><span class="line">[discovery] Successfully established connection with API Server <span class="string">"172.19.170.254:6443"</span></span><br><span class="line">[kubelet] Downloading configuration <span class="keyword">for</span> the kubelet from the <span class="string">"kubelet-config-1.12"</span> ConfigMap <span class="keyword">in</span> the kube-system namespace</span><br><span class="line">configmaps <span class="string">"kubelet-config-1.12"</span> is forbidden: User <span class="string">"system:bootstrap:y1zgt7"</span> cannot get configmaps <span class="keyword">in</span> the namespace <span class="string">"kube-system"</span></span><br></pre></td></tr></table></figure>
           <!--noindex-->
