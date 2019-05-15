@@ -125,7 +125,7 @@
 
 
 
-  <meta name="keywords" content="kubernets,云原生,k8s,容器化,golang,service mesh,devops,网站架构,基础架构,微服务" />
+  <meta name="keywords" content="升级,k8s,kubernetes,kubeadm," />
 
 
 
@@ -138,15 +138,25 @@
 
 
 
-<meta name="description" content="记录分享生活中的点滴">
-<meta property="og:type" content="website">
-<meta property="og:title" content="CloudNative 架构">
-<meta property="og:url" content="http://icyxp.github.io/tags/java/index.html">
+<meta name="description" content="问题简述
+原本用kubeadm安装的的kubernetes 1.11.x集群升级到1.12.x 后，发现无法将新的node加入到集群中，会出现以下报错信息
+
+12345678910111213[preflight] running pre-flight checks    [WARNING RequiredIPVSKernelModulesAvailable]: the IPVS proxier">
+<meta property="og:type" content="article">
+<meta property="og:title" content="kuberenetes 升级后新加入节点报错">
+<meta property="og:url" content="http://icyxp.github.io/blog/2019/05/k8s-kubeadm-up-node-join-failed.html">
 <meta property="og:site_name" content="CloudNative 架构">
-<meta property="og:description" content="记录分享生活中的点滴">
+<meta property="og:description" content="问题简述
+原本用kubeadm安装的的kubernetes 1.11.x集群升级到1.12.x 后，发现无法将新的node加入到集群中，会出现以下报错信息
+
+12345678910111213[preflight] running pre-flight checks    [WARNING RequiredIPVSKernelModulesAvailable]: the IPVS proxier">
+<meta property="og:updated_time" content="2019-05-15T07:57:18.000Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="CloudNative 架构">
-<meta name="twitter:description" content="记录分享生活中的点滴">
+<meta name="twitter:title" content="kuberenetes 升级后新加入节点报错">
+<meta name="twitter:description" content="问题简述
+原本用kubeadm安装的的kubernetes 1.11.x集群升级到1.12.x 后，发现无法将新的node加入到集群中，会出现以下报错信息
+
+12345678910111213[preflight] running pre-flight checks    [WARNING RequiredIPVSKernelModulesAvailable]: the IPVS proxier">
 
 
 
@@ -176,13 +186,13 @@
 
 
 
-  <link rel="canonical" href="http://icyxp.github.io/tags/java/"/>
+  <link rel="canonical" href="http://icyxp.github.io/blog/2019/05/k8s-kubeadm-up-node-join-failed.html"/>
 
 
 
 
 
-  <title>标签: java | CloudNative 架构</title>
+  <title>kuberenetes 升级后新加入节点报错 | CloudNative 架构</title>
   
 
 
@@ -213,7 +223,7 @@
     
   
 
-  <div class="container sidebar-position-left ">
+  <div class="container sidebar-position-left page-post-detail">
     <div class="headband"></div>
     <a href="https://github.com/icyxp"><a href="https://github.com/icyxp" class="github-corner" aria-label="View source on GitHub"><svg width="80" height="80" viewBox="0 0 250 250" style="fill:#151513; color:#fff; position: absolute; top: 0; border: 0; right: 0;" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path></svg></a><style>.github-corner:hover .octo-arm{animation:octocat-wave 560ms ease-in-out}@keyframes octocat-wave{0%,100%{transform:rotate(0)}20%,60%{transform:rotate(-25deg)}40%,80%{transform:rotate(10deg)}}@media (max-width:500px){.github-corner:hover .octo-arm{animation:none}.github-corner .octo-arm{animation:octocat-wave 560ms ease-in-out}}</style></a>
 
@@ -352,54 +362,330 @@
           <div id="content" class="content">
             
 
-  
-  
-  
-  <div class="post-block tag">
+  <div id="posts" class="posts-expand">
+    
 
-    <div id="posts" class="posts-collapse">
-      <div class="collection-title">
-        <h2>java<small>标签</small>
-        </h2>
-      </div>
+  
 
-      
-        
+  
+  
+  
 
   <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-    <header class="post-header">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://icyxp.github.io/blog/2019/05/k8s-kubeadm-up-node-join-failed.html">
 
-      <h3 class="post-title">
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="icyboy">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="CloudNative 架构">
+    </span>
+
+    
+      <header class="post-header">
+
         
-            <a class="post-title-link" href="/blog/2018/07/docker-java与docker的那点事.html" itemprop="url">
-              
-                <span itemprop="name">Java和Docker限制的那些事儿</span>
-              
-            </a>
         
-      </h3>
+          <h2 class="post-title" itemprop="name headline">kuberenetes 升级后新加入节点报错</h2>
+        
 
-      <div class="post-meta">
-        <time class="post-time" itemprop="dateCreated"
-              datetime="2018-07-18T21:30:00+08:00"
-              content="2018-07-18" >
-          07-18
-        </time>
-      </div>
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2019-05-15T20:00:00+08:00">
+                2019-05-15
+              </time>
+            
 
-    </header>
-  </article>
+            
+
+            
+          </span>
+
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/kubernetes/" itemprop="url" rel="index">
+                    <span itemprop="name">kubernetes</span>
+                  </a>
+                </span>
+
+                
+                
+                  ， 
+                
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/kubernetes/升级/" itemprop="url" rel="index">
+                    <span itemprop="name">升级</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+                <a href="/blog/2019/05/k8s-kubeadm-up-node-join-failed.html#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count valine-comment-count" data-xid="/blog/2019/05/k8s-kubeadm-up-node-join-failed.html" itemprop="commentCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+          
+             <span id="/blog/2019/05/k8s-kubeadm-up-node-join-failed.html" class="leancloud_visitors" data-flag-title="kuberenetes 升级后新加入节点报错">
+               <span class="post-meta-divider">|</span>
+               <span class="post-meta-item-icon">
+                 <i class="fa fa-eye"></i>
+               </span>
+               
+                 <span class="post-meta-item-text">热度&#58;</span>
+               
+                 <span class="leancloud-visitors-count"></span>
+		 <span>℃</span>
+             </span>
+          
+
+          
+
+          
+            <div class="post-wordcount">
+              
+                
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-file-word-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">字数统计&#58;</span>
+                
+                <span title="字数统计">
+                  714 字
+                </span>
+              
+
+              
+                <span class="post-meta-divider">|</span>
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-clock-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">阅读时长 &asymp;</span>
+                
+                <span title="阅读时长">
+                  4 分钟
+                </span>
+              
+            </div>
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h2 id="问题简述"><a href="#问题简述" class="headerlink" title="问题简述"></a>问题简述</h2><blockquote>
+<p>原本用<code>kubeadm</code>安装的的kubernetes 1.11.x集群升级到1.12.x 后，发现无法将新的node加入到集群中，会出现以下报错信息</p>
+</blockquote>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">[preflight] running pre-flight checks</span><br><span class="line">    [WARNING RequiredIPVSKernelModulesAvailable]: the IPVS proxier will not be used, because the following required kernel modules are not loaded: [ip_vs_sh ip_vs ip_vs_rr ip_vs_wrr] or no <span class="built_in">builtin</span> kernel ipvs support: map[ip_vs_rr:&#123;&#125; ip_vs_wrr:&#123;&#125; ip_vs_sh:&#123;&#125; nf_conntrack_ipv4:&#123;&#125; ip_vs:&#123;&#125;]</span><br><span class="line">you can solve this problem with following methods:</span><br><span class="line"> 1. Run <span class="string">'modprobe -- '</span> to load missing kernel modules;</span><br><span class="line">2. Provide the missing <span class="built_in">builtin</span> kernel ipvs support</span><br><span class="line"></span><br><span class="line">[discovery] Trying to connect to API Server <span class="string">"172.19.170.254:6443"</span></span><br><span class="line">[discovery] Created cluster-info discovery client, requesting info from <span class="string">"https://172.19.170.254:6443"</span></span><br><span class="line">[discovery] Requesting info from <span class="string">"https://172.19.170.254:6443"</span> again to validate TLS against the pinned public key</span><br><span class="line">[discovery] Cluster info signature and contents are valid and TLS certificate validates against pinned roots, will use API Server <span class="string">"172.19.170.254:6443"</span></span><br><span class="line">[discovery] Successfully established connection with API Server <span class="string">"172.19.170.254:6443"</span></span><br><span class="line">[kubelet] Downloading configuration <span class="keyword">for</span> the kubelet from the <span class="string">"kubelet-config-1.12"</span> ConfigMap <span class="keyword">in</span> the kube-system namespace</span><br><span class="line">configmaps <span class="string">"kubelet-config-1.12"</span> is forbidden: User <span class="string">"system:bootstrap:y1zgt7"</span> cannot get configmaps <span class="keyword">in</span> the namespace <span class="string">"kube-system"</span></span><br></pre></td></tr></table></figure>
+<a id="more"></a>
+<h2 id="修复方法"><a href="#修复方法" class="headerlink" title="修复方法"></a>修复方法</h2><blockquote>
+<p>在master节点上执行步骤1-4，在从节点（将要加入集群的机器）上执行步骤5</p>
+</blockquote>
+<h3 id="步骤一"><a href="#步骤一" class="headerlink" title="步骤一"></a>步骤一</h3><p><strong>从现有的”ConfigMap kubelet-config-1.11” 创建一个新的ConfigMap “kubelet-config-1.12”</strong></p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">$ kubectl get cm --all-namespaces</span><br><span class="line">$ kubectl -n kube-system get cm kubelet-config-1.11 -o yaml --export &gt; kubelet-config-1.12-cm.yaml</span><br><span class="line">$ vim kubelet-config-1.12-cm.yaml       <span class="comment">#modify at the bottom:</span></span><br><span class="line">                                        <span class="comment">#name: kubelet-config-1.12</span></span><br><span class="line">                                        <span class="comment">#delete selfLink</span></span><br><span class="line">$ kubectl -n kube-system create <span class="_">-f</span> kubelet-config-1.12-cm.yaml</span><br></pre></td></tr></table></figure>
+<h3 id="步骤二：获取令牌前缀"><a href="#步骤二：获取令牌前缀" class="headerlink" title="步骤二：获取令牌前缀"></a>步骤二：获取令牌前缀</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">$ kubeadm token list           <span class="comment">#if no output, then create a token:</span></span><br><span class="line">$ kubeadm token create</span><br><span class="line">TOKEN                       ...     ...</span><br><span class="line">a0b1c2.svn4my9ifft4zxgg     ...     ...</span><br><span class="line"><span class="comment"># Token prefix is "a0b1c2"</span></span><br></pre></td></tr></table></figure>
+<h3 id="步骤三"><a href="#步骤三" class="headerlink" title="步骤三"></a>步骤三</h3><p><strong>从现有角色“kubeadm：kubelet-config-1.11”创建一个新角色“kubeadm：kubelet-config-1.12”</strong></p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">$ kubectl get roles --all-namespaces</span><br><span class="line">$ kubectl -n kube-system get role kubeadm:kubelet-config-1.11 -o yaml &gt; kubeadm:kubelet-config-1.12-role.yaml</span><br><span class="line">$ vim kubeadm\:kubelet-config-1.12-role.yaml    <span class="comment">#modify the following:</span></span><br><span class="line">                                                <span class="comment">#name: kubeadm:kubelet-config-1.12</span></span><br><span class="line">                                                <span class="comment">#resourceNames: kubelet-config-1.12</span></span><br><span class="line">                                                <span class="comment">#delete creationTimestamp, resourceVersion, selfLink, uid (because --export option is not supported)    </span></span><br><span class="line">$ kubectl -n kube-system create <span class="_">-f</span> kubeadm\:kubelet-config-1.12-role.yaml</span><br></pre></td></tr></table></figure>
+<h3 id="步骤四"><a href="#步骤四" class="headerlink" title="步骤四"></a>步骤四</h3><p><strong>从现有角色绑定 “kubeadm：kubelet-config-1.11” 创建一个新角色绑定 “kubeadm：kubelet-config-1.12” </strong></p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">$ kubectl get rolebindings --all-namespaces</span><br><span class="line">$ kubectl -n kube-system get rolebinding kubeadm:kubelet-config-1.11 -o yaml &gt; kubeadm:kubelet-config-1.12-rolebinding.yaml</span><br><span class="line">$ vim kubeadm\:kubelet-config-1.12-rolebinding.yaml     <span class="comment">#modify the following:</span></span><br><span class="line">                                                            <span class="comment">#metadata/name: kubeadm:kubelet-config-1.12</span></span><br><span class="line">                                                            <span class="comment">#roleRef/name: kubeadm:kubelet-config-1.12</span></span><br><span class="line">                                                            <span class="comment">#delete creationTimestamp, resourceVersion, selfLink, uid (because --export option is not supported)</span></span><br><span class="line">- apiGroup: rbac.authorization.k8s.io                       <span class="comment">#add these 3 lines as another group in "subjects:" at the bottom, with the 6 character token prefix from STEP 2</span></span><br><span class="line">  kind: Group</span><br><span class="line">  name: system:bootstrap:a0b1c2 </span><br><span class="line">$ kubectl -n kube-system create <span class="_">-f</span> kubeadm\:kubelet-config-1.12-rolebinding.yaml</span><br></pre></td></tr></table></figure>
+<h3 id="步骤5：从工作节点启动kubeadm-join"><a href="#步骤5：从工作节点启动kubeadm-join" class="headerlink" title="步骤5：从工作节点启动kubeadm join"></a>步骤5：从工作节点启动kubeadm join</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">$ sudo kubeadm join --token &lt;token&gt; &lt;master-IP&gt;:6443 --discovery-token-ca-cert-hash sha256:&lt;key-value&gt; </span><br><span class="line"><span class="comment"># If you receive 2 ERRORS, run kubeadm join again with the following options:</span></span><br><span class="line">$ sudo kubeadm join --token &lt;token&gt; &lt;master-IP&gt;:6443 --discovery-token-ca-cert-hash sha256:&lt;key-value&gt; --ignore-preflight-errors=FileAvailable--etc-kubernetes-bootstrap-kubelet.conf,FileAvailable--etc-kubernetes-pki-ca.crt</span><br></pre></td></tr></table></figure>
+
+      
+    </div>
+    
+    
+    
+
+    <div>
+    
+        <div>
+    
+        <div style="text-align:center;color: #ccc;font-size:14px;">-------------本文结束<i class="fa fa-paw"></i>感谢您的阅读-------------</div>
+    
+</div>
+
+    
+    </div>
+
+    <div>
+      
+        
+<div class="my_post_copyright">
+  <script src="//cdn.bootcss.com/clipboard.js/1.5.10/clipboard.min.js"></script>
+  
+  <!-- JS库 sweetalert 可修改路径 -->
+  <script src="https://cdn.bootcss.com/jquery/2.0.0/jquery.min.js"></script>
+  <script src="https://unpkg.com/sweetalert/dist/sweetalert.min.js"></script>
+  <p><span>本文标题:</span><a href="/blog/2019/05/k8s-kubeadm-up-node-join-failed.html">kuberenetes 升级后新加入节点报错</a></p>
+  <p><span>文章作者:</span><a href="/" title="访问 icyboy 的个人博客">icyboy</a></p>
+  <p><span>发布时间:</span>2019年05月15日 - 20:00</p>
+  <p><span>最后更新:</span>2019年05月15日 - 15:57</p>
+  <p><span>原始链接:</span><a href="/blog/2019/05/k8s-kubeadm-up-node-join-failed.html" title="kuberenetes 升级后新加入节点报错">http://icyxp.github.io/blog/2019/05/k8s-kubeadm-up-node-join-failed.html</a>
+    <span class="copy-path"  title="点击复制文章链接"><i class="fa fa-clipboard" data-clipboard-text="http://icyxp.github.io/blog/2019/05/k8s-kubeadm-up-node-join-failed.html"  aria-label="复制成功！"></i></span>
+  </p>
+  <p><span>许可协议:</span><i class="fa fa-creative-commons"></i> <a rel="license" href="https://creativecommons.org/licenses/by-nc-nd/4.0/" target="_blank" title="Attribution-NonCommercial-NoDerivatives 4.0 International (CC BY-NC-ND 4.0)">署名-非商业性使用-禁止演绎 4.0 国际</a> 转载请保留原文链接及作者。</p>  
+</div>
+<script> 
+    var clipboard = new Clipboard('.fa-clipboard');
+    $(".fa-clipboard").click(function(){
+      clipboard.on('success', function(){
+        swal({   
+          title: "",   
+          text: '复制成功',
+          icon: "success", 
+          showConfirmButton: true
+          });
+    });
+    });  
+</script>
 
 
       
     </div>
 
+    
+
+    
+      <div>
+        <div style="padding: 10px 0; margin: 20px auto; width: 90%; text-align: center;">
+  <div></div>
+  <button id="rewardButton" disable="enable" onclick="var qr = document.getElementById('QR'); if (qr.style.display === 'none') {qr.style.display='block';} else {qr.style.display='none'}">
+    <span>打赏</span>
+  </button>
+  <div id="QR" style="display: none;">
+
+    
+      <div id="wechat" style="display: inline-block">
+        <img id="wechat_qr" src="/images/wechatpay.jpg" alt="icyboy 微信支付"/>
+        <p>微信支付</p>
+      </div>
+    
+
+    
+      <div id="alipay" style="display: inline-block">
+        <img id="alipay_qr" src="/images/alipay.jpg" alt="icyboy 支付宝"/>
+        <p>支付宝</p>
+      </div>
+    
+
+    
+
+  </div>
+</div>
+
+      </div>
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/升级/" rel="tag"># 升级</a>
+          
+            <a href="/tags/k8s/" rel="tag"># k8s</a>
+          
+            <a href="/tags/kubernetes/" rel="tag"># kubernetes</a>
+          
+            <a href="/tags/kubeadm/" rel="tag"># kubeadm</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/blog/2019/05/k8s-kubeadm14-ca-upgrade.html" rel="next" title="Kubeadm1.14 证书调整">
+                <i class="fa fa-chevron-left"></i> Kubeadm1.14 证书调整
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
   </div>
   
   
   
+  </article>
 
-  
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
 
 
           </div>
@@ -407,6 +693,13 @@
 
 
           
+
+  
+    <div class="comments" id="comments">
+    </div>
+  
+
+
 
         </div>
         
@@ -427,8 +720,17 @@
       
 
       
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
 
-      <section class="site-overview-wrap sidebar-panel sidebar-panel-active">
+      <section class="site-overview-wrap sidebar-panel">
         <div class="site-overview">
           <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
             
@@ -543,6 +845,22 @@
         </div>
       </section>
 
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#问题简述"><span class="nav-number">1.</span> <span class="nav-text">问题简述</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#修复方法"><span class="nav-number">2.</span> <span class="nav-text">修复方法</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#步骤一"><span class="nav-number">2.1.</span> <span class="nav-text">步骤一</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#步骤二：获取令牌前缀"><span class="nav-number">2.2.</span> <span class="nav-text">步骤二：获取令牌前缀</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#步骤三"><span class="nav-number">2.3.</span> <span class="nav-text">步骤三</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#步骤四"><span class="nav-number">2.4.</span> <span class="nav-text">步骤四</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#步骤5：从工作节点启动kubeadm-join"><span class="nav-number">2.5.</span> <span class="nav-text">步骤5：从工作节点启动kubeadm join</span></a></li></ol></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
       
 
       
@@ -699,6 +1017,10 @@
   
 
   
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
 
   
 
