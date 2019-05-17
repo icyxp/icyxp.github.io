@@ -2,6 +2,13 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   
   <url>
+    <loc>http://icyxp.github.io/blog/2019/05/k8s-k8s-runtime.html</loc>
+    
+    <lastmod>2019-05-17T01:52:12.000Z</lastmod>
+    
+  </url>
+  
+  <url>
     <loc>http://icyxp.github.io/blog/2019/05/k8s-online-close-tcp-socket.html</loc>
     
     <lastmod>2019-05-16T08:22:11.000Z</lastmod>
