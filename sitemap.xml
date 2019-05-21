@@ -2,6 +2,13 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   
   <url>
+    <loc>http://icyxp.github.io/blog/2019/05/k8s-calico-troubleshooting.html</loc>
+    
+    <lastmod>2019-05-21T02:40:48.000Z</lastmod>
+    
+  </url>
+  
+  <url>
     <loc>http://icyxp.github.io/blog/2019/05/k8s-k8s-runtime.html</loc>
     
     <lastmod>2019-05-17T01:52:12.000Z</lastmod>

@@ -1,0 +1,1550 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next mist use-motion" lang="zh-Hans">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+<script src="//cdn.bootcss.com/pace/1.0.2/pace.min.js"></script>
+<link href="//cdn.bootcss.com/pace/1.0.2/themes/pink/pace-theme-flash.css" rel="stylesheet">
+<script>
+    (function () {
+        if ('') {
+            if (prompt('请输入文章密码') !== '') {
+                alert('密码错误！');
+                if (history.length === 1) {
+                    location.replace("http://team.jiunile.com"); // 这里替换成你的首页
+                } else {
+                    history.back();
+                }
+            }
+        }
+    })();
+</script>
+<meta name="theme-color" content="#222">
+<style>
+    .pace .pace-progress {
+        background: #1E92FB; /*进度条颜色*/
+        height: 2px;
+    }
+    .pace .pace-progress-inner {
+         box-shadow: 0 0 10px #1E92FB, 0 0 5px     #1E92FB; /*阴影颜色*/
+    }
+    .pace .pace-activity {
+        border-top-color: #1E92FB;    /*上边框颜色*/
+        border-left-color: #1E92FB;    /*左边框颜色*/
+    }
+</style>
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+<!--
+  <script>
+  (function(i,s,o,g,r,a,m){i["DaoVoiceObject"]=r;i[r]=i[r]||function(){(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;a.charset="utf-8";m.parentNode.insertBefore(a,m)})(window,document,"script",('https:' == document.location.protocol ? 'https:' : 'http:') + "//widget.daovoice.io/widget/0f81ff2f.js","daovoice")
+  daovoice('init', {
+      app_id: "2a2a668f"
+    });
+  daovoice('update');
+  </script>
+-->
+<script type='text/javascript'>
+  (function (window, a, b) {
+    window[a] = window[a] || function () {
+        (window[a].a = window[a].a || []).push(arguments)
+    };
+    window[b] = window[b] || function () {
+        (window[b].a = window[b].a || []).push(arguments)
+    };
+    var s = document.createElement("script");
+    s.src = "https://jsapi.weiliaokefu.com/Public/dist/js/jsapi.js?v=" + Math.round(Math.random() * 1000);
+    s.async = true;
+    s.charset = "UTF-8";
+    document.getElementsByTagName("head")[0].appendChild(s);
+  })(window, '_FENBOT', "_FENBOT_API");
+  _FENBOT({cid: '36159', type: '0'});
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/favicon.ico?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon.ico?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon.ico?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/favicon.ico?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="k8s,calico,问题排障," />
+
+
+
+
+
+  <link rel="alternate" href="/atom.xml" title="CloudNative 架构" type="application/atom+xml" />
+
+
+
+
+
+
+<meta name="description" content="故障一问题表现集群中有台node服务器因为资源达到上限出现假死现状，重启后发现calico node 无法启动成功，提示如下信息：1:Readiness probe failed: caliconode is not ready: BIRD is not ready: BGP not established with 172.18.0.1
+使用calicoctl node status 命令查看n">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Calico 问题排障">
+<meta property="og:url" content="http://icyxp.github.io/blog/2019/05/k8s-calico-troubleshooting.html">
+<meta property="og:site_name" content="CloudNative 架构">
+<meta property="og:description" content="故障一问题表现集群中有台node服务器因为资源达到上限出现假死现状，重启后发现calico node 无法启动成功，提示如下信息：1:Readiness probe failed: caliconode is not ready: BIRD is not ready: BGP not established with 172.18.0.1
+使用calicoctl node status 命令查看n">
+<meta property="og:updated_time" content="2019-05-21T02:40:48.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Calico 问题排障">
+<meta name="twitter:description" content="故障一问题表现集群中有台node服务器因为资源达到上限出现假死现状，重启后发现calico node 无法启动成功，提示如下信息：1:Readiness probe failed: caliconode is not ready: BIRD is not ready: BGP not established with 172.18.0.1
+使用calicoctl node status 命令查看n">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Mist',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://icyxp.github.io/blog/2019/05/k8s-calico-troubleshooting.html"/>
+
+
+
+
+
+  <title>Calico 问题排障 | CloudNative 架构</title>
+  
+
+
+
+
+
+  <script type="text/javascript">
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "https://hm.baidu.com/hm.js?7bfa7aba4938440964dd1a348aed977e";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+
+
+
+  <!-- 页面点击小红心 -->
+  <script type="text/javascript" src="/js/src/love.js"></script>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+    <a href="https://github.com/icyxp"><a href="https://github.com/icyxp" class="github-corner" aria-label="View source on GitHub"><svg width="80" height="80" viewBox="0 0 250 250" style="fill:#151513; color:#fff; position: absolute; top: 0; border: 0; right: 0;" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path></svg></a><style>.github-corner:hover .octo-arm{animation:octocat-wave 560ms ease-in-out}@keyframes octocat-wave{0%,100%{transform:rotate(0)}20%,60%{transform:rotate(-25deg)}40%,80%{transform:rotate(10deg)}}@media (max-width:500px){.github-corner:hover .octo-arm{animation:none}.github-corner .octo-arm{animation:octocat-wave 560ms ease-in-out}}</style></a>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">CloudNative 架构</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <h1 class="site-subtitle" itemprop="description">CloudNative|云原生应用架构|云原生架构|容器化架构|微服务架构|平台架构|基础架构</h1>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br />
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-k8s">
+          <a href="/pro/k8s/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-heartbeat"></i> <br />
+            
+            k8s离线安装包
+          </a>
+        </li>
+      
+
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="popup-trigger">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br />
+            
+            搜索
+          </a>
+        </li>
+      
+    </ul>
+  
+
+  
+    <div class="site-search">
+      
+  <div class="popup search-popup local-search-popup">
+  <div class="local-search-header clearfix">
+    <span class="search-icon">
+      <i class="fa fa-search"></i>
+    </span>
+    <span class="popup-btn-close">
+      <i class="fa fa-times-circle"></i>
+    </span>
+    <div class="local-search-input-wrapper">
+      <input autocomplete="off"
+             placeholder="搜索..." spellcheck="false"
+             type="text" id="local-search-input">
+    </div>
+  </div>
+  <div id="local-search-result"></div>
+</div>
+
+
+
+    </div>
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://icyxp.github.io/blog/2019/05/k8s-calico-troubleshooting.html">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="icyboy">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="CloudNative 架构">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h2 class="post-title" itemprop="name headline">Calico 问题排障</h2>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2019-05-21T12:00:00+08:00">
+                2019-05-21
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/calico/" itemprop="url" rel="index">
+                    <span itemprop="name">calico</span>
+                  </a>
+                </span>
+
+                
+                
+                  ， 
+                
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/calico/问题排障/" itemprop="url" rel="index">
+                    <span itemprop="name">问题排障</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+                <a href="/blog/2019/05/k8s-calico-troubleshooting.html#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count valine-comment-count" data-xid="/blog/2019/05/k8s-calico-troubleshooting.html" itemprop="commentCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+          
+             <span id="/blog/2019/05/k8s-calico-troubleshooting.html" class="leancloud_visitors" data-flag-title="Calico 问题排障">
+               <span class="post-meta-divider">|</span>
+               <span class="post-meta-item-icon">
+                 <i class="fa fa-eye"></i>
+               </span>
+               
+                 <span class="post-meta-item-text">热度&#58;</span>
+               
+                 <span class="leancloud-visitors-count"></span>
+		 <span>℃</span>
+             </span>
+          
+
+          
+
+          
+            <div class="post-wordcount">
+              
+                
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-file-word-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">字数统计&#58;</span>
+                
+                <span title="字数统计">
+                  2,380 字
+                </span>
+              
+
+              
+                <span class="post-meta-divider">|</span>
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-clock-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">阅读时长 &asymp;</span>
+                
+                <span title="阅读时长">
+                  12 分钟
+                </span>
+              
+            </div>
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h2 id="故障一"><a href="#故障一" class="headerlink" title="故障一"></a>故障一</h2><h3 id="问题表现"><a href="#问题表现" class="headerlink" title="问题表现"></a>问题表现</h3><p>集群中有台node服务器因为资源达到上限出现假死现状，重启后发现calico node 无法启动成功，提示如下信息：<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">:Readiness probe failed: caliconode is not ready: BIRD is not ready: BGP not established with 172.18.0.1</span><br></pre></td></tr></table></figure></p>
+<p>使用<code>calicoctl node status</code> 命令查看node状态信息提示如下：<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">Calico process is running.</span><br><span class="line"></span><br><span class="line">IPv4 BGP status</span><br><span class="line">+--------------+-------------------+-------+----------+--------------------------------+</span><br><span class="line">| PEER ADDRESS |     PEER TYPE     | STATE |  SINCE   |              INFO              |</span><br><span class="line">+--------------+-------------------+-------+----------+--------------------------------+</span><br><span class="line">| 172.18.0.1   | node-to-node mesh | start | 01:56:41 | Connect Socket: Network        |</span><br><span class="line">|              |                   |       |          | unreachable                    |</span><br><span class="line">+--------------+-------------------+-------+----------+--------------------------------+</span><br></pre></td></tr></table></figure></p>
+<a id="more"></a>
+<h3 id="问题排查"><a href="#问题排查" class="headerlink" title="问题排查"></a>问题排查</h3><p>在BGP网络中出现了一个未知的IP地址172.18.0.1，我们集群中的机器都是10开头的网络地址，所以登录有问题的机器上查看对应的网络信息 <code>ip a</code>，结果如下：<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">14: br-3a10a9384428: &lt;BROADCAST,MULTICAST,UP,LOWER_UP&gt; mtu 1500 qdisc noqueue state UP group default</span><br><span class="line">    link/ether 02:42:3a:f3:45:18 brd ff:ff:ff:ff:ff:ff</span><br><span class="line">    inet 172.18.0.1/16 brd 172.18.255.255 scope global br-3a10a9384428</span><br><span class="line">       valid_lft forever preferred_lft forever</span><br><span class="line">    inet6 fe80::42:3aff:fef3:4518/64 scope link</span><br><span class="line">       valid_lft forever preferred_lft forever</span><br></pre></td></tr></table></figure></p>
+<p>后来咨询了相关同事，结果是同事在node机器上用docker启动了<a href="https://github.com/google/cadvisor" target="_blank" rel="external"><code>advisor</code></a> 这个容器监控程序，所以会产生一块虚拟网卡出来。</p>
+<h3 id="问题处理"><a href="#问题处理" class="headerlink" title="问题处理"></a>问题处理</h3><h4 id="方案一"><a href="#方案一" class="headerlink" title="方案一"></a>方案一</h4><p>将<code>advisor</code> 改成使用二进制文件启动，不使用容器启动，则不会产生虚拟网络设备</p>
+<h4 id="方案二"><a href="#方案二" class="headerlink" title="方案二"></a>方案二</h4><p>调整calicao 网络插件的网卡发现机制，修改<code>IP_AUTODETECTION_METHOD</code>对应的value值。官方提供的yaml文件中，ip识别策略（IPDETECTMETHOD）没有配置，即默认为first-found，这会导致一个网络异常的ip作为nodeIP被注册，从而影响<code>node-to-node mesh</code>。我们可以修改成<code>can-reach</code>或者<code>interface</code>的策略，尝试连接某一个Ready的node的IP，以此选择出正确的IP。</p>
+<ul>
+<li><p><strong>can-reach</strong> 使用您的本地路由来确定将使用哪个IP地址到达提供的目标。可以使用IP地址和域名。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># Using IP addresses</span></span><br><span class="line">IP_AUTODETECTION_METHOD=can-reach=8.8.8.8</span><br><span class="line">IP6_AUTODETECTION_METHOD=can-reach=2001:4860:4860::8888</span><br><span class="line"></span><br><span class="line"><span class="comment"># Using domain names</span></span><br><span class="line">IP_AUTODETECTION_METHOD=can-reach=www.google.com</span><br><span class="line">IP6_AUTODETECTION_METHOD=can-reach=www.google.com</span><br></pre></td></tr></table></figure>
+</li>
+<li><p><strong>interface</strong> 使用提供的接口正则表达式（golang语法）枚举匹配的接口并返回第一个匹配接口上的第一个IP地址。列出接口和IP地址的顺序取决于系统。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># Valid IP address on interface eth0, eth1, eth2 etc.</span></span><br><span class="line">IP_AUTODETECTION_METHOD=interface=eth.*</span><br><span class="line">IP6_AUTODETECTION_METHOD=interface=eth.*</span><br></pre></td></tr></table></figure>
+</li>
+</ul>
+<h2 id="故障二"><a href="#故障二" class="headerlink" title="故障二"></a>故障二</h2><h3 id="问题表现-1"><a href="#问题表现-1" class="headerlink" title="问题表现"></a>问题表现</h3><p>将某台新机器（aws美东区域）加到容器集群之后，发现该节点没法加入到容器集群里面。</p>
+<p>该节点的calico-node启动后不久反复的crash重启。crash前的log如下：<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># kubectl logs -f calico-node-wm6bb  -n kube-system -c calico-node</span></span><br><span class="line">Skipping datastore connection <span class="built_in">test</span></span><br><span class="line">Using autodetected IPv4 address 10.12.13.12/24 on matching interface eth0</span><br></pre></td></tr></table></figure></p>
+<p>恰巧新加坡和美东区域各有一台闲置机器，尝试将这两台机器加入calico网络。发现新加坡机器成功加入到calico网络，而美东机器加入calico失败，且失败表现相同。</p>
+<p>这究竟是什么鬼原因？</p>
+<h3 id="问题排查-1"><a href="#问题排查-1" class="headerlink" title="问题排查"></a>问题排查</h3><h4 id="排除ETCD连接问题"><a href="#排除ETCD连接问题" class="headerlink" title="排除ETCD连接问题"></a>排除ETCD连接问题</h4><p>calico-node启动阶段会访问etcd获取集群网络配置，所以首先怀疑会不会是节点连接etcd失败。</p>
+<p>在问题节点上，尝试访问etcd：<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#  curl --cacert /etc/cni/net.d/calico-tls/etcd-ca --cert /etc/cni/net.d/calico-tls/etcd-cert --key /etc/cni/net.d/calico-tls/etcd-key https://[ETCD服务IP]:2379/health</span></span><br><span class="line">&#123;<span class="string">"health"</span>: <span class="string">"true"</span>&#125;</span><br></pre></td></tr></table></figure></p>
+<p>发现可以连上etcd。那么可以排除etcd连接问题。</p>
+<h4 id="排除AWS路由表限制"><a href="#排除AWS路由表限制" class="headerlink" title="排除AWS路由表限制"></a>排除AWS路由表限制</h4><p><a href="https://docs.aws.amazon.com/vpc/latest/userguide/amazon-vpc-limits.html#vpc-limits-route-tables" target="_blank" rel="external">AWS EC2路由表有50条的数量限制</a> ，这有可能会限制集群的节点数上限。<a href="https://docs.projectcalico.org/v3.2/reference/public-cloud/aws" target="_blank" rel="external">但根据calico官方文档，calico应该不受aws 50节点的限制</a> :<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">No 50 Node Limit: Calico allows you to surpass the 50 node <span class="built_in">limit</span>, <span class="built_in">which</span> exists as a consequence of the AWS 50 route <span class="built_in">limit</span> when using the VPC routing table.</span><br></pre></td></tr></table></figure></p>
+<p>而且，我们的集群节点数已经超出50（目前节点数53）。</p>
+<p>至此，排除AWS路由表原因。</p>
+<h4 id="排除aws-security-groups影响"><a href="#排除aws-security-groups影响" class="headerlink" title="排除aws security groups影响"></a>排除aws security groups影响</h4><p>仔细看了<a href="https://docs.projectcalico.org/v2.6/reference/public-cloud/aws" target="_blank" rel="external">calico的aws部署说明，其中提到需要配置aws安全组，允许BGP和IPIP通信</a>，会不会因为公司aws美东区域安全组配置的原因？</p>
+<p>查看美东那两台问题机器的security-groups是 DY-Default-10.12，而其他机器的 security-groups是DY-Default-10.12。很失望。可以排除aws security group的影响。</p>
+<h4 id="最终原因"><a href="#最终原因" class="headerlink" title="最终原因"></a>最终原因</h4><p>至此，问题原因仍毫无头绪。只好找来<a href="https://github.com/projectcalico/node/blob/4db4e815e47885db77957e113a18269fa1ce0ffd/pkg/startup/startup.go#L233" target="_blank" rel="external">calico node的启动代码</a>来看看。</p>
+<p>期间发现，calico node启动时是依据<code>CALICO_STARTUP_LOGLEVEL</code>环境变量来设置log级别。考虑到出问题的calico node输出的log实在是太少，修改calico node的daemonset配置，将log等级设置成最低的DEBUG级别：<br><figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">spec:</span></span><br><span class="line"><span class="attr">  containers:</span></span><br><span class="line"><span class="attr">  - env:</span></span><br><span class="line"><span class="attr">    - name:</span> CALICO_STARTUP_LOGLEVEL</span><br><span class="line"><span class="attr">      value:</span> DEBUG</span><br></pre></td></tr></table></figure></p>
+<p>重启问题节点的calico-node，果然输出了更多的log：<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># kubectl logs -f calico-node-jz7cz -n kube-system -c calico-node </span></span><br><span class="line">time=<span class="string">"2018-10-31T07:47:16Z"</span> level=info msg=<span class="string">"Early log level set to debug"</span> </span><br><span class="line">time=<span class="string">"2018-10-31T07:47:16Z"</span> level=info msg=<span class="string">"NODENAME environment not specified - check HOSTNAME"</span> </span><br><span class="line">time=<span class="string">"2018-10-31T07:47:16Z"</span> level=info msg=<span class="string">"Loading config from environment"</span> </span><br><span class="line">time=<span class="string">"2018-10-31T07:47:16Z"</span> level=debug msg=<span class="string">"Using datastore type 'etcdv2'"</span> </span><br><span class="line">Skipping datastore connection <span class="built_in">test</span></span><br><span class="line">time=<span class="string">"2018-10-31T07:47:16Z"</span> level=debug msg=<span class="string">"Validate name: AMZ-IAD12-OpsResPool-13-33"</span> </span><br><span class="line">time=<span class="string">"2018-10-31T07:47:16Z"</span> level=debug msg=<span class="string">"Get Key: /calico/v1/host/AMZ-IAD12-OpsResPool-13-33/metadata"</span> </span><br><span class="line">time=<span class="string">"2018-10-31T07:47:17Z"</span> level=debug msg=<span class="string">"Key not found error"</span> </span><br><span class="line">time=<span class="string">"2018-10-31T07:47:17Z"</span> level=debug msg=<span class="string">"Key not found error"</span> </span><br><span class="line">time=<span class="string">"2018-10-31T07:47:17Z"</span> level=info msg=<span class="string">"Building new node resource"</span> Name=AMZ-IAD12-OpsResPool-13-33 </span><br><span class="line">time=<span class="string">"2018-10-31T07:47:17Z"</span> level=info msg=<span class="string">"Initialise BGP data"</span> </span><br><span class="line">time=<span class="string">"2018-10-31T07:47:17Z"</span> level=debug msg=<span class="string">"Querying interface addresses"</span> Interface=eth0 </span><br><span class="line">time=<span class="string">"2018-10-31T07:47:17Z"</span> level=debug msg=<span class="string">"Found valid IP address and network"</span> CIDR=10.12.13.33/24 </span><br><span class="line">time=<span class="string">"2018-10-31T07:47:17Z"</span> level=debug msg=<span class="string">"Check interface"</span> Name=eth0 </span><br><span class="line">time=<span class="string">"2018-10-31T07:47:17Z"</span> level=debug msg=<span class="string">"Check address"</span> CIDR=10.12.13.33/24 </span><br><span class="line">Using autodetected IPv4 address 10.12.13.33/24 on matching interface eth0</span><br><span class="line">time=<span class="string">"2018-10-31T07:47:17Z"</span> level=info msg=<span class="string">"Node IPv4 changed, will check for conflicts"</span> </span><br><span class="line">time=<span class="string">"2018-10-31T07:47:17Z"</span> level=debug msg=<span class="string">"Listing all host metadatas"</span> </span><br><span class="line">time=<span class="string">"2018-10-31T07:47:17Z"</span> level=debug msg=<span class="string">"Parse host directories."</span> </span><br><span class="line">time=<span class="string">"2018-10-31T07:47:17Z"</span> level=debug msg=<span class="string">"Get Node key from /calico/v1/host/AMZ-IAD12-Coupon-35-221/metadata"</span> </span><br><span class="line">time=<span class="string">"2018-10-31T07:47:17Z"</span> level=debug msg=<span class="string">"Get Node key from /calico/v1/host/AMZ-IAD12-Coupon-35-222/metadata"</span> </span><br><span class="line">time=<span class="string">"2018-10-31T07:47:17Z"</span> level=debug msg=<span class="string">"Get Node key from /calico/v1/host/AMZ-IAD12-OpsResPool-13-31/metadata"</span> </span><br><span class="line"></span><br><span class="line">.... 省略类似<span class="built_in">log</span> ....</span><br><span class="line"></span><br><span class="line">time=<span class="string">"2018-10-31T07:47:26Z"</span> level=debug msg=<span class="string">"Get Key: /calico/bgp/v1/host/AMZ-OR39-CTR-135-60/ip_addr_v4"</span> </span><br><span class="line">time=<span class="string">"2018-10-31T07:47:26Z"</span> level=debug msg=<span class="string">"Get Key: /calico/bgp/v1/host/AMZ-OR39-CTR-135-60/network_v4"</span> </span><br><span class="line">time=<span class="string">"2018-10-31T07:47:26Z"</span> level=debug msg=<span class="string">"Get Key: /calico/bgp/v1/host/AMZ-OR39-CTR-135-60/ip_addr_v6"</span> </span><br><span class="line">time=<span class="string">"2018-10-31T07:47:26Z"</span> level=debug msg=<span class="string">"Get Key: /calico/bgp/v1/host/AMZ-OR39-CTR-135-60/network_v6"</span> </span><br><span class="line">time=<span class="string">"2018-10-31T07:47:26Z"</span> level=debug msg=<span class="string">"Key not found error"</span> </span><br><span class="line">time=<span class="string">"2018-10-31T07:47:26Z"</span> level=debug msg=<span class="string">"Get Key: /calico/bgp/v1/host/AMZ-OR39-CTR-135-60/as_num"</span> </span><br><span class="line">time=<span class="string">"2018-10-31T07:47:27Z"</span> level=debug msg=<span class="string">"Key not found error"</span> </span><br><span class="line">time=<span class="string">"2018-10-31T07:47:27Z"</span> level=debug msg=<span class="string">"Get Key: /calico/v1/host/AMZ-OR39-CTR-135-60/orchestrator_refs"</span> </span><br><span class="line"></span><br><span class="line">.... 省略类似<span class="built_in">log</span> ....</span><br><span class="line"></span><br><span class="line">time=<span class="string">"2018-10-31T07:48:12Z"</span> level=debug msg=<span class="string">"Get Key: /calico/bgp/v1/host/AMZ-SIN8-OpsResPool-33-62/ip_addr_v4"</span> </span><br><span class="line">time=<span class="string">"2018-10-31T07:48:13Z"</span> level=debug msg=<span class="string">"Get Key: /calico/bgp/v1/host/AMZ-SIN8-OpsResPool-33-62/network_v4"</span> </span><br><span class="line">time=<span class="string">"2018-10-31T07:48:13Z"</span> level=debug msg=<span class="string">"Get Key: /calico/bgp/v1/host/AMZ-SIN8-OpsResPool-33-62/ip_addr_v6"</span> </span><br><span class="line">time=<span class="string">"2018-10-31T07:48:13Z"</span> level=debug msg=<span class="string">"Get Key: /calico/bgp/v1/host/AMZ-SIN8-OpsResPool-33-62/network_v6"</span> </span><br><span class="line">time=<span class="string">"2018-10-31T07:48:13Z"</span> level=debug msg=<span class="string">"Key not found error"</span> </span><br><span class="line">time=<span class="string">"2018-10-31T07:48:13Z"</span> level=debug msg=<span class="string">"Get Key: /calico/bgp/v1/host/AMZ-SIN8-OpsResPool-33-62/as_num"</span> </span><br><span class="line">time=<span class="string">"2018-10-31T07:48:14Z"</span> level=debug msg=<span class="string">"Key not found error"</span> </span><br><span class="line">time=<span class="string">"2018-10-31T07:48:14Z"</span> level=debug msg=<span class="string">"Get Key: /calico/v1/host/AMZ-SIN8-OpsResPool-33-62/orchestrator_refs"</span> </span><br><span class="line">time=<span class="string">"2018-10-31T07:48:14Z"</span> level=debug msg=<span class="string">"Get Key: /calico/bgp/v1/host/AMZ-SIN8-OpsResPool-33-63/ip_addr_v4"</span></span><br></pre></td></tr></table></figure></p>
+<p>输出完上面的log后，calico-node就被重启了，是什么原因呢？</p>
+<p>根据calico node的代码，<a href="https://github.com/projectcalico/node/blob/4db4e815e47885db77957e113a18269fa1ce0ffd/pkg/startup/startup.go#L1003" target="_blank" rel="external">如果calico node启动失败，那退出前会先打一行log：Terminating</a>，但在上面的log中并未发现有Terminating。</p>
+<p>从log看出，calico-node终止前是在查询etcd中的节点数据。于是又试了试在问题节点上查询etcd：<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># etcdctl  --ca-file=/var/lib/kubernetes/ca.pem --cert-file=/var/lib/kubernetes/kubernetes.pem --key-file=/var/lib/kubernetes/kubernetes-key.pem --endpoints=https://[etcd服务ip]:2379 get /calico/bgp/v1/host/AMZ-SIN8-OpsResPool-33-63/ip_addr_v4</span></span><br><span class="line">10.8.33.63</span><br></pre></td></tr></table></figure></p>
+<p>看结果很正常，绝不会因此而出错。</p>
+<p>纠结之际，突然想到：会不会calico-node启动超时了？</p>
+<h3 id="问题处理-1"><a href="#问题处理-1" class="headerlink" title="问题处理"></a>问题处理</h3><p>马上看了下calico-node daemonset的livenessProbe：<br><figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">livenessProbe:</span></span><br><span class="line"><span class="attr">  failureThreshold:</span> <span class="number">6</span></span><br><span class="line"><span class="attr">  httpGet:</span></span><br><span class="line"><span class="attr">    path:</span> /liveness</span><br><span class="line"><span class="attr">    port:</span> <span class="number">9099</span></span><br><span class="line"><span class="attr">    scheme:</span> HTTP</span><br><span class="line"><span class="attr">  initialDelaySeconds:</span> <span class="number">10</span></span><br><span class="line"><span class="attr">  periodSeconds:</span> <span class="number">10</span></span><br><span class="line"><span class="attr">  successThreshold:</span> <span class="number">1</span></span><br><span class="line"><span class="attr">  timeoutSeconds:</span> <span class="number">1</span></span><br></pre></td></tr></table></figure></p>
+<p>尝试着把initialDelaySeconds加到60秒，failureThreshold加到10。<br><figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">livenessProbe:</span></span><br><span class="line"><span class="attr">  failureThreshold:</span> <span class="number">10</span></span><br><span class="line"><span class="attr">  httpGet:</span></span><br><span class="line"><span class="attr">    path:</span> /liveness</span><br><span class="line"><span class="attr">    port:</span> <span class="number">9099</span></span><br><span class="line"><span class="attr">    scheme:</span> HTTP</span><br><span class="line"><span class="attr">  initialDelaySeconds:</span> <span class="number">60</span></span><br><span class="line"><span class="attr">  periodSeconds:</span> <span class="number">10</span></span><br><span class="line"><span class="attr">  successThreshold:</span> <span class="number">1</span></span><br><span class="line"><span class="attr">  timeoutSeconds:</span> <span class="number">1</span></span><br></pre></td></tr></table></figure></p>
+<p>改完重启了问题节点的calico-node。等待了数分钟，发现居然启动成功了。</p>
+<p>至此，问题原因就明确了：<strong><code>由于集群节点越来越多，calico-node启动所需时间也随着变长了，超出了liveness probe的重启时间限制，从而被k8s干掉重启</code></strong>。</p>
+<p>那么为什么新加坡区域的节点启动成功，而美东的节点启动失败？</p>
+<p>原因应该是，我们的master与etcd都在新加坡区域，因此新加坡节点从etcd获取数据较快，calico-node启动速度也就更快，可以在限定的时间内启动完毕。而美东节点访问新加坡etcd的延迟较长，因此美东calico-node启动更慢。</p>
+
+      
+    </div>
+    
+    
+    
+
+    <div>
+    
+        <div>
+    
+        <div style="text-align:center;color: #ccc;font-size:14px;">-------------本文结束<i class="fa fa-paw"></i>感谢您的阅读-------------</div>
+    
+</div>
+
+    
+    </div>
+
+    <div>
+      
+        
+<div class="my_post_copyright">
+  <script src="//cdn.bootcss.com/clipboard.js/1.5.10/clipboard.min.js"></script>
+  
+  <!-- JS库 sweetalert 可修改路径 -->
+  <script src="https://cdn.bootcss.com/jquery/2.0.0/jquery.min.js"></script>
+  <script src="https://unpkg.com/sweetalert/dist/sweetalert.min.js"></script>
+  <p><span>本文标题:</span><a href="/blog/2019/05/k8s-calico-troubleshooting.html">Calico 问题排障</a></p>
+  <p><span>文章作者:</span><a href="/" title="访问 icyboy 的个人博客">icyboy</a></p>
+  <p><span>发布时间:</span>2019年05月21日 - 12:00</p>
+  <p><span>最后更新:</span>2019年05月21日 - 10:40</p>
+  <p><span>原始链接:</span><a href="/blog/2019/05/k8s-calico-troubleshooting.html" title="Calico 问题排障">http://icyxp.github.io/blog/2019/05/k8s-calico-troubleshooting.html</a>
+    <span class="copy-path"  title="点击复制文章链接"><i class="fa fa-clipboard" data-clipboard-text="http://icyxp.github.io/blog/2019/05/k8s-calico-troubleshooting.html"  aria-label="复制成功！"></i></span>
+  </p>
+  <p><span>许可协议:</span><i class="fa fa-creative-commons"></i> <a rel="license" href="https://creativecommons.org/licenses/by-nc-nd/4.0/" target="_blank" title="Attribution-NonCommercial-NoDerivatives 4.0 International (CC BY-NC-ND 4.0)">署名-非商业性使用-禁止演绎 4.0 国际</a> 转载请保留原文链接及作者。</p>  
+</div>
+<script> 
+    var clipboard = new Clipboard('.fa-clipboard');
+    $(".fa-clipboard").click(function(){
+      clipboard.on('success', function(){
+        swal({   
+          title: "",   
+          text: '复制成功',
+          icon: "success", 
+          showConfirmButton: true
+          });
+    });
+    });  
+</script>
+
+
+      
+    </div>
+
+    
+
+    
+      <div>
+        <div style="padding: 10px 0; margin: 20px auto; width: 90%; text-align: center;">
+  <div></div>
+  <button id="rewardButton" disable="enable" onclick="var qr = document.getElementById('QR'); if (qr.style.display === 'none') {qr.style.display='block';} else {qr.style.display='none'}">
+    <span>打赏</span>
+  </button>
+  <div id="QR" style="display: none;">
+
+    
+      <div id="wechat" style="display: inline-block">
+        <img id="wechat_qr" src="/images/wechatpay.jpg" alt="icyboy 微信支付"/>
+        <p>微信支付</p>
+      </div>
+    
+
+    
+      <div id="alipay" style="display: inline-block">
+        <img id="alipay_qr" src="/images/alipay.jpg" alt="icyboy 支付宝"/>
+        <p>支付宝</p>
+      </div>
+    
+
+    
+
+  </div>
+</div>
+
+      </div>
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/k8s/" rel="tag"># k8s</a>
+          
+            <a href="/tags/calico/" rel="tag"># calico</a>
+          
+            <a href="/tags/问题排障/" rel="tag"># 问题排障</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/blog/2019/05/k8s-k8s-runtime.html" rel="next" title="谈谈kubernetes Runtime">
+                <i class="fa fa-chevron-left"></i> 谈谈kubernetes Runtime
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+    <div class="comments" id="comments">
+    </div>
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image"
+                src="/images/avatar.jpg"
+                alt="icyboy" />
+            
+              <p class="site-author-name" itemprop="name">icyboy</p>
+              <p class="site-description motion-element" itemprop="description"></p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">42</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-categories">
+                <a href="/categories/index.html">
+                  <span class="site-state-item-count">32</span>
+                  <span class="site-state-item-name">分类</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                <a href="/tags/index.html">
+                  <span class="site-state-item-count">70</span>
+                  <span class="site-state-item-name">标签</span>
+                </a>
+              </div>
+            
+
+          </nav>
+
+          
+            <div class="feed-link motion-element">
+              <a href="/atom.xml" rel="alternate">
+                <i class="fa fa-rss"></i>
+                RSS
+              </a>
+            </div>
+          
+
+          
+            <div class="links-of-author motion-element">
+                
+                  <span class="links-of-author-item">
+                    <a href="https://github.com/icyxp" target="_blank" title="GitHub">
+                      
+                        <i class="fa fa-fw fa-github"></i>GitHub</a>
+                  </span>
+                
+                  <span class="links-of-author-item">
+                    <a href="http://weibo.com/joysteam" target="_blank" title="微博">
+                      
+                        <i class="fa fa-fw fa-weibo"></i>微博</a>
+                  </span>
+                
+                  <span class="links-of-author-item">
+                    <a href="http://www.zhihu.com/people/xupeng" target="_blank" title="知乎">
+                      
+                        <i class="fa fa-fw fa-zhihu"></i>知乎</a>
+                  </span>
+                
+            </div>
+          
+
+          
+          
+
+          
+          
+            <div class="links-of-blogroll motion-element links-of-blogroll-inline">
+              <div class="links-of-blogroll-title">
+                <i class="fa  fa-fw fa-link"></i>
+                友情链接
+              </div>
+              <ul class="links-of-blogroll-list">
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="http://www.zjgsmt.com" title="张家港水蜜桃" target="_blank">张家港水蜜桃</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="http://blog.jiunile.com" title="运维开发" target="_blank">运维开发</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="http://devops.jiunile.com" title="DevOps" target="_blank">DevOps</a>
+                  </li>
+                
+              </ul>
+            </div>
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#故障一"><span class="nav-number">1.</span> <span class="nav-text">故障一</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#问题表现"><span class="nav-number">1.1.</span> <span class="nav-text">问题表现</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#问题排查"><span class="nav-number">1.2.</span> <span class="nav-text">问题排查</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#问题处理"><span class="nav-number">1.3.</span> <span class="nav-text">问题处理</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#方案一"><span class="nav-number">1.3.1.</span> <span class="nav-text">方案一</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#方案二"><span class="nav-number">1.3.2.</span> <span class="nav-text">方案二</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#故障二"><span class="nav-number">2.</span> <span class="nav-text">故障二</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#问题表现-1"><span class="nav-number">2.1.</span> <span class="nav-text">问题表现</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#问题排查-1"><span class="nav-number">2.2.</span> <span class="nav-text">问题排查</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#排除ETCD连接问题"><span class="nav-number">2.2.1.</span> <span class="nav-text">排除ETCD连接问题</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#排除AWS路由表限制"><span class="nav-number">2.2.2.</span> <span class="nav-text">排除AWS路由表限制</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#排除aws-security-groups影响"><span class="nav-number">2.2.3.</span> <span class="nav-text">排除aws security groups影响</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#最终原因"><span class="nav-number">2.2.4.</span> <span class="nav-text">最终原因</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#问题处理-1"><span class="nav-number">2.3.</span> <span class="nav-text">问题处理</span></a></li></ol></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+<div class="copyright">&copy; 2016 &mdash; <span itemprop="copyrightYear">2019</span>
+  <span class="with-love" id="heart">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">icyboy</span>
+
+  
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-area-chart"></i>
+    </span>
+    
+      <span class="post-meta-item-text">Site words total count&#58;</span>
+    
+    <span title="Site words total count">113.1k</span>
+  
+</div>
+
+<div class="powered-by">
+<i class="fa fa-user-md"></i><span id="busuanzi_container_site_uv">
+  本站访客数:<span id="busuanzi_value_site_uv"></span>
+</span>
+</div>
+
+<div class="theme-info">
+  <div class="powered-by"></div>
+  <span class="post-count">博客全站共113.1k字</span>
+</div>
+
+
+
+
+
+
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/canvas-nest/canvas-nest.min.js"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+  <script src="//cdn1.lncld.net/static/js/3.0.4/av-min.js"></script>
+  <script src="//unpkg.com/valine/dist/Valine.min.js"></script>
+  
+  <script type="text/javascript">
+    var GUEST = ['nick','mail','link'];
+    var guest = 'nick,mail,link';
+    guest = guest.split(',').filter(item=>{
+      return GUEST.indexOf(item)>-1;
+    });
+    new Valine({
+        el: '#comments' ,
+        verify: false,
+        notify: false,
+        appId: 'B6yqSmGPw5uBIAfWEqm7Xyws-gzGzoHsz',
+        appKey: '2soiHGUrbGw33caCmkT47236',
+        placeholder: 'Just do it!',
+        avatar:'mm',
+        guest_info:guest,
+        pageSize:'10' || 10,
+    });
+  </script>
+
+
+
+  
+
+  <script type="text/javascript">
+    // Popup Window;
+    var isfetched = false;
+    var isXml = true;
+    // Search DB path;
+    var search_path = "search.xml";
+    if (search_path.length === 0) {
+      search_path = "search.xml";
+    } else if (/json$/i.test(search_path)) {
+      isXml = false;
+    }
+    var path = "/" + search_path;
+    // monitor main search box;
+
+    var onPopupClose = function (e) {
+      $('.popup').hide();
+      $('#local-search-input').val('');
+      $('.search-result-list').remove();
+      $('#no-result').remove();
+      $(".local-search-pop-overlay").remove();
+      $('body').css('overflow', '');
+    }
+
+    function proceedsearch() {
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay"></div>')
+        .css('overflow', 'hidden');
+      $('.search-popup-overlay').click(onPopupClose);
+      $('.popup').toggle();
+      var $localSearchInput = $('#local-search-input');
+      $localSearchInput.attr("autocapitalize", "none");
+      $localSearchInput.attr("autocorrect", "off");
+      $localSearchInput.focus();
+    }
+
+    // search function;
+    var searchFunc = function(path, search_id, content_id) {
+      'use strict';
+
+      // start loading animation
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay">' +
+          '<div id="search-loading-icon">' +
+          '<i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>' +
+          '</div>' +
+          '</div>')
+        .css('overflow', 'hidden');
+      $("#search-loading-icon").css('margin', '20% auto 0 auto').css('text-align', 'center');
+
+      $.ajax({
+        url: path,
+        dataType: isXml ? "xml" : "json",
+        async: true,
+        success: function(res) {
+          // get the contents from search data
+          isfetched = true;
+          $('.popup').detach().appendTo('.header-inner');
+          var datas = isXml ? $("entry", res).map(function() {
+            return {
+              title: $("title", this).text(),
+              content: $("content",this).text(),
+              url: $("url" , this).text()
+            };
+          }).get() : res;
+          var input = document.getElementById(search_id);
+          var resultContent = document.getElementById(content_id);
+          var inputEventFunction = function() {
+            var searchText = input.value.trim().toLowerCase();
+            var keywords = searchText.split(/[\s\-]+/);
+            if (keywords.length > 1) {
+              keywords.push(searchText);
+            }
+            var resultItems = [];
+            if (searchText.length > 0) {
+              // perform local searching
+              datas.forEach(function(data) {
+                var isMatch = false;
+                var hitCount = 0;
+                var searchTextCount = 0;
+                var title = data.title.trim();
+                var titleInLowerCase = title.toLowerCase();
+                var content = data.content.trim().replace(/<[^>]+>/g,"");
+                var contentInLowerCase = content.toLowerCase();
+                var articleUrl = decodeURIComponent(data.url);
+                var indexOfTitle = [];
+                var indexOfContent = [];
+                // only match articles with not empty titles
+                if(title != '') {
+                  keywords.forEach(function(keyword) {
+                    function getIndexByWord(word, text, caseSensitive) {
+                      var wordLen = word.length;
+                      if (wordLen === 0) {
+                        return [];
+                      }
+                      var startPosition = 0, position = [], index = [];
+                      if (!caseSensitive) {
+                        text = text.toLowerCase();
+                        word = word.toLowerCase();
+                      }
+                      while ((position = text.indexOf(word, startPosition)) > -1) {
+                        index.push({position: position, word: word});
+                        startPosition = position + wordLen;
+                      }
+                      return index;
+                    }
+
+                    indexOfTitle = indexOfTitle.concat(getIndexByWord(keyword, titleInLowerCase, false));
+                    indexOfContent = indexOfContent.concat(getIndexByWord(keyword, contentInLowerCase, false));
+                  });
+                  if (indexOfTitle.length > 0 || indexOfContent.length > 0) {
+                    isMatch = true;
+                    hitCount = indexOfTitle.length + indexOfContent.length;
+                  }
+                }
+
+                // show search results
+
+                if (isMatch) {
+                  // sort index by position of keyword
+
+                  [indexOfTitle, indexOfContent].forEach(function (index) {
+                    index.sort(function (itemLeft, itemRight) {
+                      if (itemRight.position !== itemLeft.position) {
+                        return itemRight.position - itemLeft.position;
+                      } else {
+                        return itemLeft.word.length - itemRight.word.length;
+                      }
+                    });
+                  });
+
+                  // merge hits into slices
+
+                  function mergeIntoSlice(text, start, end, index) {
+                    var item = index[index.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    var hits = [];
+                    var searchTextCountInSlice = 0;
+                    while (position + word.length <= end && index.length != 0) {
+                      if (word === searchText) {
+                        searchTextCountInSlice++;
+                      }
+                      hits.push({position: position, length: word.length});
+                      var wordEnd = position + word.length;
+
+                      // move to next position of hit
+
+                      index.pop();
+                      while (index.length != 0) {
+                        item = index[index.length - 1];
+                        position = item.position;
+                        word = item.word;
+                        if (wordEnd > position) {
+                          index.pop();
+                        } else {
+                          break;
+                        }
+                      }
+                    }
+                    searchTextCount += searchTextCountInSlice;
+                    return {
+                      hits: hits,
+                      start: start,
+                      end: end,
+                      searchTextCount: searchTextCountInSlice
+                    };
+                  }
+
+                  var slicesOfTitle = [];
+                  if (indexOfTitle.length != 0) {
+                    slicesOfTitle.push(mergeIntoSlice(title, 0, title.length, indexOfTitle));
+                  }
+
+                  var slicesOfContent = [];
+                  while (indexOfContent.length != 0) {
+                    var item = indexOfContent[indexOfContent.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    // cut out 100 characters
+                    var start = position - 20;
+                    var end = position + 80;
+                    if(start < 0){
+                      start = 0;
+                    }
+                    if (end < position + word.length) {
+                      end = position + word.length;
+                    }
+                    if(end > content.length){
+                      end = content.length;
+                    }
+                    slicesOfContent.push(mergeIntoSlice(content, start, end, indexOfContent));
+                  }
+
+                  // sort slices in content by search text's count and hits' count
+
+                  slicesOfContent.sort(function (sliceLeft, sliceRight) {
+                    if (sliceLeft.searchTextCount !== sliceRight.searchTextCount) {
+                      return sliceRight.searchTextCount - sliceLeft.searchTextCount;
+                    } else if (sliceLeft.hits.length !== sliceRight.hits.length) {
+                      return sliceRight.hits.length - sliceLeft.hits.length;
+                    } else {
+                      return sliceLeft.start - sliceRight.start;
+                    }
+                  });
+
+                  // select top N slices in content
+
+                  var upperBound = parseInt('1');
+                  if (upperBound >= 0) {
+                    slicesOfContent = slicesOfContent.slice(0, upperBound);
+                  }
+
+                  // highlight title and content
+
+                  function highlightKeyword(text, slice) {
+                    var result = '';
+                    var prevEnd = slice.start;
+                    slice.hits.forEach(function (hit) {
+                      result += text.substring(prevEnd, hit.position);
+                      var end = hit.position + hit.length;
+                      result += '<b class="search-keyword">' + text.substring(hit.position, end) + '</b>';
+                      prevEnd = end;
+                    });
+                    result += text.substring(prevEnd, slice.end);
+                    return result;
+                  }
+
+                  var resultItem = '';
+
+                  if (slicesOfTitle.length != 0) {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + highlightKeyword(title, slicesOfTitle[0]) + "</a>";
+                  } else {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + title + "</a>";
+                  }
+
+                  slicesOfContent.forEach(function (slice) {
+                    resultItem += "<a href='" + articleUrl + "'>" +
+                      "<p class=\"search-result\">" + highlightKeyword(content, slice) +
+                      "...</p>" + "</a>";
+                  });
+
+                  resultItem += "</li>";
+                  resultItems.push({
+                    item: resultItem,
+                    searchTextCount: searchTextCount,
+                    hitCount: hitCount,
+                    id: resultItems.length
+                  });
+                }
+              })
+            };
+            if (keywords.length === 1 && keywords[0] === "") {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-search fa-5x" /></div>'
+            } else if (resultItems.length === 0) {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-frown-o fa-5x" /></div>'
+            } else {
+              resultItems.sort(function (resultLeft, resultRight) {
+                if (resultLeft.searchTextCount !== resultRight.searchTextCount) {
+                  return resultRight.searchTextCount - resultLeft.searchTextCount;
+                } else if (resultLeft.hitCount !== resultRight.hitCount) {
+                  return resultRight.hitCount - resultLeft.hitCount;
+                } else {
+                  return resultRight.id - resultLeft.id;
+                }
+              });
+              var searchResultList = '<ul class=\"search-result-list\">';
+              resultItems.forEach(function (result) {
+                searchResultList += result.item;
+              })
+              searchResultList += "</ul>";
+              resultContent.innerHTML = searchResultList;
+            }
+          }
+
+          if ('auto' === 'auto') {
+            input.addEventListener('input', inputEventFunction);
+          } else {
+            $('.search-icon').click(inputEventFunction);
+            input.addEventListener('keypress', function (event) {
+              if (event.keyCode === 13) {
+                inputEventFunction();
+              }
+            });
+          }
+
+          // remove loading animation
+          $(".local-search-pop-overlay").remove();
+          $('body').css('overflow', '');
+
+          proceedsearch();
+        }
+      });
+    }
+
+    // handle and trigger popup window;
+    $('.popup-trigger').click(function(e) {
+      e.stopPropagation();
+      if (isfetched === false) {
+        searchFunc(path, 'local-search-input', 'local-search-result');
+      } else {
+        proceedsearch();
+      };
+    });
+
+    $('.popup-btn-close').click(onPopupClose);
+    $('.popup').click(function(e){
+      e.stopPropagation();
+    });
+    $(document).on('keyup', function (event) {
+      var shouldDismissSearchPopup = event.which === 27 &&
+        $('.search-popup').is(':visible');
+      if (shouldDismissSearchPopup) {
+        onPopupClose();
+      }
+    });
+  </script>
+
+
+
+
+
+  
+
+  
+  <script src="https://cdn1.lncld.net/static/js/av-core-mini-0.6.4.js"></script>
+  <script>AV.initialize("B6yqSmGPw5uBIAfWEqm7Xyws-gzGzoHsz", "2soiHGUrbGw33caCmkT47236");</script>
+  <script>
+    function showTime(Counter) {
+      var query = new AV.Query(Counter);
+      var entries = [];
+      var $visitors = $(".leancloud_visitors");
+
+      $visitors.each(function () {
+        entries.push( $(this).attr("id").trim() );
+      });
+
+      query.containedIn('url', entries);
+      query.find()
+        .done(function (results) {
+          var COUNT_CONTAINER_REF = '.leancloud-visitors-count';
+
+          if (results.length === 0) {
+            $visitors.find(COUNT_CONTAINER_REF).text(0);
+            return;
+          }
+
+          for (var i = 0; i < results.length; i++) {
+            var item = results[i];
+            var url = item.get('url');
+            var time = item.get('time');
+            var element = document.getElementById(url);
+
+            $(element).find(COUNT_CONTAINER_REF).text(time);
+          }
+          for(var i = 0; i < entries.length; i++) {
+            var url = entries[i];
+            var element = document.getElementById(url);
+            var countSpan = $(element).find(COUNT_CONTAINER_REF);
+            if( countSpan.text() == '') {
+              countSpan.text(0);
+            }
+          }
+        })
+        .fail(function (object, error) {
+          console.log("Error: " + error.code + " " + error.message);
+        });
+    }
+
+    function addCount(Counter) {
+      var $visitors = $(".leancloud_visitors");
+      var url = $visitors.attr('id').trim();
+      var title = $visitors.attr('data-flag-title').trim();
+      var query = new AV.Query(Counter);
+
+      query.equalTo("url", url);
+      query.find({
+        success: function(results) {
+          if (results.length > 0) {
+            var counter = results[0];
+            counter.fetchWhenSave(true);
+            counter.increment("time");
+            counter.save(null, {
+              success: function(counter) {
+                var $element = $(document.getElementById(url));
+                $element.find('.leancloud-visitors-count').text(counter.get('time'));
+              },
+              error: function(counter, error) {
+                console.log('Failed to save Visitor num, with error message: ' + error.message);
+              }
+            });
+          } else {
+            var newcounter = new Counter();
+            /* Set ACL */
+            var acl = new AV.ACL();
+            acl.setPublicReadAccess(true);
+            acl.setPublicWriteAccess(true);
+            newcounter.setACL(acl);
+            /* End Set ACL */
+            newcounter.set("title", title);
+            newcounter.set("url", url);
+            newcounter.set("time", 1);
+            newcounter.save(null, {
+              success: function(newcounter) {
+                var $element = $(document.getElementById(url));
+                $element.find('.leancloud-visitors-count').text(newcounter.get('time'));
+              },
+              error: function(newcounter, error) {
+                console.log('Failed to create');
+              }
+            });
+          }
+        },
+        error: function(error) {
+          console.log('Error:' + error.code + " " + error.message);
+        }
+      });
+    }
+
+    $(function() {
+      var Counter = AV.Object.extend("Counter");
+      if ($('.leancloud_visitors').length == 1) {
+        addCount(Counter);
+      } else if ($('.post-title-link').length > 1) {
+        showTime(Counter);
+      }
+    });
+  </script>
+
+
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>
