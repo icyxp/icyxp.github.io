@@ -2,6 +2,20 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   
   <url>
+    <loc>http://icyxp.github.io/pro/k8s/index.html</loc>
+    
+    <lastmod>2019-08-21T08:09:50.000Z</lastmod>
+    
+  </url>
+  
+  <url>
+    <loc>http://icyxp.github.io/blog/2018/12/k8s-kubeadm-ca-upgdate.html</loc>
+    
+    <lastmod>2019-08-21T05:59:13.000Z</lastmod>
+    
+  </url>
+  
+  <url>
     <loc>http://icyxp.github.io/blog/2019/03/k8s-cloud.html</loc>
     
     <lastmod>2019-07-29T02:24:50.000Z</lastmod>
@@ -40,20 +54,6 @@
     <loc>http://icyxp.github.io/blog/2019/05/k8s-kubeadm-up-node-join-failed.html</loc>
     
     <lastmod>2019-05-15T08:00:54.000Z</lastmod>
-    
-  </url>
-  
-  <url>
-    <loc>http://icyxp.github.io/blog/2018/12/k8s-kubeadm-ca-upgdate.html</loc>
-    
-    <lastmod>2019-05-15T03:04:38.000Z</lastmod>
-    
-  </url>
-  
-  <url>
-    <loc>http://icyxp.github.io/pro/k8s/index.html</loc>
-    
-    <lastmod>2019-05-14T07:15:15.000Z</lastmod>
     
   </url>
   
