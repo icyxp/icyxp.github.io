@@ -2,6 +2,13 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   
   <url>
+    <loc>http://icyxp.github.io/blog/2019/08/go-errors-in-go.html</loc>
+    
+    <lastmod>2019-08-26T05:50:31.000Z</lastmod>
+    
+  </url>
+  
+  <url>
     <loc>http://icyxp.github.io/pro/k8s/index.html</loc>
     
     <lastmod>2019-08-21T08:09:50.000Z</lastmod>
