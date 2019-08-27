@@ -367,6 +367,219 @@
   
   
   <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://icyxp.github.io/blog/2017/07/microservice-微服务够了.html">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="icyboy">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="CloudNative 架构">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h2 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/blog/2017/07/microservice-微服务够了.html" itemprop="url">微服务，够了</a></h2>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2017-07-26T21:00:00+08:00">
+                2017-07-26
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/微服务/" itemprop="url" rel="index">
+                    <span itemprop="name">微服务</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+                <a href="/blog/2017/07/microservice-微服务够了.html#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count valine-comment-count" data-xid="/blog/2017/07/microservice-微服务够了.html" itemprop="commentCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+          
+             <span id="/blog/2017/07/microservice-微服务够了.html" class="leancloud_visitors" data-flag-title="微服务，够了">
+               <span class="post-meta-divider">|</span>
+               <span class="post-meta-item-icon">
+                 <i class="fa fa-eye"></i>
+               </span>
+               
+                 <span class="post-meta-item-text">热度&#58;</span>
+               
+                 <span class="leancloud-visitors-count"></span>
+		 <span>℃</span>
+             </span>
+          
+
+          
+
+          
+            <div class="post-wordcount">
+              
+                
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-file-word-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">字数统计&#58;</span>
+                
+                <span title="字数统计">
+                  4,797 字
+                </span>
+              
+
+              
+                <span class="post-meta-divider">|</span>
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-clock-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">阅读时长 &asymp;</span>
+                
+                <span title="阅读时长">
+                  16 分钟
+                </span>
+              
+            </div>
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          <p><img src="/images/ms/01/cover.png" alt="01"></p>
+<h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>  资深架构师<a href="https://twitter.com/aadrake">Adam Drake</a>在他的博客上分享了他对微服务的看法,他 从自己的经验出发,结合Martin Fowler对微服务的见解,帮助想要采用 微服务的公司重新审视微服务。以下内容已获得作者翻译授权,查看英文 原文 <a href="https://aadrake.com/posts/2017-05-20-enough-with-the-microservices.html">Enough with the microservices</a>。</p>
+<h2 id="简介"><a href="#简介" class="headerlink" title="简介"></a>简介</h2><p>  关于微服务的优势和劣势已经有过太多的讨论,不过我仍然看到很多 成长型初创公司对它进行着盲目崇拜。冒着“重复发明轮子”的风险(Martin Fowler已经写过“Microservice Premium”的文章),我想把我的一些 想法写下来,在必要的时候可以发给客户,也希望能够帮助人们避免犯下我之前见过的那些错误。在进行架构或技术选型时,将网络上找到的一些所谓的最佳实践文章作为指南,一旦做出了错误的决定,就要付出惨重的代价。如果能够帮助哪怕一个公司避免犯下这种错误,那么写这篇文章都是值得的。</p>
+<p>  如今微服务是个热门技术,微服务架构一直以来都存在(面向服务架构也算是吧?),但对于我所见过的大部分公司来说,微服务不仅浪费了他们的时间,分散了他们的注意力,而且让事情变得更糟糕。</p>
+<p>  这听起来似乎很奇怪,因为大部分关于微服务的文章都会肯定微服务 的各种好处,比如解耦系统、更好的伸缩性、消除开发团队之间的依赖, 等等。如果你的公司有 Uber、Airbnb、Facebook 或 Twitter 那样的规模, 那么就没有什么问题。我曾经帮助一些大型组织转型到微服务架构,包括 搭建消息系统和采用一些能够提升伸缩性的技术。不过,对于成长型初创 公司来说,很少需要这些技术和服务。</p>
+<p>  Russ Miles在他的《<a href="http://www.russmiles.com/essais/8-ways-to-lose-at-microservices-adoption">让微服务失效的八种方式</a>》这篇文章中表达了 他的首要观点,而在我看来,这些场景却到处可见。成长型初创公司总是 想模仿那些大公司的最佳实践,用它们来弥补自身的不足。但是,最佳实 践是要视情况而定的。有些东西对于 Facebook 来说是最佳实践,但对于 只有不到百人的初创公司来说,它们就不一定也是最佳实践。</p>
+<p>  如果你的公司比那些大公司小一些,在一定程度上你仍然能够从微服务架构中获益。但是,对于成长型初创公司来说,大规模地迁移到微服务是一种过错,而且对技术人来说是不公平的。</p>
+          <!--noindex-->
+          <div class="post-button text-center">
+            <a class="btn" href="/blog/2017/07/microservice-微服务够了.html#more" rel="contents">
+              阅读全文 &raquo;
+            </a>
+          </div>
+          <!--/noindex-->
+        
+      
+    </div>
+    
+    
+    
+
+    <div>
+    
+    </div>
+
+    <div>
+      
+    </div>
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
     <link itemprop="mainEntityOfPage" href="http://icyxp.github.io/blog/2017/07/mysql-mysql-performance-monitoring.html">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -1238,277 +1451,11 @@
 
 
     
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://icyxp.github.io/blog/2016/08/ha-load-balance-mysql-master-slave-architecture.html">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="icyboy">
-      <meta itemprop="description" content="">
-      <meta itemprop="image" content="/images/avatar.jpg">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="CloudNative 架构">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h2 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/blog/2016/08/ha-load-balance-mysql-master-slave-architecture.html" itemprop="url">双机高可用-负载均衡-MySQL(读写分离、主从自动切换)架构设计</a></h2>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2016-08-09T10:00:00+08:00">
-                2016-08-09
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
-            <span class="post-category" >
-            
-              <span class="post-meta-divider">|</span>
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">分类于</span>
-              
-              
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/高可用/" itemprop="url" rel="index">
-                    <span itemprop="name">高可用</span>
-                  </a>
-                </span>
-
-                
-                
-                  ， 
-                
-              
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/高可用/负载均衡/" itemprop="url" rel="index">
-                    <span itemprop="name">负载均衡</span>
-                  </a>
-                </span>
-
-                
-                
-                  ， 
-                
-              
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/高可用/负载均衡/读写分离/" itemprop="url" rel="index">
-                    <span itemprop="name">读写分离</span>
-                  </a>
-                </span>
-
-                
-                
-              
-            </span>
-          
-
-          
-            
-              <span class="post-comments-count">
-                <span class="post-meta-divider">|</span>
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-comment-o"></i>
-                </span>
-                <a href="/blog/2016/08/ha-load-balance-mysql-master-slave-architecture.html#comments" itemprop="discussionUrl">
-                  <span class="post-comments-count valine-comment-count" data-xid="/blog/2016/08/ha-load-balance-mysql-master-slave-architecture.html" itemprop="commentCount"></span>
-                </a>
-              </span>
-            
-          
-
-          
-          
-             <span id="/blog/2016/08/ha-load-balance-mysql-master-slave-architecture.html" class="leancloud_visitors" data-flag-title="双机高可用-负载均衡-MySQL(读写分离、主从自动切换)架构设计">
-               <span class="post-meta-divider">|</span>
-               <span class="post-meta-item-icon">
-                 <i class="fa fa-eye"></i>
-               </span>
-               
-                 <span class="post-meta-item-text">热度&#58;</span>
-               
-                 <span class="leancloud-visitors-count"></span>
-		 <span>℃</span>
-             </span>
-          
-
-          
-
-          
-            <div class="post-wordcount">
-              
-                
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-file-word-o"></i>
-                </span>
-                
-                  <span class="post-meta-item-text">字数统计&#58;</span>
-                
-                <span title="字数统计">
-                  3,539 字
-                </span>
-              
-
-              
-                <span class="post-meta-divider">|</span>
-              
-
-              
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-clock-o"></i>
-                </span>
-                
-                  <span class="post-meta-item-text">阅读时长 &asymp;</span>
-                
-                <span title="阅读时长">
-                  18 分钟
-                </span>
-              
-            </div>
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          <h2 id="架构简介"><a href="#架构简介" class="headerlink" title="架构简介"></a>架构简介</h2><p>只有两台机器，需要实现其中一台死机之后另一台能接管这台机器的服务，并且在两台机器正常服务时，两台机器都能用上。如何设计这样的架构场景。<br><img src="/images/high_availability.png" alt="High Availability"></p>
-<p>此架构主要是由keepalived实现双机高可用，维护了一个外网VIP，一个内网VIP。正常情况时，外网VIP和内网VIP都绑定在server1服务器，web请求发送到server1的nginx，nginx对于静态资源请求就直接在本机检索并返回，对于php的动态请求，则负载均衡到server1和server2。对于SQL请求，会将此类请求发送到Atlas MySQL中间件，Atlas接收到请求之后，把涉及写操作的请求发送到内网VIP，读请求操作发送到mysql从，这样就实现了读写分离。</p>
-<p>当主服务器server1宕机时，keepalived检测到后，立即把外网VIP和内网VIP绑定到server2，并把server2的mysql切换成主库。此时由于外网VIP已经转移到了server2，web请求将发送给server2的nginx。nginx检测到server1宕机，不再把请求转发到server1的php-fpm。之后的sql请求照常发送给本地的atlas，atlas把写操作发送给内网VIP，读操作发送给mysql从，由于内网VIP已经绑定到server2了，server2的mysql同时接受写操作和读操作。</p>
-<p>当主服务器server1恢复后，server1的mysql自动设置为从，与server2的mysql主同步。keepalived不抢占server2的VIP，继续正常服务。</p>
-<h2 id="架构要求"><a href="#架构要求" class="headerlink" title="架构要求"></a>架构要求</h2><p>要实现此架构，需要三个条件：</p>
-<ol>
-<li>服务器可以设置内网IP，并且设置的内网IP互通。</li>
-<li>服务器可以随意绑定IDC分配给我们使用的外网IP，即外网IP没有绑定MAC地址。</li>
-<li>MySQL服务器支持GTID，即MySQL-5.6.5以上版本。</li>
-</ol>
-<h2 id="环境说明"><a href="#环境说明" class="headerlink" title="环境说明"></a>环境说明</h2><blockquote>
-<p><strong>对外VIP</strong>：10.96.153.239<br><strong>对内VIP</strong>：192.168.1.150</p>
-</blockquote>
-<table>
-<thead>
-<tr>
-<th style="text-align:left">描述</th>
-<th style="text-align:left">网卡1：eth0(公网IP)</th>
-<th style="text-align:left">网卡2：eth1(内网IP)</th>
-<th style="text-align:left">操作系统</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td style="text-align:left">server1</td>
-<td style="text-align:left">10.96.153.110</td>
-<td style="text-align:left">192.168.1.100</td>
-<td style="text-align:left">Centos 6.X</td>
-</tr>
-<tr>
-<td style="text-align:left">server2</td>
-<td style="text-align:left">10.96.153.114</td>
-<td style="text-align:left">192.168.1.101</td>
-<td style="text-align:left">Centos 6.X</td>
-</tr>
-</tbody>
-</table>
-<h2 id="架构配置"><a href="#架构配置" class="headerlink" title="架构配置"></a>架构配置</h2>
-          <!--noindex-->
-          <div class="post-button text-center">
-            <a class="btn" href="/blog/2016/08/ha-load-balance-mysql-master-slave-architecture.html#more" rel="contents">
-              阅读全文 &raquo;
-            </a>
-          </div>
-          <!--/noindex-->
-        
-      
-    </div>
-    
-    
-    
-
-    <div>
-    
-    </div>
-
-    <div>
-      
-    </div>
-
-    
-
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
   </section>
 
   
   <nav class="pagination">
-    <a class="extend prev" rel="prev" href="/page/6/"><i class="fa fa-angle-left"></i></a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/6/">6</a><span class="page-number current">7</span><a class="page-number" href="/page/8/">8</a><a class="page-number" href="/page/9/">9</a><a class="extend next" rel="next" href="/page/8/"><i class="fa fa-angle-right"></i></a>
+    <a class="extend prev" rel="prev" href="/page/6/"><i class="fa fa-angle-left"></i></a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/6/">6</a><span class="page-number current">7</span><a class="page-number" href="/page/8/">8</a><span class="space">&hellip;</span><a class="page-number" href="/page/10/">10</a><a class="extend next" rel="next" href="/page/8/"><i class="fa fa-angle-right"></i></a>
   </nav>
 
 
@@ -1558,7 +1505,7 @@
               
                 <a href="/archives/">
               
-                  <span class="site-state-item-count">45</span>
+                  <span class="site-state-item-count">46</span>
                   <span class="site-state-item-name">日志</span>
                 </a>
               </div>
@@ -1580,7 +1527,7 @@
               
               <div class="site-state-item site-state-tags">
                 <a href="/tags/index.html">
-                  <span class="site-state-item-count">78</span>
+                  <span class="site-state-item-count">79</span>
                   <span class="site-state-item-name">标签</span>
                 </a>
               </div>
@@ -1683,7 +1630,7 @@
     
       <span class="post-meta-item-text">Site words total count&#58;</span>
     
-    <span title="Site words total count">127.7k</span>
+    <span title="Site words total count">128.7k</span>
   
 </div>
 
@@ -1695,7 +1642,7 @@
 
 <div class="theme-info">
   <div class="powered-by"></div>
-  <span class="post-count">博客全站共127.7k字</span>
+  <span class="post-count">博客全站共128.7k字</span>
 </div>
 
 
