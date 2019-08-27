@@ -4,6 +4,166 @@
   
     
     <entry>
+      <title><![CDATA[Kubelet 状态更新机制]]></title>
+      <url>http://icyxp.github.io/blog/2019/08/k8s-kubelet-sync-node-status.html</url>
+      <content type="html"><![CDATA[<h2 id="概览"><a href="#概览" class="headerlink" title="概览"></a>概览</h2><p>当 Kubernetes 中 Node 节点出现状态异常的情况下，节点上的 Pod 会被重新调度到其他节点上去，但是有的时候我们会发现节点 Down 掉以后，Pod 并不会立即触发重新调度，这实际上就是和 Kubelet 的状态更新机制密切相关的，Kubernetes 提供了一些参数配置来触发重新调度到嗯时间，下面我们来分析下 Kubelet 状态更新的基本流程。</p>
+<ol>
+<li>kubelet 自身会定期更新状态到 apiserver，通过参数<code>--node-status-update-frequency</code>指定上报频率，默认是 10s 上报一次。</li>
+<li>kube-controller-manager 会每隔<code>--node-monitor-period</code>时间去检查 kubelet 的状态，默认是 5s。</li>
+<li>当 node 失联一段时间后，kubernetes 判定 node 为 <code>notready</code> 状态，这段时长通过<code>--node-monitor-grace-period</code>参数配置，默认 40s。</li>
+<li>当 node 失联一段时间后，kubernetes 判定 node 为 <code>unhealthy</code>状态，这段时长通过<code>--node-startup-grace-period</code>参数配置，默认 1m0s。</li>
+<li>当 node 失联一段时间后，kubernetes 开始删除原 node 上的 pod，这段时长是通过<code>--pod-eviction-timeout</code>参数配置，默认 5m0s。</li>
+</ol>
+<blockquote>
+<p>kube-controller-manager 和 kubelet 是异步工作的，这意味着延迟可能包括任何的网络延迟、apiserver 的延迟、etcd 延迟，一个节点上的负载引起的延迟等等。因此，如果<code>--node-status-update-frequency</code>设置为5s，那么实际上 etcd 中的数据变化会需要 6-7s，甚至更长时间。<br><a id="more"></a><br>Kubelet在更新状态失败时，会进行<code>nodeStatusUpdateRetry</code>次重试，默认为<strong><code>5 次</code></strong>。</p>
+</blockquote>
+<p>Kubelet 会在函数<code>tryUpdateNodeStatus</code>中尝试进行状态更新。Kubelet 使用了 Golang 中的<code>http.Client()</code>方法，但是没有指定超时时间，因此，如果 API Server 过载时，当建立 TCP 连接时可能会出现一些故障。</p>
+<p>因此，在<code>nodeStatusUpdateRetry * --node-status-update-frequency</code>时间后才会更新一次节点状态。</p>
+<p>同时，Kubernetes 的 controller manager 将尝试每<code>--node-monitor-period</code>时间周期内检查<code>nodeStatusUpdateRetry</code>次。在<code>--node-monitor-grace-period</code>之后，会认为节点 unhealthy，然后会在<code>--pod-eviction-timeout</code>后删除 Pod。</p>
+<p>kube proxy 有一个 watcher API，一旦 Pod 被驱逐了，kube proxy 将会通知更新节点的 iptables 规则，将 Pod 从 Service 的 Endpoints 中移除，这样就不会访问到来自故障节点的 Pod 了。</p>
+<h2 id="配置"><a href="#配置" class="headerlink" title="配置"></a>配置</h2><p>对于这些参数的配置，需要根据不通的集群规模场景来进行配置。</p>
+<h3 id="社区默认的配置"><a href="#社区默认的配置" class="headerlink" title="社区默认的配置"></a>社区默认的配置</h3><table>
+<thead>
+<tr>
+<th>参数</th>
+<th style="text-align:left">说明</th>
+<th style="text-align:left">值</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>–node-status-update-frequency</td>
+<td style="text-align:left">kubelet 间隔多少时间向apiserver上报node status信息</td>
+<td style="text-align:left">10s</td>
+</tr>
+<tr>
+<td>–node-monitor-period</td>
+<td style="text-align:left">kube-controller-manager 间隔多少时间后从apiserver同步node status信息</td>
+<td style="text-align:left">5s</td>
+</tr>
+<tr>
+<td>–node-monitor-grace-period</td>
+<td style="text-align:left">kube-controller-manager 间隔多少时间之后，把node状态设置为NotReady</td>
+<td style="text-align:left">40s</td>
+</tr>
+<tr>
+<td>–pod-eviction-timeout</td>
+<td style="text-align:left">kube-controller-manager 在第一次kubelet notReady事件之后的多少时间后，开始驱逐pod。并不是CM把node状态设置为notready之后再等待<code>pod-eviction-timeout</code>时间</td>
+<td style="text-align:left">5m</td>
+</tr>
+</tbody>
+</table>
+<h3 id="快速更新和快速响应"><a href="#快速更新和快速响应" class="headerlink" title="快速更新和快速响应"></a>快速更新和快速响应</h3><table>
+<thead>
+<tr>
+<th>参数</th>
+<th style="text-align:left">说明</th>
+<th style="text-align:left">值</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>–node-status-update-frequency</td>
+<td style="text-align:left">kubelet 间隔多少时间向apiserver上报node status信息</td>
+<td style="text-align:left">4s</td>
+</tr>
+<tr>
+<td>–node-monitor-period</td>
+<td style="text-align:left">kube-controller-manager 间隔多少时间后从apiserver同步node status信息</td>
+<td style="text-align:left">2s</td>
+</tr>
+<tr>
+<td>–node-monitor-grace-period</td>
+<td style="text-align:left">kube-controller-manager 间隔多少时间之后，把node状态设置为NotReady</td>
+<td style="text-align:left">20s</td>
+</tr>
+<tr>
+<td>–pod-eviction-timeout</td>
+<td style="text-align:left">kube-controller-manager 在第一次kubelet notReady事件之后的多少时间后，开始驱逐pod。并不是CM把node状态设置为notready之后再等待<code>pod-eviction-timeout</code>时间</td>
+<td style="text-align:left">30s</td>
+</tr>
+</tbody>
+</table>
+<p>在这种情况下，Pod 将在 50s 被驱逐，因为该节点在 20s 后被视为Down掉了，<code>--pod-eviction-timeout</code> 在 30s 之后发生，Kubelet将尝试每4秒更新一次状态。因此，在Kubernetes控制器管理器考虑节点的不健康状态之前，它将是 (20s / 4s * 5) = 25 次尝试，但是，这种情况会给 etcd 产生很大的开销，因为每个节点都会尝试每 2s 更新一次状态。</p>
+<p>如果环境有1000个节点，那么每分钟将有(60s / 4s * 1000) = 15000次节点更新操作，这可能需要大型 etcd 容器甚至是 etcd 的专用节点。</p>
+<blockquote>
+<p>如果我们计算尝试次数，则除法将给出5，但实际上每次尝试的 nodeStatusUpdateRetry 尝试将从3到5。 由于所有组件的延迟，尝试总次数将在15到25之间变化。</p>
+</blockquote>
+<h3 id="中等更新和平均响应"><a href="#中等更新和平均响应" class="headerlink" title="中等更新和平均响应"></a>中等更新和平均响应</h3><table>
+<thead>
+<tr>
+<th>参数</th>
+<th style="text-align:left">说明</th>
+<th style="text-align:left">值</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>–node-status-update-frequency</td>
+<td style="text-align:left">kubelet 间隔多少时间向apiserver上报node status信息</td>
+<td style="text-align:left">20s</td>
+</tr>
+<tr>
+<td>–node-monitor-period</td>
+<td style="text-align:left">kube-controller-manager 间隔多少时间后从apiserver同步node status信息</td>
+<td style="text-align:left">5s</td>
+</tr>
+<tr>
+<td>–node-monitor-grace-period</td>
+<td style="text-align:left">kube-controller-manager 间隔多少时间之后，把node状态设置为NotReady</td>
+<td style="text-align:left">2m</td>
+</tr>
+<tr>
+<td>–pod-eviction-timeout</td>
+<td style="text-align:left">kube-controller-manager 在第一次kubelet notReady事件之后的多少时间后，开始驱逐pod。并不是CM把node状态设置为notready之后再等待<code>pod-eviction-timeout</code>时间</td>
+<td style="text-align:left">1m</td>
+</tr>
+</tbody>
+</table>
+<p>这种场景下会，Pod 将在 3m 被驱逐。 Kubelet将尝试每20秒更新一次状态。因此，在Kubernetes控制器管理器考虑节点的不健康状态之前，它将是 (2m <em> 60 / 20s </em> 5) = 30 次尝试</p>
+<p>如果有 1000 个节点，1分钟之内就会有 (60s / 20s * 1000) = 3000 次的节点状态更新操作。</p>
+<h3 id="低更新和慢响应"><a href="#低更新和慢响应" class="headerlink" title="低更新和慢响应"></a>低更新和慢响应</h3><table>
+<thead>
+<tr>
+<th>参数</th>
+<th style="text-align:left">说明</th>
+<th style="text-align:left">值</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>–node-status-update-frequency</td>
+<td style="text-align:left">kubelet 间隔多少时间向apiserver上报node status信息</td>
+<td style="text-align:left">1m</td>
+</tr>
+<tr>
+<td>–node-monitor-period</td>
+<td style="text-align:left">kube-controller-manager 间隔多少时间后从apiserver同步node status信息</td>
+<td style="text-align:left">5s</td>
+</tr>
+<tr>
+<td>–node-monitor-grace-period</td>
+<td style="text-align:left">kube-controller-manager 间隔多少时间之后，把node状态设置为NotReady</td>
+<td style="text-align:left">5m</td>
+</tr>
+<tr>
+<td>–pod-eviction-timeout</td>
+<td style="text-align:left">kube-controller-manager 在第一次kubelet notReady事件之后的多少时间后，开始驱逐pod。并不是CM把node状态设置为notready之后再等待<code>pod-eviction-timeout</code>时间</td>
+<td style="text-align:left">1m</td>
+</tr>
+</tbody>
+</table>
+<p>这种场景下会，Pod 将在 6m 被驱逐。 Kubelet将尝试每1分钟更新一次状态。因此，在Kubernetes控制器管理器考虑节点的不健康状态之前，它将是 (5m / 1m * 5) = 25 次尝试</p>
+<p>如果有 1000 个节点，1分钟之内就会有 (1m / 60s * 1000) = 1000 次的节点状态更新操作。</p>
+<p>参考链接：</p>
+<ul>
+<li><a href="https://github.com/kubernetes-sigs/kubespray/blob/master/docs/kubernetes-reliability.md" target="_blank" rel="external">https://github.com/kubernetes-sigs/kubespray/blob/master/docs/kubernetes-reliability.md</a></li>
+<li><a href="https://github.com/Kevin-fqh/learning-k8s-source-code/blob/master/kubelet/(05)kubelet%E8%B5%84%E6%BA%90%E4%B8%8A%E6%8A%A5%26Evition%E6%9C%BA%E5%88%B6.md" target="_blank" rel="external">https://github.com/Kevin-fqh/learning-k8s-source-code/blob/master/kubelet/(05)kubelet%E8%B5%84%E6%BA%90%E4%B8%8A%E6%8A%A5%26Evition%E6%9C%BA%E5%88%B6.md</a></li>
+</ul>
+]]></content>
+    </entry>
+    
+    <entry>
       <title><![CDATA[Calico 3.5+ 根据节点标签分配 IP 地址]]></title>
       <url>http://icyxp.github.io/blog/2019/08/k8s-calico-assigning-ip.html</url>
       <content type="html"><![CDATA[<h2 id="关于-IP-地址的分配"><a href="#关于-IP-地址的分配" class="headerlink" title="关于 IP 地址的分配"></a>关于 IP 地址的分配</h2><p>Calico 能够进行配置，为不同拓扑指定 IP 地址池。例如可能希望某些机架、地区、或者区域能够从同一个 IP 池中获取地址。这对于降低路由数量或者配合防火墙策略的要求会很有帮助。</p>
