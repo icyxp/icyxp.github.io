@@ -4,6 +4,108 @@
   
     
     <entry>
+      <title><![CDATA[镜像漏洞检测工具 -- Trivy]]></title>
+      <url>http://icyxp.github.io/blog/2019/08/security-trivy.html</url>
+      <content type="html"><![CDATA[<blockquote>
+<p>道路千万条，安全第一条； 镜像不规范，同事两行泪。</p>
+</blockquote>
+<p><a href="https://github.com/aquasecurity/trivy" target="_blank" rel="external">Trivy</a> 是一个面向镜像的漏洞检测工具，具备如下特点：</p>
+<ol>
+<li>开源</li>
+<li>免费</li>
+<li>易用</li>
+<li>准确度高</li>
+<li>CI 友好</li>
+</ol>
+<p>相对于老前辈 <a href="https://github.com/coreos/clair" target="_blank" rel="external">Clair</a>，Trivy 的使用非常直观方便，适用于更多的场景。</p>
+<p>下面是官方出具的对比表格：</p>
+<table>
+<thead>
+<tr>
+<th>扫描器</th>
+<th style="text-align:center">操作系统</th>
+<th style="text-align:center">依赖检测</th>
+<th style="text-align:center">适用性</th>
+<th style="text-align:center">准确度</th>
+<th style="text-align:center">CI 友好</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Trivy</td>
+<td style="text-align:center">◯</td>
+<td style="text-align:center">◯</td>
+<td style="text-align:center">◯</td>
+<td style="text-align:center">◎</td>
+<td style="text-align:center">◯</td>
+</tr>
+<tr>
+<td>Clair</td>
+<td style="text-align:center">◯</td>
+<td style="text-align:center">×</td>
+<td style="text-align:center">△</td>
+<td style="text-align:center">◯</td>
+<td style="text-align:center">△</td>
+</tr>
+<tr>
+<td>Anchore Engine</td>
+<td style="text-align:center">◯</td>
+<td style="text-align:center">△</td>
+<td style="text-align:center">△</td>
+<td style="text-align:center">◯</td>
+<td style="text-align:center">△</td>
+</tr>
+<tr>
+<td>Quay</td>
+<td style="text-align:center">◯</td>
+<td style="text-align:center">×</td>
+<td style="text-align:center">◯</td>
+<td style="text-align:center">◯</td>
+<td style="text-align:center">×</td>
+</tr>
+<tr>
+<td>MicroScanner</td>
+<td style="text-align:center">◯</td>
+<td style="text-align:center">×</td>
+<td style="text-align:center">◯</td>
+<td style="text-align:center">◯</td>
+<td style="text-align:center">◯</td>
+</tr>
+<tr>
+<td>Docker Hub</td>
+<td style="text-align:center">◯</td>
+<td style="text-align:center">×</td>
+<td style="text-align:center">◯</td>
+<td style="text-align:center">×</td>
+<td style="text-align:center">×</td>
+</tr>
+<tr>
+<td>GCR</td>
+<td style="text-align:center">◯</td>
+<td style="text-align:center">×</td>
+<td style="text-align:center">◯</td>
+<td style="text-align:center">◯</td>
+<td style="text-align:center">×</td>
+</tr>
+</tbody>
+</table>
+<a id="more"></a>
+<h2 id="安装"><a href="#安装" class="headerlink" title="安装"></a>安装</h2><h3 id="MacOS"><a href="#MacOS" class="headerlink" title="MacOS"></a>MacOS</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">$ brew tap knqyf263/trivy</span><br><span class="line">$ brew install knqyf263/trivy/trivy</span><br></pre></td></tr></table></figure>
+<h3 id="RHEL-CentOS"><a href="#RHEL-CentOS" class="headerlink" title="RHEL/CentOS"></a>RHEL/CentOS</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">$ sudo vim /etc/yum.repos.d/trivy.repo</span><br><span class="line">[trivy]</span><br><span class="line">name=Trivy repository</span><br><span class="line">baseurl=https://aquasecurity.github.io/trivy-repo/rpm/releases/<span class="variable">$releasever</span>/<span class="variable">$basearch</span>/</span><br><span class="line">gpgcheck=0</span><br><span class="line">enabled=1</span><br><span class="line">$ sudo yum -y update</span><br><span class="line">$ sudo yum -y install trivy</span><br></pre></td></tr></table></figure>
+<p>or<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ rpm -ivh https://github.com/aquasecurity/trivy/releases/download/v0.0.15/trivy_0.0.15_Linux-64bit.rpm</span><br></pre></td></tr></table></figure></p>
+<h2 id="快速入门"><a href="#快速入门" class="headerlink" title="快速入门"></a>快速入门</h2><p>这个工具的最大闪光点就是提供了很多适合用在自动化场景的用法。详细使用帮助可参考官方文档：<a href="https://github.com/aquasecurity/trivy" target="_blank" rel="external">Trivy</a></p>
+<h3 id="扫描镜像："><a href="#扫描镜像：" class="headerlink" title="扫描镜像："></a>扫描镜像：</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ trivy centos</span><br></pre></td></tr></table></figure>
+<h3 id="扫描镜像文件"><a href="#扫描镜像文件" class="headerlink" title="扫描镜像文件"></a>扫描镜像文件</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">$ docker save ruby:2.3.0-alpine3.9 -o ruby-2.3.0.tar</span><br><span class="line">$ trivy --input ruby-2.3.0.tar</span><br></pre></td></tr></table></figure>
+<h3 id="根据严重程度进行过滤"><a href="#根据严重程度进行过滤" class="headerlink" title="根据严重程度进行过滤"></a>根据严重程度进行过滤</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ trivy --severity HIGH,CRITICAL ruby:2.3.0</span><br></pre></td></tr></table></figure>
+<h3 id="忽略未修复问题"><a href="#忽略未修复问题" class="headerlink" title="忽略未修复问题"></a>忽略未修复问题</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ trivy --ignore-unfixed ruby:2.3.0</span><br></pre></td></tr></table></figure>
+<h3 id="忽略特定问题"><a href="#忽略特定问题" class="headerlink" title="忽略特定问题"></a>忽略特定问题</h3><p>使用 <code>.trivyignore</code>：<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">$ cat .trivyignore</span><br><span class="line"><span class="comment"># Accept the risk</span></span><br><span class="line">CVE-2018-14618</span><br><span class="line"></span><br><span class="line"><span class="comment"># No impact in our settings</span></span><br><span class="line">CVE-2019-1543</span><br><span class="line"></span><br><span class="line">$ trivy python:3.4-alpine3.9</span><br></pre></td></tr></table></figure></p>
+<h3 id="使用-JSON-输出结果"><a href="#使用-JSON-输出结果" class="headerlink" title="使用 JSON 输出结果"></a>使用 JSON 输出结果</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ trivy <span class="_">-f</span> json dustise/translat-chatbot:20190428-5</span><br></pre></td></tr></table></figure>
+<h3 id="定义返回值"><a href="#定义返回值" class="headerlink" title="定义返回值"></a>定义返回值</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">$ trivy --exit-code 0 --severity MEDIUM,HIGH ruby:2.3.0</span><br><span class="line">$ trivy --exit-code 1 --severity CRITICAL ruby:2.3.0</span><br></pre></td></tr></table></figure>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>相对于其它同类工具，Trivy 非常适合自动化操作，从 CircleCI 之类的公有服务，到企业内部使用的 Jenkins、Gitlab 等私有工具，或者作为开发运维人员的自测环节，都有 Trivy 的用武之地。</p>
+]]></content>
+    </entry>
+    
+    <entry>
       <title><![CDATA[Go 语言的错误处理：从拒绝到接受]]></title>
       <url>http://icyxp.github.io/blog/2019/08/go-errors-in-go.html</url>
       <content type="html"><![CDATA[<h3 id="学习如何在go中不在担心并且爱上错误处理"><a href="#学习如何在go中不在担心并且爱上错误处理" class="headerlink" title="学习如何在go中不在担心并且爱上错误处理"></a>学习如何在go中不在担心并且爱上错误处理</h3><p>正如一位英国诗人所说的，“犯错是人，宽恕是神”。错误处理是编程实践中非常重要的一部分，但在很多流行语言中并没有对它给予足够的重视。</p>
