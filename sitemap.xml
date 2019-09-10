@@ -2,6 +2,27 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   
   <url>
+    <loc>http://icyxp.github.io/pro/k8s/index.html</loc>
+    
+    <lastmod>2019-09-10T07:42:00.000Z</lastmod>
+    
+  </url>
+  
+  <url>
+    <loc>http://icyxp.github.io/pro/k8s/install-ha/index.html</loc>
+    
+    <lastmod>2019-09-10T07:34:09.000Z</lastmod>
+    
+  </url>
+  
+  <url>
+    <loc>http://icyxp.github.io/pro/k8s/install/index.html</loc>
+    
+    <lastmod>2019-09-10T07:25:59.000Z</lastmod>
+    
+  </url>
+  
+  <url>
     <loc>http://icyxp.github.io/blog/2019/08/k8s-kubelet-sync-node-status.html</loc>
     
     <lastmod>2019-08-27T07:15:49.000Z</lastmod>
@@ -26,13 +47,6 @@
     <loc>http://icyxp.github.io/blog/2019/08/go-errors-in-go.html</loc>
     
     <lastmod>2019-08-26T05:50:31.000Z</lastmod>
-    
-  </url>
-  
-  <url>
-    <loc>http://icyxp.github.io/pro/k8s/index.html</loc>
-    
-    <lastmod>2019-08-21T08:09:50.000Z</lastmod>
     
   </url>
   
