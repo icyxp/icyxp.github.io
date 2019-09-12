@@ -4,6 +4,40 @@
   
     
     <entry>
+      <title><![CDATA[Podman、Skopeo和Buildah下一代容器代替Docker]]></title>
+      <url>http://icyxp.github.io/blog/2019/09/containers-podman-skopeo-buildah.html</url>
+      <content type="html"><![CDATA[<h2 id="缘起"><a href="#缘起" class="headerlink" title="缘起"></a>缘起</h2><p>在Docker实践中，很多人应该都遇到过开机重启时，由于Docker守护程序在占用多核CPU使用100%C使用的情况，此时所有容器都无法正常工作，所有服务都不能用。解决唯一方法只能杀掉所有容器并重启守护进程，才能恢复。经过了解该问题是由于Docker守护进程引起，而且Docker守护进程是以root特权权限启动的，是一个安全问题，那么有什么方法解决呢？本文介绍一下基于CRI 等标准（Docker新架构也符合CRI标准）的新一代容器工具<code>Podman</code>、<code>Skopero</code>和<code>Buiddah</code>套件。</p>
+<h2 id="OCI"><a href="#OCI" class="headerlink" title="OCI"></a>OCI</h2><p>为了防止容器被Docker一家垄断，巨头们（谷歌，Redhat、微软、IBM、Intel、思科）聚在一起决定要成立一个组织（OCI），大家一起商量指定了一套规范（CRI、CNI），大家一致统一只兼容符合这套规范的工具。Docker虽然心有不甘但是毕竟胳膊拧不过大腿，只能该架构兼容规范。</p>
+<p>在该规范的指导下就有了本文的三个主人公，这三个工具都是符合OCI计划下的工具（<a href="https://github.com/containers" target="_blank" rel="external">https://github.com/containers</a>）。他们主要是由RedHat推动，三者各司其职，配合完成Docker所有的功能和新扩展功能，并且对docker的问题进行了改良：包括不需要守护程序或访问有root权限的组；容器架构基于fork/exec模型创建容器，更加安全可靠；所以是更先进、高效和安全的下一代容器容器工具。</p>
+<a id="more"></a>
+<h2 id="Podman"><a href="#Podman" class="headerlink" title="Podman"></a>Podman</h2><p><img src="/images/containers/podman.jpg" alt="podman"></p>
+<p><a href="https://github.com/containers/libpod" target="_blank" rel="external">Podman</a>是该工具套件的核心，用来替换Docker中了大多数子命令（RUN，PUSH，PULL等）。Podman无需守护进程，使用用户命名空间来模拟容器中的root，无需连接到具有root权限的套接字保证容器的体系安全。</p>
+<p>Podman专注于维护和修改OCI镜像的所有命令和功能，例如拉动和标记。它还允许我们创建，运行和维护从这些镜像创建的容器。</p>
+<h2 id="Buildah"><a href="#Buildah" class="headerlink" title="Buildah"></a>Buildah</h2><p><a href="https://github.com/containers/buildah" target="_blank" rel="external">Buildah</a>用来构建OCI图像。虽然Podman也可以用户构建Docker镜像，但是构建速度超慢，并且默认情况下使用vfs存储驱动程序会耗尽大量磁盘空间。 buildah bud（使用Dockerfile构建）则会非常快，并使用覆盖存储驱动程序。</p>
+<p><img src="/images/containers/buildah.jpg" alt="buildah"></p>
+<p>Buildah专注于构建OCI镜像。 Buildah的命令复制了Dockerfile中的所有命令。可以使用Dockerfiles构建镜像，并且不需要任何root权限。 Buildah的最终目标是提供更低级别的coreutils界面来构建图像。Buildah也支持非Dockerfiles构建镜像，可以允许将其他脚本语言集成到构建过程中。 Buildah遵循一个简单的fork-exec模型，不以守护进程运行，但它基于golang中的综合API，可以存储到其他工具中。</p>
+<h2 id="Skopeo"><a href="#Skopeo" class="headerlink" title="Skopeo"></a>Skopeo</h2><p>Skopeo是一个工具，允许我们通过推，拉和复制镜像来处理Docker和OC镜像。</p>
+<p><img src="/images/containers/skopeo.jpg" alt="skopeo"></p>
+<h2 id="三个工具对比"><a href="#三个工具对比" class="headerlink" title="三个工具对比"></a>三个工具对比</h2><p>Buildah构建容器，Podman运行容器，Skopeo传输容器镜像。这些都是由Github容器组织维护的开源工具（<a href="https://github.com/containers" target="_blank" rel="external">https://github.com/containers</a>）。这些工具都不需要运行守护进程，并且大多数情况下也不需要root访问权限。</p>
+<p>Podman和Buildah之间的一个主要区别是他们的容器概念。 Podman允许用户创建”传统容器”。虽然Buildah容器实际上只是为了允许将内容添加回容器图像而创建的。一种简单方法是buildah run命令模拟Dockerfile中的RUN命令，而podman run命令模拟功能中的docker run命令。</p>
+<p>总之，Buildah是创建OCI镜像的有效方式，而Podman允许我们使用熟悉的容器cli命令在生产环境中管理和维护这些镜像和容器。</p>
+<h2 id="容器迁移"><a href="#容器迁移" class="headerlink" title="容器迁移"></a>容器迁移</h2><h3 id="套件安装"><a href="#套件安装" class="headerlink" title="套件安装"></a>套件安装</h3><p>各大Linux发行版都提供了二进制安装包， 可以使用发行版的系统包管理工具一键安装：<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">Fedora, CentOS：sudo yum -y install podman</span><br><span class="line">Arch &amp; Manjaro Linux： sudo pacman -S podman</span><br></pre></td></tr></table></figure></p>
+<p>Ubuntu不支持一键安装，需要先添加第三方私有ppa仓库：<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">sudo apt-get update -qq</span><br><span class="line">sudo apt-get install -qq -y software-properties-common uidmap</span><br><span class="line">sudo add-apt-repository -y ppa:projectatomic/ppa</span><br><span class="line">sudo apt-get update -qq</span><br><span class="line">sudo apt-get -qq -y install podman</span><br></pre></td></tr></table></figure></p>
+<h2 id="实践迁移"><a href="#实践迁移" class="headerlink" title="实践迁移"></a>实践迁移</h2><p>安装了套件的三个工具后，就可以对docker实例进行迁移了。</p>
+<h3 id="1、替换cron或者CI作业（脚本）中的所有docker实例，把docker替换为podman，可以使用后面提到的别名的方式。"><a href="#1、替换cron或者CI作业（脚本）中的所有docker实例，把docker替换为podman，可以使用后面提到的别名的方式。" class="headerlink" title="1、替换cron或者CI作业（脚本）中的所有docker实例，把docker替换为podman，可以使用后面提到的别名的方式。"></a>1、替换cron或者CI作业（脚本）中的所有docker实例，把docker替换为podman，可以使用后面提到的别名的方式。</h3><h3 id="2、停止和删除所有的运行的docker。"><a href="#2、停止和删除所有的运行的docker。" class="headerlink" title="2、停止和删除所有的运行的docker。"></a>2、停止和删除所有的运行的docker。</h3><p>为了确保没有有差错，可以使用sysdig来捕获系统中docker的引用，看看是否还有其他东西在调用docker。</p>
+<h3 id="3、删除docker"><a href="#3、删除docker" class="headerlink" title="3、删除docker"></a>3、删除docker</h3><p>现在就可以删除docker了：<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">yum remove docker || apt remove -y docker-ce</span><br></pre></td></tr></table></figure></p>
+<h3 id="4、环境清理"><a href="#4、环境清理" class="headerlink" title="4、环境清理"></a>4、环境清理</h3><p>最后清理下docker文件，我们建个一目录docker备份目录，把以下目录mv到备份目录即可：<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">/etc/docker/*，/etc/default/docker和/var/lib/ docker中的任何遗留文件</span><br></pre></td></tr></table></figure></p>
+<p>删除docker组<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">delgroup docker</span><br></pre></td></tr></table></figure></p>
+<p>现在可以吧docker别名成podman来无缝使用了<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">alias</span> docker = podman</span><br></pre></td></tr></table></figure></p>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>本文介绍了符合CIR标准的 cri-o 容器套件Podman，Skopeo和Buildah。该新一代容器套件架构基于*nix传统的fork-exec模型，解决了由于docker守护程序导致的启动和安全问题，提提高了容器的性能和安全。</p>
+<p>来源：</p>
+<ul>
+<li>zhuanlan.zhihu.com</li>
+</ul>
+]]></content>
+    </entry>
+    
+    <entry>
       <title><![CDATA[Kubelet 状态更新机制]]></title>
       <url>http://icyxp.github.io/blog/2019/08/k8s-kubelet-sync-node-status.html</url>
       <content type="html"><![CDATA[<h2 id="概览"><a href="#概览" class="headerlink" title="概览"></a>概览</h2><p>当 Kubernetes 中 Node 节点出现状态异常的情况下，节点上的 Pod 会被重新调度到其他节点上去，但是有的时候我们会发现节点 Down 掉以后，Pod 并不会立即触发重新调度，这实际上就是和 Kubelet 的状态更新机制密切相关的，Kubernetes 提供了一些参数配置来触发重新调度到嗯时间，下面我们来分析下 Kubelet 状态更新的基本流程。</p>
