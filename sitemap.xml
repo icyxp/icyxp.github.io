@@ -4,7 +4,14 @@
   <url>
     <loc>http://icyxp.github.io/blog/2019/09/go-control-goroutine-number.html</loc>
     
-    <lastmod>2019-09-18T07:37:46.000Z</lastmod>
+    <lastmod>2019-09-23T02:23:21.000Z</lastmod>
+    
+  </url>
+  
+  <url>
+    <loc>http://icyxp.github.io/blog/2019/03/k8s-best-practices.html</loc>
+    
+    <lastmod>2019-09-23T02:22:32.000Z</lastmod>
     
   </url>
   
@@ -117,13 +124,6 @@
     <loc>http://icyxp.github.io/blog/2019/05/k8s-kubeadm14-ca-upgrade.html</loc>
     
     <lastmod>2019-05-14T02:30:04.000Z</lastmod>
-    
-  </url>
-  
-  <url>
-    <loc>http://icyxp.github.io/blog/2019/03/k8s-best-practices.html</loc>
-    
-    <lastmod>2019-04-24T02:52:34.000Z</lastmod>
     
   </url>
   
