@@ -2,16 +2,16 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   
   <url>
-    <loc>http://icyxp.github.io/blog/2019/09/go-control-goroutine-number.html</loc>
+    <loc>http://icyxp.github.io/blog/2019/03/k8s-best-practices.html</loc>
     
-    <lastmod>2019-09-23T02:23:21.000Z</lastmod>
+    <lastmod>2019-09-23T07:04:11.000Z</lastmod>
     
   </url>
   
   <url>
-    <loc>http://icyxp.github.io/blog/2019/03/k8s-best-practices.html</loc>
+    <loc>http://icyxp.github.io/blog/2019/09/go-control-goroutine-number.html</loc>
     
-    <lastmod>2019-09-23T02:22:32.000Z</lastmod>
+    <lastmod>2019-09-23T02:23:21.000Z</lastmod>
     
   </url>
   
