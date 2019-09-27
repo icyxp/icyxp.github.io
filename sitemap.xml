@@ -2,6 +2,13 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   
   <url>
+    <loc>http://icyxp.github.io/blog/2019/09/go-cancellation-of-goroutines.html</loc>
+    
+    <lastmod>2019-09-27T09:18:23.000Z</lastmod>
+    
+  </url>
+  
+  <url>
     <loc>http://icyxp.github.io/blog/2019/09/go-debug-memory.html</loc>
     
     <lastmod>2019-09-24T08:27:33.000Z</lastmod>
