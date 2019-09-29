@@ -50,9 +50,9 @@
       <category term="Go" scheme="http://icyxp.github.io/categories/Go/"/>
     
     
-      <category term="goroutine" scheme="http://icyxp.github.io/tags/goroutine/"/>
-    
       <category term="golang" scheme="http://icyxp.github.io/tags/golang/"/>
+    
+      <category term="goroutine" scheme="http://icyxp.github.io/tags/goroutine/"/>
     
       <category term="chanel" scheme="http://icyxp.github.io/tags/chanel/"/>
     
