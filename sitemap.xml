@@ -2,6 +2,13 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   
   <url>
+    <loc>http://icyxp.github.io/pro/k8s/install-ha/index.html</loc>
+    
+    <lastmod>2019-09-30T03:21:57.000Z</lastmod>
+    
+  </url>
+  
+  <url>
     <loc>http://icyxp.github.io/blog/2019/09/go-cancellation-of-goroutines.html</loc>
     
     <lastmod>2019-09-27T09:18:23.000Z</lastmod>
@@ -47,13 +54,6 @@
     <loc>http://icyxp.github.io/blog/2019/09/containers-podman-skopeo-buildah.html</loc>
     
     <lastmod>2019-09-12T03:03:40.000Z</lastmod>
-    
-  </url>
-  
-  <url>
-    <loc>http://icyxp.github.io/pro/k8s/install-ha/index.html</loc>
-    
-    <lastmod>2019-09-12T02:13:55.000Z</lastmod>
     
   </url>
   
