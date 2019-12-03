@@ -1,0 +1,1532 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next mist use-motion" lang="zh-Hans">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+<script src="//cdn.bootcss.com/pace/1.0.2/pace.min.js"></script>
+<link href="//cdn.bootcss.com/pace/1.0.2/themes/pink/pace-theme-flash.css" rel="stylesheet">
+<script>
+    (function () {
+        if ('') {
+            if (prompt('请输入文章密码') !== '') {
+                alert('密码错误！');
+                if (history.length === 1) {
+                    location.replace("http://team.jiunile.com"); // 这里替换成你的首页
+                } else {
+                    history.back();
+                }
+            }
+        }
+    })();
+</script>
+<meta name="theme-color" content="#222">
+<style>
+    .pace .pace-progress {
+        background: #1E92FB; /*进度条颜色*/
+        height: 2px;
+    }
+    .pace .pace-progress-inner {
+         box-shadow: 0 0 10px #1E92FB, 0 0 5px     #1E92FB; /*阴影颜色*/
+    }
+    .pace .pace-activity {
+        border-top-color: #1E92FB;    /*上边框颜色*/
+        border-left-color: #1E92FB;    /*左边框颜色*/
+    }
+</style>
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+<!--
+  <script>
+  (function(i,s,o,g,r,a,m){i["DaoVoiceObject"]=r;i[r]=i[r]||function(){(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;a.charset="utf-8";m.parentNode.insertBefore(a,m)})(window,document,"script",('https:' == document.location.protocol ? 'https:' : 'http:') + "//widget.daovoice.io/widget/0f81ff2f.js","daovoice")
+  daovoice('init', {
+      app_id: "2a2a668f"
+    });
+  daovoice('update');
+  </script>
+-->
+<script type='text/javascript'>
+  (function (window, a, b) {
+    window[a] = window[a] || function () {
+        (window[a].a = window[a].a || []).push(arguments)
+    };
+    window[b] = window[b] || function () {
+        (window[b].a = window[b].a || []).push(arguments)
+    };
+    var s = document.createElement("script");
+    s.src = "https://jsapi.weiliaokefu.com/Public/dist/js/jsapi.js?v=" + Math.round(Math.random() * 1000);
+    s.async = true;
+    s.charset = "UTF-8";
+    document.getElementsByTagName("head")[0].appendChild(s);
+  })(window, '_FENBOT', "_FENBOT_API");
+  _FENBOT({cid: '36159', type: '0'});
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/favicon.ico?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon.ico?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon.ico?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/favicon.ico?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="k8s,kubernetes,capabilities,docker," />
+
+
+
+
+
+  <link rel="alternate" href="/atom.xml" title="CloudNative 架构" type="application/atom+xml" />
+
+
+
+
+
+
+<meta name="description" content="我们在使用 Kubernetes 过程中，偶尔会遇到如下所示的一段配置：123456securityContext:  capabilities:    drop:    - ALL    add:    - NET_BIND_SERVICE
+实际上这是配置对应的容器的 Capabilities，在我们使用 docker run 的时候可以通过 --cap-add 和 --cap-drop 命令来">
+<meta property="og:type" content="article">
+<meta property="og:title" content="在 Kubernetes 中配置 Container Capabilities">
+<meta property="og:url" content="http://icyxp.github.io/blog/2019/12/capabilities.html">
+<meta property="og:site_name" content="CloudNative 架构">
+<meta property="og:description" content="我们在使用 Kubernetes 过程中，偶尔会遇到如下所示的一段配置：123456securityContext:  capabilities:    drop:    - ALL    add:    - NET_BIND_SERVICE
+实际上这是配置对应的容器的 Capabilities，在我们使用 docker run 的时候可以通过 --cap-add 和 --cap-drop 命令来">
+<meta property="og:image" content="http://icyxp.github.io/images/capabilities.png">
+<meta property="og:image" content="http://icyxp.github.io/images/docker-add-capabilities.png">
+<meta property="og:image" content="http://icyxp.github.io/images/docker-drop-capabilities.png">
+<meta property="og:updated_time" content="2019-12-03T06:09:50.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="在 Kubernetes 中配置 Container Capabilities">
+<meta name="twitter:description" content="我们在使用 Kubernetes 过程中，偶尔会遇到如下所示的一段配置：123456securityContext:  capabilities:    drop:    - ALL    add:    - NET_BIND_SERVICE
+实际上这是配置对应的容器的 Capabilities，在我们使用 docker run 的时候可以通过 --cap-add 和 --cap-drop 命令来">
+<meta name="twitter:image" content="http://icyxp.github.io/images/capabilities.png">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Mist',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://icyxp.github.io/blog/2019/12/capabilities.html"/>
+
+
+
+
+
+  <title>在 Kubernetes 中配置 Container Capabilities | CloudNative 架构</title>
+  
+
+
+
+
+
+  <script type="text/javascript">
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "https://hm.baidu.com/hm.js?126663bc923877f90024929ac5555b0f";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+
+
+
+  <!-- 页面点击小红心 -->
+  <script type="text/javascript" src="/js/src/love.js"></script>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+    <a href="https://github.com/icyxp"><a href="https://github.com/icyxp" class="github-corner" aria-label="View source on GitHub"><svg width="80" height="80" viewBox="0 0 250 250" style="fill:#151513; color:#fff; position: absolute; top: 0; border: 0; right: 0;" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path></svg></a><style>.github-corner:hover .octo-arm{animation:octocat-wave 560ms ease-in-out}@keyframes octocat-wave{0%,100%{transform:rotate(0)}20%,60%{transform:rotate(-25deg)}40%,80%{transform:rotate(10deg)}}@media (max-width:500px){.github-corner:hover .octo-arm{animation:none}.github-corner .octo-arm{animation:octocat-wave 560ms ease-in-out}}</style></a>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">CloudNative 架构</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <h1 class="site-subtitle" itemprop="description">CloudNative|云原生应用架构|云原生架构|容器化架构|微服务架构|平台架构|基础架构</h1>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br />
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-k8s">
+          <a href="/pro/k8s/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-heartbeat"></i> <br />
+            
+            k8s离线安装包
+          </a>
+        </li>
+      
+
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="popup-trigger">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br />
+            
+            搜索
+          </a>
+        </li>
+      
+    </ul>
+  
+
+  
+    <div class="site-search">
+      
+  <div class="popup search-popup local-search-popup">
+  <div class="local-search-header clearfix">
+    <span class="search-icon">
+      <i class="fa fa-search"></i>
+    </span>
+    <span class="popup-btn-close">
+      <i class="fa fa-times-circle"></i>
+    </span>
+    <div class="local-search-input-wrapper">
+      <input autocomplete="off"
+             placeholder="搜索..." spellcheck="false"
+             type="text" id="local-search-input">
+    </div>
+  </div>
+  <div id="local-search-result"></div>
+</div>
+
+
+
+    </div>
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://icyxp.github.io/blog/2019/12/capabilities.html">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="icyboy">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="CloudNative 架构">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h2 class="post-title" itemprop="name headline">在 Kubernetes 中配置 Container Capabilities</h2>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2019-12-03T20:00:00+08:00">
+                2019-12-03
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/kubernetes/" itemprop="url" rel="index">
+                    <span itemprop="name">kubernetes</span>
+                  </a>
+                </span>
+
+                
+                
+                  ， 
+                
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/kubernetes/capabilities/" itemprop="url" rel="index">
+                    <span itemprop="name">capabilities</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+                <a href="/blog/2019/12/capabilities.html#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count valine-comment-count" data-xid="/blog/2019/12/capabilities.html" itemprop="commentCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+          
+             <span id="/blog/2019/12/capabilities.html" class="leancloud_visitors" data-flag-title="在 Kubernetes 中配置 Container Capabilities">
+               <span class="post-meta-divider">|</span>
+               <span class="post-meta-item-icon">
+                 <i class="fa fa-eye"></i>
+               </span>
+               
+                 <span class="post-meta-item-text">热度&#58;</span>
+               
+                 <span class="leancloud-visitors-count"></span>
+		 <span>℃</span>
+             </span>
+          
+
+          
+
+          
+            <div class="post-wordcount">
+              
+                
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-file-word-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">字数统计&#58;</span>
+                
+                <span title="字数统计">
+                  2,418 字
+                </span>
+              
+
+              
+                <span class="post-meta-divider">|</span>
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-clock-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">阅读时长 &asymp;</span>
+                
+                <span title="阅读时长">
+                  10 分钟
+                </span>
+              
+            </div>
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>我们在使用 Kubernetes 过程中，偶尔会遇到如下所示的一段配置：<br><figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">securityContext:</span></span><br><span class="line"><span class="attr">  capabilities:</span></span><br><span class="line"><span class="attr">    drop:</span></span><br><span class="line"><span class="bullet">    -</span> ALL</span><br><span class="line"><span class="attr">    add:</span></span><br><span class="line"><span class="bullet">    -</span> NET_BIND_SERVICE</span><br></pre></td></tr></table></figure></p>
+<p>实际上这是配置对应的容器的 <code>Capabilities</code>，在我们使用 <code>docker run</code> 的时候可以通过 <code>--cap-add</code> 和 <code>--cap-drop</code> 命令来给容器添加 <code>Linux Capabilities</code>。对于大部分同学可能又要疑问 <code>Linux Capabilities</code> 是什么呢？<br><a id="more"></a></p>
+<h2 id="Linux-Capabilities"><a href="#Linux-Capabilities" class="headerlink" title="Linux Capabilities"></a>Linux Capabilities</h2><p>要了解 <code>Linux Capabilities</code>，这就得从 Linux 的权限控制发展来说明。在 Linux 2.2 版本之前，当内核对进程进行权限验证的时候，Linux 将进程划分为两类：特权进程（UID=0，也就是超级用户）和非特权进程（UID!=0），特权进程拥有所有的内核权限，而非特权进程则根据进程凭证（effective UID, effective GID，supplementary group 等）进行权限检查。</p>
+<p>比如我们以常用的 <code>passwd</code> 命令为例，修改用户密码需要具有 root 权限，而普通用户是没有这个权限的。但是实际上普通用户又可以修改自己的密码，这是怎么回事呢？在 Linux 的权限控制机制中，有一类比较特殊的权限设置，比如 SUID(Set User ID on execution)，允许用户以可执行文件的 owner 的权限来运行可执行文件。因为程序文件 <code>/bin/passwd</code> 被设置了 <code>SUID</code> 标识，所以普通用户在执行 passwd 命令时，进程是以 passwd 的所有者，也就是 root 用户的身份运行，从而就可以修改密码了。</p>
+<p>但是使用 <code>SUID</code> 却带来了新的安全隐患，当我们运行设置了 <code>SUID</code> 的命令时，通常只是需要很小一部分的特权，但是 <code>SUID</code> 却给了它 root 具有的全部权限，一旦 被设置了 <code>SUID</code> 的命令出现漏洞，是不是就很容易被利用了。</p>
+<p>为此 Linux 引入了 <code>Capabilities</code> 机制来对 root 权限进行了更加细粒度的控制，实现按需进行授权，这样就大大减小了系统的安全隐患。</p>
+<h3 id="什么是-Capabilities"><a href="#什么是-Capabilities" class="headerlink" title="什么是 Capabilities"></a>什么是 Capabilities</h3><p>从内核 2.2 开始，Linux 将传统上与超级用户 root 关联的特权划分为不同的单元，称为 <code>capabilites</code>。<code>Capabilites</code> 每个单元都可以独立启用和禁用。这样当系统在作权限检查的时候就变成了：在执行特权操作时，如果进程的有效身份不是 <strong>root</strong>，就去检查是否具有该特权操作所对应的 <strong>capabilites</strong>，并以此决定是否可以进行该特权操作。比如如果我们要设置系统时间，就得具有 <code>CAP_SYS_TIME</code> 这个 capabilites。下面是从 <a href="http://man7.org/linux/man-pages/man7/capabilities.7.html" target="_blank" rel="external">capabilities man page</a> 中摘取的 capabilites 列表：<br><img src="/images/capabilities.png" alt="capabilities"></p>
+<h3 id="如何使用-Capabilities"><a href="#如何使用-Capabilities" class="headerlink" title="如何使用 Capabilities"></a>如何使用 Capabilities</h3><p>我们可以通过 <code>getcap</code> 和 <code>setcap</code> 两条命令来分别查看和设置程序文件的 <code>capabilities</code> 属性。比如当前我们是<code>zuiapp</code> 这个用户，使用 <code>getcap</code> 命令查看 <code>ping</code> 命令目前具有的 <code>capabilities</code>：<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">❯ ll /bin/ping</span><br><span class="line">-rwxr-xr-x 1 root root 62088 11月  7 2016 /bin/ping</span><br><span class="line">❯ <span class="built_in">getcap</span> /bin/ping</span><br><span class="line">/bin/ping = <span class="built_in">cap</span>_net_admin,<span class="built_in">cap</span>_net_raw+p</span><br></pre></td></tr></table></figure></p>
+<p>我们可以看到具有 <code>cap_net_admin</code> 这个属性，所以我们现在可以执行 <code>ping</code> 命令：<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">❯ ping team.jiunile.com</span><br><span class="line">PING icyxp.github.io (185.199.109.153): 56 data bytes</span><br><span class="line">64 bytes from 185.199.109.153: icmp_seq=0 ttl=58 time=46.651 ms</span><br><span class="line">64 bytes from 185.199.109.153: icmp_seq=1 ttl=58 time=35.604 ms</span><br></pre></td></tr></table></figure></p>
+<p>但是如果我们把命令的 <code>capabilities</code> 属性移除掉：<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">❯ sudo <span class="built_in">setcap</span> <span class="built_in">cap</span>_net_admin,<span class="built_in">cap</span>_net_raw-p /bin/ping</span><br><span class="line">❯ <span class="built_in">getcap</span> /bin/ping</span><br><span class="line">/bin/ping =</span><br></pre></td></tr></table></figure></p>
+<p>这个时候我们执行 <code>ping</code> 命令可以发现已经没有权限了：<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">❯ ping team.jiunile.com</span><br><span class="line">ping: socket: Operation not permitted</span><br></pre></td></tr></table></figure></p>
+<p>因为 ping 命令在执行时需要访问网络，所需的 <code>capabilities</code> 为 <code>cap_net_admin</code> 和 <code>cap_net_raw</code>，所以我们可以通过 <code>setcap</code> 命令可来添加它们：<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">❯ sudo <span class="built_in">setcap</span> <span class="built_in">cap</span>_net_admin,<span class="built_in">cap</span>_net_raw+p /bin/ping</span><br><span class="line">❯ <span class="built_in">getcap</span> /bin/ping</span><br><span class="line">/bin/ping = <span class="built_in">cap</span>_net_admin,<span class="built_in">cap</span>_net_raw+p</span><br><span class="line">❯ ping team.jiunile.com</span><br><span class="line">PING icyxp.github.io (185.199.109.153): 56 data bytes</span><br><span class="line">64 bytes from 185.199.109.153: icmp_seq=0 ttl=58 time=46.651 ms</span><br><span class="line">64 bytes from 185.199.109.153: icmp_seq=1 ttl=58 time=35.604 ms</span><br></pre></td></tr></table></figure></p>
+<p>命令中的 <code>p</code> 表示 <code>Permitted</code> 集合(接下来会介绍)，<code>+</code> 号表示把指定的 <code>capabilities</code> 添加到这些集合中，<code>-</code> 号表示从集合中移除。</p>
+<p>对于可执行文件的属性中有三个集合来保存三类 <code>capabilities</code>，它们分别是：</p>
+<ul>
+<li>Permitted：在进程执行时，Permitted 集合中的 capabilites 自动被加入到进程的 Permitted 集合中。</li>
+<li>Inheritable：Inheritable 集合中的 capabilites 会与进程的 Inheritable 集合执行与操作，以确定进程在执行 execve 函数后哪些 capabilites 被继承。</li>
+<li>Effective：Effective 只是一个 bit。如果设置为开启，那么在执行 execve 函数后，Permitted 集合中新增的 capabilities 会自动出现在进程的 Effective 集合中。</li>
+</ul>
+<p>对于进程中有五种 <code>capabilities</code> 集合类型，相比文件的 <code>capabilites</code>，进程的 <code>capabilities</code> 多了两个集合，分别是 <code>Bounding</code> 和 <code>Ambient</code>。</p>
+<p>我们可以通过下面的命名来查看当前进程的 <code>capabilities</code> 信息：<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">❯ cat /proc/7029/status | grep <span class="string">'Cap'</span>  <span class="comment">#7029为PID</span></span><br><span class="line">CapInh:	0000000000000000</span><br><span class="line">CapPrm:	0000000000000000</span><br><span class="line">CapEff:	0000000000000000</span><br><span class="line">CapBnd:	0000001fffffffff</span><br><span class="line">CapAmb:	0000000000000000</span><br></pre></td></tr></table></figure></p>
+<p>然后我们可以使用 <code>capsh</code> 命令把它们转义为可读的格式，这样基本可以看出进程具有的 <code>capabilities</code> 了：<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">❯ capsh --decode=0000001fffffffff</span><br><span class="line">0x0000001fffffffff=<span class="built_in">cap</span>_chown,<span class="built_in">cap</span>_dac_override,<span class="built_in">cap</span>_dac_<span class="built_in">read</span>_search,<span class="built_in">cap</span>_fowner,<span class="built_in">cap</span>_fsetid,<span class="built_in">cap</span>_<span class="built_in">kill</span>,<span class="built_in">cap</span>_setgid,<span class="built_in">cap</span>_setuid,<span class="built_in">cap</span>_setpcap,<span class="built_in">cap</span>_linux_immutable,<span class="built_in">cap</span>_net_<span class="built_in">bind</span>_service,<span class="built_in">cap</span>_net_broadcast,<span class="built_in">cap</span>_net_admin,<span class="built_in">cap</span>_net_raw,<span class="built_in">cap</span>_ipc_lock,<span class="built_in">cap</span>_ipc_owner,<span class="built_in">cap</span>_sys_module,<span class="built_in">cap</span>_sys_rawio,<span class="built_in">cap</span>_sys_chroot,<span class="built_in">cap</span>_sys_ptrace,<span class="built_in">cap</span>_sys_pacct,<span class="built_in">cap</span>_sys_admin,<span class="built_in">cap</span>_sys_boot,<span class="built_in">cap</span>_sys_nice,<span class="built_in">cap</span>_sys_resource,<span class="built_in">cap</span>_sys_time,<span class="built_in">cap</span>_sys_tty_config,<span class="built_in">cap</span>_mknod,<span class="built_in">cap</span>_lease,<span class="built_in">cap</span>_audit_write,<span class="built_in">cap</span>_audit_control,<span class="built_in">cap</span>_setfcap,<span class="built_in">cap</span>_mac_override,<span class="built_in">cap</span>_mac_admin,<span class="built_in">cap</span>_syslog,35,36</span><br></pre></td></tr></table></figure></p>
+<h2 id="Docker-Container-Capabilities"><a href="#Docker-Container-Capabilities" class="headerlink" title="Docker Container Capabilities"></a>Docker Container Capabilities</h2><p>我们说 Docker 容器本质上就是一个进程，所以理论上容器就会和进程一样会有一些默认的开放权限，默认情况下 Docker 会删除必须的 <code>capabilities</code> 之外的所有 <code>capabilities</code>，因为在容器中我们经常会以 root 用户来运行，使用 <code>capabilities</code> 现在后，容器中的使用的 root 用户权限就比我们平时在宿主机上使用的 root 用户权限要少很多了，这样即使出现了安全漏洞，也很难破坏或者获取宿主机的 root 权限，所以 Docker 支持 <code>Capabilities</code> 对于容器的安全性来说是非常有必要的。</p>
+<p>不过我们在运行容器的时候可以通过指定 <code>--privileded</code> 参数来开启容器的超级权限，这个参数一定要慎用，因为他会获取系统 root 用户所有能力赋值给容器，并且会扫描宿主机的所有设备文件挂载到容器内部，所以是非常危险的操作。</p>
+<p>但是如果你确实需要一些特殊的权限，我们可以通过 <code>--cap-add</code> 和 <code>--cap-drop</code> 这两个参数来动态调整，可以最大限度地保证容器的使用安全。下面表格中列出的 <code>Capabilities</code> 是 Docker 默认给容器添加的，我们可以通过 <code>--cap-drop</code> 去除其中一个或者多个：<br><img src="/images/docker-add-capabilities.png" alt="docker-add-capabilities"></p>
+<p>下面表格中列出的 <code>Capabilities</code> 是 Docker 默认删除的，我们可以通过<code>--cap-add</code>添加其中一个或者多个：<br><img src="/images/docker-drop-capabilities.png" alt="docker-drop-capabilities"></p>
+<blockquote>
+<p><code>--cap-add</code>和<code>--cap-drop</code> 这两参数都支持<code>ALL</code>值，比如如果你想让某个容器拥有除了<code>MKNOD</code>之外的所有内核权限，那么可以执行下面的命令： <code>$ sudo docker run --cap-add=ALL --cap-drop=MKNOD ...</code></p>
+</blockquote>
+<p>比如现在我们需要修改网络接口数据，默认情况下是没有权限的，因为需要的 <code>NET_ADMIN</code> 这个 <code>Capabilities</code> 默认被移除了：<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">❯ docker run -it --rm busybox /bin/sh</span><br><span class="line">/ <span class="comment"># ip link add dummy0 type dummy</span></span><br><span class="line">ip: RTNETLINK answers: Operation not permitted</span><br><span class="line">/ <span class="comment">#</span></span><br></pre></td></tr></table></figure></p>
+<p>所以在不使用 <code>--privileged</code> 的情况下（不建议）我们可以使用 <code>--cap-add=NET_ADMIN</code> 将这个 <code>Capabilities</code> 添加回来：<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">❯ docker run -it --rm --cap-add=NET_ADMIN busybox /bin/sh</span><br><span class="line">/ <span class="comment"># ip link add dummy0 type dummy</span></span><br><span class="line">/ <span class="comment">#</span></span><br></pre></td></tr></table></figure></p>
+<p>可以看到已经 OK 了。</p>
+<h2 id="Kubernetes-配置-Capabilities"><a href="#Kubernetes-配置-Capabilities" class="headerlink" title="Kubernetes 配置 Capabilities"></a>Kubernetes 配置 Capabilities</h2><p>上面我介绍了在 Docker 容器下如何来配置 <code>Capabilities</code>，在 Kubernetes 中也可以很方便的来定义，我们只需要添加到 Pod 定义的 <code>spec.containers.sercurityContext.capabilities</code>中即可，也可以进行 <code>add</code> 和 <code>drop</code> 配置，同样上面的示例，我们要给 busybox 容器添加 <code>NET_ADMIN</code> 这个 <code>Capabilities</code>，对应的 YAML 文件可以这样定义：(cpb-demo.yaml)<br><figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">apiVersion:</span> v1</span><br><span class="line"><span class="attr">kind:</span> Pod</span><br><span class="line"><span class="attr">metadata:</span></span><br><span class="line"><span class="attr">  name:</span> cpb-demo</span><br><span class="line"><span class="attr">spec:</span></span><br><span class="line"><span class="attr">  containers:</span></span><br><span class="line"><span class="attr">  - name:</span> cpb</span><br><span class="line"><span class="attr">    image:</span> busybox</span><br><span class="line"><span class="attr">    args:</span></span><br><span class="line"><span class="bullet">    -</span> sleep</span><br><span class="line"><span class="bullet">    -</span> <span class="string">"3600"</span></span><br><span class="line"><span class="attr">    securityContext:</span></span><br><span class="line"><span class="attr">      capabilities:</span></span><br><span class="line"><span class="attr">        add:</span> <span class="comment"># 添加</span></span><br><span class="line"><span class="bullet">        -</span> NET_ADMIN</span><br><span class="line"><span class="attr">        drop:</span>  <span class="comment"># 删除</span></span><br><span class="line"><span class="bullet">        -</span> KILL</span><br></pre></td></tr></table></figure></p>
+<p>我们在 <code>securityContext</code> 下面添加了 <code>capabilities</code> 字段，其中添加了 <code>NET_ADMIN</code> 并且删除了 <code>KILL</code> 这个默认的容器 <code>Capabilities</code>，这样我们就可以在 Pod 中修改网络接口数据了：<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">❯ kubectl apply <span class="_">-f</span> cpb-demo.yaml</span><br><span class="line">❯ kubectl get pods</span><br><span class="line">NAME                      READY   STATUS    RESTARTS   AGE</span><br><span class="line">cpb-demo                  1/1     Running   0          2m9s</span><br><span class="line">❯ kubectl <span class="built_in">exec</span> -it cpb-demo /bin/sh</span><br><span class="line">/ <span class="comment"># ip link add dummy0 type dummy</span></span><br><span class="line">/ <span class="comment">#</span></span><br></pre></td></tr></table></figure></p>
+<p>在 Kubernetes 中通过 <code>sercurityContext.capabilities</code> 进行配置容器的 <code>Capabilities</code>，当然最终还是通过 Docker 的 <code>libcontainer</code> 去借助 <code>Linux kernel capabilities</code> 实现的权限管理。</p>
+<h3 id="应用一：在kubernetes容器中使用perf命令"><a href="#应用一：在kubernetes容器中使用perf命令" class="headerlink" title="应用一：在kubernetes容器中使用perf命令"></a>应用一：在kubernetes容器中使用perf命令</h3><p>在容器中运行 <code>perf</code> 会报如下错误：<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line">┌─Error:───────────────────────────────────────────────────────────┐</span><br><span class="line">│No permission to <span class="built_in">enable</span> cycles event.                             │</span><br><span class="line">│                                                                  │</span><br><span class="line">│You may not have permission to collect system-wide stats.         │</span><br><span class="line">│                                                                  │</span><br><span class="line">│Consider tweaking /proc/sys/kernel/perf_event_paranoid,           │</span><br><span class="line">│<span class="built_in">which</span> controls use of the performance events system by            │</span><br><span class="line">│unprivileged users (without CAP_SYS_ADMIN).                       │</span><br><span class="line">│                                                                  │</span><br><span class="line">│The current value is 3:                                           │</span><br><span class="line">│                                                                  │</span><br><span class="line">│  -1: Allow use of (almost) all events by all users               │</span><br><span class="line">│&gt;= 0: Disallow raw tracepoint access by users without CAP_IOC_LOCK│</span><br><span class="line">│&gt;= 1: Disallow CPU event access by users without CAP_SYS_ADMIN    │</span><br><span class="line">│&gt;= 2: Disallow kernel profiling by users without C                │</span><br><span class="line">│                                                                  │</span><br><span class="line">│                                                                  │</span><br><span class="line">│Press any key...                                                  │</span><br><span class="line">└──────────────────────────────────────────────────────────────────┘</span><br></pre></td></tr></table></figure></p>
+<p>提示没有权限，需要更改 <code>/proc/sys/kernel/perf_event_paranoid</code> 文件，然后尝试执行:<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">$ <span class="built_in">echo</span> 0 &gt; /proc/sys/kernel/perf_event_paranoid</span><br><span class="line">bash: /proc/sys/kernel/perf_event_paranoid: Read-only file system</span><br></pre></td></tr></table></figure></p>
+<p>解决办法，修改容器的deployment文件，加入 <code>SYS_ADMIN</code><br><figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">securityContext:</span></span><br><span class="line"><span class="attr">    capabilities:</span></span><br><span class="line"><span class="attr">        add:</span> [<span class="string">"SYS_ADMIN"</span>]</span><br></pre></td></tr></table></figure></p>
+<p>参考链接:</p>
+<ul>
+<li><a href="https://www.cnblogs.com/sparkdev/p/11417781.html" target="_blank" rel="external">https://www.cnblogs.com/sparkdev/p/11417781.html</a></li>
+<li><a href="https://hustcat.github.io/docker-config-capabilities/" target="_blank" rel="external">https://hustcat.github.io/docker-config-capabilities/</a></li>
+<li><a href="https://blog.csdn.net/WaltonWang/article/details/62226738" target="_blank" rel="external">https://blog.csdn.net/WaltonWang/article/details/62226738</a></li>
+<li><a href="http://man7.org/linux/man-pages/man7/capabilities.7.html" target="_blank" rel="external">http://man7.org/linux/man-pages/man7/capabilities.7.html</a></li>
+<li>www.qikqiak.com</li>
+</ul>
+
+      
+    </div>
+    
+    
+    
+
+    <div>
+    
+        <div>
+    
+        <div style="text-align:center;color: #ccc;font-size:14px;">-------------本文结束<i class="fa fa-paw"></i>感谢您的阅读-------------</div>
+    
+</div>
+
+    
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    
+
+    
+      <div>
+        <div style="padding: 10px 0; margin: 20px auto; width: 90%; text-align: center;">
+  <div></div>
+  <button id="rewardButton" disable="enable" onclick="var qr = document.getElementById('QR'); if (qr.style.display === 'none') {qr.style.display='block';} else {qr.style.display='none'}">
+    <span>打赏</span>
+  </button>
+  <div id="QR" style="display: none;">
+
+    
+      <div id="wechat" style="display: inline-block">
+        <img id="wechat_qr" src="/images/wechatpay.jpg" alt="icyboy 微信支付"/>
+        <p>微信支付</p>
+      </div>
+    
+
+    
+      <div id="alipay" style="display: inline-block">
+        <img id="alipay_qr" src="/images/alipay.jpg" alt="icyboy 支付宝"/>
+        <p>支付宝</p>
+      </div>
+    
+
+    
+
+  </div>
+</div>
+
+      </div>
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/k8s/" rel="tag"># k8s</a>
+          
+            <a href="/tags/kubernetes/" rel="tag"># kubernetes</a>
+          
+            <a href="/tags/capabilities/" rel="tag"># capabilities</a>
+          
+            <a href="/tags/docker/" rel="tag"># docker</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/blog/2019/09/go-cancellation-of-goroutines.html" rel="next" title="golang如何取消子 goroutine">
+                <i class="fa fa-chevron-left"></i> golang如何取消子 goroutine
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+    <div class="comments" id="comments">
+    </div>
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image"
+                src="/images/avatar.jpg"
+                alt="icyboy" />
+            
+              <p class="site-author-name" itemprop="name">icyboy</p>
+              <p class="site-description motion-element" itemprop="description"></p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">54</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-categories">
+                <a href="/categories/index.html">
+                  <span class="site-state-item-count">39</span>
+                  <span class="site-state-item-name">分类</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                <a href="/tags/index.html">
+                  <span class="site-state-item-count">100</span>
+                  <span class="site-state-item-name">标签</span>
+                </a>
+              </div>
+            
+
+          </nav>
+
+          
+            <div class="feed-link motion-element">
+              <a href="/atom.xml" rel="alternate">
+                <i class="fa fa-rss"></i>
+                RSS
+              </a>
+            </div>
+          
+
+          
+            <div class="links-of-author motion-element">
+                
+                  <span class="links-of-author-item">
+                    <a href="https://github.com/icyxp" target="_blank" title="GitHub">
+                      
+                        <i class="fa fa-fw fa-github"></i>GitHub</a>
+                  </span>
+                
+                  <span class="links-of-author-item">
+                    <a href="http://weibo.com/joysteam" target="_blank" title="微博">
+                      
+                        <i class="fa fa-fw fa-weibo"></i>微博</a>
+                  </span>
+                
+                  <span class="links-of-author-item">
+                    <a href="http://www.zhihu.com/people/xupeng" target="_blank" title="知乎">
+                      
+                        <i class="fa fa-fw fa-zhihu"></i>知乎</a>
+                  </span>
+                
+            </div>
+          
+
+          
+          
+
+          
+          
+            <div class="links-of-blogroll motion-element links-of-blogroll-inline">
+              <div class="links-of-blogroll-title">
+                <i class="fa  fa-fw fa-link"></i>
+                友情链接
+              </div>
+              <ul class="links-of-blogroll-list">
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="http://www.zjgsmt.com" title="张家港水蜜桃" target="_blank">张家港水蜜桃</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="http://blog.jiunile.com" title="运维开发" target="_blank">运维开发</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="http://devops.jiunile.com" title="DevOps" target="_blank">DevOps</a>
+                  </li>
+                
+              </ul>
+            </div>
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#Linux-Capabilities"><span class="nav-number">1.</span> <span class="nav-text">Linux Capabilities</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#什么是-Capabilities"><span class="nav-number">1.1.</span> <span class="nav-text">什么是 Capabilities</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#如何使用-Capabilities"><span class="nav-number">1.2.</span> <span class="nav-text">如何使用 Capabilities</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Docker-Container-Capabilities"><span class="nav-number">2.</span> <span class="nav-text">Docker Container Capabilities</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Kubernetes-配置-Capabilities"><span class="nav-number">3.</span> <span class="nav-text">Kubernetes 配置 Capabilities</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#应用一：在kubernetes容器中使用perf命令"><span class="nav-number">3.1.</span> <span class="nav-text">应用一：在kubernetes容器中使用perf命令</span></a></li></ol></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+<div class="copyright">&copy; 2016 &mdash; <span itemprop="copyrightYear">2019</span>
+  <span class="with-love" id="heart">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">icyboy</span>
+
+  
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-area-chart"></i>
+    </span>
+    
+      <span class="post-meta-item-text">Site words total count&#58;</span>
+    
+    <span title="Site words total count">139.5k</span>
+  
+</div>
+
+<div class="powered-by">
+<i class="fa fa-user-md"></i><span id="busuanzi_container_site_uv">
+  本站访客数:<span id="busuanzi_value_site_uv"></span>
+</span>
+</div>
+
+<div class="theme-info">
+  <div class="powered-by"></div>
+  <span class="post-count">博客全站共139.5k字</span>
+</div>
+
+
+
+
+
+
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/canvas-nest/canvas-nest.min.js"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+  <script src="//cdn1.lncld.net/static/js/3.0.4/av-min.js"></script>
+  <script src="//unpkg.com/valine/dist/Valine.min.js"></script>
+  
+  <script type="text/javascript">
+    var GUEST = ['nick','mail','link'];
+    var guest = 'nick,mail,link';
+    guest = guest.split(',').filter(item=>{
+      return GUEST.indexOf(item)>-1;
+    });
+    new Valine({
+        el: '#comments' ,
+        verify: false,
+        notify: false,
+        appId: 'B6yqSmGPw5uBIAfWEqm7Xyws-gzGzoHsz',
+        appKey: '2soiHGUrbGw33caCmkT47236',
+        placeholder: 'Just do it!',
+        avatar:'mm',
+        guest_info:guest,
+        pageSize:'10' || 10,
+    });
+  </script>
+
+
+
+  
+
+  <script type="text/javascript">
+    // Popup Window;
+    var isfetched = false;
+    var isXml = true;
+    // Search DB path;
+    var search_path = "search.xml";
+    if (search_path.length === 0) {
+      search_path = "search.xml";
+    } else if (/json$/i.test(search_path)) {
+      isXml = false;
+    }
+    var path = "/" + search_path;
+    // monitor main search box;
+
+    var onPopupClose = function (e) {
+      $('.popup').hide();
+      $('#local-search-input').val('');
+      $('.search-result-list').remove();
+      $('#no-result').remove();
+      $(".local-search-pop-overlay").remove();
+      $('body').css('overflow', '');
+    }
+
+    function proceedsearch() {
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay"></div>')
+        .css('overflow', 'hidden');
+      $('.search-popup-overlay').click(onPopupClose);
+      $('.popup').toggle();
+      var $localSearchInput = $('#local-search-input');
+      $localSearchInput.attr("autocapitalize", "none");
+      $localSearchInput.attr("autocorrect", "off");
+      $localSearchInput.focus();
+    }
+
+    // search function;
+    var searchFunc = function(path, search_id, content_id) {
+      'use strict';
+
+      // start loading animation
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay">' +
+          '<div id="search-loading-icon">' +
+          '<i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>' +
+          '</div>' +
+          '</div>')
+        .css('overflow', 'hidden');
+      $("#search-loading-icon").css('margin', '20% auto 0 auto').css('text-align', 'center');
+
+      $.ajax({
+        url: path,
+        dataType: isXml ? "xml" : "json",
+        async: true,
+        success: function(res) {
+          // get the contents from search data
+          isfetched = true;
+          $('.popup').detach().appendTo('.header-inner');
+          var datas = isXml ? $("entry", res).map(function() {
+            return {
+              title: $("title", this).text(),
+              content: $("content",this).text(),
+              url: $("url" , this).text()
+            };
+          }).get() : res;
+          var input = document.getElementById(search_id);
+          var resultContent = document.getElementById(content_id);
+          var inputEventFunction = function() {
+            var searchText = input.value.trim().toLowerCase();
+            var keywords = searchText.split(/[\s\-]+/);
+            if (keywords.length > 1) {
+              keywords.push(searchText);
+            }
+            var resultItems = [];
+            if (searchText.length > 0) {
+              // perform local searching
+              datas.forEach(function(data) {
+                var isMatch = false;
+                var hitCount = 0;
+                var searchTextCount = 0;
+                var title = data.title.trim();
+                var titleInLowerCase = title.toLowerCase();
+                var content = data.content.trim().replace(/<[^>]+>/g,"");
+                var contentInLowerCase = content.toLowerCase();
+                var articleUrl = decodeURIComponent(data.url);
+                var indexOfTitle = [];
+                var indexOfContent = [];
+                // only match articles with not empty titles
+                if(title != '') {
+                  keywords.forEach(function(keyword) {
+                    function getIndexByWord(word, text, caseSensitive) {
+                      var wordLen = word.length;
+                      if (wordLen === 0) {
+                        return [];
+                      }
+                      var startPosition = 0, position = [], index = [];
+                      if (!caseSensitive) {
+                        text = text.toLowerCase();
+                        word = word.toLowerCase();
+                      }
+                      while ((position = text.indexOf(word, startPosition)) > -1) {
+                        index.push({position: position, word: word});
+                        startPosition = position + wordLen;
+                      }
+                      return index;
+                    }
+
+                    indexOfTitle = indexOfTitle.concat(getIndexByWord(keyword, titleInLowerCase, false));
+                    indexOfContent = indexOfContent.concat(getIndexByWord(keyword, contentInLowerCase, false));
+                  });
+                  if (indexOfTitle.length > 0 || indexOfContent.length > 0) {
+                    isMatch = true;
+                    hitCount = indexOfTitle.length + indexOfContent.length;
+                  }
+                }
+
+                // show search results
+
+                if (isMatch) {
+                  // sort index by position of keyword
+
+                  [indexOfTitle, indexOfContent].forEach(function (index) {
+                    index.sort(function (itemLeft, itemRight) {
+                      if (itemRight.position !== itemLeft.position) {
+                        return itemRight.position - itemLeft.position;
+                      } else {
+                        return itemLeft.word.length - itemRight.word.length;
+                      }
+                    });
+                  });
+
+                  // merge hits into slices
+
+                  function mergeIntoSlice(text, start, end, index) {
+                    var item = index[index.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    var hits = [];
+                    var searchTextCountInSlice = 0;
+                    while (position + word.length <= end && index.length != 0) {
+                      if (word === searchText) {
+                        searchTextCountInSlice++;
+                      }
+                      hits.push({position: position, length: word.length});
+                      var wordEnd = position + word.length;
+
+                      // move to next position of hit
+
+                      index.pop();
+                      while (index.length != 0) {
+                        item = index[index.length - 1];
+                        position = item.position;
+                        word = item.word;
+                        if (wordEnd > position) {
+                          index.pop();
+                        } else {
+                          break;
+                        }
+                      }
+                    }
+                    searchTextCount += searchTextCountInSlice;
+                    return {
+                      hits: hits,
+                      start: start,
+                      end: end,
+                      searchTextCount: searchTextCountInSlice
+                    };
+                  }
+
+                  var slicesOfTitle = [];
+                  if (indexOfTitle.length != 0) {
+                    slicesOfTitle.push(mergeIntoSlice(title, 0, title.length, indexOfTitle));
+                  }
+
+                  var slicesOfContent = [];
+                  while (indexOfContent.length != 0) {
+                    var item = indexOfContent[indexOfContent.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    // cut out 100 characters
+                    var start = position - 20;
+                    var end = position + 80;
+                    if(start < 0){
+                      start = 0;
+                    }
+                    if (end < position + word.length) {
+                      end = position + word.length;
+                    }
+                    if(end > content.length){
+                      end = content.length;
+                    }
+                    slicesOfContent.push(mergeIntoSlice(content, start, end, indexOfContent));
+                  }
+
+                  // sort slices in content by search text's count and hits' count
+
+                  slicesOfContent.sort(function (sliceLeft, sliceRight) {
+                    if (sliceLeft.searchTextCount !== sliceRight.searchTextCount) {
+                      return sliceRight.searchTextCount - sliceLeft.searchTextCount;
+                    } else if (sliceLeft.hits.length !== sliceRight.hits.length) {
+                      return sliceRight.hits.length - sliceLeft.hits.length;
+                    } else {
+                      return sliceLeft.start - sliceRight.start;
+                    }
+                  });
+
+                  // select top N slices in content
+
+                  var upperBound = parseInt('1');
+                  if (upperBound >= 0) {
+                    slicesOfContent = slicesOfContent.slice(0, upperBound);
+                  }
+
+                  // highlight title and content
+
+                  function highlightKeyword(text, slice) {
+                    var result = '';
+                    var prevEnd = slice.start;
+                    slice.hits.forEach(function (hit) {
+                      result += text.substring(prevEnd, hit.position);
+                      var end = hit.position + hit.length;
+                      result += '<b class="search-keyword">' + text.substring(hit.position, end) + '</b>';
+                      prevEnd = end;
+                    });
+                    result += text.substring(prevEnd, slice.end);
+                    return result;
+                  }
+
+                  var resultItem = '';
+
+                  if (slicesOfTitle.length != 0) {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + highlightKeyword(title, slicesOfTitle[0]) + "</a>";
+                  } else {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + title + "</a>";
+                  }
+
+                  slicesOfContent.forEach(function (slice) {
+                    resultItem += "<a href='" + articleUrl + "'>" +
+                      "<p class=\"search-result\">" + highlightKeyword(content, slice) +
+                      "...</p>" + "</a>";
+                  });
+
+                  resultItem += "</li>";
+                  resultItems.push({
+                    item: resultItem,
+                    searchTextCount: searchTextCount,
+                    hitCount: hitCount,
+                    id: resultItems.length
+                  });
+                }
+              })
+            };
+            if (keywords.length === 1 && keywords[0] === "") {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-search fa-5x" /></div>'
+            } else if (resultItems.length === 0) {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-frown-o fa-5x" /></div>'
+            } else {
+              resultItems.sort(function (resultLeft, resultRight) {
+                if (resultLeft.searchTextCount !== resultRight.searchTextCount) {
+                  return resultRight.searchTextCount - resultLeft.searchTextCount;
+                } else if (resultLeft.hitCount !== resultRight.hitCount) {
+                  return resultRight.hitCount - resultLeft.hitCount;
+                } else {
+                  return resultRight.id - resultLeft.id;
+                }
+              });
+              var searchResultList = '<ul class=\"search-result-list\">';
+              resultItems.forEach(function (result) {
+                searchResultList += result.item;
+              })
+              searchResultList += "</ul>";
+              resultContent.innerHTML = searchResultList;
+            }
+          }
+
+          if ('auto' === 'auto') {
+            input.addEventListener('input', inputEventFunction);
+          } else {
+            $('.search-icon').click(inputEventFunction);
+            input.addEventListener('keypress', function (event) {
+              if (event.keyCode === 13) {
+                inputEventFunction();
+              }
+            });
+          }
+
+          // remove loading animation
+          $(".local-search-pop-overlay").remove();
+          $('body').css('overflow', '');
+
+          proceedsearch();
+        }
+      });
+    }
+
+    // handle and trigger popup window;
+    $('.popup-trigger').click(function(e) {
+      e.stopPropagation();
+      if (isfetched === false) {
+        searchFunc(path, 'local-search-input', 'local-search-result');
+      } else {
+        proceedsearch();
+      };
+    });
+
+    $('.popup-btn-close').click(onPopupClose);
+    $('.popup').click(function(e){
+      e.stopPropagation();
+    });
+    $(document).on('keyup', function (event) {
+      var shouldDismissSearchPopup = event.which === 27 &&
+        $('.search-popup').is(':visible');
+      if (shouldDismissSearchPopup) {
+        onPopupClose();
+      }
+    });
+  </script>
+
+
+
+
+
+  
+
+  
+  <script src="https://cdn1.lncld.net/static/js/av-core-mini-0.6.4.js"></script>
+  <script>AV.initialize("B6yqSmGPw5uBIAfWEqm7Xyws-gzGzoHsz", "2soiHGUrbGw33caCmkT47236");</script>
+  <script>
+    function showTime(Counter) {
+      var query = new AV.Query(Counter);
+      var entries = [];
+      var $visitors = $(".leancloud_visitors");
+
+      $visitors.each(function () {
+        entries.push( $(this).attr("id").trim() );
+      });
+
+      query.containedIn('url', entries);
+      query.find()
+        .done(function (results) {
+          var COUNT_CONTAINER_REF = '.leancloud-visitors-count';
+
+          if (results.length === 0) {
+            $visitors.find(COUNT_CONTAINER_REF).text(0);
+            return;
+          }
+
+          for (var i = 0; i < results.length; i++) {
+            var item = results[i];
+            var url = item.get('url');
+            var time = item.get('time');
+            var element = document.getElementById(url);
+
+            $(element).find(COUNT_CONTAINER_REF).text(time);
+          }
+          for(var i = 0; i < entries.length; i++) {
+            var url = entries[i];
+            var element = document.getElementById(url);
+            var countSpan = $(element).find(COUNT_CONTAINER_REF);
+            if( countSpan.text() == '') {
+              countSpan.text(0);
+            }
+          }
+        })
+        .fail(function (object, error) {
+          console.log("Error: " + error.code + " " + error.message);
+        });
+    }
+
+    function addCount(Counter) {
+      var $visitors = $(".leancloud_visitors");
+      var url = $visitors.attr('id').trim();
+      var title = $visitors.attr('data-flag-title').trim();
+      var query = new AV.Query(Counter);
+
+      query.equalTo("url", url);
+      query.find({
+        success: function(results) {
+          if (results.length > 0) {
+            var counter = results[0];
+            counter.fetchWhenSave(true);
+            counter.increment("time");
+            counter.save(null, {
+              success: function(counter) {
+                var $element = $(document.getElementById(url));
+                $element.find('.leancloud-visitors-count').text(counter.get('time'));
+              },
+              error: function(counter, error) {
+                console.log('Failed to save Visitor num, with error message: ' + error.message);
+              }
+            });
+          } else {
+            var newcounter = new Counter();
+            /* Set ACL */
+            var acl = new AV.ACL();
+            acl.setPublicReadAccess(true);
+            acl.setPublicWriteAccess(true);
+            newcounter.setACL(acl);
+            /* End Set ACL */
+            newcounter.set("title", title);
+            newcounter.set("url", url);
+            newcounter.set("time", 1);
+            newcounter.save(null, {
+              success: function(newcounter) {
+                var $element = $(document.getElementById(url));
+                $element.find('.leancloud-visitors-count').text(newcounter.get('time'));
+              },
+              error: function(newcounter, error) {
+                console.log('Failed to create');
+              }
+            });
+          }
+        },
+        error: function(error) {
+          console.log('Error:' + error.code + " " + error.message);
+        }
+      });
+    }
+
+    $(function() {
+      var Counter = AV.Object.extend("Counter");
+      if ($('.leancloud_visitors').length == 1) {
+        addCount(Counter);
+      } else if ($('.post-title-link').length > 1) {
+        showTime(Counter);
+      }
+    });
+  </script>
+
+
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>
