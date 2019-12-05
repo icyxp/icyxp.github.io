@@ -367,6 +367,277 @@
   
   
   <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://icyxp.github.io/blog/2018/12/k8s-kubeadm-etcd-ha-1-11-x.html">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="icyboy">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="CloudNative 架构">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h2 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/blog/2018/12/k8s-kubeadm-etcd-ha-1-11-x.html" itemprop="url">使用Kubeadm 1.11.x + etcd集群 部署多Master集群</a></h2>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-12-29T12:00:00+08:00">
+                2018-12-29
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/kubernetes/" itemprop="url" rel="index">
+                    <span itemprop="name">kubernetes</span>
+                  </a>
+                </span>
+
+                
+                
+                  ， 
+                
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/kubernetes/容器云/" itemprop="url" rel="index">
+                    <span itemprop="name">容器云</span>
+                  </a>
+                </span>
+
+                
+                
+                  ， 
+                
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/kubernetes/容器云/kubadm/" itemprop="url" rel="index">
+                    <span itemprop="name">kubadm</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+                <a href="/blog/2018/12/k8s-kubeadm-etcd-ha-1-11-x.html#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count valine-comment-count" data-xid="/blog/2018/12/k8s-kubeadm-etcd-ha-1-11-x.html" itemprop="commentCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+          
+             <span id="/blog/2018/12/k8s-kubeadm-etcd-ha-1-11-x.html" class="leancloud_visitors" data-flag-title="使用Kubeadm 1.11.x + etcd集群 部署多Master集群">
+               <span class="post-meta-divider">|</span>
+               <span class="post-meta-item-icon">
+                 <i class="fa fa-eye"></i>
+               </span>
+               
+                 <span class="post-meta-item-text">热度&#58;</span>
+               
+                 <span class="leancloud-visitors-count"></span>
+		 <span>℃</span>
+             </span>
+          
+
+          
+
+          
+            <div class="post-wordcount">
+              
+                
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-file-word-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">字数统计&#58;</span>
+                
+                <span title="字数统计">
+                  4,993 字
+                </span>
+              
+
+              
+                <span class="post-meta-divider">|</span>
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-clock-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">阅读时长 &asymp;</span>
+                
+                <span title="阅读时长">
+                  28 分钟
+                </span>
+              
+            </div>
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          <h2 id="环境介绍"><a href="#环境介绍" class="headerlink" title="环境介绍"></a>环境介绍</h2><table>
+<thead>
+<tr>
+<th style="text-align:left">IP</th>
+<th style="text-align:left">Hostname</th>
+<th style="text-align:left">备注</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left">172.19.170.183</td>
+<td style="text-align:left">master-1</td>
+<td style="text-align:left">私有云安装keepalived + haproxy + etcd</td>
+</tr>
+<tr>
+<td style="text-align:left">172.19.170.184</td>
+<td style="text-align:left">master-2</td>
+<td style="text-align:left">私有云安装keepalived + haproxy + etcd</td>
+</tr>
+<tr>
+<td style="text-align:left">172.19.170.185</td>
+<td style="text-align:left">master-3</td>
+<td style="text-align:left">私有云安装keepalived + haproxy + etcd</td>
+</tr>
+<tr>
+<td style="text-align:left">172.19.170.186</td>
+<td style="text-align:left">node-1</td>
+<td style="text-align:left">无</td>
+</tr>
+<tr>
+<td style="text-align:left">172.19.170.187</td>
+<td style="text-align:left">node-2</td>
+<td style="text-align:left">无</td>
+</tr>
+<tr>
+<td style="text-align:left">172.19.170.100</td>
+<td style="text-align:left">vip</td>
+<td style="text-align:left">私有云使用keepalive+haproxy搭建，公有云使用内部负载均衡器</td>
+</tr>
+</tbody>
+</table>
+<h2 id="环境初始化"><a href="#环境初始化" class="headerlink" title="环境初始化"></a>环境初始化</h2><h3 id="修改hosts信息，在所有master机器上运行"><a href="#修改hosts信息，在所有master机器上运行" class="headerlink" title="修改hosts信息，在所有master机器上运行"></a>修改hosts信息，在所有master机器上运行</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">cat &lt;&lt;EOF &gt;&gt; /etc/hosts</span><br><span class="line">172.19.170.183 master-1</span><br><span class="line">172.19.170.184 master-2</span><br><span class="line">172.19.170.185 master-3</span><br><span class="line">EOF</span><br></pre></td></tr></table></figure>
+<h3 id="在master-1-机器上执行以下命令："><a href="#在master-1-机器上执行以下命令：" class="headerlink" title="在master-1 机器上执行以下命令："></a>在master-1 机器上执行以下命令：</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">ssh-keygen -t rsa</span><br><span class="line">ssh-copy-id root@master-2</span><br><span class="line">ssh-copy-id root@master-3</span><br></pre></td></tr></table></figure>
+          <!--noindex-->
+          <div class="post-button text-center">
+            <a class="btn" href="/blog/2018/12/k8s-kubeadm-etcd-ha-1-11-x.html#more" rel="contents">
+              阅读全文 &raquo;
+            </a>
+          </div>
+          <!--/noindex-->
+        
+      
+    </div>
+    
+    
+    
+
+    <div>
+    
+    </div>
+
+    <div>
+      
+    </div>
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
     <link itemprop="mainEntityOfPage" href="http://icyxp.github.io/blog/2018/12/k8s-dashboard-chrome-err.html">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -1345,219 +1616,6 @@
 
 
     
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://icyxp.github.io/blog/2018/12/k8s-handling-client-requests-properly-with-kubernetes.html">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="icyboy">
-      <meta itemprop="description" content="">
-      <meta itemprop="image" content="/images/avatar.jpg">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="CloudNative 架构">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h2 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/blog/2018/12/k8s-handling-client-requests-properly-with-kubernetes.html" itemprop="url">使用Kubernetes正确的处理用户请求</a></h2>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-12-11T21:00:00+08:00">
-                2018-12-11
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
-            <span class="post-category" >
-            
-              <span class="post-meta-divider">|</span>
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">分类于</span>
-              
-              
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/kubernetes/" itemprop="url" rel="index">
-                    <span itemprop="name">kubernetes</span>
-                  </a>
-                </span>
-
-                
-                
-              
-            </span>
-          
-
-          
-            
-              <span class="post-comments-count">
-                <span class="post-meta-divider">|</span>
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-comment-o"></i>
-                </span>
-                <a href="/blog/2018/12/k8s-handling-client-requests-properly-with-kubernetes.html#comments" itemprop="discussionUrl">
-                  <span class="post-comments-count valine-comment-count" data-xid="/blog/2018/12/k8s-handling-client-requests-properly-with-kubernetes.html" itemprop="commentCount"></span>
-                </a>
-              </span>
-            
-          
-
-          
-          
-             <span id="/blog/2018/12/k8s-handling-client-requests-properly-with-kubernetes.html" class="leancloud_visitors" data-flag-title="使用Kubernetes正确的处理用户请求">
-               <span class="post-meta-divider">|</span>
-               <span class="post-meta-item-icon">
-                 <i class="fa fa-eye"></i>
-               </span>
-               
-                 <span class="post-meta-item-text">热度&#58;</span>
-               
-                 <span class="leancloud-visitors-count"></span>
-		 <span>℃</span>
-             </span>
-          
-
-          
-
-          
-            <div class="post-wordcount">
-              
-                
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-file-word-o"></i>
-                </span>
-                
-                  <span class="post-meta-item-text">字数统计&#58;</span>
-                
-                <span title="字数统计">
-                  2,426 字
-                </span>
-              
-
-              
-                <span class="post-meta-divider">|</span>
-              
-
-              
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-clock-o"></i>
-                </span>
-                
-                  <span class="post-meta-item-text">阅读时长 &asymp;</span>
-                
-                <span title="阅读时长">
-                  8 分钟
-                </span>
-              
-            </div>
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          <h3 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h3><blockquote>
-<p>毫无疑问，我们希望正确处理客户端请求。当pod正在启动或关闭时，我们显然不希望看到断开的连接。Kubernetes本身并不能确保这种情况永远不会发生。您的应用需要遵循一些规则以防止断开连接。本文讨论这些规则。</p>
-</blockquote>
-<h3 id="确保正确处理所有客户端请求"><a href="#确保正确处理所有客户端请求" class="headerlink" title="确保正确处理所有客户端请求"></a>确保正确处理所有客户端请求</h3><p>我们先从访问Pod的客户端的视角来看看Pod的生命周期（客户端使用pod提供的服务）。我们希望确保客户的请求得到妥善处理，因为如果当pod启动或关闭时连接开始中断，我们就会遇到麻烦。Kubernetes本身并不保证不会发生这种情况，所以让我们看看我们需要做些什么来防止它发生。</p>
-<h3 id="当Pod启动时阻止连接中断"><a href="#当Pod启动时阻止连接中断" class="headerlink" title="当Pod启动时阻止连接中断"></a>当Pod启动时阻止连接中断</h3><p>如果你理解services和service endpoints的工作原理，确保在pod启动时正确处理每个连接都非常简单。当pod启动时，它会作为一个endpoints被添加到所有匹配该Pod标签的Services里。Pod也会发出信号告诉Kubernetes它已就绪。只有它变成一个service endpoints时才可以接收来自客户端的请求。</p>
-<p>如果你没有在Pod Spec里指定readiness探针，则会始终认为该pod已准备就绪。这意味着它将立即开始接收请求 - 只要第一个Kube-Proxy在其节点上更新iptables规则并且第一个客户端pod尝试连接到该服务。如果那个时候你的应用并没有做好接收请求的准备，那么客户端将会见到“connection refused”类型的错误。</p>
-<p>你所需要做的就是保证你的readiness探针当且仅当你的应用可以正确处理收到的请求时才返回成功结果。所以添加一个HTTP GET readiness探针并让它指向你应用的基础URL会是一个很好的开始。在很多情况下，这可以让你省去实现一个特定的readiness端点的工作量。<br>
-          <!--noindex-->
-          <div class="post-button text-center">
-            <a class="btn" href="/blog/2018/12/k8s-handling-client-requests-properly-with-kubernetes.html#more" rel="contents">
-              阅读全文 &raquo;
-            </a>
-          </div>
-          <!--/noindex-->
-        
-      
-    </div>
-    
-    
-    
-
-    <div>
-    
-    </div>
-
-    <div>
-      
-    </div>
-
-    
-
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
   </section>
 
   
@@ -1612,7 +1670,7 @@
               
                 <a href="/archives/">
               
-                  <span class="site-state-item-count">54</span>
+                  <span class="site-state-item-count">55</span>
                   <span class="site-state-item-name">日志</span>
                 </a>
               </div>
@@ -1634,7 +1692,7 @@
               
               <div class="site-state-item site-state-tags">
                 <a href="/tags/index.html">
-                  <span class="site-state-item-count">100</span>
+                  <span class="site-state-item-count">102</span>
                   <span class="site-state-item-name">标签</span>
                 </a>
               </div>
@@ -1737,7 +1795,7 @@
     
       <span class="post-meta-item-text">Site words total count&#58;</span>
     
-    <span title="Site words total count">139.5k</span>
+    <span title="Site words total count">140.0k</span>
   
 </div>
 
@@ -1749,7 +1807,7 @@
 
 <div class="theme-info">
   <div class="powered-by"></div>
-  <span class="post-count">博客全站共139.5k字</span>
+  <span class="post-count">博客全站共140.0k字</span>
 </div>
 
 
