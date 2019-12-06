@@ -2,6 +2,13 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   
   <url>
+    <loc>http://icyxp.github.io/blog/2019/12/k8s-k8s-intro.html</loc>
+    
+    <lastmod>2019-12-06T08:21:47.000Z</lastmod>
+    
+  </url>
+  
+  <url>
     <loc>http://icyxp.github.io/blog/2019/12/k8s-kubeadm-edit-hostip.html</loc>
     
     <lastmod>2019-12-05T06:22:11.000Z</lastmod>
