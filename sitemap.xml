@@ -2,6 +2,13 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   
   <url>
+    <loc>http://icyxp.github.io/pro/k8s/install-ha/index.html</loc>
+    
+    <lastmod>2019-12-13T07:49:29.000Z</lastmod>
+    
+  </url>
+  
+  <url>
     <loc>http://icyxp.github.io/blog/2019/12/k8s-k8s-intro.html</loc>
     
     <lastmod>2019-12-06T08:21:47.000Z</lastmod>
@@ -26,13 +33,6 @@
     <loc>http://icyxp.github.io/pro/k8s/install/index.html</loc>
     
     <lastmod>2019-11-29T03:34:04.000Z</lastmod>
-    
-  </url>
-  
-  <url>
-    <loc>http://icyxp.github.io/pro/k8s/install-ha/index.html</loc>
-    
-    <lastmod>2019-11-29T03:33:39.000Z</lastmod>
     
   </url>
   

@@ -154,7 +154,7 @@ kubernetes各版本依赖
 kubernetes各版本依赖
 离线安装包中不包含docker，请先自行安装docker， 对docker 版本的依赖如下：kubernetes v1.15：https://github.com/kubernetes/kubernetes/blob/master">
 <meta property="og:image" content="http://icyxp.github.io/images/reward.png">
-<meta property="og:updated_time" content="2019-11-29T03:33:39.000Z">
+<meta property="og:updated_time" content="2019-12-13T07:49:29.000Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="K8S master ha cluster 离线一键安装教程">
 <meta name="twitter:description" content="离线软件包说明
@@ -392,12 +392,69 @@ kubernetes各版本依赖
 <p>目前只支持Centos7，系统配置要求4C、8G，机器内网服务器之间访问端口都开放，目前只支持用root账号进行安装</p>
 </blockquote>
 <h3 id="kubernetes各版本依赖"><a href="#kubernetes各版本依赖" class="headerlink" title="kubernetes各版本依赖"></a>kubernetes各版本依赖</h3><blockquote>
-<p>离线安装包中不包含docker，请先自行安装docker， 对docker 版本的依赖如下：<br>kubernetes v1.15：<a href="https://github.com/kubernetes/kubernetes/blob/master/CHANGELOG-1.15.md#unchanged" target="_blank" rel="external">https://github.com/kubernetes/kubernetes/blob/master/CHANGELOG-1.15.md#unchanged</a><br>kubernetes v1.16：<a href="https://github.com/kubernetes/kubernetes/blob/master/CHANGELOG-1.16.md#unchanged" target="_blank" rel="external">https://github.com/kubernetes/kubernetes/blob/master/CHANGELOG-1.16.md#unchanged</a></p>
+<p>离线安装包中不包含docker，请先自行安装docker， 对docker 版本的依赖如下：<br>kubernetes v1.15：<a href="https://github.com/kubernetes/kubernetes/blob/master/CHANGELOG-1.15.md#unchanged" target="_blank" rel="external">https://github.com/kubernetes/kubernetes/blob/master/CHANGELOG-1.15.md#unchanged</a><br>kubernetes v1.16：<a href="https://github.com/kubernetes/kubernetes/blob/master/CHANGELOG-1.16.md#unchanged" target="_blank" rel="external">https://github.com/kubernetes/kubernetes/blob/master/CHANGELOG-1.16.md#unchanged</a><br>kubernetes v1.17：<a href="https://github.com/kubernetes/kubernetes/blob/master/CHANGELOG-1.17.md#unchanged" target="_blank" rel="external">https://github.com/kubernetes/kubernetes/blob/master/CHANGELOG-1.17.md#unchanged</a></p>
 </blockquote>
+<h3 id="Kubernetes-各版本更新总结与推荐"><a href="#Kubernetes-各版本更新总结与推荐" class="headerlink" title="Kubernetes 各版本更新总结与推荐"></a>Kubernetes 各版本更新总结与推荐</h3><h4 id="1-11-⭐️-⭐️-⭐️-⭐️"><a href="#1-11-⭐️-⭐️-⭐️-⭐️" class="headerlink" title="1.11 ⭐️ ⭐️ ⭐️ ⭐️"></a>1.11 ⭐️ ⭐️ ⭐️ ⭐️</h4><p>该版本中最显著地改进包括：</p>
+<ul>
+<li>基于IPVS的集群内服务负载均衡正式上线</li>
+<li>CoreDNS正式上线</li>
+<li>动态Kubelet配置进入Beta阶段</li>
+<li>自定义资源定义（CRD）现在可定义多个版本</li>
+<li>存储增强</li>
+</ul>
+<h4 id="1-12-⭐️-⭐️-⭐️"><a href="#1-12-⭐️-⭐️-⭐️" class="headerlink" title="1.12 ⭐️ ⭐️ ⭐️"></a>1.12 ⭐️ ⭐️ ⭐️</h4><p>该版本中最显著地改进包括：</p>
+<ul>
+<li>Kubelet TLS Bootstrap GA</li>
+<li>稳定支持Azure Virtual Machine Scale Sets（VMSS）和Cluster-Autoscaler</li>
+</ul>
+<p>其他值得注意的功能更新</p>
+<ul>
+<li>RuntimeClass是一个新的集群作用域资源，它将容器运行时属性表示为作为alpha功能发布的控制平面。</li>
+<li>Kubernetes和CSI的快照/恢复功能正在作为alpha功能推出。这提供了标准化的API设计（CRD），并为CSI卷驱动程序添加了PV快照/恢复支持</li>
+<li>拓扑感知动态配置现在处于测试阶段，存储资源现在可以感知自己的位置。这还包括对AWS EBS和GCE PD的beta支持。</li>
+<li>可配置的pod进程命名空间共享处于测试阶段，用户可以通过在PodSpec中设置选项来配置pod中的容器以共享公共PID命名空间。</li>
+<li>根据条件的taint节点现在处于测试阶段，用户可以通过使用taint来表示阻止调度的节点条件。</li>
+<li>Horizo​ntal Pod Autoscaler中的任意/自定义指标正在转向第二个测试版，以测试一些其他增强功能。这项重新设计的Horizo​ntal Pod Autoscaler功能包括对自定义指标和状态条件的支持。</li>
+<li>允许Horizo​ntal Pod Autoscaler更快地达到适当大小正在转向测试版。</li>
+<li>Pod的垂直缩放现在处于测试阶段，使得可以在其生命周期内改变pod上的资源限制。</li>
+<li>通过KMS进行静态加密目前处于测试阶段。增加了多个加密提供商，包括Google Cloud KMS、Azure Key Vault、AWS KMS和Hashicorp Vault，它们会在数据存储到etcd时对其进行加密。</li>
+</ul>
+<h4 id="1-13-⭐️-⭐️-⭐️-⭐️-⭐️"><a href="#1-13-⭐️-⭐️-⭐️-⭐️-⭐️" class="headerlink" title="1.13 ⭐️ ⭐️ ⭐️ ⭐️ ⭐️"></a>1.13 ⭐️ ⭐️ ⭐️ ⭐️ ⭐️</h4><p>该版本中最显著地改进包括：</p>
+<ul>
+<li>使用 kubeadm 简化集群管理</li>
+<li>CSI（容器存储接口），查看 CSI 规范</li>
+<li>CoreDNS 作为默认的 DNS</li>
+</ul>
+<p>以上功能正式成为 GA（General Available）。</p>
+<p>还有其他一些小的功能更新，例如：</p>
+<ul>
+<li>支持第三方设备监控插件成为 alpha 功能。</li>
+<li>kubelet 设备插件注册 GA。</li>
+<li>拓扑感知的 Volume 调度进入 stable。</li>
+<li>APIServer DryRun 进入 beta。</li>
+<li>kubectl diff 进入 beta。</li>
+<li>使用 PV 源的原始块设备进入 beta。</li>
+</ul>
+<h4 id="1-14-⭐️-⭐️-⭐️-⭐️-⭐️"><a href="#1-14-⭐️-⭐️-⭐️-⭐️-⭐️" class="headerlink" title="1.14 ⭐️ ⭐️ ⭐️ ⭐️ ⭐️"></a>1.14 ⭐️ ⭐️ ⭐️ ⭐️ ⭐️</h4><p>Kubernetes v1.14 由 31 项功能强化构成：10 个功能已经稳定，12 个功能进入 Beta，7 个全新功能。这次更新延续了以往的主题——可扩展性，且能支持 Kubernetes 上的更多工作负载，其中三个主要功能转向一般可用性，一个重要安全功能转向 Beta。 详细链接：<a href="https://zhuanlan.zhihu.com/p/60425746" target="_blank" rel="external">https://zhuanlan.zhihu.com/p/60425746</a></p>
+<h4 id="1-15-⭐️-⭐️-⭐️"><a href="#1-15-⭐️-⭐️-⭐️" class="headerlink" title="1.15 ⭐️ ⭐️ ⭐️"></a>1.15 ⭐️ ⭐️ ⭐️</h4><p>Kubernetes v1.15 由 25 个增强功能组成：2 个进入稳定，13 个进入 Beta，10 个进入 Alpha。新版本紧紧围绕两大主题展开——可扩展性和持续改进。 详细链接：<a href="https://zhuanlan.zhihu.com/p/70005875" target="_blank" rel="external">https://zhuanlan.zhihu.com/p/70005875</a></p>
+<h4 id="1-16-⭐️-⭐️-⭐️-⭐️"><a href="#1-16-⭐️-⭐️-⭐️-⭐️" class="headerlink" title="1.16 ⭐️ ⭐️ ⭐️ ⭐️"></a>1.16 ⭐️ ⭐️ ⭐️ ⭐️</h4><p>Kubernetes v1.16 由 31 个增强功能组成：8 个进入稳定，8 个进入 Beta，15 个进入 Alpha。 详细链接：<a href="https://zhuanlan.zhihu.com/p/83128347" target="_blank" rel="external">https://zhuanlan.zhihu.com/p/83128347</a></p>
+<h4 id="1-17-⭐️-⭐️-⭐️-⭐️-⭐️"><a href="#1-17-⭐️-⭐️-⭐️-⭐️-⭐️" class="headerlink" title="1.17 ⭐️ ⭐️ ⭐️ ⭐️ ⭐️"></a>1.17 ⭐️ ⭐️ ⭐️ ⭐️ ⭐️</h4><p>Kubernetes v1.17 包含 22 个增强功能：14 个增强功能已进入稳定，4 个增强功能已进入 beta，4 个增强功能已进入 alpha。这次更新延续了以往的主题——稳定性。 详细链接：<a href="https://zhuanlan.zhihu.com/p/96509011" target="_blank" rel="external">https://zhuanlan.zhihu.com/p/96509011</a></p>
 <h4 id="docker-安装"><a href="#docker-安装" class="headerlink" title="docker 安装"></a>docker 安装</h4><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 设置docker repo源</span></span><br><span class="line">cat &gt; /etc/yum.repos.d/docker.repo &lt;&lt;EOF</span><br><span class="line">[docker]</span><br><span class="line">name=Docker Repository</span><br><span class="line">baseurl=https://mirrors.tuna.tsinghua.edu.cn/docker/yum/repo/centos7</span><br><span class="line">enabled=1</span><br><span class="line">gpgcheck=1</span><br><span class="line">gpgkey=https://mirrors.tuna.tsinghua.edu.cn/docker/yum/gpg</span><br><span class="line">EOF</span><br><span class="line"></span><br><span class="line"><span class="comment"># 安装docker 1.13.1</span></span><br><span class="line">yum -y install docker-engine-1.13.1 --disableexcludes=docker</span><br></pre></td></tr></table></figure>
 <h4 id="k8s-安装"><a href="#k8s-安装" class="headerlink" title="k8s 安装"></a>k8s 安装</h4><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 多master安装， 任意机器上执行 </span></span><br><span class="line"><span class="comment"># vip 只要不和你当前ip段冲突就可以</span></span><br><span class="line">./k8s-ha install -m 172.19.170.254 -m 172.19.170.255 -m 172.19.171.20 -n 172.19.171.37 -v 169.254.169.200 -i ~/1.pem</span><br><span class="line"></span><br><span class="line"><span class="comment"># 单master安装， 任意机器上执行 </span></span><br><span class="line">./k8s-ha install -m 172.19.170.254 -n 172.19.171.37 -v 169.254.169.200 -i ~/1.pem  </span><br><span class="line"></span><br><span class="line"><span class="comment"># 添加node 到集群中(针对多master)</span></span><br><span class="line">./k8s-ha install -m 172.19.170.254 -m 172.19.170.255 -m 172.19.171.20 -n 172.19.171.38 -n 172.19.171.39 -v 169.254.169.200 -i ~/1.pem</span><br><span class="line"></span><br><span class="line"><span class="comment"># 添加node 到集群中(针对单master)</span></span><br><span class="line">./k8s-ha install -m 172.19.170.254 -n 172.19.171.38 -n 172.19.171.39 -v 169.254.169.200 -i ~/1.pem</span><br></pre></td></tr></table></figure>
-<h3 id="安装包列表"><a href="#安装包列表" class="headerlink" title="安装包列表"></a>安装包列表</h3><h4 id="kubernetes1-16-3-ha-离线安装包"><a href="#kubernetes1-16-3-ha-离线安装包" class="headerlink" title="kubernetes1.16.3 ha 离线安装包"></a>kubernetes1.16.3 ha 离线安装包</h4><p>(md5sum: c378c230b3f7c56f3410a97fb4c4fe79)</p>
+<h3 id="安装包列表"><a href="#安装包列表" class="headerlink" title="安装包列表"></a>安装包列表</h3><h4 id="kubernetes1-17-0-ha-离线安装包"><a href="#kubernetes1-17-0-ha-离线安装包" class="headerlink" title="kubernetes1.17.0 ha 离线安装包"></a>kubernetes1.17.0 ha 离线安装包</h4><p>(md5sum: c378c230b3f7c56f3410a97fb4c4fe79)</p>
 <p><strong><code>推荐指数</code></strong>：⭐️ ⭐️ ⭐️ ⭐️ ⭐️</p>
+<p><strong>版本及release note：</strong></p>
+<ul>
+<li>v1.17.0 版本<a href="https://github.com/kubernetes/kubernetes/blob/master/CHANGELOG-1.17.md#v1170" target="_blank" rel="external">release note</a></li>
+<li><code>修改kubeadm 证书到期时间，延迟至10年</code></li>
+<li><code>优化linux内核，解决Failed to watch directory xxxx no space left on device问题，同时优化kubelet参数，防止系统资源不够时将kubernet系统组件驱逐</code></li>
+<li>calico v3.10.2 使用typha作为存储，k8s数据存储模式<code>超过50各节点推荐启用typha</code>,Typha组件可以帮助Calico扩展到大量的节点，而不会对Kubernetes API服务器造成过度的影响。</li>
+<li>使用<code>ipvs</code>做master高可用及负载</li>
+<li>其余插件自行安装</li>
+</ul>
+<p><strong>下载方式：</strong><br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 新建一个目录，将离线安装包和解压工具放在新建目录下</span></span><br><span class="line"><span class="comment"># 百度网盘</span></span><br><span class="line">链接:https://pan.baidu.com/s/1PplHyDkYDTusx46j9uHwDA 提取码:dy6f</span><br><span class="line"></span><br><span class="line"><span class="comment"># 下载对应的离线安装包</span></span><br><span class="line">k8s-ha-1.17.0.tar.gz</span><br><span class="line"></span><br><span class="line"><span class="comment"># 下载解压工具</span></span><br><span class="line">decrypt</span><br><span class="line"></span><br><span class="line"><span class="comment"># 解压，k8s-ha-1.17.0.tar.gz和decrypt必须在同一目录，切记不要有其余的包以及没有额外文件。</span></span><br><span class="line">chmod +x decrypt &amp;&amp; ./decrypt</span><br><span class="line"><span class="comment"># 解压码 扫描并关注顶部二维码获取,记得打赏一下(＾Ｕ＾)ノ~ＹＯ</span></span><br></pre></td></tr></table></figure></p>
+<h4 id="kubernetes1-16-3-ha-离线安装包"><a href="#kubernetes1-16-3-ha-离线安装包" class="headerlink" title="kubernetes1.16.3 ha 离线安装包"></a>kubernetes1.16.3 ha 离线安装包</h4><p>(md5sum: c378c230b3f7c56f3410a97fb4c4fe79)</p>
+<p><strong><code>推荐指数</code></strong>：⭐️ ⭐️ ⭐️ ⭐️ </p>
 <p><strong>版本及release note：</strong></p>
 <ul>
 <li>v1.16.3 版本<a href="https://github.com/kubernetes/kubernetes/blob/master/CHANGELOG-1.16.md#v1163" target="_blank" rel="external">release note</a></li>
@@ -409,7 +466,7 @@ kubernetes各版本依赖
 </ul>
 <p><strong>下载方式：</strong><br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 新建一个目录，将离线安装包和解压工具放在新建目录下</span></span><br><span class="line"><span class="comment"># 网盘地址</span></span><br><span class="line">http://pan-yz.chaoxing.com/share/info/673f893f642a38d0</span><br><span class="line"><span class="comment"># 百度网盘</span></span><br><span class="line">链接:https://pan.baidu.com/s/1PplHyDkYDTusx46j9uHwDA 提取码:dy6f</span><br><span class="line"></span><br><span class="line"><span class="comment"># 下载对应的离线安装包</span></span><br><span class="line">k8s-ha-1.16.3.tar.gz</span><br><span class="line"></span><br><span class="line"><span class="comment"># 下载解压工具</span></span><br><span class="line">decrypt</span><br><span class="line"></span><br><span class="line"><span class="comment"># 解压，k8s-ha-1.16.3.tar.gz和decrypt必须在同一目录，切记不要有其余的包以及没有额外文件。</span></span><br><span class="line">chmod +x decrypt &amp;&amp; ./decrypt</span><br><span class="line"><span class="comment"># 解压码 扫描并关注顶部二维码获取,记得打赏一下(＾Ｕ＾)ノ~ＹＯ</span></span><br></pre></td></tr></table></figure></p>
 <h4 id="kubernetes1-16-0-ha-离线安装包"><a href="#kubernetes1-16-0-ha-离线安装包" class="headerlink" title="kubernetes1.16.0 ha 离线安装包"></a>kubernetes1.16.0 ha 离线安装包</h4><p>(md5sum: 9693ac2d847aee49afca147389597bc6)</p>
-<p><strong><code>推荐指数</code></strong>：⭐️ ⭐️ ⭐️ ⭐️ </p>
+<p><strong><code>推荐指数</code></strong>：⭐️ ⭐️ ⭐️  </p>
 <p><strong>版本及release note：</strong></p>
 <ul>
 <li>v1.16.0 版本<a href="https://github.com/kubernetes/kubernetes/blob/master/CHANGELOG-1.16.md#v1160" target="_blank" rel="external">release note</a></li>
@@ -421,7 +478,7 @@ kubernetes各版本依赖
 </ul>
 <p><strong>下载方式：</strong><br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 新建一个目录，将离线安装包和解压工具放在新建目录下</span></span><br><span class="line"><span class="comment"># 网盘地址</span></span><br><span class="line">http://pan-yz.chaoxing.com/share/info/673f893f642a38d0</span><br><span class="line"><span class="comment"># 百度网盘</span></span><br><span class="line">链接:https://pan.baidu.com/s/1PplHyDkYDTusx46j9uHwDA 提取码:dy6f</span><br><span class="line"></span><br><span class="line"><span class="comment"># 下载对应的离线安装包</span></span><br><span class="line">k8s-ha-1.16.0.tar.gz</span><br><span class="line"></span><br><span class="line"><span class="comment"># 下载解压工具</span></span><br><span class="line">decrypt</span><br><span class="line"></span><br><span class="line"><span class="comment"># 解压，k8s-ha-1.16.0.tar.gz和decrypt必须在同一目录，切记不要有其余的包以及没有额外文件。</span></span><br><span class="line">chmod +x decrypt &amp;&amp; ./decrypt</span><br><span class="line"><span class="comment"># 解压码 扫描并关注顶部二维码获取,记得打赏一下(＾Ｕ＾)ノ~ＹＯ</span></span><br></pre></td></tr></table></figure></p>
 <h4 id="kubernetes1-15-3-ha-离线安装包"><a href="#kubernetes1-15-3-ha-离线安装包" class="headerlink" title="kubernetes1.15.3 ha 离线安装包"></a>kubernetes1.15.3 ha 离线安装包</h4><p>(md5sum: f093d8b11ff0174467b84f9fc9b2a70e)</p>
-<p><strong><code>推荐指数</code></strong>：⭐️ ⭐️ ⭐️ ⭐️ ⭐️</p>
+<p><strong><code>推荐指数</code></strong>：⭐️ ⭐️ ⭐️ ⭐️</p>
 <p><strong>版本及release note：</strong></p>
 <ul>
 <li>v1.15.3 版本<a href="https://github.com/kubernetes/kubernetes/blob/master/CHANGELOG-1.15.md#v1153" target="_blank" rel="external">release note</a></li>
@@ -613,7 +670,7 @@ kubernetes各版本依赖
             
 
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#离线软件包说明"><span class="nav-number">1.</span> <span class="nav-text">离线软件包说明</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#kubernetes各版本依赖"><span class="nav-number">2.</span> <span class="nav-text">kubernetes各版本依赖</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#docker-安装"><span class="nav-number">2.1.</span> <span class="nav-text">docker 安装</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#k8s-安装"><span class="nav-number">2.2.</span> <span class="nav-text">k8s 安装</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#安装包列表"><span class="nav-number">3.</span> <span class="nav-text">安装包列表</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#kubernetes1-16-3-ha-离线安装包"><span class="nav-number">3.1.</span> <span class="nav-text">kubernetes1.16.3 ha 离线安装包</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#kubernetes1-16-0-ha-离线安装包"><span class="nav-number">3.2.</span> <span class="nav-text">kubernetes1.16.0 ha 离线安装包</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#kubernetes1-15-3-ha-离线安装包"><span class="nav-number">3.3.</span> <span class="nav-text">kubernetes1.15.3 ha 离线安装包</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#视频查看-视频加载缓慢，请耐心等待片刻"><span class="nav-number">4.</span> <span class="nav-text">视频查看 (视频加载缓慢，请耐心等待片刻)</span></a></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#离线软件包说明"><span class="nav-number">1.</span> <span class="nav-text">离线软件包说明</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#kubernetes各版本依赖"><span class="nav-number">2.</span> <span class="nav-text">kubernetes各版本依赖</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Kubernetes-各版本更新总结与推荐"><span class="nav-number">3.</span> <span class="nav-text">Kubernetes 各版本更新总结与推荐</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#1-11-⭐️-⭐️-⭐️-⭐️"><span class="nav-number">3.1.</span> <span class="nav-text">1.11 ⭐️ ⭐️ ⭐️ ⭐️</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#1-12-⭐️-⭐️-⭐️"><span class="nav-number">3.2.</span> <span class="nav-text">1.12 ⭐️ ⭐️ ⭐️</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#1-13-⭐️-⭐️-⭐️-⭐️-⭐️"><span class="nav-number">3.3.</span> <span class="nav-text">1.13 ⭐️ ⭐️ ⭐️ ⭐️ ⭐️</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#1-14-⭐️-⭐️-⭐️-⭐️-⭐️"><span class="nav-number">3.4.</span> <span class="nav-text">1.14 ⭐️ ⭐️ ⭐️ ⭐️ ⭐️</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#1-15-⭐️-⭐️-⭐️"><span class="nav-number">3.5.</span> <span class="nav-text">1.15 ⭐️ ⭐️ ⭐️</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#1-16-⭐️-⭐️-⭐️-⭐️"><span class="nav-number">3.6.</span> <span class="nav-text">1.16 ⭐️ ⭐️ ⭐️ ⭐️</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#1-17-⭐️-⭐️-⭐️-⭐️-⭐️"><span class="nav-number">3.7.</span> <span class="nav-text">1.17 ⭐️ ⭐️ ⭐️ ⭐️ ⭐️</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#docker-安装"><span class="nav-number">3.8.</span> <span class="nav-text">docker 安装</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#k8s-安装"><span class="nav-number">3.9.</span> <span class="nav-text">k8s 安装</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#安装包列表"><span class="nav-number">4.</span> <span class="nav-text">安装包列表</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#kubernetes1-17-0-ha-离线安装包"><span class="nav-number">4.1.</span> <span class="nav-text">kubernetes1.17.0 ha 离线安装包</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#kubernetes1-16-3-ha-离线安装包"><span class="nav-number">4.2.</span> <span class="nav-text">kubernetes1.16.3 ha 离线安装包</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#kubernetes1-16-0-ha-离线安装包"><span class="nav-number">4.3.</span> <span class="nav-text">kubernetes1.16.0 ha 离线安装包</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#kubernetes1-15-3-ha-离线安装包"><span class="nav-number">4.4.</span> <span class="nav-text">kubernetes1.15.3 ha 离线安装包</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#视频查看-视频加载缓慢，请耐心等待片刻"><span class="nav-number">5.</span> <span class="nav-text">视频查看 (视频加载缓慢，请耐心等待片刻)</span></a></li></ol></div>
             
 
           </div>
