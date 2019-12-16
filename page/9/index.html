@@ -367,6 +367,217 @@
   
   
   <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://icyxp.github.io/blog/2017/07/microservice-高负载微服务系统的诞生过程.html">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="icyboy">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="CloudNative 架构">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h2 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/blog/2017/07/microservice-高负载微服务系统的诞生过程.html" itemprop="url">高负载微服务系统的诞生过程</a></h2>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2017-07-26T22:00:00+08:00">
+                2017-07-26
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/微服务/" itemprop="url" rel="index">
+                    <span itemprop="name">微服务</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+                <a href="/blog/2017/07/microservice-高负载微服务系统的诞生过程.html#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count valine-comment-count" data-xid="/blog/2017/07/microservice-高负载微服务系统的诞生过程.html" itemprop="commentCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+          
+             <span id="/blog/2017/07/microservice-高负载微服务系统的诞生过程.html" class="leancloud_visitors" data-flag-title="高负载微服务系统的诞生过程">
+               <span class="post-meta-divider">|</span>
+               <span class="post-meta-item-icon">
+                 <i class="fa fa-eye"></i>
+               </span>
+               
+                 <span class="post-meta-item-text">热度&#58;</span>
+               
+                 <span class="leancloud-visitors-count"></span>
+		 <span>℃</span>
+             </span>
+          
+
+          
+
+          
+            <div class="post-wordcount">
+              
+                
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-file-word-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">字数统计&#58;</span>
+                
+                <span title="字数统计">
+                  7,360 字
+                </span>
+              
+
+              
+                <span class="post-meta-divider">|</span>
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-clock-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">阅读时长 &asymp;</span>
+                
+                <span title="阅读时长">
+                  25 分钟
+                </span>
+              
+            </div>
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          <p><img src="/images/ms/02/cover.png" alt="封面"></p>
+<h2 id="简介"><a href="#简介" class="headerlink" title="简介"></a>简介</h2><p>在2016 <a href="http://highload.co/">LighLoad++</a>大会上，“M-Tex”的开发经理Vadim Madison讲述了从一个由数百个微服务组成的系统到包含数千个微服务的高负载项目的发展历程。本文已获得翻译授权，查看英文原文：<a href="https://kukuruku.co/post/microservices-in-a-high-load-project/">Microservices in a High-Load Project</a> 。</p>
+<p>我将告诉大家我们是如何开始一个高负载微服务项目的。在讲述我们的经历之前，先让我们简单地自我介绍一下。</p>
+<p>简单地说，我们从事视频输出方面的工作——我们提供实时的视频。我们负责“NTV-Plus”和“Match TV”频道的视频平台。该平台有30万的并发用户，每小时输出300TB的内容。这是一个很有意思的任务。那么我们是如何做到的呢？</p>
+<p>这背后都有哪些故事？这些故事都是关于项目的开发和成长，关于我们对项目的思考。总而言之，是关于如何提升项目的伸缩能力，承受更大的负载，在不宕机和不丢失关键特性的情况下为客户提供更多的功能。我们总是希望能够满足客户的需求。当然，这也涉及到我们是如何实现这一切，以及这一切是如何开始的。</p>
+          <!--noindex-->
+          <div class="post-button text-center">
+            <a class="btn" href="/blog/2017/07/microservice-高负载微服务系统的诞生过程.html#more" rel="contents">
+              阅读全文 &raquo;
+            </a>
+          </div>
+          <!--/noindex-->
+        
+      
+    </div>
+    
+    
+    
+
+    <div>
+    
+    </div>
+
+    <div>
+      
+    </div>
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
     <link itemprop="mainEntityOfPage" href="http://icyxp.github.io/blog/2017/07/microservice-微服务够了.html">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -1222,235 +1433,6 @@
 
 
     
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://icyxp.github.io/blog/2016/08/mysql-maxscale-01.html">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="icyboy">
-      <meta itemprop="description" content="">
-      <meta itemprop="image" content="/images/avatar.jpg">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="CloudNative 架构">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h2 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/blog/2016/08/mysql-maxscale-01.html" itemprop="url">Mysql 读写分离中间件 MaxScale</a></h2>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2016-08-16T10:00:00+08:00">
-                2016-08-16
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
-            <span class="post-category" >
-            
-              <span class="post-meta-divider">|</span>
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">分类于</span>
-              
-              
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/mysql/" itemprop="url" rel="index">
-                    <span itemprop="name">mysql</span>
-                  </a>
-                </span>
-
-                
-                
-                  ， 
-                
-              
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/mysql/读写分离/" itemprop="url" rel="index">
-                    <span itemprop="name">读写分离</span>
-                  </a>
-                </span>
-
-                
-                
-              
-            </span>
-          
-
-          
-            
-              <span class="post-comments-count">
-                <span class="post-meta-divider">|</span>
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-comment-o"></i>
-                </span>
-                <a href="/blog/2016/08/mysql-maxscale-01.html#comments" itemprop="discussionUrl">
-                  <span class="post-comments-count valine-comment-count" data-xid="/blog/2016/08/mysql-maxscale-01.html" itemprop="commentCount"></span>
-                </a>
-              </span>
-            
-          
-
-          
-          
-             <span id="/blog/2016/08/mysql-maxscale-01.html" class="leancloud_visitors" data-flag-title="Mysql 读写分离中间件 MaxScale">
-               <span class="post-meta-divider">|</span>
-               <span class="post-meta-item-icon">
-                 <i class="fa fa-eye"></i>
-               </span>
-               
-                 <span class="post-meta-item-text">热度&#58;</span>
-               
-                 <span class="leancloud-visitors-count"></span>
-		 <span>℃</span>
-             </span>
-          
-
-          
-
-          
-            <div class="post-wordcount">
-              
-                
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-file-word-o"></i>
-                </span>
-                
-                  <span class="post-meta-item-text">字数统计&#58;</span>
-                
-                <span title="字数统计">
-                  1,073 字
-                </span>
-              
-
-              
-                <span class="post-meta-divider">|</span>
-              
-
-              
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-clock-o"></i>
-                </span>
-                
-                  <span class="post-meta-item-text">阅读时长 &asymp;</span>
-                
-                <span title="阅读时长">
-                  4 分钟
-                </span>
-              
-            </div>
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          <h2 id="MaxScale-是干什么的？"><a href="#MaxScale-是干什么的？" class="headerlink" title="MaxScale 是干什么的？"></a>MaxScale 是干什么的？</h2><p>配置好了 Mysql 的主从复制结构后，我们希望实现读写分离，把读操作分散到从服务器中，并且对多个从服务器能实现负载均衡</p>
-<p><strong>读写分离</strong>和<strong>负载均衡</strong>是 Mysql 集群的基础需求，<strong>MaxScale</strong> 就可以帮着我们方便的实现这些功能<br><img src="/images/maxscale_01.png" alt="Maxscale"></p>
-<h2 id="MaxScale-的基础构成"><a href="#MaxScale-的基础构成" class="headerlink" title="MaxScale 的基础构成"></a>MaxScale 的基础构成</h2><ul>
-<li>MaxScale 是 Mysql 的兄弟公司 MariaDB 开发的，现在已经发展得非常成熟</li>
-<li>MaxScale 是插件式结构，允许用户开发适合自己的插件</li>
-<li>MaxScale 目前提供的插件功能分为<strong>5类</strong></li>
-</ul>
-<h3 id="认证插件"><a href="#认证插件" class="headerlink" title="认证插件"></a>认证插件</h3><p>提供了登录认证功能，MaxScale 会读取并缓存数据库中 user 表中的信息，当有连接进来时，先从缓存信息中进行验证，如果没有此用户，会从后端数据库中更新信息，再次进行验证</p>
-<h3 id="协议插件"><a href="#协议插件" class="headerlink" title="协议插件"></a>协议插件</h3><p>包括客户端连接协议，和连接数据库的协议</p>
-<h3 id="路由插件"><a href="#路由插件" class="headerlink" title="路由插件"></a>路由插件</h3><p>决定如何把客户端的请求转发给后端数据库服务器，读写分离和负载均衡的功能就是由这个模块实现的</p>
-<h3 id="监控插件"><a href="#监控插件" class="headerlink" title="监控插件"></a>监控插件</h3><p>对各个数据库服务器进行监控，例如发现某个数据库服务器响应很慢，那么就不向其转发请求了</p>
-<h3 id="日志和过滤插件"><a href="#日志和过滤插件" class="headerlink" title="日志和过滤插件"></a>日志和过滤插件</h3><p>提供简单的数据库防火墙功能，可以对SQL进行过滤和容错</p>
-          <!--noindex-->
-          <div class="post-button text-center">
-            <a class="btn" href="/blog/2016/08/mysql-maxscale-01.html#more" rel="contents">
-              阅读全文 &raquo;
-            </a>
-          </div>
-          <!--/noindex-->
-        
-      
-    </div>
-    
-    
-    
-
-    <div>
-    
-    </div>
-
-    <div>
-      
-    </div>
-
-    
-
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
   </section>
 
   
@@ -1505,7 +1487,7 @@
               
                 <a href="/archives/">
               
-                  <span class="site-state-item-count">56</span>
+                  <span class="site-state-item-count">57</span>
                   <span class="site-state-item-name">日志</span>
                 </a>
               </div>
@@ -1516,7 +1498,7 @@
               
               <div class="site-state-item site-state-categories">
                 <a href="/categories/index.html">
-                  <span class="site-state-item-count">39</span>
+                  <span class="site-state-item-count">40</span>
                   <span class="site-state-item-name">分类</span>
                 </a>
               </div>
@@ -1527,7 +1509,7 @@
               
               <div class="site-state-item site-state-tags">
                 <a href="/tags/index.html">
-                  <span class="site-state-item-count">104</span>
+                  <span class="site-state-item-count">105</span>
                   <span class="site-state-item-name">标签</span>
                 </a>
               </div>
@@ -1630,7 +1612,7 @@
     
       <span class="post-meta-item-text">Site words total count&#58;</span>
     
-    <span title="Site words total count">145.0k</span>
+    <span title="Site words total count">147.9k</span>
   
 </div>
 
@@ -1642,7 +1624,7 @@
 
 <div class="theme-info">
   <div class="powered-by"></div>
-  <span class="post-count">博客全站共145.0k字</span>
+  <span class="post-count">博客全站共147.9k字</span>
 </div>
 
 
