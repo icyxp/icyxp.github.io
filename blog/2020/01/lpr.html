@@ -1,0 +1,1581 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next mist use-motion" lang="zh-Hans">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+<script src="//cdn.bootcss.com/pace/1.0.2/pace.min.js"></script>
+<link href="//cdn.bootcss.com/pace/1.0.2/themes/pink/pace-theme-flash.css" rel="stylesheet">
+<script>
+    (function () {
+        if ('') {
+            if (prompt('请输入文章密码') !== '') {
+                alert('密码错误！');
+                if (history.length === 1) {
+                    location.replace("http://team.jiunile.com"); // 这里替换成你的首页
+                } else {
+                    history.back();
+                }
+            }
+        }
+    })();
+</script>
+<meta name="theme-color" content="#222">
+<style>
+    .pace .pace-progress {
+        background: #1E92FB; /*进度条颜色*/
+        height: 2px;
+    }
+    .pace .pace-progress-inner {
+         box-shadow: 0 0 10px #1E92FB, 0 0 5px     #1E92FB; /*阴影颜色*/
+    }
+    .pace .pace-activity {
+        border-top-color: #1E92FB;    /*上边框颜色*/
+        border-left-color: #1E92FB;    /*左边框颜色*/
+    }
+</style>
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+<!--
+  <script>
+  (function(i,s,o,g,r,a,m){i["DaoVoiceObject"]=r;i[r]=i[r]||function(){(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;a.charset="utf-8";m.parentNode.insertBefore(a,m)})(window,document,"script",('https:' == document.location.protocol ? 'https:' : 'http:') + "//widget.daovoice.io/widget/0f81ff2f.js","daovoice")
+  daovoice('init', {
+      app_id: "2a2a668f"
+    });
+  daovoice('update');
+  </script>
+-->
+<script type='text/javascript'>
+  (function (window, a, b) {
+    window[a] = window[a] || function () {
+        (window[a].a = window[a].a || []).push(arguments)
+    };
+    window[b] = window[b] || function () {
+        (window[b].a = window[b].a || []).push(arguments)
+    };
+    var s = document.createElement("script");
+    s.src = "https://jsapi.weiliaokefu.com/Public/dist/js/jsapi.js?v=" + Math.round(Math.random() * 1000);
+    s.async = true;
+    s.charset = "UTF-8";
+    document.getElementsByTagName("head")[0].appendChild(s);
+  })(window, '_FENBOT', "_FENBOT_API");
+  _FENBOT({cid: '36159', type: '0'});
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/favicon.ico?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon.ico?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon.ico?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/favicon.ico?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="lpr,房贷,杂谈,市场经济," />
+
+
+
+
+
+  <link rel="alternate" href="/atom.xml" title="CloudNative 架构" type="application/atom+xml" />
+
+
+
+
+
+
+<meta name="description" content="part 1每一个背负了房贷的人，绝对想不到，进入2020年头的时候，央行会送来一份大礼。
+2019年12月28日，中国人民银行（央行）发布年内第30号公告。公告中的文字非常专业、晦涩，不是金融专业出身的人，会觉得云里雾里，也体会不到这则公告的史诗级作用。
+第一：从2020年1月1日开始，商业银行不得和买房人，签订参考贷款基准利率的浮动利率贷款合同。
+第二：从2020年3月1日开始，商业银行必须和">
+<meta property="og:type" content="article">
+<meta property="og:title" content="LPR是什么，央行给有放贷的人带来什么新年礼物">
+<meta property="og:url" content="http://icyxp.github.io/blog/2020/01/lpr.html">
+<meta property="og:site_name" content="CloudNative 架构">
+<meta property="og:description" content="part 1每一个背负了房贷的人，绝对想不到，进入2020年头的时候，央行会送来一份大礼。
+2019年12月28日，中国人民银行（央行）发布年内第30号公告。公告中的文字非常专业、晦涩，不是金融专业出身的人，会觉得云里雾里，也体会不到这则公告的史诗级作用。
+第一：从2020年1月1日开始，商业银行不得和买房人，签订参考贷款基准利率的浮动利率贷款合同。
+第二：从2020年3月1日开始，商业银行必须和">
+<meta property="og:image" content="http://icyxp.github.io/images/other/1.jpg">
+<meta property="og:image" content="http://icyxp.github.io/images/other/2.jpg">
+<meta property="og:image" content="http://icyxp.github.io/images/other/3.jpg">
+<meta property="og:updated_time" content="2020-01-06T02:29:37.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="LPR是什么，央行给有放贷的人带来什么新年礼物">
+<meta name="twitter:description" content="part 1每一个背负了房贷的人，绝对想不到，进入2020年头的时候，央行会送来一份大礼。
+2019年12月28日，中国人民银行（央行）发布年内第30号公告。公告中的文字非常专业、晦涩，不是金融专业出身的人，会觉得云里雾里，也体会不到这则公告的史诗级作用。
+第一：从2020年1月1日开始，商业银行不得和买房人，签订参考贷款基准利率的浮动利率贷款合同。
+第二：从2020年3月1日开始，商业银行必须和">
+<meta name="twitter:image" content="http://icyxp.github.io/images/other/1.jpg">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Mist',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://icyxp.github.io/blog/2020/01/lpr.html"/>
+
+
+
+
+
+  <title>LPR是什么，央行给有放贷的人带来什么新年礼物 | CloudNative 架构</title>
+  
+
+
+
+
+
+  <script type="text/javascript">
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "https://hm.baidu.com/hm.js?126663bc923877f90024929ac5555b0f";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+
+
+
+  <!-- 页面点击小红心 -->
+  <script type="text/javascript" src="/js/src/love.js"></script>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+    <a href="https://github.com/icyxp"><a href="https://github.com/icyxp" class="github-corner" aria-label="View source on GitHub"><svg width="80" height="80" viewBox="0 0 250 250" style="fill:#151513; color:#fff; position: absolute; top: 0; border: 0; right: 0;" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path></svg></a><style>.github-corner:hover .octo-arm{animation:octocat-wave 560ms ease-in-out}@keyframes octocat-wave{0%,100%{transform:rotate(0)}20%,60%{transform:rotate(-25deg)}40%,80%{transform:rotate(10deg)}}@media (max-width:500px){.github-corner:hover .octo-arm{animation:none}.github-corner .octo-arm{animation:octocat-wave 560ms ease-in-out}}</style></a>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">CloudNative 架构</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <h1 class="site-subtitle" itemprop="description">CloudNative|云原生应用架构|云原生架构|容器化架构|微服务架构|平台架构|基础架构</h1>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br />
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-k8s">
+          <a href="/pro/k8s/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-heartbeat"></i> <br />
+            
+            k8s离线安装包
+          </a>
+        </li>
+      
+
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="popup-trigger">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br />
+            
+            搜索
+          </a>
+        </li>
+      
+    </ul>
+  
+
+  
+    <div class="site-search">
+      
+  <div class="popup search-popup local-search-popup">
+  <div class="local-search-header clearfix">
+    <span class="search-icon">
+      <i class="fa fa-search"></i>
+    </span>
+    <span class="popup-btn-close">
+      <i class="fa fa-times-circle"></i>
+    </span>
+    <div class="local-search-input-wrapper">
+      <input autocomplete="off"
+             placeholder="搜索..." spellcheck="false"
+             type="text" id="local-search-input">
+    </div>
+  </div>
+  <div id="local-search-result"></div>
+</div>
+
+
+
+    </div>
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://icyxp.github.io/blog/2020/01/lpr.html">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="icyboy">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="CloudNative 架构">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h2 class="post-title" itemprop="name headline">LPR是什么，央行给有放贷的人带来什么新年礼物</h2>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2020-01-06T20:00:00+08:00">
+                2020-01-06
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/LPR/" itemprop="url" rel="index">
+                    <span itemprop="name">LPR</span>
+                  </a>
+                </span>
+
+                
+                
+                  ， 
+                
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/LPR/房贷/" itemprop="url" rel="index">
+                    <span itemprop="name">房贷</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+                <a href="/blog/2020/01/lpr.html#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count valine-comment-count" data-xid="/blog/2020/01/lpr.html" itemprop="commentCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+          
+             <span id="/blog/2020/01/lpr.html" class="leancloud_visitors" data-flag-title="LPR是什么，央行给有放贷的人带来什么新年礼物">
+               <span class="post-meta-divider">|</span>
+               <span class="post-meta-item-icon">
+                 <i class="fa fa-eye"></i>
+               </span>
+               
+                 <span class="post-meta-item-text">热度&#58;</span>
+               
+                 <span class="leancloud-visitors-count"></span>
+		 <span>℃</span>
+             </span>
+          
+
+          
+
+          
+            <div class="post-wordcount">
+              
+                
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-file-word-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">字数统计&#58;</span>
+                
+                <span title="字数统计">
+                  3,481 字
+                </span>
+              
+
+              
+                <span class="post-meta-divider">|</span>
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-clock-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">阅读时长 &asymp;</span>
+                
+                <span title="阅读时长">
+                  12 分钟
+                </span>
+              
+            </div>
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h2 id="part-1"><a href="#part-1" class="headerlink" title="part 1"></a>part 1</h2><p><code>每一个背负了房贷的人，绝对想不到，进入2020年头的时候，央行会送来一份大礼。</code></p>
+<p>2019年12月28日，中国人民银行（央行）发布年内第30号公告。公告中的文字非常专业、晦涩，不是金融专业出身的人，会觉得云里雾里，也体会不到这则公告的史诗级作用。</p>
+<p>第一：<strong>从2020年1月1日开始，商业银行不得和买房人，签订参考贷款基准利率的浮动利率贷款合同。</strong></p>
+<p>第二：<strong>从2020年3月1日开始，商业银行必须和存量房贷的借款人，废除原有房贷合同，让借款人重新二选一，要么：固定利率；要么：「LPR利率+基点加成」模式。</strong></p>
+<a id="more"></a>
+<p>也就是说，从今年的3月1日开始至8月份的5个月时间里，当初和买房人签订了房贷合同的银行，会联系买房人，协商废除原有的「基准利率+浮动比例」利率合同，再二选一。</p>
+<p>一定要记住，无论银行怎么巧舌如簧，口吐莲花：</p>
+<p><code>不要选择固定利率模式，选择「LPR利率+基点加成」模式！</code></p>
+<p>央行公告中说得很清楚，这种变更，一辈子只有一次机会，选错了的话，是无法更改的。</p>
+<p>不要小看两种利率模式的差别，我们可以大致估算下，在某些年份，利率差距可能达到1-5个百分点。如果房贷余额有300万元的话，每年还款差异可能达到3-15万元。</p>
+<p>在过去几年，数百万的年轻人夫妻，掏空了父母辈的钱包，背负了房贷，不敢辞职和跳槽，过上了不敢消费的佛系生活。</p>
+<p>翻阅了央行的定期报告，截止2019年8月份，个人贷款余额总量在29万亿元。你的房贷，就在其中。</p>
+<p>现在，央行要给你松绑了，卸下重担了，就看你3个月之后，要不要接收这份大礼，改变一家子的命运了。</p>
+<h2 id="part-2"><a href="#part-2" class="headerlink" title="part 2"></a>part 2</h2><p>央行在2019年8月份，进行房贷变革的细节。</p>
+<p><strong>变革前，房贷利率=央行基准利率+浮动比例。</strong></p>
+<p>基准利率由央行统一公布，商业银行无权控制，只能被动跟随。如果央行加息了，或者降息了，那么在来年的固定日期1月1日，购房者的基准利率就统一改变。当前的基准利率是4.90%。</p>
+<p>商业银行能够改变的就是“浮动比例”。有些城市的银行货币宽松，鼓励首套房置业，地方政府财源依赖于土地出让金，那么可能在基准利率的基础上打折扣，但是大多数城市，是没有浮动比例，或者上浮的。</p>
+<p>对购房者而言，和银行签订的“浮动比例”一旦确认，是无法变更的。</p>
+<p><strong>变革后，房贷利率=贷款市场报价（LPR）利率+基点加成。</strong></p>
+<p>LPR利率，专业说法是“全国银行间同业拆借中心”，统计18家银行报出的各自的1年期和5年期以上贷款利率，剔除最低价、最高价后，计算算术平均价。</p>
+<p>说得更加直白一点</p>
+<p><code>LPR利率更加市场化，在反映全社会无风险利率的程度上，更加逼真。</code></p>
+<p>当经济过热时，通胀时，利率高；</p>
+<p>当经济过冷时，通缩时，利率低。</p>
+<p>这种市场化的利率，将贷款人和借款人之间的利益、风险，均衡了下。</p>
+<p>央行高屋建瓴，将1年期LPR利率，用于实体经济；将5年期LPR利率，用于了房地产市场。<br><img src="/images/other/1.jpg" alt="1"></p>
+<p>当需要给实体经济降息时，就调低1年期LPR利率，不让漫灌的大水进入房地产行业。</p>
+<p>当需要单独对房地产调控时，只需要提高5年期LPR的利率，就不会对实体经济产生成本压力。</p>
+<p>但是从长期来看，<strong>5年期LPR利率，一定会向1年期LPR利率进行回归和靠拢的。</strong></p>
+<p>2019年11月20日，央行授权全国银行间同业拆借中心公布了最新一期贷款市场报价利率（LPR）。1年期LPR利率为4.15%，5年期以上LPR利率为4.80%。同10月21日公布的上期数值相比，均下调了5个基点。</p>
+<p>特别地，5年期LPR利率4.80%，比原有的贷款基准利率4.90%，低了10个基点，也就是0.1个百分点。</p>
+<p>如果2020年1月以后买房子，签订的是变革后的房贷利率模式，未来LPR利率长期下行，那么买房人和贷款机构的房贷利率，也必然下行，这样的话，买房人承担的利率成本，和全社会的利率成本大致相当。</p>
+<p>如果是2019年8月份之前买的房子，买房人和贷款机构签订的是基准利率，或者固定利率，那么未来社会无风险利率下行后，买房人承担的压力，将前所未有的大。这批买房人，完全将自己的人生上贡给了银行帝国，和后来轻装上阵的买房者，泾渭分明，社会的不公平性就拉大了。</p>
+<p>有些人可能会说，变革前后，二种利率的差异，就在10个基点，0.1个百分点，差异不大。</p>
+<p>你要这么说，只能证明，<code>对我们国家未来利率下行趋势的力量，一无所知！</code></p>
+<h2 id="part-3"><a href="#part-3" class="headerlink" title="part 3"></a>part 3</h2><p>你也许会问：</p>
+<p><strong>央行和放贷银行，居然给我们买房者这么好的福利，会把吃进肚子里的肉，吐了出来，它们图什么呢？</strong></p>
+<p>呵呵。先让明哥笑几声。</p>
+<p>如果你能这么想，说明你真的太天真了。</p>
+<p>央行和放贷银行，给借款人松绑，绝对不是为了把吃进肚子里的肉吐出来，而是担心未来进入低利率时代以后，借款人弃房而去，那样会引发全社会系统性的大风险。</p>
+<p>因为，它们是极其专业和前瞻的机构，已经提前预测到了：</p>
+<p><code>在未来5-20年的时间长度内，中国一定会步发达国家的后尘，进入低利率，甚至是负利率时代。</code></p>
+<p>这是坏事吗？绝对不是，这是任何经济体发展到一定水平后，必然要进入的常态。</p>
+<p>当经济体的生产力已经充分发达，人口不再继续增长，物质充分丰富以后，一个市场的消费能力是有限的。也就是说，企业生产出来的实体商品、提供的服务和虚拟商品，终将超过该国或者全球所有人口的消费潜力。</p>
+<p>假如没有突破性的科技进展，那么企业家没有多余利润可图，将不再扩大生产，不将利润再投资，不向银行间接贷款融资，不向股票市场直接股权融资，社会的GDP原地踏步，年轻人薪资20年不上涨。</p>
+<p>这样将导致，社会上的存款资金和可投资资金，将无处可去。商业银行收储了海量的居民存款，找不到适格的企业去发放贷款，自然也赚取不了息差。</p>
+<p>整体社会的利率，将显著下行。</p>
+<p>统计过，2020年初，全球26个国家或经济体当中，有20个国家或经济体利率处于下降趋势。</p>
+<p>欧盟央行：-0.5%；</p>
+<p>日本央行：-0.1%；</p>
+<p>德国10年期国债：-0.675%。</p>
+<p>2019年8月5号，丹麦的第三大银行日德兰银行，推出了人类历史上首笔负利率按揭贷款业务，房贷利率为-0.5%。什么意思呢？</p>
+<p>如果你借丹麦这家银行100万元去买房，一年后你只需还99.5万元就可以了。</p>
+<p>这家银行向买房人发放贷款，贷款买房人，最终还的钱，比当初银行借出的钱，还要少！</p>
+<p>听起来，像不像天方夜谭？绝对不是，这在西方发达经济体之中，已经成为了常识。</p>
+<p>2019年8月6号，瑞士银行宣布对50万欧元以下的存款账户收取年费，并且不支付利息。</p>
+<p>同样地，由于欧盟组织金融体系的利率是-0.5%，这意味着，一个人在欧盟所属的银行存款1万欧元，一年后，只能取回9950欧元。<br><img src="/images/other/2.jpg" alt="2"></p>
+<p>2019年11月21日，已经卸任了中国人民银行行长职位的周小川，在创新经济论坛上表示：</p>
+<p><strong>中国可以尽量避免快速地进入到负利率时代。</strong></p>
+<p>言下之意，我们社会可以推迟进入到负利率时代的时间长度，延迟它的到来，但是改变不了历史归途。</p>
+<p>在2017年之前的20年时间里，我们已经习惯了房价的上涨、物价的上涨，人民币购买力的贬值。其根本原因在于，我们国家依然处于发展阶段，各行各业的商品和服务，还有着巨大的空白市场去等着发掘。</p>
+<p>房贷利率5.53%、民间借贷利率10-30%、P2P网贷利率20-50%。银行理财产品收益率低于6%，都没有大妈大爷看得上。</p>
+<p>从2017年开始，高收益的幻象，逐一破灭了。房价下跌、P2P平台爆雷、上市公司多元化扩张一地鸡毛。那些追逐高收益的人，不仅没有得到高利率，连自己的本金都损失掉了。</p>
+<p>股市收益率预期降低、年轻人就业心态放平、中年人只求保住饭碗，这才是未来我国经济的「新常态」。</p>
+<p>进入低利率时代后，我们去银行存钱，不仅没有利息，还要倒付费用给银行来负责保管我们的资产数据。</p>
+<p>为什么呢？</p>
+<p>因为银行收储之后，将居民资产保管在银行内部，它放贷不出去，没有人来借款，自然赚取不了利息差带来的利润。</p>
+<p>所以，负利率时代到来以后，谁放钱在银行，谁就要支付给银行一定的费用。</p>
+<p>如果借款人发现，自己的存款没有利息，全社会的无风险利率都接近于零，企业不愿意去投资，社会GDP增速原地踏步，自己反而要承担4.9%的利率，那这种负担，绝对是压力山大，不可承受的。</p>
+<p>等到那个时候，别说奢望房价上涨成为了白日梦，每年下跌2-10%，都是很有可能的，结果还要凭空承担-4.9%的利率亏损，傻子都知道，应该抛弃房子，直接断供。</p>
+<p>如果大批量的买房人，集体断供，最终会引发什么后果呢？那就是2008年美国次贷危机的翻版，银行将倒闭，经济继续萧条，年轻人失业。那种后果不是每个社会都能承受的。</p>
+<p>对于那些在2020年，就选择了「LPR利率+基点加成」模式的买房人而言，会张灯结彩、敲锣打鼓地迎接低利率时代、甚至是负利率时代的到来。</p>
+<p>理想情况下，假如5年期LPR利率降低到了零，那么当初的买房人承担的利率就只是当初的「基点加成」，无论是上浮还是下浮，都可以认为轻如鸿毛。</p>
+<p>这个时候，原有传统模式买房人，承担的利率是4.90%，接受了新模式的买房人，几乎没有房贷利率！</p>
+<p>年化4.90%利率的差别，如果房贷余额还剩下200万，那就是年化9.8万元的差距。</p>
+<p>这钱不香吗？为什么要凭空贡献给银行呢？</p>
+<h2 id="part-4"><a href="#part-4" class="headerlink" title="part 4"></a>part 4</h2><p>站在2020年的门槛上，央行一眼洞穿了未来20年的经济轨迹，参考了西方发达国家的成熟经验，引导各大商业银行贷款人，和借款人，重新签订锚定于LPR利率的贷款合同。</p>
+<p>这不仅是给予借款人的大红包，也是站在全社会的角度，未雨绸缪，将收益和风险，在借款人和贷款机构之间分摊，促进整个社会的稳定运行。</p>
+<p>但是，央行出台的房贷改革新政，让贷款人和借款人重新签订利率合同，充满着大量的金融术语和晦涩的概念。</p>
+<p>商业银行的目的是为了逐利。它们作为贷款人，赚取利息差，让借款人承担的利率越高，银行的利润就越高。<br><img src="/images/other/3.jpg" alt="3"></p>
+<p>收取智商税的最佳方式是，制造信息不对称，利用自己的信息优势，来收割对方。</p>
+<p>商业银行一定会巧舌如簧、口吐莲花一般，故意将两种利率模式，说得借款人如云山雾里，眼冒金星。</p>
+<p>站在银行的角度来说，它们希望借款人像无头苍蝇一样，跟着他们的节奏走，不知不觉就躺在砧板上，摆好了待宰的体位。</p>
+<p>只有明哥，惦记着你的钱包。</p>
+<p>千言万语，汇成一句话！</p>
+<p><code>从2020年3月1日开始的5个月时间里，当银行联系你重新协商房贷利率时，一定要坚持「LPR利率+基点加成」模式，并且利率一年自动更新一次。</code></p>
+<p>这个机会，涉及到你家庭数十万，甚至上百万的资金，是用于自己，还是贡献给银行。</p>
+<p>可千万别选错了，因为央行只给了一次机会，没有后悔药可吃！</p>
+<p>来源：明哥在路上</p>
+
+      
+    </div>
+    
+    
+    
+
+    <div>
+    
+        <div>
+    
+        <div style="text-align:center;color: #ccc;font-size:14px;">-------------本文结束<i class="fa fa-paw"></i>感谢您的阅读-------------</div>
+    
+</div>
+
+    
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    
+
+    
+      <div>
+        <div style="padding: 10px 0; margin: 20px auto; width: 90%; text-align: center;">
+  <div></div>
+  <button id="rewardButton" disable="enable" onclick="var qr = document.getElementById('QR'); if (qr.style.display === 'none') {qr.style.display='block';} else {qr.style.display='none'}">
+    <span>打赏</span>
+  </button>
+  <div id="QR" style="display: none;">
+
+    
+      <div id="wechat" style="display: inline-block">
+        <img id="wechat_qr" src="/images/wechatpay.jpg" alt="icyboy 微信支付"/>
+        <p>微信支付</p>
+      </div>
+    
+
+    
+      <div id="alipay" style="display: inline-block">
+        <img id="alipay_qr" src="/images/alipay.jpg" alt="icyboy 支付宝"/>
+        <p>支付宝</p>
+      </div>
+    
+
+    
+
+  </div>
+</div>
+
+      </div>
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/lpr/" rel="tag"># lpr</a>
+          
+            <a href="/tags/房贷/" rel="tag"># 房贷</a>
+          
+            <a href="/tags/杂谈/" rel="tag"># 杂谈</a>
+          
+            <a href="/tags/市场经济/" rel="tag"># 市场经济</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/blog/2019/12/k8s-coredns-debug.html" rel="next" title="kubernetes coredns域名解析5秒记录">
+                <i class="fa fa-chevron-left"></i> kubernetes coredns域名解析5秒记录
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+    <div class="comments" id="comments">
+    </div>
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image"
+                src="/images/avatar.jpg"
+                alt="icyboy" />
+            
+              <p class="site-author-name" itemprop="name">icyboy</p>
+              <p class="site-description motion-element" itemprop="description"></p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">58</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-categories">
+                <a href="/categories/index.html">
+                  <span class="site-state-item-count">42</span>
+                  <span class="site-state-item-name">分类</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                <a href="/tags/index.html">
+                  <span class="site-state-item-count">109</span>
+                  <span class="site-state-item-name">标签</span>
+                </a>
+              </div>
+            
+
+          </nav>
+
+          
+            <div class="feed-link motion-element">
+              <a href="/atom.xml" rel="alternate">
+                <i class="fa fa-rss"></i>
+                RSS
+              </a>
+            </div>
+          
+
+          
+            <div class="links-of-author motion-element">
+                
+                  <span class="links-of-author-item">
+                    <a href="https://github.com/icyxp" target="_blank" title="GitHub">
+                      
+                        <i class="fa fa-fw fa-github"></i>GitHub</a>
+                  </span>
+                
+                  <span class="links-of-author-item">
+                    <a href="http://weibo.com/joysteam" target="_blank" title="微博">
+                      
+                        <i class="fa fa-fw fa-weibo"></i>微博</a>
+                  </span>
+                
+                  <span class="links-of-author-item">
+                    <a href="http://www.zhihu.com/people/xupeng" target="_blank" title="知乎">
+                      
+                        <i class="fa fa-fw fa-zhihu"></i>知乎</a>
+                  </span>
+                
+            </div>
+          
+
+          
+          
+
+          
+          
+            <div class="links-of-blogroll motion-element links-of-blogroll-inline">
+              <div class="links-of-blogroll-title">
+                <i class="fa  fa-fw fa-link"></i>
+                友情链接
+              </div>
+              <ul class="links-of-blogroll-list">
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="http://www.zjgsmt.com" title="张家港水蜜桃" target="_blank">张家港水蜜桃</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="http://blog.jiunile.com" title="运维开发" target="_blank">运维开发</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="http://devops.jiunile.com" title="DevOps" target="_blank">DevOps</a>
+                  </li>
+                
+              </ul>
+            </div>
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#part-1"><span class="nav-number">1.</span> <span class="nav-text">part 1</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#part-2"><span class="nav-number">2.</span> <span class="nav-text">part 2</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#part-3"><span class="nav-number">3.</span> <span class="nav-text">part 3</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#part-4"><span class="nav-number">4.</span> <span class="nav-text">part 4</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+<div class="copyright">&copy; 2016 &mdash; <span itemprop="copyrightYear">2020</span>
+  <span class="with-love" id="heart">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">icyboy</span>
+
+  
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-area-chart"></i>
+    </span>
+    
+      <span class="post-meta-item-text">Site words total count&#58;</span>
+    
+    <span title="Site words total count">151.4k</span>
+  
+</div>
+
+<div class="powered-by">
+<i class="fa fa-user-md"></i><span id="busuanzi_container_site_uv">
+  本站访客数:<span id="busuanzi_value_site_uv"></span>
+</span>
+</div>
+
+<div class="theme-info">
+  <div class="powered-by"></div>
+  <span class="post-count">博客全站共151.4k字</span>
+</div>
+
+
+
+
+
+
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/canvas-nest/canvas-nest.min.js"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+  <script src="//cdn1.lncld.net/static/js/3.0.4/av-min.js"></script>
+  <script src="//unpkg.com/valine/dist/Valine.min.js"></script>
+  
+  <script type="text/javascript">
+    var GUEST = ['nick','mail','link'];
+    var guest = 'nick,mail,link';
+    guest = guest.split(',').filter(item=>{
+      return GUEST.indexOf(item)>-1;
+    });
+    new Valine({
+        el: '#comments' ,
+        verify: false,
+        notify: false,
+        appId: 'B6yqSmGPw5uBIAfWEqm7Xyws-gzGzoHsz',
+        appKey: '2soiHGUrbGw33caCmkT47236',
+        placeholder: 'Just do it!',
+        avatar:'mm',
+        guest_info:guest,
+        pageSize:'10' || 10,
+    });
+  </script>
+
+
+
+  
+
+  <script type="text/javascript">
+    // Popup Window;
+    var isfetched = false;
+    var isXml = true;
+    // Search DB path;
+    var search_path = "search.xml";
+    if (search_path.length === 0) {
+      search_path = "search.xml";
+    } else if (/json$/i.test(search_path)) {
+      isXml = false;
+    }
+    var path = "/" + search_path;
+    // monitor main search box;
+
+    var onPopupClose = function (e) {
+      $('.popup').hide();
+      $('#local-search-input').val('');
+      $('.search-result-list').remove();
+      $('#no-result').remove();
+      $(".local-search-pop-overlay").remove();
+      $('body').css('overflow', '');
+    }
+
+    function proceedsearch() {
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay"></div>')
+        .css('overflow', 'hidden');
+      $('.search-popup-overlay').click(onPopupClose);
+      $('.popup').toggle();
+      var $localSearchInput = $('#local-search-input');
+      $localSearchInput.attr("autocapitalize", "none");
+      $localSearchInput.attr("autocorrect", "off");
+      $localSearchInput.focus();
+    }
+
+    // search function;
+    var searchFunc = function(path, search_id, content_id) {
+      'use strict';
+
+      // start loading animation
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay">' +
+          '<div id="search-loading-icon">' +
+          '<i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>' +
+          '</div>' +
+          '</div>')
+        .css('overflow', 'hidden');
+      $("#search-loading-icon").css('margin', '20% auto 0 auto').css('text-align', 'center');
+
+      $.ajax({
+        url: path,
+        dataType: isXml ? "xml" : "json",
+        async: true,
+        success: function(res) {
+          // get the contents from search data
+          isfetched = true;
+          $('.popup').detach().appendTo('.header-inner');
+          var datas = isXml ? $("entry", res).map(function() {
+            return {
+              title: $("title", this).text(),
+              content: $("content",this).text(),
+              url: $("url" , this).text()
+            };
+          }).get() : res;
+          var input = document.getElementById(search_id);
+          var resultContent = document.getElementById(content_id);
+          var inputEventFunction = function() {
+            var searchText = input.value.trim().toLowerCase();
+            var keywords = searchText.split(/[\s\-]+/);
+            if (keywords.length > 1) {
+              keywords.push(searchText);
+            }
+            var resultItems = [];
+            if (searchText.length > 0) {
+              // perform local searching
+              datas.forEach(function(data) {
+                var isMatch = false;
+                var hitCount = 0;
+                var searchTextCount = 0;
+                var title = data.title.trim();
+                var titleInLowerCase = title.toLowerCase();
+                var content = data.content.trim().replace(/<[^>]+>/g,"");
+                var contentInLowerCase = content.toLowerCase();
+                var articleUrl = decodeURIComponent(data.url);
+                var indexOfTitle = [];
+                var indexOfContent = [];
+                // only match articles with not empty titles
+                if(title != '') {
+                  keywords.forEach(function(keyword) {
+                    function getIndexByWord(word, text, caseSensitive) {
+                      var wordLen = word.length;
+                      if (wordLen === 0) {
+                        return [];
+                      }
+                      var startPosition = 0, position = [], index = [];
+                      if (!caseSensitive) {
+                        text = text.toLowerCase();
+                        word = word.toLowerCase();
+                      }
+                      while ((position = text.indexOf(word, startPosition)) > -1) {
+                        index.push({position: position, word: word});
+                        startPosition = position + wordLen;
+                      }
+                      return index;
+                    }
+
+                    indexOfTitle = indexOfTitle.concat(getIndexByWord(keyword, titleInLowerCase, false));
+                    indexOfContent = indexOfContent.concat(getIndexByWord(keyword, contentInLowerCase, false));
+                  });
+                  if (indexOfTitle.length > 0 || indexOfContent.length > 0) {
+                    isMatch = true;
+                    hitCount = indexOfTitle.length + indexOfContent.length;
+                  }
+                }
+
+                // show search results
+
+                if (isMatch) {
+                  // sort index by position of keyword
+
+                  [indexOfTitle, indexOfContent].forEach(function (index) {
+                    index.sort(function (itemLeft, itemRight) {
+                      if (itemRight.position !== itemLeft.position) {
+                        return itemRight.position - itemLeft.position;
+                      } else {
+                        return itemLeft.word.length - itemRight.word.length;
+                      }
+                    });
+                  });
+
+                  // merge hits into slices
+
+                  function mergeIntoSlice(text, start, end, index) {
+                    var item = index[index.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    var hits = [];
+                    var searchTextCountInSlice = 0;
+                    while (position + word.length <= end && index.length != 0) {
+                      if (word === searchText) {
+                        searchTextCountInSlice++;
+                      }
+                      hits.push({position: position, length: word.length});
+                      var wordEnd = position + word.length;
+
+                      // move to next position of hit
+
+                      index.pop();
+                      while (index.length != 0) {
+                        item = index[index.length - 1];
+                        position = item.position;
+                        word = item.word;
+                        if (wordEnd > position) {
+                          index.pop();
+                        } else {
+                          break;
+                        }
+                      }
+                    }
+                    searchTextCount += searchTextCountInSlice;
+                    return {
+                      hits: hits,
+                      start: start,
+                      end: end,
+                      searchTextCount: searchTextCountInSlice
+                    };
+                  }
+
+                  var slicesOfTitle = [];
+                  if (indexOfTitle.length != 0) {
+                    slicesOfTitle.push(mergeIntoSlice(title, 0, title.length, indexOfTitle));
+                  }
+
+                  var slicesOfContent = [];
+                  while (indexOfContent.length != 0) {
+                    var item = indexOfContent[indexOfContent.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    // cut out 100 characters
+                    var start = position - 20;
+                    var end = position + 80;
+                    if(start < 0){
+                      start = 0;
+                    }
+                    if (end < position + word.length) {
+                      end = position + word.length;
+                    }
+                    if(end > content.length){
+                      end = content.length;
+                    }
+                    slicesOfContent.push(mergeIntoSlice(content, start, end, indexOfContent));
+                  }
+
+                  // sort slices in content by search text's count and hits' count
+
+                  slicesOfContent.sort(function (sliceLeft, sliceRight) {
+                    if (sliceLeft.searchTextCount !== sliceRight.searchTextCount) {
+                      return sliceRight.searchTextCount - sliceLeft.searchTextCount;
+                    } else if (sliceLeft.hits.length !== sliceRight.hits.length) {
+                      return sliceRight.hits.length - sliceLeft.hits.length;
+                    } else {
+                      return sliceLeft.start - sliceRight.start;
+                    }
+                  });
+
+                  // select top N slices in content
+
+                  var upperBound = parseInt('1');
+                  if (upperBound >= 0) {
+                    slicesOfContent = slicesOfContent.slice(0, upperBound);
+                  }
+
+                  // highlight title and content
+
+                  function highlightKeyword(text, slice) {
+                    var result = '';
+                    var prevEnd = slice.start;
+                    slice.hits.forEach(function (hit) {
+                      result += text.substring(prevEnd, hit.position);
+                      var end = hit.position + hit.length;
+                      result += '<b class="search-keyword">' + text.substring(hit.position, end) + '</b>';
+                      prevEnd = end;
+                    });
+                    result += text.substring(prevEnd, slice.end);
+                    return result;
+                  }
+
+                  var resultItem = '';
+
+                  if (slicesOfTitle.length != 0) {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + highlightKeyword(title, slicesOfTitle[0]) + "</a>";
+                  } else {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + title + "</a>";
+                  }
+
+                  slicesOfContent.forEach(function (slice) {
+                    resultItem += "<a href='" + articleUrl + "'>" +
+                      "<p class=\"search-result\">" + highlightKeyword(content, slice) +
+                      "...</p>" + "</a>";
+                  });
+
+                  resultItem += "</li>";
+                  resultItems.push({
+                    item: resultItem,
+                    searchTextCount: searchTextCount,
+                    hitCount: hitCount,
+                    id: resultItems.length
+                  });
+                }
+              })
+            };
+            if (keywords.length === 1 && keywords[0] === "") {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-search fa-5x" /></div>'
+            } else if (resultItems.length === 0) {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-frown-o fa-5x" /></div>'
+            } else {
+              resultItems.sort(function (resultLeft, resultRight) {
+                if (resultLeft.searchTextCount !== resultRight.searchTextCount) {
+                  return resultRight.searchTextCount - resultLeft.searchTextCount;
+                } else if (resultLeft.hitCount !== resultRight.hitCount) {
+                  return resultRight.hitCount - resultLeft.hitCount;
+                } else {
+                  return resultRight.id - resultLeft.id;
+                }
+              });
+              var searchResultList = '<ul class=\"search-result-list\">';
+              resultItems.forEach(function (result) {
+                searchResultList += result.item;
+              })
+              searchResultList += "</ul>";
+              resultContent.innerHTML = searchResultList;
+            }
+          }
+
+          if ('auto' === 'auto') {
+            input.addEventListener('input', inputEventFunction);
+          } else {
+            $('.search-icon').click(inputEventFunction);
+            input.addEventListener('keypress', function (event) {
+              if (event.keyCode === 13) {
+                inputEventFunction();
+              }
+            });
+          }
+
+          // remove loading animation
+          $(".local-search-pop-overlay").remove();
+          $('body').css('overflow', '');
+
+          proceedsearch();
+        }
+      });
+    }
+
+    // handle and trigger popup window;
+    $('.popup-trigger').click(function(e) {
+      e.stopPropagation();
+      if (isfetched === false) {
+        searchFunc(path, 'local-search-input', 'local-search-result');
+      } else {
+        proceedsearch();
+      };
+    });
+
+    $('.popup-btn-close').click(onPopupClose);
+    $('.popup').click(function(e){
+      e.stopPropagation();
+    });
+    $(document).on('keyup', function (event) {
+      var shouldDismissSearchPopup = event.which === 27 &&
+        $('.search-popup').is(':visible');
+      if (shouldDismissSearchPopup) {
+        onPopupClose();
+      }
+    });
+  </script>
+
+
+
+
+
+  
+
+  
+  <script src="https://cdn1.lncld.net/static/js/av-core-mini-0.6.4.js"></script>
+  <script>AV.initialize("B6yqSmGPw5uBIAfWEqm7Xyws-gzGzoHsz", "2soiHGUrbGw33caCmkT47236");</script>
+  <script>
+    function showTime(Counter) {
+      var query = new AV.Query(Counter);
+      var entries = [];
+      var $visitors = $(".leancloud_visitors");
+
+      $visitors.each(function () {
+        entries.push( $(this).attr("id").trim() );
+      });
+
+      query.containedIn('url', entries);
+      query.find()
+        .done(function (results) {
+          var COUNT_CONTAINER_REF = '.leancloud-visitors-count';
+
+          if (results.length === 0) {
+            $visitors.find(COUNT_CONTAINER_REF).text(0);
+            return;
+          }
+
+          for (var i = 0; i < results.length; i++) {
+            var item = results[i];
+            var url = item.get('url');
+            var time = item.get('time');
+            var element = document.getElementById(url);
+
+            $(element).find(COUNT_CONTAINER_REF).text(time);
+          }
+          for(var i = 0; i < entries.length; i++) {
+            var url = entries[i];
+            var element = document.getElementById(url);
+            var countSpan = $(element).find(COUNT_CONTAINER_REF);
+            if( countSpan.text() == '') {
+              countSpan.text(0);
+            }
+          }
+        })
+        .fail(function (object, error) {
+          console.log("Error: " + error.code + " " + error.message);
+        });
+    }
+
+    function addCount(Counter) {
+      var $visitors = $(".leancloud_visitors");
+      var url = $visitors.attr('id').trim();
+      var title = $visitors.attr('data-flag-title').trim();
+      var query = new AV.Query(Counter);
+
+      query.equalTo("url", url);
+      query.find({
+        success: function(results) {
+          if (results.length > 0) {
+            var counter = results[0];
+            counter.fetchWhenSave(true);
+            counter.increment("time");
+            counter.save(null, {
+              success: function(counter) {
+                var $element = $(document.getElementById(url));
+                $element.find('.leancloud-visitors-count').text(counter.get('time'));
+              },
+              error: function(counter, error) {
+                console.log('Failed to save Visitor num, with error message: ' + error.message);
+              }
+            });
+          } else {
+            var newcounter = new Counter();
+            /* Set ACL */
+            var acl = new AV.ACL();
+            acl.setPublicReadAccess(true);
+            acl.setPublicWriteAccess(true);
+            newcounter.setACL(acl);
+            /* End Set ACL */
+            newcounter.set("title", title);
+            newcounter.set("url", url);
+            newcounter.set("time", 1);
+            newcounter.save(null, {
+              success: function(newcounter) {
+                var $element = $(document.getElementById(url));
+                $element.find('.leancloud-visitors-count').text(newcounter.get('time'));
+              },
+              error: function(newcounter, error) {
+                console.log('Failed to create');
+              }
+            });
+          }
+        },
+        error: function(error) {
+          console.log('Error:' + error.code + " " + error.message);
+        }
+      });
+    }
+
+    $(function() {
+      var Counter = AV.Object.extend("Counter");
+      if ($('.leancloud_visitors').length == 1) {
+        addCount(Counter);
+      } else if ($('.post-title-link').length > 1) {
+        showTime(Counter);
+      }
+    });
+  </script>
+
+
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>
