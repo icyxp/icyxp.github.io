@@ -52,6 +52,9 @@
 <p>解决办法很简单，我们重新配置了Kiam，请求更长过期时间的credencial。当这一变更生效后，请求就不用每次都调用AWS Metadata服务了，而且延迟比EC2还要小。</p>
 <h2 id="收获"><a href="#收获" class="headerlink" title="收获"></a>收获</h2><p>从我们迁移的经验里，最经常遇到的问题不是Kubernetes的bug或者平台的问题。也不是微服务本身的问题。问题通常只是因为集成。我们将以前从来没有一起集成过的复杂系统混合在一起，并且期望它们组成单个的大系统。可移动组件越多，可能发生问题的地方就越多。</p>
 <p>在这个问题里，高延迟并不是因为bug或者Kubernetes、Kiam、AWS Java SDK或我们自己微服务本身有什么问题。它是Kiam和AWS Java SDK里两个独立的默认值组合在一起导致的问题。独立来看，两个默认值都没什么问题：AWS Java SDK强制credential刷新策略和Kiam比较低的默认过期时间。但是组合起来就导致了问题。<strong>两个单独看都是正确的决定合在一起并不一定是正确的</strong>。</p>
+<blockquote>
+<p>如果使用的是aws的eks，现在可以不用使用kiam这个插件来实现role访问aws服务，aws eks 实现了service accounts 与 role 绑定，具体参考：<a href="https://docs.aws.amazon.com/zh_cn/eks/latest/userguide/iam-roles-for-service-accounts.html" target="_blank" rel="external">https://docs.aws.amazon.com/zh_cn/eks/latest/userguide/iam-roles-for-service-accounts.html</a></p>
+</blockquote>
 <p>来源：kubernetes-added-a-0-to-my-latency</p>
 ]]></content>
     </entry>
