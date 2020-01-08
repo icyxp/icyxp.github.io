@@ -5,7 +5,7 @@
   <link href="/atom.xml" rel="self"/>
   
   <link href="http://icyxp.github.io/"/>
-  <updated>2020-01-07T07:30:48.000Z</updated>
+  <updated>2020-01-08T06:26:45.000Z</updated>
   <id>http://icyxp.github.io/</id>
   
   <author>
@@ -14,6 +14,89 @@
   </author>
   
   <generator uri="http://hexo.io/">Hexo</generator>
+  
+  <entry>
+    <title>kubernetes 在 aws 上的应用</title>
+    <link href="http://icyxp.github.io//blog/2020/01/k8s-k8s-in-aws-arch.html"/>
+    <id>http://icyxp.github.io//blog/2020/01/k8s-k8s-in-aws-arch.html</id>
+    <published>2020-01-08T13:00:00.000Z</published>
+    <updated>2020-01-08T06:26:45.000Z</updated>
+    
+    <content type="html">&lt;h2 id=&quot;kubernetes-in-aws-Overview（EKS）&quot;&gt;&lt;a href=&quot;#kubernetes-in-aws-Overview（EKS）&quot; class=&quot;headerlink&quot; title=&quot;kubernetes in aws Overview（EKS）&quot;&gt;&lt;/a&gt;kubernetes in aws Overview（EKS）&lt;/h2&gt;&lt;p&gt;&lt;img src=&quot;/images/k8s/aws_eks_arch.png&quot; alt=&quot;eks_in_aws&quot;&gt;&lt;br&gt;&lt;a id=&quot;more&quot;&gt;&lt;/a&gt;&lt;br&gt;上图是 kubernetes(EKS) 在 aws 上的整体情况，下面我会对每块进行展开说明&lt;/p&gt;
+&lt;h2 id=&quot;分解说明&quot;&gt;&lt;a href=&quot;#分解说明&quot; class=&quot;headerlink&quot; title=&quot;分解说明&quot;&gt;&lt;/a&gt;分解说明&lt;/h2&gt;&lt;h3 id=&quot;kubernetes-or-eks&quot;&gt;&lt;a href=&quot;#kubernetes-or-eks&quot; class=&quot;headerlink&quot; title=&quot;kubernetes or eks&quot;&gt;&lt;/a&gt;kubernetes or eks&lt;/h3&gt;&lt;p&gt;kubernetes 原生支持在 aws 上使用，具体如何启用可参考&lt;a href=&quot;http://team.jiunile.com/blog/2019/03/k8s-cloud.html&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;kuberenetes 云应用实践&lt;/a&gt;，这里不在累赘说明。既然选择在云上使用 k8s ，那就直接使用云本身提供的能力（&lt;a href=&quot;https://eksworkshop.com/&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;EKS&lt;/a&gt;），就没必要自己再去适配一遍，毕竟云厂商已经提供了这样的服务，为什么不去使用呢？不过自己也可以去了解EKS为我们做了什么？怎么去管理它？&lt;/p&gt;
+&lt;h4 id=&quot;EKS&quot;&gt;&lt;a href=&quot;#EKS&quot; class=&quot;headerlink&quot; title=&quot;EKS&quot;&gt;&lt;/a&gt;EKS&lt;/h4&gt;&lt;p&gt;&lt;a href=&quot;https://eksworkshop.com/&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;EKS&lt;/a&gt; 其实就是帮我们托管了master节点（3 master集群），其次更好的与aws资源进行了集成，帮助我们在上层更轻松的使用，&lt;a href=&quot;https://eksworkshop.com/&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;EKS&lt;/a&gt; 默认会集成以下组件:  &lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;kube-proxy&lt;/li&gt;
+&lt;li&gt;coredns&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;https://github.com/aws/amazon-vpc-cni-k8s&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;amazon-k8s-cni&lt;/a&gt; (网络插件-替代calico，下面会介绍为何使用它)&lt;/li&gt;
+&lt;/ul&gt;
+&lt;hr&gt;
+&lt;p&gt;使用 &lt;a href=&quot;https://eksworkshop.com/&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;EKS&lt;/a&gt; 后，我们就不需要在关注 k8s master 的安装以及高可用，以及怎么在云上（aws）的集成，同时在开源的 kubernetes 上做了优化。当然，你可以可以选择自建，毕竟这些你都可以搭建出来，我们在 aws 中国就是自建的，毕竟 &lt;a href=&quot;https://eksworkshop.com/&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;EKS&lt;/a&gt; 在国内还未上线，但如果是在国外或者国内上线的前提下需衡量付出的时间成本是否合算？&lt;/p&gt;
+&lt;h4 id=&quot;如何管理&quot;&gt;&lt;a href=&quot;#如何管理&quot; class=&quot;headerlink&quot; title=&quot;如何管理&quot;&gt;&lt;/a&gt;如何管理&lt;/h4&gt;&lt;p&gt;&lt;a href=&quot;https://www.terraform.io&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;terrafrom&lt;/a&gt; or &lt;a href=&quot;https://eksctl.io&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;eksctl&lt;/a&gt;，最终我选择了后者，理由也很简单，在我看来一个就好比是”学生”，另一个则是”亲儿子”，&lt;a href=&quot;https://eksctl.io&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;eksctl&lt;/a&gt; 由 aws 官方提供专门为 &lt;a href=&quot;https://eksworkshop.com/&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;EKS&lt;/a&gt; 提供的命令行工具，它提供了更多的参数同时管理起来也非常的方便，如果你是深度管理，则使用它，&lt;a href=&quot;https://www.terraform.io&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;terrafrom&lt;/a&gt; 则是大众普照中的一个，提供的参数也是有限，如果简单管理可以使用它。&lt;/p&gt;
+&lt;h3 id=&quot;负载均衡器ELB&quot;&gt;&lt;a href=&quot;#负载均衡器ELB&quot; class=&quot;headerlink&quot; title=&quot;负载均衡器ELB&quot;&gt;&lt;/a&gt;负载均衡器ELB&lt;/h3&gt;&lt;h4 id=&quot;介绍&quot;&gt;&lt;a href=&quot;#介绍&quot; class=&quot;headerlink&quot; title=&quot;介绍&quot;&gt;&lt;/a&gt;介绍&lt;/h4&gt;&lt;p&gt;aws 官方提供了三种负载均衡器，我简单成为 &lt;code&gt;clb&lt;/code&gt;、&lt;code&gt;alb&lt;/code&gt;、&lt;code&gt;nlb&lt;/code&gt;，&lt;code&gt;clb&lt;/code&gt; 即将淘汰也是最早的一代，这里主要阐述 &lt;code&gt;alb&lt;/code&gt; 7层负载  与 &lt;code&gt;nlb&lt;/code&gt; 4层负载 ，该如何选择，则取决于你的业务，他们之间的特征也很明显，如果你是需要关注 &lt;code&gt;header&lt;/code&gt; 头信息的，如 &lt;code&gt;x-forward-for&lt;/code&gt; 或 &lt;code&gt;x-forward-proto&lt;/code&gt; 等信息的则使用 &lt;code&gt;alb&lt;/code&gt;，如果不需要则使用 &lt;code&gt;nlb&lt;/code&gt; 性能高。具体想了解，可参考aws官方文档：&lt;a href=&quot;https://aws.amazon.com/cn/elasticloadbalancing/&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;https://aws.amazon.com/cn/elasticloadbalancing/&lt;/a&gt;&lt;/p&gt;
+&lt;h4 id=&quot;管理&quot;&gt;&lt;a href=&quot;#管理&quot; class=&quot;headerlink&quot; title=&quot;管理&quot;&gt;&lt;/a&gt;管理&lt;/h4&gt;&lt;p&gt;同样我们也面临着管理的问题，是使用 &lt;a href=&quot;https://www.terraform.io&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;terrafrom&lt;/a&gt; 还是别的呢？毕竟我们使用了 k8s ，它有很好的 &lt;code&gt;ingress&lt;/code&gt; 帮我们管理着对外的访问不是么？最终，我选择了 &lt;a href=&quot;https://kubernetes-sigs.github.io/aws-alb-ingress-controller/guide/controller/config/&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;alb-ingress-controller&lt;/a&gt;，同样也是 aws 出品，它很好的与 ELB 进行了集成，我们只需要编写 &lt;code&gt;ingress&lt;/code&gt; 文件，加上对应的注解，就可以很方便的使用 ELB，目前支持 &lt;code&gt;alb&lt;/code&gt; 与 &lt;code&gt;nlb&lt;/code&gt; 这两个负载均衡器的使用。&lt;/p&gt;
+&lt;p&gt;对 &lt;a href=&quot;https://kubernetes-sigs.github.io/aws-alb-ingress-controller/guide/controller/config/&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;alb-ingress-controller&lt;/a&gt; 的使用也有一定的注意，推荐是一个对外暴露服务一个 &lt;code&gt;ingress&lt;/code&gt;, &lt;strong&gt;同时注意不要人为去 aws consol 界面去修改已有通过 &lt;a href=&quot;https://kubernetes-sigs.github.io/aws-alb-ingress-controller/guide/controller/config/&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;alb-ingress-controller&lt;/a&gt;  创建出来的负载均衡器，如果你修改了，你会发现过一会就会还原了&lt;/strong&gt;，因为在 k8s 中的 alb 控制器会帮你复原，所以一切的变更请使用 &lt;code&gt;ingress&lt;/code&gt;, 同时还有一个不好的弊端就是在 alb/nlb 目标群组中，后端协议只能二选一，无法 http/https 同时存在，唯一的方法是使用两个 &lt;code&gt;ingress&lt;/code&gt; ，不过我们大多数后端访问都是 http 协议。&lt;/p&gt;
+&lt;p&gt;详细了解可参考：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href=&quot;https://github.com/kubernetes-sigs/aws-alb-ingress-controller/&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;https://github.com/kubernetes-sigs/aws-alb-ingress-controller/&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;https://kubernetes-sigs.github.io/aws-alb-ingress-controller/guide/controller/config/&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;https://kubernetes-sigs.github.io/aws-alb-ingress-controller/guide/controller/config/&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;https://docs.aws.amazon.com/zh_cn/eks/latest/userguide/alb-ingress.html&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;https://docs.aws.amazon.com/zh_cn/eks/latest/userguide/alb-ingress.html&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;https://aws.amazon.com/cn/blogs/china/kubernetes-ingress-aws-alb-ingress-controller/&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;https://aws.amazon.com/cn/blogs/china/kubernetes-ingress-aws-alb-ingress-controller/&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id=&quot;网络插件&quot;&gt;&lt;a href=&quot;#网络插件&quot; class=&quot;headerlink&quot; title=&quot;网络插件&quot;&gt;&lt;/a&gt;网络插件&lt;/h3&gt;&lt;p&gt;同样，在网络插件上，我也面临着选择的问题，不过现在回想起来，居然选择了云，那就基本大概率上去拥抱云原生提供的插件，不是么，毕竟它和云结合的很好，这里我介绍下 &lt;a href=&quot;https://github.com/aws/amazon-vpc-cni-k8s&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;amazon-k8s-cni&lt;/a&gt;。&lt;/p&gt;
+&lt;p&gt;&lt;a href=&quot;https://github.com/aws/amazon-vpc-cni-k8s&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;amazon-k8s-cni&lt;/a&gt; 我就说一件事，&lt;strong&gt;pod 与你现有的 vpc 打通&lt;/strong&gt;，但劣势也很明显，&lt;code&gt;就是 pod 的 ip 会占有你划分的 vpc ip池&lt;/code&gt;，如果你的 &lt;code&gt;subnet&lt;/code&gt; 网段规划的不好的话，你的 ip 将会很快用光，所有我建议你的 &lt;code&gt;vpc&lt;/code&gt; 网段是 &lt;code&gt;16&lt;/code&gt; 位，&lt;code&gt;subnet&lt;/code&gt; 网段是 &lt;code&gt;20&lt;/code&gt; 位的，具体不同的网段可以放多少个 pod 可以参考这边文章了解下：&lt;a href=&quot;https://www.yiibai.com/ipv4/ipv4_subnetting.html，&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;https://www.yiibai.com/ipv4/ipv4_subnetting.html，&lt;/a&gt; 这里也不在累赘。 &lt;/p&gt;
+&lt;p&gt;同时 &lt;a href=&quot;https://github.com/aws/amazon-vpc-cni-k8s&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;amazon-k8s-cni&lt;/a&gt; 对主机类型上能起多少 pod 也是有限制的，不同的机型上启动的 pod 数量是不一样的，这里我推荐尽可能的使用中等规模的机型来取缔多个小机型。具体可参考：&lt;a href=&quot;https://github.com/aws/amazon-vpc-cni-k8s/blob/f7a7d53baf769846c20467cfa27f0172eca570c1/pkg/awsutils/vpc_ip_resource_limit.go&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;vpc_ip_resource_limit&lt;/a&gt; &lt;/p&gt;
+&lt;p&gt;当然如果你是本地机房或者云未给提供网络插件的话，那我还是推荐你使用 &lt;a href=&quot;https://www.projectcalico.org/&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;calico&lt;/a&gt;，毕竟它还是非常的强大！有兴趣的伙伴还是可以好好了解下。&lt;/p&gt;
+&lt;h3 id=&quot;访问安全&quot;&gt;&lt;a href=&quot;#访问安全&quot; class=&quot;headerlink&quot; title=&quot;访问安全&quot;&gt;&lt;/a&gt;访问安全&lt;/h3&gt;&lt;p&gt;容器访问安全也是令我非常困扰的一个问题，aws 在资源访问方面有着非常好的权限控制 &lt;code&gt;iam role&lt;/code&gt; ，但放到 k8s 容器中，一切都变的非常不美好了， 直到最近 aws eks 推出了 &lt;a href=&quot;https://docs.aws.amazon.com/zh_cn/eks/latest/userguide/iam-roles-for-service-accounts.html&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;service account for iam role&lt;/a&gt;， 在 eks 没正式推出 &lt;a href=&quot;https://docs.aws.amazon.com/zh_cn/eks/latest/userguide/iam-roles-for-service-accounts.html&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;service account for iam role&lt;/a&gt; 之前，有两种方式可以进行访问控制：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;access key/secret key&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;https://github.com/jtblin/kube2iam&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;kube2iam&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;hr&gt;
+&lt;p&gt;针对以上两个访问，都有一定的缺陷，用key来控制的问题在于本身管理key就是一件头痛的事情，key的泄漏和定期更换非常痛苦，使用 &lt;a href=&quot;https://github.com/jtblin/kube2iam&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;kube2iam&lt;/a&gt; 问题在于你需要保证这个插件的稳定性和性能，一旦出现问题，你会发现那就是灾难性的，而且也不易排查，毕竟多层组件就多提升了出问题的概率，毕竟还是如此重要的组件。&lt;/p&gt;
+&lt;p&gt;最后，我隆重推荐大家使用 &lt;a href=&quot;https://docs.aws.amazon.com/zh_cn/eks/latest/userguide/iam-roles-for-service-accounts.html&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;service account for iam role&lt;/a&gt; ，具体教程可点击链接查看。 但对于自建的小伙们只能退而求其次 使用 key 或者 &lt;a href=&quot;https://github.com/jtblin/kube2iam&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;kube2iam&lt;/a&gt; 来进行管理控制了&lt;/p&gt;
+&lt;h3 id=&quot;Why-kong&quot;&gt;&lt;a href=&quot;#Why-kong&quot; class=&quot;headerlink&quot; title=&quot;Why kong?&quot;&gt;&lt;/a&gt;Why kong?&lt;/h3&gt;&lt;p&gt;为什么选型 &lt;a href=&quot;http://getkong.org&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;kong&lt;/a&gt; ，我想它的官方文档能更好的为你阐述，我从0.9开始就使用它了，直到现在维持在0.14.1，往后引入了 &lt;code&gt;service mesh&lt;/code&gt; 的概念，选型 &lt;a href=&quot;http://getkong.org&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;kong&lt;/a&gt; 的理由也很简单，开源、插件丰富、易于二次开发。后面可以专门分享一下我们是如何使用  &lt;a href=&quot;http://getkong.org&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;kong&lt;/a&gt; 作为我们的业务网关，同时我们是如何改造 &lt;code&gt;JWT&lt;/code&gt; 插件来实现鉴授权，以及通过网关审计日志定位问题，对外核心服务进行了限流等控制。如果你的需求也是如此，让业务保持足够简单专注于业务的实现，跨语言，微服务化，但同时需要一些服务治理相关的需求，还没有上 k8s 或者还没到 &lt;a href=&quot;https://istio.io&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;isito&lt;/a&gt; 这种重 &lt;code&gt;service mesh&lt;/code&gt; 的地步，那  &lt;a href=&quot;http://getkong.org&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;kong&lt;/a&gt; 就是你最好的选择。&lt;/p&gt;
+&lt;h3 id=&quot;资源池划分&quot;&gt;&lt;a href=&quot;#资源池划分&quot; class=&quot;headerlink&quot; title=&quot;资源池划分&quot;&gt;&lt;/a&gt;资源池划分&lt;/h3&gt;&lt;p&gt;在资源池划分上，我将网关和业务的池子单独分开，同时开辟了一块竞价池，原因如下：&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;网关池划分： 网关作为业务对外流量的统一入口，提现出非常重要的地步，故而单独分配了一块资源池，同时需要与负载均衡器的配置，对机器权限的控制力度也是和普通业务池是不同的。&lt;/li&gt;
+&lt;li&gt;业务池划分：这个就什么好说的，用于承载你的业务，跑长期运行的服务。&lt;/li&gt;
+&lt;li&gt;竞价池划分： 这里需要配合 &lt;a href=&quot;https://github.com/kubernetes/autoscaler/blob/master/cluster-autoscaler/cloudprovider/aws/README.md&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;cluster autoscaler&lt;/a&gt; 一起使用更佳，用于跑一些离线任务，随用随起，用完即毁，方便至极。当然如何你使用的是 EKS 直接可以配合 &lt;a href=&quot;https://aws.amazon.com/cn/fargate/&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;fargate&lt;/a&gt; 来直接使用。&lt;/li&gt;
+&lt;/ol&gt;
+&lt;hr&gt;
+&lt;p&gt;Cluster Autoscaler：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href=&quot;https://docs.aws.amazon.com/zh_cn/eks/latest/userguide/cluster-autoscaler.html#ca-ng-considerations&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;https://docs.aws.amazon.com/zh_cn/eks/latest/userguide/cluster-autoscaler.html#ca-ng-considerations&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;https://github.com/kubernetes/autoscaler/blob/master/cluster-autoscaler/cloudprovider/aws/README.md&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;https://github.com/kubernetes/autoscaler/blob/master/cluster-autoscaler/cloudprovider/aws/README.md&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id=&quot;未来展望&quot;&gt;&lt;a href=&quot;#未来展望&quot; class=&quot;headerlink&quot; title=&quot;未来展望&quot;&gt;&lt;/a&gt;未来展望&lt;/h3&gt;&lt;p&gt;目前，我们通过 &lt;a href=&quot;http://getkong.org&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;kong&lt;/a&gt; 来实现了对外流量的管理与控制，但对内部服务之间的访问控制还未开始，也缺乏一些服务治理的手段，当然，使用 &lt;a href=&quot;http://getkong.org&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;kong&lt;/a&gt; 也可以达到，但这样我们就会过渡依赖这个集中网关了，一旦故障，那是灾难性的，&lt;code&gt;service mesh&lt;/code&gt; 的到来正式解决此类问题，让服务治理变的更游刃有余，后面我们会上 &lt;a href=&quot;https://istio.io&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;isito&lt;/a&gt; 来实现诸如灰度、蓝绿发布以及对内部服务调用限流、监控等控制能力的加强。&lt;/p&gt;
+&lt;h2 id=&quot;文档&quot;&gt;&lt;a href=&quot;#文档&quot; class=&quot;headerlink&quot; title=&quot;文档&quot;&gt;&lt;/a&gt;文档&lt;/h2&gt;&lt;ul&gt;
+&lt;li&gt;&lt;a href=&quot;https://docs.aws.amazon.com/&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;https://docs.aws.amazon.com/&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;http://getkong.org&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;http://getkong.org&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;https://eksctl.io/&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;https://eksctl.io/&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;https://eksworkshop.com&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;https://eksworkshop.com&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+</content>
+    
+    <summary type="html">
+    
+      &lt;h2 id=&quot;kubernetes-in-aws-Overview（EKS）&quot;&gt;&lt;a href=&quot;#kubernetes-in-aws-Overview（EKS）&quot; class=&quot;headerlink&quot; title=&quot;kubernetes in aws Overview（EKS）&quot;&gt;&lt;/a&gt;kubernetes in aws Overview（EKS）&lt;/h2&gt;&lt;p&gt;&lt;img src=&quot;/images/k8s/aws_eks_arch.png&quot; alt=&quot;eks_in_aws&quot;&gt;&lt;br&gt;
+    
+    </summary>
+    
+      <category term="kubernetes" scheme="http://icyxp.github.io/categories/kubernetes/"/>
+    
+      <category term="cloud" scheme="http://icyxp.github.io/categories/kubernetes/cloud/"/>
+    
+    
+      <category term="k8s" scheme="http://icyxp.github.io/tags/k8s/"/>
+    
+      <category term="kubernetes" scheme="http://icyxp.github.io/tags/kubernetes/"/>
+    
+      <category term="aws" scheme="http://icyxp.github.io/tags/aws/"/>
+    
+      <category term="eks" scheme="http://icyxp.github.io/tags/eks/"/>
+    
+  </entry>
   
   <entry>
     <title>分析并解决AWS服务从ec2迁移至Kubernetes后延迟增加的问题</title>
@@ -1657,56 +1740,6 @@
       <category term="oci" scheme="http://icyxp.github.io/tags/oci/"/>
     
       <category term="cri" scheme="http://icyxp.github.io/tags/cri/"/>
-    
-  </entry>
-  
-  <entry>
-    <title>如何在线关闭一个tcp socket连接</title>
-    <link href="http://icyxp.github.io//blog/2019/05/k8s-online-close-tcp-socket.html"/>
-    <id>http://icyxp.github.io//blog/2019/05/k8s-online-close-tcp-socket.html</id>
-    <published>2019-05-16T12:00:00.000Z</published>
-    <updated>2019-05-16T08:22:11.000Z</updated>
-    
-    <content type="html">&lt;p&gt;你可能会说，简单，&lt;code&gt;netstat -antp&lt;/code&gt;找到连接，&lt;code&gt;kill&lt;/code&gt;掉这个进程就行了。&lt;/p&gt;
-&lt;figure class=&quot;highlight bash&quot;&gt;&lt;table&gt;&lt;tr&gt;&lt;td class=&quot;gutter&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;1&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;2&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;3&lt;/span&gt;&lt;br&gt;&lt;/pre&gt;&lt;/td&gt;&lt;td class=&quot;code&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;&lt;span class=&quot;comment&quot;&gt;# netstat -antp|grep 6789&lt;/span&gt;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;tcp        0      0 1.1.1.1:59950      1.1.1.2:6789        ESTABLISHED 45059/ceph-fuse&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;&lt;span class=&quot;comment&quot;&gt;# kill 45059&lt;/span&gt;&lt;/span&gt;&lt;br&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/figure&gt;
-&lt;p&gt;连接确实关掉了，进程也跟着一起杀死了。达不到“在线”的要求。&lt;/p&gt;
-&lt;p&gt;有没有办法不杀死进程，但还是可以关闭socket连接呢？&lt;/p&gt;
-&lt;p&gt;我们知道，在编码的时候，要关闭一个socket，只要调用 close 函数就可以了，但是进程在运行着呢，怎么让它调用 close 呢？&lt;br&gt;&lt;a id=&quot;more&quot;&gt;&lt;/a&gt;&lt;/p&gt;
-&lt;p&gt;在&lt;a href=&quot;https://superuser.com/&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;superuser&lt;/a&gt;上看到一个很棒的方法，原理就是 &lt;code&gt;gdb attach&lt;/code&gt; 到进程上下文，然后 &lt;code&gt;call close($fd)&lt;/code&gt;。&lt;/p&gt;
-&lt;p&gt;1、 使用 &lt;code&gt;netstat&lt;/code&gt; 找到进程&lt;br&gt;&lt;figure class=&quot;highlight bash&quot;&gt;&lt;table&gt;&lt;tr&gt;&lt;td class=&quot;gutter&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;1&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;2&lt;/span&gt;&lt;br&gt;&lt;/pre&gt;&lt;/td&gt;&lt;td class=&quot;code&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;&lt;span class=&quot;comment&quot;&gt;# netstat -antp|grep 6789&lt;/span&gt;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;tcp        0      0 1.1.1.1:59950      1.1.1.2:6789        ESTABLISHED 45059/ceph-fuse&lt;/span&gt;&lt;br&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/figure&gt;&lt;/p&gt;
-&lt;p&gt;如上，进程pid为45059。&lt;/p&gt;
-&lt;p&gt;2、 使用 lsof 找到进程45059打开的所有文件描述符，并找到对应的socket连接&lt;br&gt;&lt;figure class=&quot;highlight bash&quot;&gt;&lt;table&gt;&lt;tr&gt;&lt;td class=&quot;gutter&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;1&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;2&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;3&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;4&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;5&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;6&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;7&lt;/span&gt;&lt;br&gt;&lt;/pre&gt;&lt;/td&gt;&lt;td class=&quot;code&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;lsof -np 45059&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;COMMAND     PID USER   FD   TYPE             DEVICE SIZE/OFF       NODE NAME&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;ceph-fuse 45059 root  rtd    DIR                8,2     4096          2 /&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;ceph-fuse 45059 root  txt    REG                8,2  6694144    1455967 /usr/bin/ceph-fuse&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;ceph-fuse 45059 root  mem    REG                8,2   510416    2102312 /usr/lib64/libfreeblpriv3.so&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;...&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;ceph-fuse 45059 root   12u  IPv4         1377072656      0t0        TCP 1.1.1.1:59950-&amp;gt;1.1.1.2:smc-https (ESTABLISHED)&lt;/span&gt;&lt;br&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/figure&gt;&lt;/p&gt;
-&lt;p&gt;其中 &lt;code&gt;12u&lt;/code&gt; 就是上面对应socket连接的文件描述符。&lt;/p&gt;
-&lt;p&gt;3、 gdb 连接到进程&lt;br&gt;&lt;figure class=&quot;highlight bash&quot;&gt;&lt;table&gt;&lt;tr&gt;&lt;td class=&quot;gutter&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;1&lt;/span&gt;&lt;br&gt;&lt;/pre&gt;&lt;/td&gt;&lt;td class=&quot;code&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;gdb -p 45059&lt;/span&gt;&lt;br&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/figure&gt;&lt;/p&gt;
-&lt;p&gt;4、 关闭socket连接&lt;br&gt;&lt;figure class=&quot;highlight bash&quot;&gt;&lt;table&gt;&lt;tr&gt;&lt;td class=&quot;gutter&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;1&lt;/span&gt;&lt;br&gt;&lt;/pre&gt;&lt;/td&gt;&lt;td class=&quot;code&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;(gdb) call close(12u)&lt;/span&gt;&lt;br&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/figure&gt;&lt;/p&gt;
-&lt;p&gt;socket连接就可以关闭了，但是进程 45059 还是好好着的。&lt;/p&gt;
-&lt;p&gt;你可能会问，什么时候会用到这个特性呢？场景还是比较多的，比如你想测试下应用是否会自动重连mysql，通过这个办法就可以比较方便的测试了。&lt;/p&gt;
-&lt;p&gt;Ref:&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;&lt;a href=&quot;https://superuser.com/questions/127863/manually-closing-a-port-from-commandline&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;Manually closing a port from commandline&lt;/a&gt;&lt;/li&gt;
-&lt;/ul&gt;
-</content>
-    
-    <summary type="html">
-    
-      &lt;p&gt;你可能会说，简单，&lt;code&gt;netstat -antp&lt;/code&gt;找到连接，&lt;code&gt;kill&lt;/code&gt;掉这个进程就行了。&lt;/p&gt;
-&lt;figure class=&quot;highlight bash&quot;&gt;&lt;table&gt;&lt;tr&gt;&lt;td class=&quot;gutter&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;1&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;2&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;3&lt;/span&gt;&lt;br&gt;&lt;/pre&gt;&lt;/td&gt;&lt;td class=&quot;code&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;&lt;span class=&quot;comment&quot;&gt;# netstat -antp|grep 6789&lt;/span&gt;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;tcp        0      0 1.1.1.1:59950      1.1.1.2:6789        ESTABLISHED 45059/ceph-fuse&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;&lt;span class=&quot;comment&quot;&gt;# kill 45059&lt;/span&gt;&lt;/span&gt;&lt;br&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/figure&gt;
-&lt;p&gt;连接确实关掉了，进程也跟着一起杀死了。达不到“在线”的要求。&lt;/p&gt;
-&lt;p&gt;有没有办法不杀死进程，但还是可以关闭socket连接呢？&lt;/p&gt;
-&lt;p&gt;我们知道，在编码的时候，要关闭一个socket，只要调用 close 函数就可以了，但是进程在运行着呢，怎么让它调用 close 呢？&lt;br&gt;
-    
-    </summary>
-    
-      <category term="小贴士" scheme="http://icyxp.github.io/categories/%E5%B0%8F%E8%B4%B4%E5%A3%AB/"/>
-    
-      <category term="tcp socket" scheme="http://icyxp.github.io/categories/%E5%B0%8F%E8%B4%B4%E5%A3%AB/tcp-socket/"/>
-    
-    
-      <category term="小贴士" scheme="http://icyxp.github.io/tags/%E5%B0%8F%E8%B4%B4%E5%A3%AB/"/>
-    
-      <category term="tcp socket" scheme="http://icyxp.github.io/tags/tcp-socket/"/>
-    
-      <category term="linux" scheme="http://icyxp.github.io/tags/linux/"/>
     
   </entry>
   
