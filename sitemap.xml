@@ -2,9 +2,16 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   
   <url>
+    <loc>http://icyxp.github.io/blog/2018/12/k8s-kubeadm-ca-upgdate.html</loc>
+    
+    <lastmod>2020-03-09T09:52:24.000Z</lastmod>
+    
+  </url>
+  
+  <url>
     <loc>http://icyxp.github.io/pro/k8s/install-ha/index.html</loc>
     
-    <lastmod>2020-01-16T06:21:36.000Z</lastmod>
+    <lastmod>2020-03-09T09:50:52.000Z</lastmod>
     
   </url>
   
@@ -19,13 +26,6 @@
     <loc>http://icyxp.github.io/blog/2020/01/k8s-k8s-in-aws-arch.html</loc>
     
     <lastmod>2020-01-08T06:26:45.000Z</lastmod>
-    
-  </url>
-  
-  <url>
-    <loc>http://icyxp.github.io/blog/2018/12/k8s-kubeadm-ca-upgdate.html</loc>
-    
-    <lastmod>2020-01-07T10:08:18.000Z</lastmod>
     
   </url>
   
