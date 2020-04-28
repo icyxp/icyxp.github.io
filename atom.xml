@@ -1092,9 +1092,9 @@
     
       <category term="k8s" scheme="http://icyxp.github.io/tags/k8s/"/>
     
-      <category term="calico" scheme="http://icyxp.github.io/tags/calico/"/>
-    
       <category term="ip分配" scheme="http://icyxp.github.io/tags/ip%E5%88%86%E9%85%8D/"/>
+    
+      <category term="calico" scheme="http://icyxp.github.io/tags/calico/"/>
     
   </entry>
   
