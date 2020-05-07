@@ -485,7 +485,7 @@
                   <span class="post-meta-item-text">字数统计&#58;</span>
                 
                 <span title="字数统计">
-                  6,116 字
+                  8,657 字
                 </span>
               
 
@@ -501,7 +501,7 @@
                   <span class="post-meta-item-text">阅读时长 &asymp;</span>
                 
                 <span title="阅读时长">
-                  30 分钟
+                  45 分钟
                 </span>
               
             </div>
@@ -523,7 +523,7 @@
 
       
         
-          <h2 id="常用操作命令"><a href="#常用操作命令" class="headerlink" title="常用操作命令"></a>常用操作命令</h2><h3 id="常规命令"><a href="#常规命令" class="headerlink" title="常规命令"></a>常规命令</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 设置主机名</span></span><br><span class="line">hostnamectl --static <span class="built_in">set</span>-hostname  xxxx</span><br><span class="line"></span><br><span class="line"><span class="comment"># 获取集群加入信息</span></span><br><span class="line">kubeadm token create --print-join-command</span><br><span class="line"></span><br><span class="line"><span class="comment"># 设置docker仓库口令</span></span><br><span class="line">kubectl create secret docker-registry registry-secret --docker-server=registry.cn-shanghai.aliyuncs.com --docker-username=xupeng@patsnap --docker-password=patsnap2019! --docker-email=xupeng@patsnap -n ningbo</span><br><span class="line"></span><br><span class="line"><span class="comment"># etcd3.3 node状态查看 </span></span><br><span class="line">ETCDCTL_API=3 etcdctl endpoint health --endpoints <span class="string">"https://10.40.20.41:2379,https://10.40.20.46:2379,https://10.40.20.233:2379"</span>   --cacert=/etc/etcd/ssl/etcd-ca.pem  --cert=/etc/etcd/ssl/etcd.pem   --key=/etc/etcd/ssl/etcd-key.pem</span><br><span class="line"></span><br><span class="line"><span class="comment"># etcd key 查看</span></span><br><span class="line">ETCDCTL_API=3 etcdctl \</span><br><span class="line">--endpoints=https://127.0.0.1:2379 \</span><br><span class="line">--cacert /etc/kubernetes/pki/etcd/ca.crt \</span><br><span class="line">--cert /etc/kubernetes/pki/etcd/peer.crt \</span><br><span class="line">--key /etc/kubernetes/pki/etcd/peer.key \</span><br><span class="line">get /registry/minions/ningbo-db --prefix</span><br></pre></td></tr></table></figure>
+          <h2 id="常用操作命令"><a href="#常用操作命令" class="headerlink" title="常用操作命令"></a>常用操作命令</h2><h3 id="常规命令"><a href="#常规命令" class="headerlink" title="常规命令"></a>常规命令</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 设置主机名</span></span><br><span class="line">hostnamectl --static <span class="built_in">set</span>-hostname  xxxx</span><br><span class="line"></span><br><span class="line"><span class="comment"># 获取集群加入信息</span></span><br><span class="line">kubeadm token create --print-join-command</span><br><span class="line"></span><br><span class="line"><span class="comment"># 设置docker仓库口令</span></span><br><span class="line">kubectl create secret docker-registry registry-secret --docker-server=registry.cn-shanghai.aliyuncs.com --docker-username=xupeng@patsnap --docker-password=patsnap2019! --docker-email=xupeng@patsnap -n ningbo</span><br><span class="line"></span><br><span class="line"><span class="comment"># etcd3.3 node状态查看</span></span><br><span class="line">ETCDCTL_API=3 etcdctl endpoint health --endpoints <span class="string">"https://10.40.20.41:2379,https://10.40.20.46:2379,https://10.40.20.233:2379"</span>   --cacert=/etc/etcd/ssl/etcd-ca.pem  --cert=/etc/etcd/ssl/etcd.pem   --key=/etc/etcd/ssl/etcd-key.pem</span><br><span class="line"></span><br><span class="line"><span class="comment"># etcd key 查看</span></span><br><span class="line">ETCDCTL_API=3 etcdctl \</span><br><span class="line">--endpoints=https://127.0.0.1:2379 \</span><br><span class="line">--cacert /etc/kubernetes/pki/etcd/ca.crt \</span><br><span class="line">--cert /etc/kubernetes/pki/etcd/peer.crt \</span><br><span class="line">--key /etc/kubernetes/pki/etcd/peer.key \</span><br><span class="line">get /registry/minions/ningbo-db --prefix</span><br></pre></td></tr></table></figure>
           <!--noindex-->
           <div class="post-button text-center">
             <a class="btn" href="/blog/2019/03/k8s-best-practices.html#more" rel="contents">
@@ -1699,7 +1699,7 @@
     
       <span class="post-meta-item-text">Site words total count&#58;</span>
     
-    <span title="Site words total count">156.2k</span>
+    <span title="Site words total count">158.7k</span>
   
 </div>
 
@@ -1711,7 +1711,7 @@
 
 <div class="theme-info">
   <div class="powered-by"></div>
-  <span class="post-count">博客全站共156.2k字</span>
+  <span class="post-count">博客全站共158.7k字</span>
 </div>
 
 
