@@ -5,7 +5,7 @@
   <link href="/atom.xml" rel="self"/>
   
   <link href="http://icyxp.github.io/"/>
-  <updated>2020-05-09T04:30:39.000Z</updated>
+  <updated>2020-05-09T04:39:35.000Z</updated>
   <id>http://icyxp.github.io/</id>
   
   <author>
@@ -20,12 +20,13 @@
     <link href="http://icyxp.github.io//blog/2020/05/k8s-1-18-ipvs-problem.html"/>
     <id>http://icyxp.github.io//blog/2020/05/k8s-1-18-ipvs-problem.html</id>
     <published>2020-05-09T04:00:00.000Z</published>
-    <updated>2020-05-09T04:30:39.000Z</updated>
+    <updated>2020-05-09T04:39:35.000Z</updated>
     
     <content type="html">&lt;h2 id=&quot;环境现象&quot;&gt;&lt;a href=&quot;#环境现象&quot; class=&quot;headerlink&quot; title=&quot;环境现象&quot;&gt;&lt;/a&gt;环境现象&lt;/h2&gt;&lt;blockquote&gt;
 &lt;p&gt;CoreDNS 版本：1.6.7&lt;br&gt;Docker 版本：18.06.3-ce&lt;br&gt;Kubernetes 版本：1.18.1&lt;br&gt;操作系统版本：CentOS 7.x&lt;br&gt;CentOS 内核版本：3.10.0-693.2.2.el7.x86_64&lt;/p&gt;
 &lt;/blockquote&gt;
 &lt;h2 id=&quot;问题现象&quot;&gt;&lt;a href=&quot;#问题现象&quot; class=&quot;headerlink&quot; title=&quot;问题现象&quot;&gt;&lt;/a&gt;问题现象&lt;/h2&gt;&lt;p&gt;由于最近要向组内演示 Istio 1.5，故在云服务器上安装了kubernetes 1.18.1 (使用ipvs) 来配合 Istio 1.5 的演示，kubernetes 与 istio 安装完后一切顺利，bookinfo demo跑的也非常的顺利。但在一次重启整个集群后，一切都变的不那么美好了。istio-proxy起不来了，提示pilot not ready，更可悲的是service name 无法解析了，导致很多服务之间的调用都没法正常工作，有依赖的服务都不能正常启动了，为了更好的定位问题，于是卸载 Istio 1.5，重新回到k8s 1.18.1上，在一步步排查中发现，在pod中使用pod ip相互访问是可以的，由此判断，初步怀疑很可能是 DNS 出现了问题，后来慢慢发现 kube-proxy 中的错误，再定位到 IPVS parseIP Error 错误，再到解决问题。以下是整个问题定位分析&lt;/p&gt;
+&lt;a id=&quot;more&quot;&gt;&lt;/a&gt;
 &lt;h2 id=&quot;问题定位&quot;&gt;&lt;a href=&quot;#问题定位&quot; class=&quot;headerlink&quot; title=&quot;问题定位&quot;&gt;&lt;/a&gt;问题定位&lt;/h2&gt;&lt;p&gt;为了更好的重现问题，我重新安装了一套新的 kubernetes 1.18.1，安装完后验证一切都是ok，接下来我就重启整个集群，问题就产生了，在pod中无法解析service name了，所有的pod运行都是ok的，一切都变的”很神奇”，好吧，开启定位之旅。&lt;/p&gt;
 &lt;h3 id=&quot;部署DNS调试工具&quot;&gt;&lt;a href=&quot;#部署DNS调试工具&quot; class=&quot;headerlink&quot; title=&quot;部署DNS调试工具&quot;&gt;&lt;/a&gt;部署DNS调试工具&lt;/h3&gt;&lt;p&gt;为了探针是否为 DNS 问题，这里需要提前部署用于测试 DNS 问题的 dnsutils 镜像，该镜像中包含了用于测试 DNS 问题的工具包，非常利于我们分析与发现问题。&lt;/p&gt;
 &lt;p&gt;部署 ndsutils.yaml&lt;br&gt;&lt;figure class=&quot;highlight yaml&quot;&gt;&lt;table&gt;&lt;tr&gt;&lt;td class=&quot;gutter&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;1&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;2&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;3&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;4&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;5&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;6&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;7&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;8&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;9&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;10&lt;/span&gt;&lt;br&gt;&lt;/pre&gt;&lt;/td&gt;&lt;td class=&quot;code&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;&lt;span class=&quot;attr&quot;&gt;apiVersion:&lt;/span&gt; v1&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;&lt;span class=&quot;attr&quot;&gt;kind:&lt;/span&gt; Pod&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;&lt;span class=&quot;attr&quot;&gt;metadata:&lt;/span&gt;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;&lt;span class=&quot;attr&quot;&gt;  name:&lt;/span&gt; dnsutils&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;&lt;span class=&quot;attr&quot;&gt;spec:&lt;/span&gt;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;&lt;span class=&quot;attr&quot;&gt;  containers:&lt;/span&gt;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;&lt;span class=&quot;attr&quot;&gt;  - name:&lt;/span&gt; dnsutils&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;&lt;span class=&quot;attr&quot;&gt;    image:&lt;/span&gt; mydlqclub/dnsutils:&lt;span class=&quot;number&quot;&gt;1.3&lt;/span&gt;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;&lt;span class=&quot;attr&quot;&gt;    imagePullPolicy:&lt;/span&gt; IfNotPresent&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;&lt;span class=&quot;attr&quot;&gt;    command:&lt;/span&gt; [&lt;span class=&quot;string&quot;&gt;&quot;sleep&quot;&lt;/span&gt;,&lt;span class=&quot;string&quot;&gt;&quot;3600&quot;&lt;/span&gt;]&lt;/span&gt;&lt;br&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/figure&gt;&lt;/p&gt;
@@ -107,7 +108,9 @@
     <summary type="html">
     
       &lt;h2 id=&quot;环境现象&quot;&gt;&lt;a href=&quot;#环境现象&quot; class=&quot;headerlink&quot; title=&quot;环境现象&quot;&gt;&lt;/a&gt;环境现象&lt;/h2&gt;&lt;blockquote&gt;
-&lt;p&gt;CoreDNS 版本：1.6.7&lt;br&gt;Docker 版本：18.06.3-ce&lt;br&gt;Kuber
+&lt;p&gt;CoreDNS 版本：1.6.7&lt;br&gt;Docker 版本：18.06.3-ce&lt;br&gt;Kubernetes 版本：1.18.1&lt;br&gt;操作系统版本：CentOS 7.x&lt;br&gt;CentOS 内核版本：3.10.0-693.2.2.el7.x86_64&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;h2 id=&quot;问题现象&quot;&gt;&lt;a href=&quot;#问题现象&quot; class=&quot;headerlink&quot; title=&quot;问题现象&quot;&gt;&lt;/a&gt;问题现象&lt;/h2&gt;&lt;p&gt;由于最近要向组内演示 Istio 1.5，故在云服务器上安装了kubernetes 1.18.1 (使用ipvs) 来配合 Istio 1.5 的演示，kubernetes 与 istio 安装完后一切顺利，bookinfo demo跑的也非常的顺利。但在一次重启整个集群后，一切都变的不那么美好了。istio-proxy起不来了，提示pilot not ready，更可悲的是service name 无法解析了，导致很多服务之间的调用都没法正常工作，有依赖的服务都不能正常启动了，为了更好的定位问题，于是卸载 Istio 1.5，重新回到k8s 1.18.1上，在一步步排查中发现，在pod中使用pod ip相互访问是可以的，由此判断，初步怀疑很可能是 DNS 出现了问题，后来慢慢发现 kube-proxy 中的错误，再定位到 IPVS parseIP Error 错误，再到解决问题。以下是整个问题定位分析&lt;/p&gt;
     
     </summary>
     

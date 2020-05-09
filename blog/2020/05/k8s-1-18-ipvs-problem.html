@@ -150,7 +150,7 @@ CoreDNS 版本：1.6.7Docker 版本：18.06.3-ceKubernetes 版本：1.18.1操作
 CoreDNS 版本：1.6.7Docker 版本：18.06.3-ceKubernetes 版本：1.18.1操作系统版本：CentOS 7.xCentOS 内核版本：3.10.0-693.2.2.el7.x86_64
 
 问题现象由于最近要向组内演示 Istio 1.5，故在云服务器上安装了kubernetes 1.18.1 (使用ipvs) 来配合 Istio 1.5 的演示，kub">
-<meta property="og:updated_time" content="2020-05-09T04:30:39.000Z">
+<meta property="og:updated_time" content="2020-05-09T04:39:35.000Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="kubernetes 1.18+ 使用ipvs后coredns无法解析域名采坑记">
 <meta name="twitter:description" content="环境现象
@@ -544,6 +544,7 @@ CoreDNS 版本：1.6.7Docker 版本：18.06.3-ceKubernetes 版本：1.18.1操作
 <p>CoreDNS 版本：1.6.7<br>Docker 版本：18.06.3-ce<br>Kubernetes 版本：1.18.1<br>操作系统版本：CentOS 7.x<br>CentOS 内核版本：3.10.0-693.2.2.el7.x86_64</p>
 </blockquote>
 <h2 id="问题现象"><a href="#问题现象" class="headerlink" title="问题现象"></a>问题现象</h2><p>由于最近要向组内演示 Istio 1.5，故在云服务器上安装了kubernetes 1.18.1 (使用ipvs) 来配合 Istio 1.5 的演示，kubernetes 与 istio 安装完后一切顺利，bookinfo demo跑的也非常的顺利。但在一次重启整个集群后，一切都变的不那么美好了。istio-proxy起不来了，提示pilot not ready，更可悲的是service name 无法解析了，导致很多服务之间的调用都没法正常工作，有依赖的服务都不能正常启动了，为了更好的定位问题，于是卸载 Istio 1.5，重新回到k8s 1.18.1上，在一步步排查中发现，在pod中使用pod ip相互访问是可以的，由此判断，初步怀疑很可能是 DNS 出现了问题，后来慢慢发现 kube-proxy 中的错误，再定位到 IPVS parseIP Error 错误，再到解决问题。以下是整个问题定位分析</p>
+<a id="more"></a>
 <h2 id="问题定位"><a href="#问题定位" class="headerlink" title="问题定位"></a>问题定位</h2><p>为了更好的重现问题，我重新安装了一套新的 kubernetes 1.18.1，安装完后验证一切都是ok，接下来我就重启整个集群，问题就产生了，在pod中无法解析service name了，所有的pod运行都是ok的，一切都变的”很神奇”，好吧，开启定位之旅。</p>
 <h3 id="部署DNS调试工具"><a href="#部署DNS调试工具" class="headerlink" title="部署DNS调试工具"></a>部署DNS调试工具</h3><p>为了探针是否为 DNS 问题，这里需要提前部署用于测试 DNS 问题的 dnsutils 镜像，该镜像中包含了用于测试 DNS 问题的工具包，非常利于我们分析与发现问题。</p>
 <p>部署 ndsutils.yaml<br><figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">apiVersion:</span> v1</span><br><span class="line"><span class="attr">kind:</span> Pod</span><br><span class="line"><span class="attr">metadata:</span></span><br><span class="line"><span class="attr">  name:</span> dnsutils</span><br><span class="line"><span class="attr">spec:</span></span><br><span class="line"><span class="attr">  containers:</span></span><br><span class="line"><span class="attr">  - name:</span> dnsutils</span><br><span class="line"><span class="attr">    image:</span> mydlqclub/dnsutils:<span class="number">1.3</span></span><br><span class="line"><span class="attr">    imagePullPolicy:</span> IfNotPresent</span><br><span class="line"><span class="attr">    command:</span> [<span class="string">"sleep"</span>,<span class="string">"3600"</span>]</span><br></pre></td></tr></table></figure></p>
