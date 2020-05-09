@@ -367,6 +367,235 @@
   
   
   <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://icyxp.github.io/blog/2018/12/k8s-kubeadm-ca-desc.html">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="icyboy">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="CloudNative 架构">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h2 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/blog/2018/12/k8s-kubeadm-ca-desc.html" itemprop="url">Kubeadm 证书说明</a></h2>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-12-11T20:00:00+08:00">
+                2018-12-11
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/kubernetes/" itemprop="url" rel="index">
+                    <span itemprop="name">kubernetes</span>
+                  </a>
+                </span>
+
+                
+                
+                  ， 
+                
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/kubernetes/kubeadm/" itemprop="url" rel="index">
+                    <span itemprop="name">kubeadm</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+                <a href="/blog/2018/12/k8s-kubeadm-ca-desc.html#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count valine-comment-count" data-xid="/blog/2018/12/k8s-kubeadm-ca-desc.html" itemprop="commentCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+          
+             <span id="/blog/2018/12/k8s-kubeadm-ca-desc.html" class="leancloud_visitors" data-flag-title="Kubeadm 证书说明">
+               <span class="post-meta-divider">|</span>
+               <span class="post-meta-item-icon">
+                 <i class="fa fa-eye"></i>
+               </span>
+               
+                 <span class="post-meta-item-text">热度&#58;</span>
+               
+                 <span class="leancloud-visitors-count"></span>
+		 <span>℃</span>
+             </span>
+          
+
+          
+
+          
+            <div class="post-wordcount">
+              
+                
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-file-word-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">字数统计&#58;</span>
+                
+                <span title="字数统计">
+                  2,182 字
+                </span>
+              
+
+              
+                <span class="post-meta-divider">|</span>
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-clock-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">阅读时长 &asymp;</span>
+                
+                <span title="阅读时长">
+                  9 分钟
+                </span>
+              
+            </div>
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          <blockquote>
+<p>如果你使用过kubeadm部署过Kubernetes的环境, master主机节点上就一定会在相应的目录创建了一大批证书文件, 本篇文章就来说说kubeadm到底为我们生成了哪些证书</p>
+</blockquote>
+<p>在Kubernetes的部署中, 创建证书, 配置证书是一道绕不过去坎儿, 好在有kubeadm这样的自动化工具, 帮我们去生成, 配置这些证书. 对于只是想体验Kubernetes或只是想测试的亲来说, 这已经够了, 但是作为Kubernetes的集群维护者来说, kubeadm更像是一个黑盒, 本篇文章就来说说黑盒中关于证书的事儿~</p>
+<p>使用kubeadm创建完Kubernetes集群后, 默认会在<code>/etc/kubernetes/pki</code>目录下存放集群中需要用到的证书文件, 整体结构如下图所示:<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line">root@k8s-master:/etc/kubernetes/pki<span class="comment"># tree</span></span><br><span class="line">.</span><br><span class="line">|-- apiserver.crt</span><br><span class="line">|-- apiserver-etcd-client.crt</span><br><span class="line">|-- apiserver-etcd-client.key</span><br><span class="line">|-- apiserver.key</span><br><span class="line">|-- apiserver-kubelet-client.crt</span><br><span class="line">|-- apiserver-kubelet-client.key</span><br><span class="line">|-- ca.crt</span><br><span class="line">|-- ca.key</span><br><span class="line">|-- etcd</span><br><span class="line">|   |-- ca.crt</span><br><span class="line">|   |-- ca.key</span><br><span class="line">|   |-- healthcheck-client.crt</span><br><span class="line">|   |-- healthcheck-client.key</span><br><span class="line">|   |-- peer.crt</span><br><span class="line">|   |-- peer.key</span><br><span class="line">|   |-- server.crt</span><br><span class="line">|   `-- server.key</span><br><span class="line">|-- front-proxy-ca.crt</span><br><span class="line">|-- front-proxy-ca.key</span><br><span class="line">|-- front-proxy-client.crt</span><br><span class="line">|-- front-proxy-client.key</span><br><span class="line">|-- sa.key</span><br><span class="line">`-- sa.pub</span><br><span class="line"></span><br><span class="line">1 directory, 22 files</span><br></pre></td></tr></table></figure></p>
+<p>以上22个文件就是kubeadm为我们创建的所有证书相关的文件, 下面我们来一一解析</p>
+<h3 id="证书分组"><a href="#证书分组" class="headerlink" title="证书分组"></a>证书分组</h3><p>Kubernetes把证书放在了两个文件夹中</p>
+<ul>
+<li>/etc/kubernetes/pki</li>
+<li>/etc/kubernetes/pki/etcd</li>
+</ul>
+<p>我们再将这22个文件按照更细的粒度去分组<br>
+          <!--noindex-->
+          <div class="post-button text-center">
+            <a class="btn" href="/blog/2018/12/k8s-kubeadm-ca-desc.html#more" rel="contents">
+              阅读全文 &raquo;
+            </a>
+          </div>
+          <!--/noindex-->
+        
+      
+    </div>
+    
+    
+    
+
+    <div>
+    
+    </div>
+
+    <div>
+      
+    </div>
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
     <link itemprop="mainEntityOfPage" href="http://icyxp.github.io/blog/2018/11/k8s-k8s-pod-life-cycle.html">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -1239,223 +1468,6 @@
 
 
     
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://icyxp.github.io/blog/2017/07/gossip-你不是Google.html">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="icyboy">
-      <meta itemprop="description" content="">
-      <meta itemprop="image" content="/images/avatar.jpg">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="CloudNative 架构">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h2 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/blog/2017/07/gossip-你不是Google.html" itemprop="url">一语点醒技术人：你不是Google</a></h2>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2017-07-26T23:00:00+08:00">
-                2017-07-26
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
-            <span class="post-category" >
-            
-              <span class="post-meta-divider">|</span>
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">分类于</span>
-              
-              
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/茶余饭后/" itemprop="url" rel="index">
-                    <span itemprop="name">茶余饭后</span>
-                  </a>
-                </span>
-
-                
-                
-              
-            </span>
-          
-
-          
-            
-              <span class="post-comments-count">
-                <span class="post-meta-divider">|</span>
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-comment-o"></i>
-                </span>
-                <a href="/blog/2017/07/gossip-你不是Google.html#comments" itemprop="discussionUrl">
-                  <span class="post-comments-count valine-comment-count" data-xid="/blog/2017/07/gossip-你不是Google.html" itemprop="commentCount"></span>
-                </a>
-              </span>
-            
-          
-
-          
-          
-             <span id="/blog/2017/07/gossip-你不是Google.html" class="leancloud_visitors" data-flag-title="一语点醒技术人：你不是Google">
-               <span class="post-meta-divider">|</span>
-               <span class="post-meta-item-icon">
-                 <i class="fa fa-eye"></i>
-               </span>
-               
-                 <span class="post-meta-item-text">热度&#58;</span>
-               
-                 <span class="leancloud-visitors-count"></span>
-		 <span>℃</span>
-             </span>
-          
-
-          
-
-          
-            <div class="post-wordcount">
-              
-                
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-file-word-o"></i>
-                </span>
-                
-                  <span class="post-meta-item-text">字数统计&#58;</span>
-                
-                <span title="字数统计">
-                  2,487 字
-                </span>
-              
-
-              
-                <span class="post-meta-divider">|</span>
-              
-
-              
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-clock-o"></i>
-                </span>
-                
-                  <span class="post-meta-item-text">阅读时长 &asymp;</span>
-                
-                <span title="阅读时长">
-                  9 分钟
-                </span>
-              
-            </div>
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          <p><img src="/images/gossip/01/cover.png" alt="01"></p>
-<h2 id="简介"><a href="#简介" class="headerlink" title="简介"></a>简介</h2><p>在为问题寻找解决方案时要先充分了解问题本身，而不是一味地盲目崇拜那些巨头公司。Ozan Onay以Amazon、LinkedIn和Google为例，为执迷不悟的人敲响警钟。以下内容已获得作者翻译授权，查看原文：<a href="https://blog.bradfieldcs.com/you-are-not-google-84912cf44afb">You Are Not Google</a>。</p>
-<p>软件工程师总是着迷于荒唐古怪的事。我们看起来似乎很理性，但在面对技术选型时，总是陷入抓狂——从Hacker News到各种博客，像一只飞蛾一样，来回折腾，最后精疲力尽，无助地飞向一团亮光，跪倒在它的前面——那就是我们一直在寻找的东西。</p>
-<p>真正理性的人不是这样做决定的。不过工程师一贯如此，比如决定是否使用MapReduce。</p>
-<p>Joe Hellerstein在他的大学数据库教程视频中说道：</p>
-<blockquote>
-<p>世界上只有差不多5个公司需要运行这么大规模的作业。至于其他公司……他们使用了所有的IO来实现不必要的容错。在2000年代，人们狂热地追随着Google：“我们要做Google做过的每一件事，因为我们也运行着世界上最大的互联网数据服务。”</p>
-</blockquote>
-<p>超出实际需求的容错没有什么问题，但我们却为此付出了的惨重的代价：不仅增加了IO，还有可能让原先成熟的系统——包含了事务、索引和查询优化器——变得破碎不堪。这是一个多么严重的历史倒退！有多少个Hadoop用户是有意识地做出这种决定的？有多少人知道他们的决定到底是不是一个明智之举？</p>
-<p>MapReduce已经成为一个众矢之的，那些盲目崇拜者也意识到事情不对劲。但这种情况却普遍存在：虽然你使用了大公司的技术，但你的情况却与他们大不一样，而且你的决定并没有经过深思熟虑，你只是习以为常地认为，模仿巨头公司就一定也能给你带来同样的财富。</p>
-<p>是的，这又是一篇劝大家“不要盲目崇拜”的文章。不过这次我列出了一长串有用的清单，或许能够帮助你们做出更好的决定。</p>
-          <!--noindex-->
-          <div class="post-button text-center">
-            <a class="btn" href="/blog/2017/07/gossip-你不是Google.html#more" rel="contents">
-              阅读全文 &raquo;
-            </a>
-          </div>
-          <!--/noindex-->
-        
-      
-    </div>
-    
-    
-    
-
-    <div>
-    
-    </div>
-
-    <div>
-      
-    </div>
-
-    
-
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
   </section>
 
   
@@ -1510,7 +1522,7 @@
               
                 <a href="/archives/">
               
-                  <span class="site-state-item-count">62</span>
+                  <span class="site-state-item-count">63</span>
                   <span class="site-state-item-name">日志</span>
                 </a>
               </div>
@@ -1521,7 +1533,7 @@
               
               <div class="site-state-item site-state-categories">
                 <a href="/categories/index.html">
-                  <span class="site-state-item-count">43</span>
+                  <span class="site-state-item-count">44</span>
                   <span class="site-state-item-name">分类</span>
                 </a>
               </div>
@@ -1635,7 +1647,7 @@
     
       <span class="post-meta-item-text">Site words total count&#58;</span>
     
-    <span title="Site words total count">164.7k</span>
+    <span title="Site words total count">165.5k</span>
   
 </div>
 
@@ -1647,7 +1659,7 @@
 
 <div class="theme-info">
   <div class="powered-by"></div>
-  <span class="post-count">博客全站共164.7k字</span>
+  <span class="post-count">博客全站共165.5k字</span>
 </div>
 
 

@@ -2,6 +2,13 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   
   <url>
+    <loc>http://icyxp.github.io/blog/2020/05/k8s-etcd-backup-restore.html</loc>
+    
+    <lastmod>2020-05-09T07:29:57.000Z</lastmod>
+    
+  </url>
+  
+  <url>
     <loc>http://icyxp.github.io/blog/2020/05/k8s-kubeadm-upgrade-master-problem.html</loc>
     
     <lastmod>2020-05-09T06:51:09.000Z</lastmod>
