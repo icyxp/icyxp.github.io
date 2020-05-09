@@ -125,7 +125,7 @@
 
 
 
-  <meta name="keywords" content="kubernets,云原生,k8s,容器化,golang,service mesh,devops,网站架构,基础架构,微服务" />
+  <meta name="keywords" content="k8s,kubernetes,kubeadm,etcd," />
 
 
 
@@ -138,15 +138,31 @@
 
 
 
-<meta name="description" content="记录分享生活中的点滴">
-<meta property="og:type" content="website">
-<meta property="og:title" content="CloudNative 架构">
-<meta property="og:url" content="http://icyxp.github.io/tags/主键/index.html">
+<meta name="description" content="系统环境
+Docker 版本：18.06.3Kubeadm 版本：1.17.4Kubernetes 版本：1.17.4Kubernetes Master 数量：3Kubernetes 安装方式：Kubeadm
+
+问题描述Kubernetes 集群中总共有三台 Master，分别是：
+k8s-master-2-11、k8s-master-2-12、k8s-master-2-13
+对其中 k8s-ma">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Kubeadm 添加新 Master 节点到集群出现 ETCD 健康检查失败错误">
+<meta property="og:url" content="http://icyxp.github.io/blog/2020/05/k8s-kubeadm-upgrade-master-problem.html">
 <meta property="og:site_name" content="CloudNative 架构">
-<meta property="og:description" content="记录分享生活中的点滴">
+<meta property="og:description" content="系统环境
+Docker 版本：18.06.3Kubeadm 版本：1.17.4Kubernetes 版本：1.17.4Kubernetes Master 数量：3Kubernetes 安装方式：Kubeadm
+
+问题描述Kubernetes 集群中总共有三台 Master，分别是：
+k8s-master-2-11、k8s-master-2-12、k8s-master-2-13
+对其中 k8s-ma">
+<meta property="og:updated_time" content="2020-05-09T06:51:09.000Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="CloudNative 架构">
-<meta name="twitter:description" content="记录分享生活中的点滴">
+<meta name="twitter:title" content="Kubeadm 添加新 Master 节点到集群出现 ETCD 健康检查失败错误">
+<meta name="twitter:description" content="系统环境
+Docker 版本：18.06.3Kubeadm 版本：1.17.4Kubernetes 版本：1.17.4Kubernetes Master 数量：3Kubernetes 安装方式：Kubeadm
+
+问题描述Kubernetes 集群中总共有三台 Master，分别是：
+k8s-master-2-11、k8s-master-2-12、k8s-master-2-13
+对其中 k8s-ma">
 
 
 
@@ -176,13 +192,13 @@
 
 
 
-  <link rel="canonical" href="http://icyxp.github.io/tags/主键/"/>
+  <link rel="canonical" href="http://icyxp.github.io/blog/2020/05/k8s-kubeadm-upgrade-master-problem.html"/>
 
 
 
 
 
-  <title>标签: 主键 | CloudNative 架构</title>
+  <title>Kubeadm 添加新 Master 节点到集群出现 ETCD 健康检查失败错误 | CloudNative 架构</title>
   
 
 
@@ -213,7 +229,7 @@
     
   
 
-  <div class="container sidebar-position-left ">
+  <div class="container sidebar-position-left page-post-detail">
     <div class="headband"></div>
     <a href="https://github.com/icyxp"><a href="https://github.com/icyxp" class="github-corner" aria-label="View source on GitHub"><svg width="80" height="80" viewBox="0 0 250 250" style="fill:#151513; color:#fff; position: absolute; top: 0; border: 0; right: 0;" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path></svg></a><style>.github-corner:hover .octo-arm{animation:octocat-wave 560ms ease-in-out}@keyframes octocat-wave{0%,100%{transform:rotate(0)}20%,60%{transform:rotate(-25deg)}40%,80%{transform:rotate(10deg)}}@media (max-width:500px){.github-corner:hover .octo-arm{animation:none}.github-corner .octo-arm{animation:octocat-wave 560ms ease-in-out}}</style></a>
 
@@ -352,54 +368,307 @@
           <div id="content" class="content">
             
 
-  
-  
-  
-  <div class="post-block tag">
+  <div id="posts" class="posts-expand">
+    
 
-    <div id="posts" class="posts-collapse">
-      <div class="collection-title">
-        <h2>主键<small>标签</small>
-        </h2>
-      </div>
+  
 
-      
-        
+  
+  
+  
 
   <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-    <header class="post-header">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://icyxp.github.io/blog/2020/05/k8s-kubeadm-upgrade-master-problem.html">
 
-      <h3 class="post-title">
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="icyboy">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="CloudNative 架构">
+    </span>
+
+    
+      <header class="post-header">
+
         
-            <a class="post-title-link" href="/blog/2016/07/mysql-mysql-auto-increment-primary-key.html" itemprop="url">
-              
-                <span itemprop="name">MySQL为什么需要一个自增主键</span>
-              
-            </a>
         
-      </h3>
+          <h2 class="post-title" itemprop="name headline">Kubeadm 添加新 Master 节点到集群出现 ETCD 健康检查失败错误</h2>
+        
 
-      <div class="post-meta">
-        <time class="post-time" itemprop="dateCreated"
-              datetime="2016-07-04T17:38:00+08:00"
-              content="2016-07-04" >
-          07-04
-        </time>
-      </div>
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2020-05-09T18:00:00+08:00">
+                2020-05-09
+              </time>
+            
 
-    </header>
-  </article>
+            
 
+            
+          </span>
+
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/kubernetes/" itemprop="url" rel="index">
+                    <span itemprop="name">kubernetes</span>
+                  </a>
+                </span>
+
+                
+                
+                  ， 
+                
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/kubernetes/kubeadm/" itemprop="url" rel="index">
+                    <span itemprop="name">kubeadm</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+                <a href="/blog/2020/05/k8s-kubeadm-upgrade-master-problem.html#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count valine-comment-count" data-xid="/blog/2020/05/k8s-kubeadm-upgrade-master-problem.html" itemprop="commentCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+          
+             <span id="/blog/2020/05/k8s-kubeadm-upgrade-master-problem.html" class="leancloud_visitors" data-flag-title="Kubeadm 添加新 Master 节点到集群出现 ETCD 健康检查失败错误">
+               <span class="post-meta-divider">|</span>
+               <span class="post-meta-item-icon">
+                 <i class="fa fa-eye"></i>
+               </span>
+               
+                 <span class="post-meta-item-text">热度&#58;</span>
+               
+                 <span class="leancloud-visitors-count"></span>
+		 <span>℃</span>
+             </span>
+          
+
+          
+
+          
+            <div class="post-wordcount">
+              
+                
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-file-word-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">字数统计&#58;</span>
+                
+                <span title="字数统计">
+                  1,090 字
+                </span>
+              
+
+              
+                <span class="post-meta-divider">|</span>
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-clock-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">阅读时长 &asymp;</span>
+                
+                <span title="阅读时长">
+                  5 分钟
+                </span>
+              
+            </div>
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h2 id="系统环境"><a href="#系统环境" class="headerlink" title="系统环境"></a>系统环境</h2><blockquote>
+<p>Docker 版本：18.06.3<br>Kubeadm 版本：1.17.4<br>Kubernetes 版本：1.17.4<br>Kubernetes Master 数量：3<br>Kubernetes 安装方式：Kubeadm</p>
+</blockquote>
+<h2 id="问题描述"><a href="#问题描述" class="headerlink" title="问题描述"></a>问题描述</h2><p>Kubernetes 集群中总共有三台 Master，分别是：</p>
+<p>k8s-master-2-11、k8s-master-2-12、k8s-master-2-13</p>
+<p>对其中 k8s-master-2-11 Master 节点服务器进行了内核和软件升级操作，从而先将其暂时剔出集群，然后进行升级，完成后准备重新加入到 Kubernetes 集群，通过 Kubeadm 执行，输入下面命令：<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">$ kubeadm join mydlq.club:16443 \</span><br><span class="line">--token 6w0nwi.zag57qgfcdhi76vd \</span><br><span class="line">--discovery-token-ca-cert-hash sha256:efa49231e4ffd836ff996921741c98ac4c5655dc729d7c32aa48c608232f0f08 \</span><br><span class="line">--control-plane --certificate-key a64e9da7346153bd64dba1e5126a644a97fdb63c878bb73de07911d1add8e26b</span><br></pre></td></tr></table></figure></p>
+<p>在执行过程中，输出下面日志，提示 etcd 监控检查失败：<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">......</span><br><span class="line">[control-plane] Creating static Pod manifest <span class="keyword">for</span> <span class="string">"kube-controller-manager"</span></span><br><span class="line">W0329 00:01:51.364121   19209 manifests.go:214] the default kube-apiserver authorization-mode is <span class="string">"Node,RBAC"</span>; using <span class="string">"Node,RBAC"</span></span><br><span class="line">[control-plane] Creating static Pod manifest <span class="keyword">for</span> <span class="string">"kube-scheduler"</span></span><br><span class="line">W0329 00:01:51.373807   19209 manifests.go:214] the default kube-apiserver authorization-mode is <span class="string">"Node,RBAC"</span>; using <span class="string">"Node,RBAC"</span></span><br><span class="line">[check-etcd] Checking that the etcd cluster is healthy</span><br><span class="line"></span><br><span class="line">error execution phase check-etcd: etcd cluster is not healthy: failed to dial endpoint https://10.8.18.105:2379 </span><br><span class="line">with maintenance client: context deadline exceeded</span><br><span class="line">To see the stack trace of this error execute with --v=5 or higher</span><br></pre></td></tr></table></figure></p>
+<p>根据关键信息 <code>&quot;error execution phase check-etcd&quot;</code> 可知，可能是在执行加入 <code>etcd</code> 时候出现的错误，导致 <code>master</code> 无法加入原先的 <code>kubernetes</code> 集群。</p>
+<a id="more"></a>
+<h2 id="分析问题"><a href="#分析问题" class="headerlink" title="分析问题"></a>分析问题</h2><h3 id="查看集群节点列表"><a href="#查看集群节点列表" class="headerlink" title="查看集群节点列表"></a>查看集群节点列表</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">$ kubectl get node</span><br><span class="line"></span><br><span class="line">NAME              STATUS    ROLES     VERSION</span><br><span class="line">k8s-master-2-12    Ready    master    v1.17.4</span><br><span class="line">k8s-master-2-13    Ready    master    v1.17.4</span><br><span class="line">k8s-node-2-14      Ready    &lt;none&gt;    v1.17.4</span><br><span class="line">k8s-node-2-15      Ready    &lt;none&gt;    v1.17.4</span><br><span class="line">k8s-node-2-16      Ready    &lt;none&gt;    v1.17.4</span><br></pre></td></tr></table></figure>
+<p>可以看到，k8s-master-2-11 节点确实不在节点列表中</p>
+<h3 id="查看-Kubeadm-配置信息"><a href="#查看-Kubeadm-配置信息" class="headerlink" title="查看 Kubeadm 配置信息"></a>查看 Kubeadm 配置信息</h3><p>在看看 Kubernetes 集群中的 kubeadm 配置信息：<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ kubectl describe configmaps kubeadm-config -n kube-system</span><br></pre></td></tr></table></figure></p>
+<p>获取到的内容如下：<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line">Name:         kubeadm-config</span><br><span class="line">Namespace:    kube-system</span><br><span class="line">Labels:       &lt;none&gt;</span><br><span class="line">Annotations:  &lt;none&gt;</span><br><span class="line">...</span><br><span class="line">ClusterStatus:</span><br><span class="line">----</span><br><span class="line">apiEndpoints:</span><br><span class="line">  k8s-master-2-11:</span><br><span class="line">    advertiseAddress: 192.168.2.11</span><br><span class="line">    <span class="built_in">bind</span>Port: 6443</span><br><span class="line">  k8s-master-2-12:</span><br><span class="line">    advertiseAddress: 192.168.2.12</span><br><span class="line">    <span class="built_in">bind</span>Port: 6443</span><br><span class="line">  k8s-master-2-13:</span><br><span class="line">    advertiseAddress: 192.168.2.13</span><br><span class="line">    <span class="built_in">bind</span>Port: 6443</span><br><span class="line">apiVersion: kubeadm.k8s.io/v1beta2</span><br><span class="line">kind: ClusterStatus</span><br></pre></td></tr></table></figure></p>
+<p>可也看到 <code>k8s-master-2-11</code> 节点信息还存在与 <code>kubeadm</code> 配置中，说明 <code>etcd</code> 中还存储着 <code>k8s-master-2-11</code> 相关信息。</p>
+<h3 id="分析问题所在及解决方案"><a href="#分析问题所在及解决方案" class="headerlink" title="分析问题所在及解决方案"></a>分析问题所在及解决方案</h3><p>因为集群是通过 <code>kubeadm</code> 工具搭建的，且使用了 <code>etcd</code> 镜像方式与 <code>master</code> 节点一起，所以每个 <code>Master</code> 节点上都会存在一个 <code>etcd</code> 容器实例。当剔除一个 <code>master</code> 节点时 <code>etcd</code> 集群未删除剔除的节点的 <code>etcd</code> 成员信息，该信息还存在 <code>etcd</code> 集群列表中。</p>
+<p>所以，我们需要 <strong>进入 etcd 手动删除 etcd 成员信息</strong>。</p>
+<h2 id="解决"><a href="#解决" class="headerlink" title="解决"></a>解决</h2><h3 id="获取-Etcd-镜像列表"><a href="#获取-Etcd-镜像列表" class="headerlink" title="获取 Etcd 镜像列表"></a>获取 Etcd 镜像列表</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">$ kubectl get pods -n kube-system | grep etcd</span><br><span class="line"></span><br><span class="line">etcd-k8s-master-2-12   1/1   Running   0</span><br><span class="line">etcd-k8s-master-2-13   1/1   Running   0</span><br></pre></td></tr></table></figure>
+<h3 id="进入-Etcd-容器并删除节点信息"><a href="#进入-Etcd-容器并删除节点信息" class="headerlink" title="进入 Etcd 容器并删除节点信息"></a>进入 Etcd 容器并删除节点信息</h3><p>选择上面两个 etcd 中任意一个 pod，通过 kubectl 工具进入 pod 内部：<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ kubectl <span class="built_in">exec</span> -it etcd-k8s-master-2-12 sh -n kube-system</span><br></pre></td></tr></table></figure></p>
+<p>进入容器后，按下面步执行<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 配置环境</span></span><br><span class="line">$ <span class="built_in">export</span> ETCDCTL_API=3</span><br><span class="line">$ <span class="built_in">alias</span> etcdctl=<span class="string">'etcdctl --endpoints=https://127.0.0.1:2379 --cacert=/etc/kubernetes/pki/etcd/ca.crt --cert=/etc/kubernetes/pki/etcd/server.crt --key=/etc/kubernetes/pki/etcd/server.key'</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 查看 etcd 集群成员列表</span></span><br><span class="line">$ etcdctl member list</span><br><span class="line"></span><br><span class="line">63bfe05c4646fb08, started, k8s-master-2-11, https://192.168.2.11:2380, https://192.168.2.11:2379, <span class="literal">false</span></span><br><span class="line">8e41efd8164c6e3d, started, k8s-master-2-12, https://192.168.2.12:2380, https://192.168.2.12:2379, <span class="literal">false</span></span><br><span class="line">a61d0bd53c1cbcb6, started, k8s-master-2-13, https://192.168.2.13:2380, https://192.168.2.13:2379, <span class="literal">false</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 删除 etcd 集群成员 k8s-master-2-11</span></span><br><span class="line">$ etcdctl member remove 63bfe05c4646fb08</span><br><span class="line"></span><br><span class="line">Member 63bfe05c4646fb08 removed from cluster ed984b9o8w35<span class="built_in">cap</span>2</span><br><span class="line"></span><br><span class="line"><span class="comment"># 再次查看 etcd 集群成员列表</span></span><br><span class="line">$ etcdctl member list</span><br><span class="line"></span><br><span class="line">8e41efd8164c6e3d, started, k8s-master-2-12, https://192.168.2.12:2380, https://192.168.2.12:2379, <span class="literal">false</span></span><br><span class="line">a61d0bd53c1cbcb6, started, k8s-master-2-13, https://192.168.2.13:2380, https://192.168.2.13:2379, <span class="literal">false</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 退出容器</span></span><br><span class="line">$ <span class="built_in">exit</span></span><br></pre></td></tr></table></figure></p>
+<h3 id="通过-kubeadm-命令再次尝试加入集群"><a href="#通过-kubeadm-命令再次尝试加入集群" class="headerlink" title="通过 kubeadm 命令再次尝试加入集群"></a>通过 kubeadm 命令再次尝试加入集群</h3><p>通过 <code>kubeadm</code> 命令再次尝试将 <code>k8s-master-2-11</code> 节点加入集群，在执行前首先进入到 <code>k8s-master-2-11</code> 节点服务器，执行 <code>kubeadm</code> 的清除命令：<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ kubeadm reset</span><br></pre></td></tr></table></figure></p>
+<p>然后尝试加入 kubernetes 集群：<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">$ kubeadm join mydlq.club:16443 \</span><br><span class="line">--token 6w0nwi.zag57qgfcdhi76vd \</span><br><span class="line">--discovery-token-ca-cert-hash sha256:efa49231e4ffd836ff996921741c98ac4c5655dc729d7c32aa48c608232f0f08 \</span><br><span class="line">--control-plane --certificate-key a64e9da7346153bd64dba1e5126a644a97fdb63c878bb73de07911d1add8e26b</span><br></pre></td></tr></table></figure></p>
+<p>参考：mydlq.club</p>
+
+      
+    </div>
+    
+    
+    
+
+    <div>
+    
+        <div>
+    
+        <div style="text-align:center;color: #ccc;font-size:14px;">-------------本文结束<i class="fa fa-paw"></i>感谢您的阅读-------------</div>
+    
+</div>
+
+    
+    </div>
+
+    <div>
+      
+        
 
       
     </div>
 
+    
+
+    
+      <div>
+        <div style="padding: 10px 0; margin: 20px auto; width: 90%; text-align: center;">
+  <div></div>
+  <button id="rewardButton" disable="enable" onclick="var qr = document.getElementById('QR'); if (qr.style.display === 'none') {qr.style.display='block';} else {qr.style.display='none'}">
+    <span>打赏</span>
+  </button>
+  <div id="QR" style="display: none;">
+
+    
+      <div id="wechat" style="display: inline-block">
+        <img id="wechat_qr" src="/images/wechatpay.jpg" alt="icyboy 微信支付"/>
+        <p>微信支付</p>
+      </div>
+    
+
+    
+      <div id="alipay" style="display: inline-block">
+        <img id="alipay_qr" src="/images/alipay.jpg" alt="icyboy 支付宝"/>
+        <p>支付宝</p>
+      </div>
+    
+
+    
+
+  </div>
+</div>
+
+      </div>
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/k8s/" rel="tag"># k8s</a>
+          
+            <a href="/tags/kubernetes/" rel="tag"># kubernetes</a>
+          
+            <a href="/tags/kubeadm/" rel="tag"># kubeadm</a>
+          
+            <a href="/tags/etcd/" rel="tag"># etcd</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/blog/2020/05/k8s-1-18-ipvs-problem.html" rel="next" title="kubernetes 1.18+ 使用ipvs后coredns无法解析域名采坑记">
+                <i class="fa fa-chevron-left"></i> kubernetes 1.18+ 使用ipvs后coredns无法解析域名采坑记
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
   </div>
   
   
   
+  </article>
 
-  
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
 
 
           </div>
@@ -407,6 +676,13 @@
 
 
           
+
+  
+    <div class="comments" id="comments">
+    </div>
+  
+
+
 
         </div>
         
@@ -427,8 +703,17 @@
       
 
       
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
 
-      <section class="site-overview-wrap sidebar-panel sidebar-panel-active">
+      <section class="site-overview-wrap sidebar-panel">
         <div class="site-overview">
           <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
             
@@ -543,6 +828,22 @@
         </div>
       </section>
 
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#系统环境"><span class="nav-number">1.</span> <span class="nav-text">系统环境</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#问题描述"><span class="nav-number">2.</span> <span class="nav-text">问题描述</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#分析问题"><span class="nav-number">3.</span> <span class="nav-text">分析问题</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#查看集群节点列表"><span class="nav-number">3.1.</span> <span class="nav-text">查看集群节点列表</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#查看-Kubeadm-配置信息"><span class="nav-number">3.2.</span> <span class="nav-text">查看 Kubeadm 配置信息</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#分析问题所在及解决方案"><span class="nav-number">3.3.</span> <span class="nav-text">分析问题所在及解决方案</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#解决"><span class="nav-number">4.</span> <span class="nav-text">解决</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#获取-Etcd-镜像列表"><span class="nav-number">4.1.</span> <span class="nav-text">获取 Etcd 镜像列表</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#进入-Etcd-容器并删除节点信息"><span class="nav-number">4.2.</span> <span class="nav-text">进入 Etcd 容器并删除节点信息</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#通过-kubeadm-命令再次尝试加入集群"><span class="nav-number">4.3.</span> <span class="nav-text">通过 kubeadm 命令再次尝试加入集群</span></a></li></ol></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
       
 
       
@@ -699,6 +1000,10 @@
   
 
   
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
 
   
 
