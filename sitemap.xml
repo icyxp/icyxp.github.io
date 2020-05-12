@@ -2,483 +2,483 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   
   <url>
-    <loc>http://icyxp.github.io/blog/2020/05/go-debug-practice.html</loc>
+    <loc>http://team.jiunile.com/blog/2020/05/go-debug-practice.html</loc>
     
     <lastmod>2020-05-11T09:01:15.000Z</lastmod>
     
   </url>
   
   <url>
-    <loc>http://icyxp.github.io/blog/2020/05/k8s-etcd-backup-restore.html</loc>
+    <loc>http://team.jiunile.com/blog/2020/05/k8s-etcd-backup-restore.html</loc>
     
     <lastmod>2020-05-09T07:29:57.000Z</lastmod>
     
   </url>
   
   <url>
-    <loc>http://icyxp.github.io/blog/2020/05/k8s-kubeadm-upgrade-master-problem.html</loc>
+    <loc>http://team.jiunile.com/blog/2020/05/k8s-kubeadm-upgrade-master-problem.html</loc>
     
     <lastmod>2020-05-09T06:51:09.000Z</lastmod>
     
   </url>
   
   <url>
-    <loc>http://icyxp.github.io/blog/2020/05/k8s-1-18-ipvs-problem.html</loc>
+    <loc>http://team.jiunile.com/blog/2020/05/k8s-1-18-ipvs-problem.html</loc>
     
     <lastmod>2020-05-09T04:46:02.000Z</lastmod>
     
   </url>
   
   <url>
-    <loc>http://icyxp.github.io/pro/k8s/install-ha/index.html</loc>
+    <loc>http://team.jiunile.com/pro/k8s/install-ha/index.html</loc>
     
     <lastmod>2020-05-09T02:24:13.000Z</lastmod>
     
   </url>
   
   <url>
-    <loc>http://icyxp.github.io/blog/2019/03/k8s-best-practices.html</loc>
+    <loc>http://team.jiunile.com/blog/2019/03/k8s-best-practices.html</loc>
     
     <lastmod>2020-05-07T02:46:19.000Z</lastmod>
     
   </url>
   
   <url>
-    <loc>http://icyxp.github.io/blog/2018/12/k8s-kubeadm-ca-upgdate.html</loc>
+    <loc>http://team.jiunile.com/blog/2018/12/k8s-kubeadm-ca-upgdate.html</loc>
     
     <lastmod>2020-03-09T09:52:24.000Z</lastmod>
     
   </url>
   
   <url>
-    <loc>http://icyxp.github.io/blog/2020/01/k8s-k8s-in-aws-arch.html</loc>
+    <loc>http://team.jiunile.com/blog/2020/01/k8s-k8s-in-aws-arch.html</loc>
     
     <lastmod>2020-01-08T06:26:45.000Z</lastmod>
     
   </url>
   
   <url>
-    <loc>http://icyxp.github.io/blog/2020/01/k8s-k8s-in-aws-latency.html</loc>
+    <loc>http://team.jiunile.com/blog/2020/01/k8s-k8s-in-aws-latency.html</loc>
     
     <lastmod>2020-01-07T07:30:48.000Z</lastmod>
     
   </url>
   
   <url>
-    <loc>http://icyxp.github.io/blog/2020/01/lpr.html</loc>
+    <loc>http://team.jiunile.com/blog/2020/01/lpr.html</loc>
     
     <lastmod>2020-01-06T02:29:37.000Z</lastmod>
     
   </url>
   
   <url>
-    <loc>http://icyxp.github.io/blog/2018/12/k8s-kubeadm-ha-1-12-x.html</loc>
+    <loc>http://team.jiunile.com/blog/2018/12/k8s-kubeadm-ha-1-12-x.html</loc>
     
     <lastmod>2019-12-20T01:53:28.000Z</lastmod>
     
   </url>
   
   <url>
-    <loc>http://icyxp.github.io/blog/2019/12/k8s-coredns-debug.html</loc>
+    <loc>http://team.jiunile.com/blog/2019/12/k8s-coredns-debug.html</loc>
     
     <lastmod>2019-12-16T08:23:39.000Z</lastmod>
     
   </url>
   
   <url>
-    <loc>http://icyxp.github.io/blog/2019/12/k8s-k8s-intro.html</loc>
+    <loc>http://team.jiunile.com/blog/2019/12/k8s-k8s-intro.html</loc>
     
     <lastmod>2019-12-06T08:21:47.000Z</lastmod>
     
   </url>
   
   <url>
-    <loc>http://icyxp.github.io/blog/2019/12/k8s-kubeadm-edit-hostip.html</loc>
+    <loc>http://team.jiunile.com/blog/2019/12/k8s-kubeadm-edit-hostip.html</loc>
     
     <lastmod>2019-12-05T06:22:11.000Z</lastmod>
     
   </url>
   
   <url>
-    <loc>http://icyxp.github.io/blog/2019/12/capabilities.html</loc>
+    <loc>http://team.jiunile.com/blog/2019/12/capabilities.html</loc>
     
     <lastmod>2019-12-03T06:09:50.000Z</lastmod>
     
   </url>
   
   <url>
-    <loc>http://icyxp.github.io/pro/k8s/install/index.html</loc>
+    <loc>http://team.jiunile.com/pro/k8s/install/index.html</loc>
     
     <lastmod>2019-11-29T03:34:04.000Z</lastmod>
     
   </url>
   
   <url>
-    <loc>http://icyxp.github.io/blog/2019/09/go-cancellation-of-goroutines.html</loc>
+    <loc>http://team.jiunile.com/blog/2019/09/go-cancellation-of-goroutines.html</loc>
     
     <lastmod>2019-09-27T09:18:23.000Z</lastmod>
     
   </url>
   
   <url>
-    <loc>http://icyxp.github.io/blog/2019/09/go-debug-memory.html</loc>
+    <loc>http://team.jiunile.com/blog/2019/09/go-debug-memory.html</loc>
     
     <lastmod>2019-09-24T08:27:33.000Z</lastmod>
     
   </url>
   
   <url>
-    <loc>http://icyxp.github.io/blog/2019/09/go-select-timer.html</loc>
+    <loc>http://team.jiunile.com/blog/2019/09/go-select-timer.html</loc>
     
     <lastmod>2019-09-24T07:21:43.000Z</lastmod>
     
   </url>
   
   <url>
-    <loc>http://icyxp.github.io/blog/2019/09/go-trap.html</loc>
+    <loc>http://team.jiunile.com/blog/2019/09/go-trap.html</loc>
     
     <lastmod>2019-09-24T07:20:05.000Z</lastmod>
     
   </url>
   
   <url>
-    <loc>http://icyxp.github.io/blog/2019/09/go-control-goroutine-number.html</loc>
+    <loc>http://team.jiunile.com/blog/2019/09/go-control-goroutine-number.html</loc>
     
     <lastmod>2019-09-23T02:23:21.000Z</lastmod>
     
   </url>
   
   <url>
-    <loc>http://icyxp.github.io/blog/2019/09/containers-podman-skopeo-buildah.html</loc>
+    <loc>http://team.jiunile.com/blog/2019/09/containers-podman-skopeo-buildah.html</loc>
     
     <lastmod>2019-09-12T03:03:40.000Z</lastmod>
     
   </url>
   
   <url>
-    <loc>http://icyxp.github.io/pro/k8s/index.html</loc>
+    <loc>http://team.jiunile.com/pro/k8s/index.html</loc>
     
     <lastmod>2019-09-10T07:42:00.000Z</lastmod>
     
   </url>
   
   <url>
-    <loc>http://icyxp.github.io/blog/2019/08/k8s-kubelet-sync-node-status.html</loc>
+    <loc>http://team.jiunile.com/blog/2019/08/k8s-kubelet-sync-node-status.html</loc>
     
     <lastmod>2019-08-27T07:15:49.000Z</lastmod>
     
   </url>
   
   <url>
-    <loc>http://icyxp.github.io/blog/2019/08/k8s-calico-assigning-ip.html</loc>
+    <loc>http://team.jiunile.com/blog/2019/08/k8s-calico-assigning-ip.html</loc>
     
     <lastmod>2019-08-27T02:33:32.000Z</lastmod>
     
   </url>
   
   <url>
-    <loc>http://icyxp.github.io/blog/2019/08/security-trivy.html</loc>
+    <loc>http://team.jiunile.com/blog/2019/08/security-trivy.html</loc>
     
     <lastmod>2019-08-27T01:46:11.000Z</lastmod>
     
   </url>
   
   <url>
-    <loc>http://icyxp.github.io/blog/2019/08/go-errors-in-go.html</loc>
+    <loc>http://team.jiunile.com/blog/2019/08/go-errors-in-go.html</loc>
     
     <lastmod>2019-08-26T05:50:31.000Z</lastmod>
     
   </url>
   
   <url>
-    <loc>http://icyxp.github.io/blog/2019/03/k8s-cloud.html</loc>
+    <loc>http://team.jiunile.com/blog/2019/03/k8s-cloud.html</loc>
     
     <lastmod>2019-07-29T02:24:50.000Z</lastmod>
     
   </url>
   
   <url>
-    <loc>http://icyxp.github.io/blog/2019/06/tcpdump.html</loc>
+    <loc>http://team.jiunile.com/blog/2019/06/tcpdump.html</loc>
     
     <lastmod>2019-06-18T08:37:28.000Z</lastmod>
     
   </url>
   
   <url>
-    <loc>http://icyxp.github.io/blog/2019/05/k8s-calico-troubleshooting.html</loc>
+    <loc>http://team.jiunile.com/blog/2019/05/k8s-calico-troubleshooting.html</loc>
     
     <lastmod>2019-05-21T02:40:48.000Z</lastmod>
     
   </url>
   
   <url>
-    <loc>http://icyxp.github.io/blog/2019/05/k8s-k8s-runtime.html</loc>
+    <loc>http://team.jiunile.com/blog/2019/05/k8s-k8s-runtime.html</loc>
     
     <lastmod>2019-05-17T01:52:12.000Z</lastmod>
     
   </url>
   
   <url>
-    <loc>http://icyxp.github.io/blog/2019/05/k8s-online-close-tcp-socket.html</loc>
+    <loc>http://team.jiunile.com/blog/2019/05/k8s-online-close-tcp-socket.html</loc>
     
     <lastmod>2019-05-16T08:22:11.000Z</lastmod>
     
   </url>
   
   <url>
-    <loc>http://icyxp.github.io/blog/2019/05/k8s-kubeadm-up-node-join-failed.html</loc>
+    <loc>http://team.jiunile.com/blog/2019/05/k8s-kubeadm-up-node-join-failed.html</loc>
     
     <lastmod>2019-05-15T08:00:54.000Z</lastmod>
     
   </url>
   
   <url>
-    <loc>http://icyxp.github.io/blog/2019/05/k8s-kubeadm14-ca-upgrade.html</loc>
+    <loc>http://team.jiunile.com/blog/2019/05/k8s-kubeadm14-ca-upgrade.html</loc>
     
     <lastmod>2019-05-14T02:30:04.000Z</lastmod>
     
   </url>
   
   <url>
-    <loc>http://icyxp.github.io/blog/2019/03/k8s-dns.html</loc>
+    <loc>http://team.jiunile.com/blog/2019/03/k8s-dns.html</loc>
     
     <lastmod>2019-03-08T09:19:41.000Z</lastmod>
     
   </url>
   
   <url>
-    <loc>http://icyxp.github.io/blog/2019/03/k8s-pod-qos.html</loc>
+    <loc>http://team.jiunile.com/blog/2019/03/k8s-pod-qos.html</loc>
     
     <lastmod>2019-03-06T09:53:10.000Z</lastmod>
     
   </url>
   
   <url>
-    <loc>http://icyxp.github.io/blog/2019/03/k8s-affinity.html</loc>
+    <loc>http://team.jiunile.com/blog/2019/03/k8s-affinity.html</loc>
     
     <lastmod>2019-03-05T09:32:32.000Z</lastmod>
     
   </url>
   
   <url>
-    <loc>http://icyxp.github.io/blog/2019/02/k8s-kubeadm-ha-1-13-x.html</loc>
+    <loc>http://team.jiunile.com/blog/2019/02/k8s-kubeadm-ha-1-13-x.html</loc>
     
     <lastmod>2019-02-15T09:51:43.000Z</lastmod>
     
   </url>
   
   <url>
-    <loc>http://icyxp.github.io/blog/2018/12/k8s-kubeadm-etcd-ha-1-11-x.html</loc>
+    <loc>http://team.jiunile.com/blog/2018/12/k8s-kubeadm-etcd-ha-1-11-x.html</loc>
     
     <lastmod>2019-02-15T06:36:22.000Z</lastmod>
     
   </url>
   
   <url>
-    <loc>http://icyxp.github.io/blog/2019/02/k8s-scheduler.html</loc>
+    <loc>http://team.jiunile.com/blog/2019/02/k8s-scheduler.html</loc>
     
     <lastmod>2019-02-14T10:28:24.000Z</lastmod>
     
   </url>
   
   <url>
-    <loc>http://icyxp.github.io/blog/2018/12/k8s-descheduler.html</loc>
+    <loc>http://team.jiunile.com/blog/2018/12/k8s-descheduler.html</loc>
     
     <lastmod>2019-02-14T10:27:37.000Z</lastmod>
     
   </url>
   
   <url>
-    <loc>http://icyxp.github.io/blog/2018/12/k8s-kubeadm-ha-1-11-x.html</loc>
+    <loc>http://team.jiunile.com/blog/2018/12/k8s-kubeadm-ha-1-11-x.html</loc>
     
     <lastmod>2018-12-19T03:30:50.000Z</lastmod>
     
   </url>
   
   <url>
-    <loc>http://icyxp.github.io/blog/2018/12/k8s-dashboard-chrome-err.html</loc>
+    <loc>http://team.jiunile.com/blog/2018/12/k8s-dashboard-chrome-err.html</loc>
     
     <lastmod>2018-12-18T02:14:12.000Z</lastmod>
     
   </url>
   
   <url>
-    <loc>http://icyxp.github.io/blog/2018/12/k8s-handling-client-requests-properly-with-kubernetes.html</loc>
+    <loc>http://team.jiunile.com/blog/2018/12/k8s-handling-client-requests-properly-with-kubernetes.html</loc>
     
     <lastmod>2018-12-11T13:03:36.000Z</lastmod>
     
   </url>
   
   <url>
-    <loc>http://icyxp.github.io/blog/2018/12/k8s-kubeadm-ca-desc.html</loc>
+    <loc>http://team.jiunile.com/blog/2018/12/k8s-kubeadm-ca-desc.html</loc>
     
     <lastmod>2018-12-11T13:03:00.000Z</lastmod>
     
   </url>
   
   <url>
-    <loc>http://icyxp.github.io/blog/2018/11/k8s-k8s-pod-life-cycle.html</loc>
+    <loc>http://team.jiunile.com/blog/2018/11/k8s-k8s-pod-life-cycle.html</loc>
     
     <lastmod>2018-12-03T02:14:29.000Z</lastmod>
     
   </url>
   
   <url>
-    <loc>http://icyxp.github.io/blog/2018/07/go-%E5%8D%87%E7%BA%A7go1-10-x%E9%97%AE%E9%A2%98.html</loc>
+    <loc>http://team.jiunile.com/blog/2018/07/go-%E5%8D%87%E7%BA%A7go1-10-x%E9%97%AE%E9%A2%98.html</loc>
     
     <lastmod>2018-07-18T13:41:55.000Z</lastmod>
     
   </url>
   
   <url>
-    <loc>http://icyxp.github.io/blog/2018/07/docker-java%E4%B8%8Edocker%E7%9A%84%E9%82%A3%E7%82%B9%E4%BA%8B.html</loc>
+    <loc>http://team.jiunile.com/blog/2018/07/docker-java%E4%B8%8Edocker%E7%9A%84%E9%82%A3%E7%82%B9%E4%BA%8B.html</loc>
     
     <lastmod>2018-07-18T13:27:38.000Z</lastmod>
     
   </url>
   
   <url>
-    <loc>http://icyxp.github.io/blog/2017/08/log-logstash-filter.html</loc>
+    <loc>http://team.jiunile.com/blog/2017/08/log-logstash-filter.html</loc>
     
     <lastmod>2017-08-16T15:30:02.000Z</lastmod>
     
   </url>
   
   <url>
-    <loc>http://icyxp.github.io/blog/2017/07/gossip-%E4%BD%A0%E4%B8%8D%E6%98%AFGoogle.html</loc>
+    <loc>http://team.jiunile.com/blog/2017/07/gossip-%E4%BD%A0%E4%B8%8D%E6%98%AFGoogle.html</loc>
     
     <lastmod>2017-07-26T14:56:34.000Z</lastmod>
     
   </url>
   
   <url>
-    <loc>http://icyxp.github.io/blog/2017/07/microservice-%E9%AB%98%E8%B4%9F%E8%BD%BD%E5%BE%AE%E6%9C%8D%E5%8A%A1%E7%B3%BB%E7%BB%9F%E7%9A%84%E8%AF%9E%E7%94%9F%E8%BF%87%E7%A8%8B.html</loc>
+    <loc>http://team.jiunile.com/blog/2017/07/microservice-%E9%AB%98%E8%B4%9F%E8%BD%BD%E5%BE%AE%E6%9C%8D%E5%8A%A1%E7%B3%BB%E7%BB%9F%E7%9A%84%E8%AF%9E%E7%94%9F%E8%BF%87%E7%A8%8B.html</loc>
     
     <lastmod>2017-07-26T14:33:05.000Z</lastmod>
     
   </url>
   
   <url>
-    <loc>http://icyxp.github.io/blog/2017/07/microservice-%E5%BE%AE%E6%9C%8D%E5%8A%A1%E5%A4%9F%E4%BA%86.html</loc>
+    <loc>http://team.jiunile.com/blog/2017/07/microservice-%E5%BE%AE%E6%9C%8D%E5%8A%A1%E5%A4%9F%E4%BA%86.html</loc>
     
     <lastmod>2017-07-26T14:00:54.000Z</lastmod>
     
   </url>
   
   <url>
-    <loc>http://icyxp.github.io/blog/2017/07/mysql-mysql-performance-monitoring.html</loc>
+    <loc>http://team.jiunile.com/blog/2017/07/mysql-mysql-performance-monitoring.html</loc>
     
     <lastmod>2017-07-26T13:08:16.000Z</lastmod>
     
   </url>
   
   <url>
-    <loc>http://icyxp.github.io/blog/2016/07/mysql-mysql-develop-standard.html</loc>
+    <loc>http://team.jiunile.com/blog/2016/07/mysql-mysql-develop-standard.html</loc>
     
     <lastmod>2017-07-26T13:06:13.000Z</lastmod>
     
   </url>
   
   <url>
-    <loc>http://icyxp.github.io/blog/2016/09/mysql-mysql-sleep.html</loc>
+    <loc>http://team.jiunile.com/blog/2016/09/mysql-mysql-sleep.html</loc>
     
     <lastmod>2016-09-29T11:40:27.000Z</lastmod>
     
   </url>
   
   <url>
-    <loc>http://icyxp.github.io/blog/2016/07/mysql-mysql-auto-increment-primary-key.html</loc>
+    <loc>http://team.jiunile.com/blog/2016/07/mysql-mysql-auto-increment-primary-key.html</loc>
     
     <lastmod>2016-08-18T01:54:45.000Z</lastmod>
     
   </url>
   
   <url>
-    <loc>http://icyxp.github.io/blog/2016/08/mysql-maxscale-02.html</loc>
+    <loc>http://team.jiunile.com/blog/2016/08/mysql-maxscale-02.html</loc>
     
     <lastmod>2016-08-16T02:12:34.000Z</lastmod>
     
   </url>
   
   <url>
-    <loc>http://icyxp.github.io/blog/2016/08/mysql-maxscale-01.html</loc>
+    <loc>http://team.jiunile.com/blog/2016/08/mysql-maxscale-01.html</loc>
     
     <lastmod>2016-08-16T01:57:30.000Z</lastmod>
     
   </url>
   
   <url>
-    <loc>http://icyxp.github.io/blog/2016/08/ha-load-balance-mysql-master-slave-architecture.html</loc>
+    <loc>http://team.jiunile.com/blog/2016/08/ha-load-balance-mysql-master-slave-architecture.html</loc>
     
     <lastmod>2016-08-09T02:45:01.000Z</lastmod>
     
   </url>
   
   <url>
-    <loc>http://icyxp.github.io/blog/2016/07/lsyncd.html</loc>
+    <loc>http://team.jiunile.com/blog/2016/07/lsyncd.html</loc>
     
     <lastmod>2016-07-15T09:57:50.000Z</lastmod>
     
   </url>
   
   <url>
-    <loc>http://icyxp.github.io/blog/2016/07/mysql-mysql-query.html</loc>
+    <loc>http://team.jiunile.com/blog/2016/07/mysql-mysql-query.html</loc>
     
     <lastmod>2016-07-15T03:30:34.000Z</lastmod>
     
   </url>
   
   <url>
-    <loc>http://icyxp.github.io/blog/2016/07/nginx-localtion-rewrite.html</loc>
+    <loc>http://team.jiunile.com/blog/2016/07/nginx-localtion-rewrite.html</loc>
     
     <lastmod>2016-07-15T03:14:47.000Z</lastmod>
     
   </url>
   
   <url>
-    <loc>http://icyxp.github.io/blog/2016/07/mysql-mysql-transaction-level.html</loc>
+    <loc>http://team.jiunile.com/blog/2016/07/mysql-mysql-transaction-level.html</loc>
     
     <lastmod>2016-07-11T09:23:50.000Z</lastmod>
     
   </url>
   
   <url>
-    <loc>http://icyxp.github.io/blog/2016/06/zephir-zephir-02.html</loc>
+    <loc>http://team.jiunile.com/blog/2016/06/zephir-zephir-02.html</loc>
     
     <lastmod>2016-07-04T12:51:08.000Z</lastmod>
     
   </url>
   
   <url>
-    <loc>http://icyxp.github.io/blog/2016/06/zephir-zephir-01.html</loc>
+    <loc>http://team.jiunile.com/blog/2016/06/zephir-zephir-01.html</loc>
     
     <lastmod>2016-07-04T12:50:53.000Z</lastmod>
     
   </url>
   
   <url>
-    <loc>http://icyxp.github.io/blog/2016/06/iptables-forward-internet-share.html</loc>
+    <loc>http://team.jiunile.com/blog/2016/06/iptables-forward-internet-share.html</loc>
     
     <lastmod>2016-07-04T12:50:30.000Z</lastmod>
     
   </url>
   
   <url>
-    <loc>http://icyxp.github.io/blog/2016/06/cache-server.html</loc>
+    <loc>http://team.jiunile.com/blog/2016/06/cache-server.html</loc>
     
     <lastmod>2016-07-04T12:50:21.000Z</lastmod>
     
   </url>
   
   <url>
-    <loc>http://icyxp.github.io/categories/index.html</loc>
+    <loc>http://team.jiunile.com/categories/index.html</loc>
     
     <lastmod>2016-06-01T15:42:12.000Z</lastmod>
     
   </url>
   
   <url>
-    <loc>http://icyxp.github.io/tags/index.html</loc>
+    <loc>http://team.jiunile.com/tags/index.html</loc>
     
     <lastmod>2016-06-01T15:41:52.000Z</lastmod>
     

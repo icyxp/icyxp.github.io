@@ -143,55 +143,55 @@
 简单地说，我">
 <meta property="og:type" content="article">
 <meta property="og:title" content="高负载微服务系统的诞生过程">
-<meta property="og:url" content="http://icyxp.github.io/blog/2017/07/microservice-高负载微服务系统的诞生过程.html">
+<meta property="og:url" content="http://team.jiunile.com/blog/2017/07/microservice-高负载微服务系统的诞生过程.html">
 <meta property="og:site_name" content="CloudNative 架构">
 <meta property="og:description" content="简介在2016 LighLoad++大会上，“M-Tex”的开发经理Vadim Madison讲述了从一个由数百个微服务组成的系统到包含数千个微服务的高负载项目的发展历程。本文已获得翻译授权，查看英文原文：Microservices in a High-Load Project 。
 我将告诉大家我们是如何开始一个高负载微服务项目的。在讲述我们的经历之前，先让我们简单地自我介绍一下。
 简单地说，我">
-<meta property="og:image" content="http://icyxp.github.io/images/ms/02/cover.png">
-<meta property="og:image" content="http://icyxp.github.io/images/ms/02/00.jpg">
-<meta property="og:image" content="http://icyxp.github.io/images/ms/02/01.jpg">
-<meta property="og:image" content="http://icyxp.github.io/images/ms/02/02.jpg">
-<meta property="og:image" content="http://icyxp.github.io/images/ms/02/03.jpg">
-<meta property="og:image" content="http://icyxp.github.io/images/ms/02/04.jpg">
-<meta property="og:image" content="http://icyxp.github.io/images/ms/02/05.jpg">
-<meta property="og:image" content="http://icyxp.github.io/images/ms/02/06.jpg">
-<meta property="og:image" content="http://icyxp.github.io/images/ms/02/07.jpg">
-<meta property="og:image" content="http://icyxp.github.io/images/ms/02/08.jpg">
-<meta property="og:image" content="http://icyxp.github.io/images/ms/02/09.jpg">
-<meta property="og:image" content="http://icyxp.github.io/images/ms/02/10.jpg">
-<meta property="og:image" content="http://icyxp.github.io/images/ms/02/11.jpg">
-<meta property="og:image" content="http://icyxp.github.io/images/ms/02/12.jpg">
-<meta property="og:image" content="http://icyxp.github.io/images/ms/02/13.jpg">
-<meta property="og:image" content="http://icyxp.github.io/images/ms/02/14.jpg">
-<meta property="og:image" content="http://icyxp.github.io/images/ms/02/16.jpg">
-<meta property="og:image" content="http://icyxp.github.io/images/ms/02/17.jpg">
-<meta property="og:image" content="http://icyxp.github.io/images/ms/02/18.jpg">
-<meta property="og:image" content="http://icyxp.github.io/images/ms/02/19.jpg">
-<meta property="og:image" content="http://icyxp.github.io/images/ms/02/20.jpg">
-<meta property="og:image" content="http://icyxp.github.io/images/ms/02/21.jpg">
-<meta property="og:image" content="http://icyxp.github.io/images/ms/02/22.jpg">
-<meta property="og:image" content="http://icyxp.github.io/images/ms/02/23.jpg">
-<meta property="og:image" content="http://icyxp.github.io/images/ms/02/24.jpg">
-<meta property="og:image" content="http://icyxp.github.io/images/ms/02/25.jpg">
-<meta property="og:image" content="http://icyxp.github.io/images/ms/02/26.jpg">
-<meta property="og:image" content="http://icyxp.github.io/images/ms/02/27.jpg">
-<meta property="og:image" content="http://icyxp.github.io/images/ms/02/28.jpg">
-<meta property="og:image" content="http://icyxp.github.io/images/ms/02/29.jpg">
-<meta property="og:image" content="http://icyxp.github.io/images/ms/02/30.jpg">
-<meta property="og:image" content="http://icyxp.github.io/images/ms/02/31.jpg">
-<meta property="og:image" content="http://icyxp.github.io/images/ms/02/32.jpg">
-<meta property="og:image" content="http://icyxp.github.io/images/ms/02/33.jpg">
-<meta property="og:image" content="http://icyxp.github.io/images/ms/02/34.jpg">
-<meta property="og:image" content="http://icyxp.github.io/images/ms/02/35.jpg">
-<meta property="og:image" content="http://icyxp.github.io/images/ms/02/36.jpg">
+<meta property="og:image" content="http://team.jiunile.com/images/ms/02/cover.png">
+<meta property="og:image" content="http://team.jiunile.com/images/ms/02/00.jpg">
+<meta property="og:image" content="http://team.jiunile.com/images/ms/02/01.jpg">
+<meta property="og:image" content="http://team.jiunile.com/images/ms/02/02.jpg">
+<meta property="og:image" content="http://team.jiunile.com/images/ms/02/03.jpg">
+<meta property="og:image" content="http://team.jiunile.com/images/ms/02/04.jpg">
+<meta property="og:image" content="http://team.jiunile.com/images/ms/02/05.jpg">
+<meta property="og:image" content="http://team.jiunile.com/images/ms/02/06.jpg">
+<meta property="og:image" content="http://team.jiunile.com/images/ms/02/07.jpg">
+<meta property="og:image" content="http://team.jiunile.com/images/ms/02/08.jpg">
+<meta property="og:image" content="http://team.jiunile.com/images/ms/02/09.jpg">
+<meta property="og:image" content="http://team.jiunile.com/images/ms/02/10.jpg">
+<meta property="og:image" content="http://team.jiunile.com/images/ms/02/11.jpg">
+<meta property="og:image" content="http://team.jiunile.com/images/ms/02/12.jpg">
+<meta property="og:image" content="http://team.jiunile.com/images/ms/02/13.jpg">
+<meta property="og:image" content="http://team.jiunile.com/images/ms/02/14.jpg">
+<meta property="og:image" content="http://team.jiunile.com/images/ms/02/16.jpg">
+<meta property="og:image" content="http://team.jiunile.com/images/ms/02/17.jpg">
+<meta property="og:image" content="http://team.jiunile.com/images/ms/02/18.jpg">
+<meta property="og:image" content="http://team.jiunile.com/images/ms/02/19.jpg">
+<meta property="og:image" content="http://team.jiunile.com/images/ms/02/20.jpg">
+<meta property="og:image" content="http://team.jiunile.com/images/ms/02/21.jpg">
+<meta property="og:image" content="http://team.jiunile.com/images/ms/02/22.jpg">
+<meta property="og:image" content="http://team.jiunile.com/images/ms/02/23.jpg">
+<meta property="og:image" content="http://team.jiunile.com/images/ms/02/24.jpg">
+<meta property="og:image" content="http://team.jiunile.com/images/ms/02/25.jpg">
+<meta property="og:image" content="http://team.jiunile.com/images/ms/02/26.jpg">
+<meta property="og:image" content="http://team.jiunile.com/images/ms/02/27.jpg">
+<meta property="og:image" content="http://team.jiunile.com/images/ms/02/28.jpg">
+<meta property="og:image" content="http://team.jiunile.com/images/ms/02/29.jpg">
+<meta property="og:image" content="http://team.jiunile.com/images/ms/02/30.jpg">
+<meta property="og:image" content="http://team.jiunile.com/images/ms/02/31.jpg">
+<meta property="og:image" content="http://team.jiunile.com/images/ms/02/32.jpg">
+<meta property="og:image" content="http://team.jiunile.com/images/ms/02/33.jpg">
+<meta property="og:image" content="http://team.jiunile.com/images/ms/02/34.jpg">
+<meta property="og:image" content="http://team.jiunile.com/images/ms/02/35.jpg">
+<meta property="og:image" content="http://team.jiunile.com/images/ms/02/36.jpg">
 <meta property="og:updated_time" content="2017-07-26T14:33:05.000Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="高负载微服务系统的诞生过程">
 <meta name="twitter:description" content="简介在2016 LighLoad++大会上，“M-Tex”的开发经理Vadim Madison讲述了从一个由数百个微服务组成的系统到包含数千个微服务的高负载项目的发展历程。本文已获得翻译授权，查看英文原文：Microservices in a High-Load Project 。
 我将告诉大家我们是如何开始一个高负载微服务项目的。在讲述我们的经历之前，先让我们简单地自我介绍一下。
 简单地说，我">
-<meta name="twitter:image" content="http://icyxp.github.io/images/ms/02/cover.png">
+<meta name="twitter:image" content="http://team.jiunile.com/images/ms/02/cover.png">
 
 
 
@@ -221,7 +221,7 @@
 
 
 
-  <link rel="canonical" href="http://icyxp.github.io/blog/2017/07/microservice-高负载微服务系统的诞生过程.html"/>
+  <link rel="canonical" href="http://team.jiunile.com/blog/2017/07/microservice-高负载微服务系统的诞生过程.html"/>
 
 
 
@@ -411,7 +411,7 @@
   
   
   <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://icyxp.github.io/blog/2017/07/microservice-高负载微服务系统的诞生过程.html">
+    <link itemprop="mainEntityOfPage" href="http://team.jiunile.com/blog/2017/07/microservice-高负载微服务系统的诞生过程.html">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="name" content="icyboy">

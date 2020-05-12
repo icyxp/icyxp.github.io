@@ -144,15 +144,15 @@
 确保正确处理所有客户端请求我们先从访问Pod的客户端的视角来看看Pod的生命周期（客户端使用pod提供的服务）。我们希望确保客户的请求得到妥善处理，因为如果当pod启动或关闭时连接开">
 <meta property="og:type" content="article">
 <meta property="og:title" content="使用Kubernetes正确的处理用户请求">
-<meta property="og:url" content="http://icyxp.github.io/blog/2018/12/k8s-handling-client-requests-properly-with-kubernetes.html">
+<meta property="og:url" content="http://team.jiunile.com/blog/2018/12/k8s-handling-client-requests-properly-with-kubernetes.html">
 <meta property="og:site_name" content="CloudNative 架构">
 <meta property="og:description" content="前言
 毫无疑问，我们希望正确处理客户端请求。当pod正在启动或关闭时，我们显然不希望看到断开的连接。Kubernetes本身并不能确保这种情况永远不会发生。您的应用需要遵循一些规则以防止断开连接。本文讨论这些规则。
 
 确保正确处理所有客户端请求我们先从访问Pod的客户端的视角来看看Pod的生命周期（客户端使用pod提供的服务）。我们希望确保客户的请求得到妥善处理，因为如果当pod启动或关闭时连接开">
-<meta property="og:image" content="http://icyxp.github.io/images/k8s/k8s_pod_03.png">
-<meta property="og:image" content="http://icyxp.github.io/images/k8s/k8s_pod_04.png">
-<meta property="og:image" content="http://icyxp.github.io/images/k8s/k8s_pod_05.png">
+<meta property="og:image" content="http://team.jiunile.com/images/k8s/k8s_pod_03.png">
+<meta property="og:image" content="http://team.jiunile.com/images/k8s/k8s_pod_04.png">
+<meta property="og:image" content="http://team.jiunile.com/images/k8s/k8s_pod_05.png">
 <meta property="og:updated_time" content="2018-12-11T13:03:36.000Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="使用Kubernetes正确的处理用户请求">
@@ -160,7 +160,7 @@
 毫无疑问，我们希望正确处理客户端请求。当pod正在启动或关闭时，我们显然不希望看到断开的连接。Kubernetes本身并不能确保这种情况永远不会发生。您的应用需要遵循一些规则以防止断开连接。本文讨论这些规则。
 
 确保正确处理所有客户端请求我们先从访问Pod的客户端的视角来看看Pod的生命周期（客户端使用pod提供的服务）。我们希望确保客户的请求得到妥善处理，因为如果当pod启动或关闭时连接开">
-<meta name="twitter:image" content="http://icyxp.github.io/images/k8s/k8s_pod_03.png">
+<meta name="twitter:image" content="http://team.jiunile.com/images/k8s/k8s_pod_03.png">
 
 
 
@@ -190,7 +190,7 @@
 
 
 
-  <link rel="canonical" href="http://icyxp.github.io/blog/2018/12/k8s-handling-client-requests-properly-with-kubernetes.html"/>
+  <link rel="canonical" href="http://team.jiunile.com/blog/2018/12/k8s-handling-client-requests-properly-with-kubernetes.html"/>
 
 
 
@@ -380,7 +380,7 @@
   
   
   <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://icyxp.github.io/blog/2018/12/k8s-handling-client-requests-properly-with-kubernetes.html">
+    <link itemprop="mainEntityOfPage" href="http://team.jiunile.com/blog/2018/12/k8s-handling-client-requests-properly-with-kubernetes.html">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="name" content="icyboy">
@@ -588,8 +588,8 @@
   <p><span>文章作者:</span><a href="/" title="访问 icyboy 的个人博客">icyboy</a></p>
   <p><span>发布时间:</span>2018年12月11日 - 21:00</p>
   <p><span>最后更新:</span>2018年12月11日 - 21:03</p>
-  <p><span>原始链接:</span><a href="/blog/2018/12/k8s-handling-client-requests-properly-with-kubernetes.html" title="使用Kubernetes正确的处理用户请求">http://icyxp.github.io/blog/2018/12/k8s-handling-client-requests-properly-with-kubernetes.html</a>
-    <span class="copy-path"  title="点击复制文章链接"><i class="fa fa-clipboard" data-clipboard-text="http://icyxp.github.io/blog/2018/12/k8s-handling-client-requests-properly-with-kubernetes.html"  aria-label="复制成功！"></i></span>
+  <p><span>原始链接:</span><a href="/blog/2018/12/k8s-handling-client-requests-properly-with-kubernetes.html" title="使用Kubernetes正确的处理用户请求">http://team.jiunile.com/blog/2018/12/k8s-handling-client-requests-properly-with-kubernetes.html</a>
+    <span class="copy-path"  title="点击复制文章链接"><i class="fa fa-clipboard" data-clipboard-text="http://team.jiunile.com/blog/2018/12/k8s-handling-client-requests-properly-with-kubernetes.html"  aria-label="复制成功！"></i></span>
   </p>
   <p><span>许可协议:</span><i class="fa fa-creative-commons"></i> <a rel="license" href="https://creativecommons.org/licenses/by-nc-nd/4.0/" target="_blank" title="Attribution-NonCommercial-NoDerivatives 4.0 International (CC BY-NC-ND 4.0)">署名-非商业性使用-禁止演绎 4.0 国际</a> 转载请保留原文链接及作者。</p>  
 </div>
@@ -667,8 +667,8 @@
         <div class="post-nav">
           <div class="post-nav-next post-nav-item">
             
-              <a href="/blog/2018/12/k8s-kubeadm-ca-upgdate.html" rel="next" title="Kubeadm证书过期时间调整">
-                <i class="fa fa-chevron-left"></i> Kubeadm证书过期时间调整
+              <a href="/blog/2018/12/k8s-kubeadm-ca-desc.html" rel="next" title="Kubeadm 证书说明">
+                <i class="fa fa-chevron-left"></i> Kubeadm 证书说明
               </a>
             
           </div>

@@ -142,23 +142,23 @@
 回想最开始接触 k8s 的时候, 经常搞不懂 CRI 和 OCI 的联系和区别, 也不知道为啥要垫那么多的 “shim”(尤其是 containerd-shim 和 dockershim 这两个完全没啥关联的东西还恰好都叫 shim). 所以嘛, 这篇就写一写 k8s 的 runtime 部分, 争取一篇文章把下面这张 Landscape 里的核心项目给白">
 <meta property="og:type" content="article">
 <meta property="og:title" content="谈谈kubernetes Runtime">
-<meta property="og:url" content="http://icyxp.github.io/blog/2019/05/k8s-k8s-runtime.html">
+<meta property="og:url" content="http://team.jiunile.com/blog/2019/05/k8s-k8s-runtime.html">
 <meta property="og:site_name" content="CloudNative 架构">
 <meta property="og:description" content="白话kubernetes Runtime
 回想最开始接触 k8s 的时候, 经常搞不懂 CRI 和 OCI 的联系和区别, 也不知道为啥要垫那么多的 “shim”(尤其是 containerd-shim 和 dockershim 这两个完全没啥关联的东西还恰好都叫 shim). 所以嘛, 这篇就写一写 k8s 的 runtime 部分, 争取一篇文章把下面这张 Landscape 里的核心项目给白">
-<meta property="og:image" content="http://icyxp.github.io/images/k8s/bf52b77fly1g0wkhtwdlij217c0si44d.jpg">
-<meta property="og:image" content="http://icyxp.github.io/images/k8s/bf52b77fly1g0ws7jziucj21hy0dmtb0.jpg">
-<meta property="og:image" content="http://icyxp.github.io/images/k8s/bf52b77fly1g0ws7vtgq2j21de0cmgmo.jpg">
-<meta property="og:image" content="http://icyxp.github.io/images/k8s/bf52b77fly1g0ws87espcj21ao0d00tz.jpg">
-<meta property="og:image" content="http://icyxp.github.io/images/k8s/bf52b77fly1g0ws8dqqsoj21am0d0q4q.jpg">
-<meta property="og:image" content="http://icyxp.github.io/images/k8s/bf52b77fly1g0wnfdxo9fj20hs0anmyb.jpg">
-<meta property="og:image" content="http://icyxp.github.io/images/k8s/bf52b77fly1g0ws90i7ttj21mq0d440r.jpg">
+<meta property="og:image" content="http://team.jiunile.com/images/k8s/bf52b77fly1g0wkhtwdlij217c0si44d.jpg">
+<meta property="og:image" content="http://team.jiunile.com/images/k8s/bf52b77fly1g0ws7jziucj21hy0dmtb0.jpg">
+<meta property="og:image" content="http://team.jiunile.com/images/k8s/bf52b77fly1g0ws7vtgq2j21de0cmgmo.jpg">
+<meta property="og:image" content="http://team.jiunile.com/images/k8s/bf52b77fly1g0ws87espcj21ao0d00tz.jpg">
+<meta property="og:image" content="http://team.jiunile.com/images/k8s/bf52b77fly1g0ws8dqqsoj21am0d0q4q.jpg">
+<meta property="og:image" content="http://team.jiunile.com/images/k8s/bf52b77fly1g0wnfdxo9fj20hs0anmyb.jpg">
+<meta property="og:image" content="http://team.jiunile.com/images/k8s/bf52b77fly1g0ws90i7ttj21mq0d440r.jpg">
 <meta property="og:updated_time" content="2019-05-17T01:52:12.000Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="谈谈kubernetes Runtime">
 <meta name="twitter:description" content="白话kubernetes Runtime
 回想最开始接触 k8s 的时候, 经常搞不懂 CRI 和 OCI 的联系和区别, 也不知道为啥要垫那么多的 “shim”(尤其是 containerd-shim 和 dockershim 这两个完全没啥关联的东西还恰好都叫 shim). 所以嘛, 这篇就写一写 k8s 的 runtime 部分, 争取一篇文章把下面这张 Landscape 里的核心项目给白">
-<meta name="twitter:image" content="http://icyxp.github.io/images/k8s/bf52b77fly1g0wkhtwdlij217c0si44d.jpg">
+<meta name="twitter:image" content="http://team.jiunile.com/images/k8s/bf52b77fly1g0wkhtwdlij217c0si44d.jpg">
 
 
 
@@ -188,7 +188,7 @@
 
 
 
-  <link rel="canonical" href="http://icyxp.github.io/blog/2019/05/k8s-k8s-runtime.html"/>
+  <link rel="canonical" href="http://team.jiunile.com/blog/2019/05/k8s-k8s-runtime.html"/>
 
 
 
@@ -378,7 +378,7 @@
   
   
   <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://icyxp.github.io/blog/2019/05/k8s-k8s-runtime.html">
+    <link itemprop="mainEntityOfPage" href="http://team.jiunile.com/blog/2019/05/k8s-k8s-runtime.html">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="name" content="icyboy">

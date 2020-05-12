@@ -144,7 +144,7 @@
 方案一 通过修改kubeadm 调整证书过期时间">
 <meta property="og:type" content="article">
 <meta property="og:title" content="Kubeadm证书过期时间调整">
-<meta property="og:url" content="http://icyxp.github.io/blog/2018/12/k8s-kubeadm-ca-upgdate.html">
+<meta property="og:url" content="http://team.jiunile.com/blog/2018/12/k8s-kubeadm-ca-upgdate.html">
 <meta property="og:site_name" content="CloudNative 架构">
 <meta property="og:description" content="kubeadm 默认证书为一年，一年过期后，会导致api service不可用，使用过程中会出现：x509: certificate has expired or is not yet valid
 
@@ -186,7 +186,7 @@
 
 
 
-  <link rel="canonical" href="http://icyxp.github.io/blog/2018/12/k8s-kubeadm-ca-upgdate.html"/>
+  <link rel="canonical" href="http://team.jiunile.com/blog/2018/12/k8s-kubeadm-ca-upgdate.html"/>
 
 
 
@@ -376,7 +376,7 @@
   
   
   <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://icyxp.github.io/blog/2018/12/k8s-kubeadm-ca-upgdate.html">
+    <link itemprop="mainEntityOfPage" href="http://team.jiunile.com/blog/2018/12/k8s-kubeadm-ca-upgdate.html">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="name" content="icyboy">
@@ -554,10 +554,10 @@
 <h5 id="生成新配置文件"><a href="#生成新配置文件" class="headerlink" title="生成新配置文件"></a>生成新配置文件</h5><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">kubeadm alpha phase kubeconfig all --apiserver-advertise-address=<span class="variable">$&#123;MASTER_API_SERVER_IP&#125;</span></span><br></pre></td></tr></table></figure>
 <h5 id="将新生成的admin配置文件覆盖掉原本的admin文件"><a href="#将新生成的admin配置文件覆盖掉原本的admin文件" class="headerlink" title="将新生成的admin配置文件覆盖掉原本的admin文件"></a>将新生成的admin配置文件覆盖掉原本的admin文件</h5><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">mv <span class="variable">$HOME</span>/.kube/config <span class="variable">$HOME</span>/.kube/config.old</span><br><span class="line">cp -i /etc/kubernetes/admin.conf <span class="variable">$HOME</span>/.kube/config</span><br><span class="line">chown $(id -u):$(id -g) <span class="variable">$HOME</span>/.kube/config</span><br><span class="line">sudo chmod 777 <span class="variable">$HOME</span>/.kube/config</span><br></pre></td></tr></table></figure>
 <h5 id="完成后重启kube-apiserver-kube-controller-kube-scheduler-etcd这4个容器-1"><a href="#完成后重启kube-apiserver-kube-controller-kube-scheduler-etcd这4个容器-1" class="headerlink" title="完成后重启kube-apiserver,kube-controller,kube-scheduler,etcd这4个容器"></a>完成后重启kube-apiserver,kube-controller,kube-scheduler,etcd这4个容器</h5><h5 id="如果有多台master，则将第一台生成的相关证书拷贝到其余master即可。"><a href="#如果有多台master，则将第一台生成的相关证书拷贝到其余master即可。" class="headerlink" title="如果有多台master，则将第一台生成的相关证书拷贝到其余master即可。"></a>如果有多台master，则将第一台生成的相关证书拷贝到其余master即可。</h5><h3 id="离线一键安装包"><a href="#离线一键安装包" class="headerlink" title="离线一键安装包"></a>离线一键安装包</h3><blockquote>
-<p>k8s 离线一键安装包教程&amp;&amp;地址：<a href="http://team.jiunile.com/pro/k8s/" target="_blank" rel="external">一键安装</a></p>
+<p>k8s 离线一键安装包教程&amp;&amp;地址：<a href="http://team.jiunile.com/pro/k8s/">一键安装</a></p>
 </blockquote>
 <h3 id="kubeadm-1-14-证书调整教程"><a href="#kubeadm-1-14-证书调整教程" class="headerlink" title="kubeadm 1.14 证书调整教程"></a>kubeadm 1.14 证书调整教程</h3><blockquote>
-<p><a href="http://team.jiunile.com/blog/2019/05/k8s-kubeadm14-ca-upgrade.html" target="_blank" rel="external">教程地址</a></p>
+<p><a href="http://team.jiunile.com/blog/2019/05/k8s-kubeadm14-ca-upgrade.html">教程地址</a></p>
 </blockquote>
 
       
@@ -590,8 +590,8 @@
   <p><span>文章作者:</span><a href="/" title="访问 icyboy 的个人博客">icyboy</a></p>
   <p><span>发布时间:</span>2018年12月11日 - 20:00</p>
   <p><span>最后更新:</span>2020年03月09日 - 17:52</p>
-  <p><span>原始链接:</span><a href="/blog/2018/12/k8s-kubeadm-ca-upgdate.html" title="Kubeadm证书过期时间调整">http://icyxp.github.io/blog/2018/12/k8s-kubeadm-ca-upgdate.html</a>
-    <span class="copy-path"  title="点击复制文章链接"><i class="fa fa-clipboard" data-clipboard-text="http://icyxp.github.io/blog/2018/12/k8s-kubeadm-ca-upgdate.html"  aria-label="复制成功！"></i></span>
+  <p><span>原始链接:</span><a href="/blog/2018/12/k8s-kubeadm-ca-upgdate.html" title="Kubeadm证书过期时间调整">http://team.jiunile.com/blog/2018/12/k8s-kubeadm-ca-upgdate.html</a>
+    <span class="copy-path"  title="点击复制文章链接"><i class="fa fa-clipboard" data-clipboard-text="http://team.jiunile.com/blog/2018/12/k8s-kubeadm-ca-upgdate.html"  aria-label="复制成功！"></i></span>
   </p>
   <p><span>许可协议:</span><i class="fa fa-creative-commons"></i> <a rel="license" href="https://creativecommons.org/licenses/by-nc-nd/4.0/" target="_blank" title="Attribution-NonCommercial-NoDerivatives 4.0 International (CC BY-NC-ND 4.0)">署名-非商业性使用-禁止演绎 4.0 国际</a> 转载请保留原文链接及作者。</p>  
 </div>
@@ -671,8 +671,8 @@
         <div class="post-nav">
           <div class="post-nav-next post-nav-item">
             
-              <a href="/blog/2018/12/k8s-kubeadm-ca-desc.html" rel="next" title="Kubeadm 证书说明">
-                <i class="fa fa-chevron-left"></i> Kubeadm 证书说明
+              <a href="/blog/2018/11/k8s-k8s-pod-life-cycle.html" rel="next" title="Kubernetes Pod 的生命周期管理">
+                <i class="fa fa-chevron-left"></i> Kubernetes Pod 的生命周期管理
               </a>
             
           </div>
@@ -681,8 +681,8 @@
 
           <div class="post-nav-prev post-nav-item">
             
-              <a href="/blog/2018/12/k8s-handling-client-requests-properly-with-kubernetes.html" rel="prev" title="使用Kubernetes正确的处理用户请求">
-                使用Kubernetes正确的处理用户请求 <i class="fa fa-chevron-right"></i>
+              <a href="/blog/2018/12/k8s-kubeadm-ca-desc.html" rel="prev" title="Kubeadm 证书说明">
+                Kubeadm 证书说明 <i class="fa fa-chevron-right"></i>
               </a>
             
           </div>

@@ -143,7 +143,7 @@
 修改kubeadm 1.14.x源码，调整证书过期时间kubeadm1.14.x 安装过后crt证书如下所示12345678910/etc/kubernetes/">
 <meta property="og:type" content="article">
 <meta property="og:title" content="Kubeadm1.14 证书调整">
-<meta property="og:url" content="http://icyxp.github.io/blog/2019/05/k8s-kubeadm14-ca-upgrade.html">
+<meta property="og:url" content="http://team.jiunile.com/blog/2019/05/k8s-kubeadm14-ca-upgrade.html">
 <meta property="og:site_name" content="CloudNative 架构">
 <meta property="og:description" content="kubeadm部署的kubernets证书一直都是个诟病，默认都只有一年有效期，kubeadm 1.14.x安装后有部分证书还是一年有效期，但个别证书已修改为10年有效期，但对我们使用来说，一年有效期还是一个比较的坑，需要进行调整。
 
@@ -183,7 +183,7 @@
 
 
 
-  <link rel="canonical" href="http://icyxp.github.io/blog/2019/05/k8s-kubeadm14-ca-upgrade.html"/>
+  <link rel="canonical" href="http://team.jiunile.com/blog/2019/05/k8s-kubeadm14-ca-upgrade.html"/>
 
 
 
@@ -373,7 +373,7 @@
   
   
   <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://icyxp.github.io/blog/2019/05/k8s-kubeadm14-ca-upgrade.html">
+    <link itemprop="mainEntityOfPage" href="http://team.jiunile.com/blog/2019/05/k8s-kubeadm14-ca-upgrade.html">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="name" content="icyboy">
@@ -535,9 +535,9 @@
 <p>如上所示，通过<code>NewSelfSignedCACert</code>这个方法签发的证书都默认为10年有效期了，但这个只影响部分证书，但这样还没满足我们的需求，个别证书的有效期调整，在经过对源码的分析后，找到了如下的逻辑：</p>
 <p>发现部分证书是通过<code>NewSignedCert</code>这个方法签发，而这个方法签发的证书默认只有一年有效期，查看代码逻辑：<br>代码: <code>cmd/kubeadm/app/util/pkiutil/pki_helpers.go</code><br><figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> duration365d = time.Hour * <span class="number">24</span> * <span class="number">365</span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">NewSignedCert</span><span class="params">(cfg *certutil.Config, key crypto.Signer, caCert *x509.Certificate, caKey crypto.Signer)</span> <span class="params">(*x509.Certificate, error)</span></span> &#123;</span><br><span class="line">    serial, err := rand.Int(rand.Reader, <span class="built_in">new</span>(big.Int).SetInt64(math.MaxInt64))</span><br><span class="line">    <span class="keyword">if</span> err != <span class="literal">nil</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">nil</span>, err</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">if</span> <span class="built_in">len</span>(cfg.CommonName) == <span class="number">0</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">nil</span>, errors.New(<span class="string">"must specify a CommonName"</span>)</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">if</span> <span class="built_in">len</span>(cfg.Usages) == <span class="number">0</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">nil</span>, errors.New(<span class="string">"must specify at least one ExtKeyUsage"</span>)</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    certTmpl := x509.Certificate&#123;</span><br><span class="line">        Subject: pkix.Name&#123;</span><br><span class="line">            CommonName:   cfg.CommonName,</span><br><span class="line">            Organization: cfg.Organization,</span><br><span class="line">        &#125;,</span><br><span class="line">        DNSNames:     cfg.AltNames.DNSNames,</span><br><span class="line">        IPAddresses:  cfg.AltNames.IPs,</span><br><span class="line">        SerialNumber: serial,</span><br><span class="line">        NotBefore:    caCert.NotBefore,</span><br><span class="line">        <span class="comment">// 只有一年有效期</span></span><br><span class="line">        NotAfter:     time.Now().Add(duration365d).UTC(),</span><br><span class="line">        KeyUsage:     x509.KeyUsageKeyEncipherment | x509.KeyUsageDigitalSignature,</span><br><span class="line">        ExtKeyUsage:  cfg.Usages,</span><br><span class="line">    &#125;</span><br><span class="line">    certDERBytes, err := x509.CreateCertificate(cryptorand.Reader, &amp;certTmpl, caCert, key.Public(), caKey)</span><br><span class="line">    <span class="keyword">if</span> err != <span class="literal">nil</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">nil</span>, err</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> x509.ParseCertificate(certDERBytes)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
 <p>至此，调整<code>NewSignedCert</code>这个方法，重新进行编译，将证书有效期调整为你想要的任何时间。</p>
-<p>如何重新编译kubeadm源码，请参考之前的文章，链接如下：<a href="http://team.jiunile.com/blog/2018/12/k8s-kubeadm-ca-upgdate.html" target="_blank" rel="external">Kubeadm证书过期时间调整</a></p>
+<p>如何重新编译kubeadm源码，请参考之前的文章，链接如下：<a href="http://team.jiunile.com/blog/2018/12/k8s-kubeadm-ca-upgdate.html">Kubeadm证书过期时间调整</a></p>
 <h3 id="如何一键离线安装kubernetes-1-14教程"><a href="#如何一键离线安装kubernetes-1-14教程" class="headerlink" title="如何一键离线安装kubernetes 1.14教程"></a>如何一键离线安装kubernetes 1.14教程</h3><blockquote>
-<p>k8s 1.14.x 离线一键安装包教程&amp;&amp;地址：<a href="http://team.jiunile.com/pro/k8s/" target="_blank" rel="external">kubernetes 1.14 离线安装地址</a></p>
+<p>k8s 1.14.x 离线一键安装包教程&amp;&amp;地址：<a href="http://team.jiunile.com/pro/k8s/">kubernetes 1.14 离线安装地址</a></p>
 </blockquote>
 
       
@@ -570,8 +570,8 @@
   <p><span>文章作者:</span><a href="/" title="访问 icyboy 的个人博客">icyboy</a></p>
   <p><span>发布时间:</span>2019年05月14日 - 20:00</p>
   <p><span>最后更新:</span>2019年05月14日 - 10:30</p>
-  <p><span>原始链接:</span><a href="/blog/2019/05/k8s-kubeadm14-ca-upgrade.html" title="Kubeadm1.14 证书调整">http://icyxp.github.io/blog/2019/05/k8s-kubeadm14-ca-upgrade.html</a>
-    <span class="copy-path"  title="点击复制文章链接"><i class="fa fa-clipboard" data-clipboard-text="http://icyxp.github.io/blog/2019/05/k8s-kubeadm14-ca-upgrade.html"  aria-label="复制成功！"></i></span>
+  <p><span>原始链接:</span><a href="/blog/2019/05/k8s-kubeadm14-ca-upgrade.html" title="Kubeadm1.14 证书调整">http://team.jiunile.com/blog/2019/05/k8s-kubeadm14-ca-upgrade.html</a>
+    <span class="copy-path"  title="点击复制文章链接"><i class="fa fa-clipboard" data-clipboard-text="http://team.jiunile.com/blog/2019/05/k8s-kubeadm14-ca-upgrade.html"  aria-label="复制成功！"></i></span>
   </p>
   <p><span>许可协议:</span><i class="fa fa-creative-commons"></i> <a rel="license" href="https://creativecommons.org/licenses/by-nc-nd/4.0/" target="_blank" title="Attribution-NonCommercial-NoDerivatives 4.0 International (CC BY-NC-ND 4.0)">署名-非商业性使用-禁止演绎 4.0 国际</a> 转载请保留原文链接及作者。</p>  
 </div>

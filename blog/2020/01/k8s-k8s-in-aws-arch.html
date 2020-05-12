@@ -141,15 +141,15 @@
 <meta name="description" content="kubernetes in aws Overview（EKS）">
 <meta property="og:type" content="article">
 <meta property="og:title" content="kubernetes 在 aws 上的应用">
-<meta property="og:url" content="http://icyxp.github.io/blog/2020/01/k8s-k8s-in-aws-arch.html">
+<meta property="og:url" content="http://team.jiunile.com/blog/2020/01/k8s-k8s-in-aws-arch.html">
 <meta property="og:site_name" content="CloudNative 架构">
 <meta property="og:description" content="kubernetes in aws Overview（EKS）">
-<meta property="og:image" content="http://icyxp.github.io/images/k8s/aws_eks_arch.png">
+<meta property="og:image" content="http://team.jiunile.com/images/k8s/aws_eks_arch.png">
 <meta property="og:updated_time" content="2020-01-08T06:26:45.000Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="kubernetes 在 aws 上的应用">
 <meta name="twitter:description" content="kubernetes in aws Overview（EKS）">
-<meta name="twitter:image" content="http://icyxp.github.io/images/k8s/aws_eks_arch.png">
+<meta name="twitter:image" content="http://team.jiunile.com/images/k8s/aws_eks_arch.png">
 
 
 
@@ -179,7 +179,7 @@
 
 
 
-  <link rel="canonical" href="http://icyxp.github.io/blog/2020/01/k8s-k8s-in-aws-arch.html"/>
+  <link rel="canonical" href="http://team.jiunile.com/blog/2020/01/k8s-k8s-in-aws-arch.html"/>
 
 
 
@@ -369,7 +369,7 @@
   
   
   <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://icyxp.github.io/blog/2020/01/k8s-k8s-in-aws-arch.html">
+    <link itemprop="mainEntityOfPage" href="http://team.jiunile.com/blog/2020/01/k8s-k8s-in-aws-arch.html">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="name" content="icyboy">
@@ -523,7 +523,7 @@
 
       
         <h2 id="kubernetes-in-aws-Overview（EKS）"><a href="#kubernetes-in-aws-Overview（EKS）" class="headerlink" title="kubernetes in aws Overview（EKS）"></a>kubernetes in aws Overview（EKS）</h2><p><img src="/images/k8s/aws_eks_arch.png" alt="eks_in_aws"><br><a id="more"></a><br>上图是 kubernetes(EKS) 在 aws 上的整体情况，下面我会对每块进行展开说明</p>
-<h2 id="分解说明"><a href="#分解说明" class="headerlink" title="分解说明"></a>分解说明</h2><h3 id="kubernetes-or-eks"><a href="#kubernetes-or-eks" class="headerlink" title="kubernetes or eks"></a>kubernetes or eks</h3><p>kubernetes 原生支持在 aws 上使用，具体如何启用可参考<a href="http://team.jiunile.com/blog/2019/03/k8s-cloud.html" target="_blank" rel="external">kuberenetes 云应用实践</a>，这里不在累赘说明。既然选择在云上使用 k8s ，那就直接使用云本身提供的能力（<a href="https://eksworkshop.com/" target="_blank" rel="external">EKS</a>），就没必要自己再去适配一遍，毕竟云厂商已经提供了这样的服务，为什么不去使用呢？不过自己也可以去了解EKS为我们做了什么？怎么去管理它？</p>
+<h2 id="分解说明"><a href="#分解说明" class="headerlink" title="分解说明"></a>分解说明</h2><h3 id="kubernetes-or-eks"><a href="#kubernetes-or-eks" class="headerlink" title="kubernetes or eks"></a>kubernetes or eks</h3><p>kubernetes 原生支持在 aws 上使用，具体如何启用可参考<a href="http://team.jiunile.com/blog/2019/03/k8s-cloud.html">kuberenetes 云应用实践</a>，这里不在累赘说明。既然选择在云上使用 k8s ，那就直接使用云本身提供的能力（<a href="https://eksworkshop.com/" target="_blank" rel="external">EKS</a>），就没必要自己再去适配一遍，毕竟云厂商已经提供了这样的服务，为什么不去使用呢？不过自己也可以去了解EKS为我们做了什么？怎么去管理它？</p>
 <h4 id="EKS"><a href="#EKS" class="headerlink" title="EKS"></a>EKS</h4><p><a href="https://eksworkshop.com/" target="_blank" rel="external">EKS</a> 其实就是帮我们托管了master节点（3 master集群），其次更好的与aws资源进行了集成，帮助我们在上层更轻松的使用，<a href="https://eksworkshop.com/" target="_blank" rel="external">EKS</a> 默认会集成以下组件:  </p>
 <ul>
 <li>kube-proxy</li>
@@ -606,8 +606,8 @@
   <p><span>文章作者:</span><a href="/" title="访问 icyboy 的个人博客">icyboy</a></p>
   <p><span>发布时间:</span>2020年01月08日 - 21:00</p>
   <p><span>最后更新:</span>2020年01月08日 - 14:26</p>
-  <p><span>原始链接:</span><a href="/blog/2020/01/k8s-k8s-in-aws-arch.html" title="kubernetes 在 aws 上的应用">http://icyxp.github.io/blog/2020/01/k8s-k8s-in-aws-arch.html</a>
-    <span class="copy-path"  title="点击复制文章链接"><i class="fa fa-clipboard" data-clipboard-text="http://icyxp.github.io/blog/2020/01/k8s-k8s-in-aws-arch.html"  aria-label="复制成功！"></i></span>
+  <p><span>原始链接:</span><a href="/blog/2020/01/k8s-k8s-in-aws-arch.html" title="kubernetes 在 aws 上的应用">http://team.jiunile.com/blog/2020/01/k8s-k8s-in-aws-arch.html</a>
+    <span class="copy-path"  title="点击复制文章链接"><i class="fa fa-clipboard" data-clipboard-text="http://team.jiunile.com/blog/2020/01/k8s-k8s-in-aws-arch.html"  aria-label="复制成功！"></i></span>
   </p>
   <p><span>许可协议:</span><i class="fa fa-creative-commons"></i> <a rel="license" href="https://creativecommons.org/licenses/by-nc-nd/4.0/" target="_blank" title="Attribution-NonCommercial-NoDerivatives 4.0 International (CC BY-NC-ND 4.0)">署名-非商业性使用-禁止演绎 4.0 国际</a> 转载请保留原文链接及作者。</p>  
 </div>

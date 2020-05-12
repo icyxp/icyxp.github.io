@@ -4,9 +4,9 @@
   <subtitle>CloudNative|云原生应用架构|云原生架构|容器化架构|微服务架构|平台架构|基础架构</subtitle>
   <link href="/atom.xml" rel="self"/>
   
-  <link href="http://icyxp.github.io/"/>
+  <link href="http://team.jiunile.com/"/>
   <updated>2020-05-11T09:01:15.000Z</updated>
-  <id>http://icyxp.github.io/</id>
+  <id>http://team.jiunile.com/</id>
   
   <author>
     <name>icyboy</name>
@@ -17,8 +17,8 @@
   
   <entry>
     <title>调试golang的bug以及性能问题的实践方法</title>
-    <link href="http://icyxp.github.io//blog/2020/05/go-debug-practice.html"/>
-    <id>http://icyxp.github.io//blog/2020/05/go-debug-practice.html</id>
+    <link href="http://team.jiunile.com//blog/2020/05/go-debug-practice.html"/>
+    <id>http://team.jiunile.com//blog/2020/05/go-debug-practice.html</id>
     <published>2020-05-11T10:00:00.000Z</published>
     <updated>2020-05-11T09:01:15.000Z</updated>
     
@@ -163,25 +163,25 @@
     
     </summary>
     
-      <category term="golang" scheme="http://icyxp.github.io/categories/golang/"/>
+      <category term="golang" scheme="http://team.jiunile.com/categories/golang/"/>
     
-      <category term="debug" scheme="http://icyxp.github.io/categories/golang/debug/"/>
+      <category term="debug" scheme="http://team.jiunile.com/categories/golang/debug/"/>
     
     
-      <category term="golang" scheme="http://icyxp.github.io/tags/golang/"/>
+      <category term="golang" scheme="http://team.jiunile.com/tags/golang/"/>
     
-      <category term="pprof" scheme="http://icyxp.github.io/tags/pprof/"/>
+      <category term="pprof" scheme="http://team.jiunile.com/tags/pprof/"/>
     
-      <category term="go" scheme="http://icyxp.github.io/tags/go/"/>
+      <category term="go" scheme="http://team.jiunile.com/tags/go/"/>
     
-      <category term="godebug" scheme="http://icyxp.github.io/tags/godebug/"/>
+      <category term="godebug" scheme="http://team.jiunile.com/tags/godebug/"/>
     
   </entry>
   
   <entry>
     <title>Kubernetes Etcd 数据备份与恢复</title>
-    <link href="http://icyxp.github.io//blog/2020/05/k8s-etcd-backup-restore.html"/>
-    <id>http://icyxp.github.io//blog/2020/05/k8s-etcd-backup-restore.html</id>
+    <link href="http://team.jiunile.com//blog/2020/05/k8s-etcd-backup-restore.html"/>
+    <id>http://team.jiunile.com//blog/2020/05/k8s-etcd-backup-restore.html</id>
     <published>2020-05-09T11:00:00.000Z</published>
     <updated>2020-05-09T07:29:57.000Z</updated>
     
@@ -240,23 +240,23 @@
     
     </summary>
     
-      <category term="kubernetes" scheme="http://icyxp.github.io/categories/kubernetes/"/>
+      <category term="kubernetes" scheme="http://team.jiunile.com/categories/kubernetes/"/>
     
-      <category term="etcd" scheme="http://icyxp.github.io/categories/kubernetes/etcd/"/>
+      <category term="etcd" scheme="http://team.jiunile.com/categories/kubernetes/etcd/"/>
     
     
-      <category term="k8s" scheme="http://icyxp.github.io/tags/k8s/"/>
+      <category term="k8s" scheme="http://team.jiunile.com/tags/k8s/"/>
     
-      <category term="kubernetes" scheme="http://icyxp.github.io/tags/kubernetes/"/>
+      <category term="kubernetes" scheme="http://team.jiunile.com/tags/kubernetes/"/>
     
-      <category term="etcd" scheme="http://icyxp.github.io/tags/etcd/"/>
+      <category term="etcd" scheme="http://team.jiunile.com/tags/etcd/"/>
     
   </entry>
   
   <entry>
     <title>Kubeadm 添加新 Master 节点到集群出现 ETCD 健康检查失败错误</title>
-    <link href="http://icyxp.github.io//blog/2020/05/k8s-kubeadm-upgrade-master-problem.html"/>
-    <id>http://icyxp.github.io//blog/2020/05/k8s-kubeadm-upgrade-master-problem.html</id>
+    <link href="http://team.jiunile.com//blog/2020/05/k8s-kubeadm-upgrade-master-problem.html"/>
+    <id>http://team.jiunile.com//blog/2020/05/k8s-kubeadm-upgrade-master-problem.html</id>
     <published>2020-05-09T10:00:00.000Z</published>
     <updated>2020-05-09T06:51:09.000Z</updated>
     
@@ -297,25 +297,25 @@
     
     </summary>
     
-      <category term="kubernetes" scheme="http://icyxp.github.io/categories/kubernetes/"/>
+      <category term="kubernetes" scheme="http://team.jiunile.com/categories/kubernetes/"/>
     
-      <category term="kubeadm" scheme="http://icyxp.github.io/categories/kubernetes/kubeadm/"/>
+      <category term="kubeadm" scheme="http://team.jiunile.com/categories/kubernetes/kubeadm/"/>
     
     
-      <category term="k8s" scheme="http://icyxp.github.io/tags/k8s/"/>
+      <category term="k8s" scheme="http://team.jiunile.com/tags/k8s/"/>
     
-      <category term="kubernetes" scheme="http://icyxp.github.io/tags/kubernetes/"/>
+      <category term="kubernetes" scheme="http://team.jiunile.com/tags/kubernetes/"/>
     
-      <category term="etcd" scheme="http://icyxp.github.io/tags/etcd/"/>
+      <category term="etcd" scheme="http://team.jiunile.com/tags/etcd/"/>
     
-      <category term="kubeadm" scheme="http://icyxp.github.io/tags/kubeadm/"/>
+      <category term="kubeadm" scheme="http://team.jiunile.com/tags/kubeadm/"/>
     
   </entry>
   
   <entry>
     <title>kubernetes 1.18+ 使用ipvs后coredns无法解析域名采坑记</title>
-    <link href="http://icyxp.github.io//blog/2020/05/k8s-1-18-ipvs-problem.html"/>
-    <id>http://icyxp.github.io//blog/2020/05/k8s-1-18-ipvs-problem.html</id>
+    <link href="http://team.jiunile.com//blog/2020/05/k8s-1-18-ipvs-problem.html"/>
+    <id>http://team.jiunile.com//blog/2020/05/k8s-1-18-ipvs-problem.html</id>
     <published>2020-05-09T04:00:00.000Z</published>
     <updated>2020-05-09T04:46:02.000Z</updated>
     
@@ -411,34 +411,34 @@
     
     </summary>
     
-      <category term="kubernetes" scheme="http://icyxp.github.io/categories/kubernetes/"/>
+      <category term="kubernetes" scheme="http://team.jiunile.com/categories/kubernetes/"/>
     
-      <category term="coredns" scheme="http://icyxp.github.io/categories/kubernetes/coredns/"/>
+      <category term="coredns" scheme="http://team.jiunile.com/categories/kubernetes/coredns/"/>
     
-      <category term="ipvs" scheme="http://icyxp.github.io/categories/kubernetes/coredns/ipvs/"/>
+      <category term="ipvs" scheme="http://team.jiunile.com/categories/kubernetes/coredns/ipvs/"/>
     
     
-      <category term="k8s" scheme="http://icyxp.github.io/tags/k8s/"/>
+      <category term="k8s" scheme="http://team.jiunile.com/tags/k8s/"/>
     
-      <category term="kubernetes" scheme="http://icyxp.github.io/tags/kubernetes/"/>
+      <category term="kubernetes" scheme="http://team.jiunile.com/tags/kubernetes/"/>
     
-      <category term="coredns" scheme="http://icyxp.github.io/tags/coredns/"/>
+      <category term="coredns" scheme="http://team.jiunile.com/tags/coredns/"/>
     
-      <category term="ipvs" scheme="http://icyxp.github.io/tags/ipvs/"/>
+      <category term="ipvs" scheme="http://team.jiunile.com/tags/ipvs/"/>
     
-      <category term="kube-proxy" scheme="http://icyxp.github.io/tags/kube-proxy/"/>
+      <category term="kube-proxy" scheme="http://team.jiunile.com/tags/kube-proxy/"/>
     
   </entry>
   
   <entry>
     <title>kubernetes 在 aws 上的应用</title>
-    <link href="http://icyxp.github.io//blog/2020/01/k8s-k8s-in-aws-arch.html"/>
-    <id>http://icyxp.github.io//blog/2020/01/k8s-k8s-in-aws-arch.html</id>
+    <link href="http://team.jiunile.com//blog/2020/01/k8s-k8s-in-aws-arch.html"/>
+    <id>http://team.jiunile.com//blog/2020/01/k8s-k8s-in-aws-arch.html</id>
     <published>2020-01-08T13:00:00.000Z</published>
     <updated>2020-01-08T06:26:45.000Z</updated>
     
     <content type="html">&lt;h2 id=&quot;kubernetes-in-aws-Overview（EKS）&quot;&gt;&lt;a href=&quot;#kubernetes-in-aws-Overview（EKS）&quot; class=&quot;headerlink&quot; title=&quot;kubernetes in aws Overview（EKS）&quot;&gt;&lt;/a&gt;kubernetes in aws Overview（EKS）&lt;/h2&gt;&lt;p&gt;&lt;img src=&quot;/images/k8s/aws_eks_arch.png&quot; alt=&quot;eks_in_aws&quot;&gt;&lt;br&gt;&lt;a id=&quot;more&quot;&gt;&lt;/a&gt;&lt;br&gt;上图是 kubernetes(EKS) 在 aws 上的整体情况，下面我会对每块进行展开说明&lt;/p&gt;
-&lt;h2 id=&quot;分解说明&quot;&gt;&lt;a href=&quot;#分解说明&quot; class=&quot;headerlink&quot; title=&quot;分解说明&quot;&gt;&lt;/a&gt;分解说明&lt;/h2&gt;&lt;h3 id=&quot;kubernetes-or-eks&quot;&gt;&lt;a href=&quot;#kubernetes-or-eks&quot; class=&quot;headerlink&quot; title=&quot;kubernetes or eks&quot;&gt;&lt;/a&gt;kubernetes or eks&lt;/h3&gt;&lt;p&gt;kubernetes 原生支持在 aws 上使用，具体如何启用可参考&lt;a href=&quot;http://team.jiunile.com/blog/2019/03/k8s-cloud.html&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;kuberenetes 云应用实践&lt;/a&gt;，这里不在累赘说明。既然选择在云上使用 k8s ，那就直接使用云本身提供的能力（&lt;a href=&quot;https://eksworkshop.com/&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;EKS&lt;/a&gt;），就没必要自己再去适配一遍，毕竟云厂商已经提供了这样的服务，为什么不去使用呢？不过自己也可以去了解EKS为我们做了什么？怎么去管理它？&lt;/p&gt;
+&lt;h2 id=&quot;分解说明&quot;&gt;&lt;a href=&quot;#分解说明&quot; class=&quot;headerlink&quot; title=&quot;分解说明&quot;&gt;&lt;/a&gt;分解说明&lt;/h2&gt;&lt;h3 id=&quot;kubernetes-or-eks&quot;&gt;&lt;a href=&quot;#kubernetes-or-eks&quot; class=&quot;headerlink&quot; title=&quot;kubernetes or eks&quot;&gt;&lt;/a&gt;kubernetes or eks&lt;/h3&gt;&lt;p&gt;kubernetes 原生支持在 aws 上使用，具体如何启用可参考&lt;a href=&quot;http://team.jiunile.com/blog/2019/03/k8s-cloud.html&quot;&gt;kuberenetes 云应用实践&lt;/a&gt;，这里不在累赘说明。既然选择在云上使用 k8s ，那就直接使用云本身提供的能力（&lt;a href=&quot;https://eksworkshop.com/&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;EKS&lt;/a&gt;），就没必要自己再去适配一遍，毕竟云厂商已经提供了这样的服务，为什么不去使用呢？不过自己也可以去了解EKS为我们做了什么？怎么去管理它？&lt;/p&gt;
 &lt;h4 id=&quot;EKS&quot;&gt;&lt;a href=&quot;#EKS&quot; class=&quot;headerlink&quot; title=&quot;EKS&quot;&gt;&lt;/a&gt;EKS&lt;/h4&gt;&lt;p&gt;&lt;a href=&quot;https://eksworkshop.com/&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;EKS&lt;/a&gt; 其实就是帮我们托管了master节点（3 master集群），其次更好的与aws资源进行了集成，帮助我们在上层更轻松的使用，&lt;a href=&quot;https://eksworkshop.com/&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;EKS&lt;/a&gt; 默认会集成以下组件:  &lt;/p&gt;
 &lt;ul&gt;
 &lt;li&gt;kube-proxy&lt;/li&gt;
@@ -498,25 +498,25 @@
     
     </summary>
     
-      <category term="kubernetes" scheme="http://icyxp.github.io/categories/kubernetes/"/>
+      <category term="kubernetes" scheme="http://team.jiunile.com/categories/kubernetes/"/>
     
-      <category term="cloud" scheme="http://icyxp.github.io/categories/kubernetes/cloud/"/>
+      <category term="cloud" scheme="http://team.jiunile.com/categories/kubernetes/cloud/"/>
     
     
-      <category term="k8s" scheme="http://icyxp.github.io/tags/k8s/"/>
+      <category term="k8s" scheme="http://team.jiunile.com/tags/k8s/"/>
     
-      <category term="kubernetes" scheme="http://icyxp.github.io/tags/kubernetes/"/>
+      <category term="kubernetes" scheme="http://team.jiunile.com/tags/kubernetes/"/>
     
-      <category term="aws" scheme="http://icyxp.github.io/tags/aws/"/>
+      <category term="aws" scheme="http://team.jiunile.com/tags/aws/"/>
     
-      <category term="eks" scheme="http://icyxp.github.io/tags/eks/"/>
+      <category term="eks" scheme="http://team.jiunile.com/tags/eks/"/>
     
   </entry>
   
   <entry>
     <title>分析并解决AWS服务从ec2迁移至Kubernetes后延迟增加的问题</title>
-    <link href="http://icyxp.github.io//blog/2020/01/k8s-k8s-in-aws-latency.html"/>
-    <id>http://icyxp.github.io//blog/2020/01/k8s-k8s-in-aws-latency.html</id>
+    <link href="http://team.jiunile.com//blog/2020/01/k8s-k8s-in-aws-latency.html"/>
+    <id>http://team.jiunile.com//blog/2020/01/k8s-k8s-in-aws-latency.html</id>
     <published>2020-01-06T13:00:00.000Z</published>
     <updated>2020-01-07T07:30:48.000Z</updated>
     
@@ -579,23 +579,23 @@
     
     </summary>
     
-      <category term="kubernetes" scheme="http://icyxp.github.io/categories/kubernetes/"/>
+      <category term="kubernetes" scheme="http://team.jiunile.com/categories/kubernetes/"/>
     
     
-      <category term="k8s" scheme="http://icyxp.github.io/tags/k8s/"/>
+      <category term="k8s" scheme="http://team.jiunile.com/tags/k8s/"/>
     
-      <category term="kubernetes" scheme="http://icyxp.github.io/tags/kubernetes/"/>
+      <category term="kubernetes" scheme="http://team.jiunile.com/tags/kubernetes/"/>
     
-      <category term="迁移" scheme="http://icyxp.github.io/tags/%E8%BF%81%E7%A7%BB/"/>
+      <category term="迁移" scheme="http://team.jiunile.com/tags/%E8%BF%81%E7%A7%BB/"/>
     
-      <category term="延迟" scheme="http://icyxp.github.io/tags/%E5%BB%B6%E8%BF%9F/"/>
+      <category term="延迟" scheme="http://team.jiunile.com/tags/%E5%BB%B6%E8%BF%9F/"/>
     
   </entry>
   
   <entry>
     <title>LPR是什么，央行给有放贷的人带来什么新年礼物</title>
-    <link href="http://icyxp.github.io//blog/2020/01/lpr.html"/>
-    <id>http://icyxp.github.io//blog/2020/01/lpr.html</id>
+    <link href="http://team.jiunile.com//blog/2020/01/lpr.html"/>
+    <id>http://team.jiunile.com//blog/2020/01/lpr.html</id>
     <published>2020-01-06T12:00:00.000Z</published>
     <updated>2020-01-06T02:29:37.000Z</updated>
     
@@ -699,25 +699,25 @@
     
     </summary>
     
-      <category term="LPR" scheme="http://icyxp.github.io/categories/LPR/"/>
+      <category term="LPR" scheme="http://team.jiunile.com/categories/LPR/"/>
     
-      <category term="房贷" scheme="http://icyxp.github.io/categories/LPR/%E6%88%BF%E8%B4%B7/"/>
+      <category term="房贷" scheme="http://team.jiunile.com/categories/LPR/%E6%88%BF%E8%B4%B7/"/>
     
     
-      <category term="lpr" scheme="http://icyxp.github.io/tags/lpr/"/>
+      <category term="lpr" scheme="http://team.jiunile.com/tags/lpr/"/>
     
-      <category term="房贷" scheme="http://icyxp.github.io/tags/%E6%88%BF%E8%B4%B7/"/>
+      <category term="房贷" scheme="http://team.jiunile.com/tags/%E6%88%BF%E8%B4%B7/"/>
     
-      <category term="杂谈" scheme="http://icyxp.github.io/tags/%E6%9D%82%E8%B0%88/"/>
+      <category term="杂谈" scheme="http://team.jiunile.com/tags/%E6%9D%82%E8%B0%88/"/>
     
-      <category term="市场经济" scheme="http://icyxp.github.io/tags/%E5%B8%82%E5%9C%BA%E7%BB%8F%E6%B5%8E/"/>
+      <category term="市场经济" scheme="http://team.jiunile.com/tags/%E5%B8%82%E5%9C%BA%E7%BB%8F%E6%B5%8E/"/>
     
   </entry>
   
   <entry>
     <title>kubernetes coredns域名解析5秒记录</title>
-    <link href="http://icyxp.github.io//blog/2019/12/k8s-coredns-debug.html"/>
-    <id>http://icyxp.github.io//blog/2019/12/k8s-coredns-debug.html</id>
+    <link href="http://team.jiunile.com//blog/2019/12/k8s-coredns-debug.html"/>
+    <id>http://team.jiunile.com//blog/2019/12/k8s-coredns-debug.html</id>
     <published>2019-12-16T12:00:00.000Z</published>
     <updated>2019-12-16T08:23:39.000Z</updated>
     
@@ -801,25 +801,25 @@
     
     </summary>
     
-      <category term="kubernetes" scheme="http://icyxp.github.io/categories/kubernetes/"/>
+      <category term="kubernetes" scheme="http://team.jiunile.com/categories/kubernetes/"/>
     
-      <category term="coredns" scheme="http://icyxp.github.io/categories/kubernetes/coredns/"/>
+      <category term="coredns" scheme="http://team.jiunile.com/categories/kubernetes/coredns/"/>
     
     
-      <category term="k8s" scheme="http://icyxp.github.io/tags/k8s/"/>
+      <category term="k8s" scheme="http://team.jiunile.com/tags/k8s/"/>
     
-      <category term="kubernetes" scheme="http://icyxp.github.io/tags/kubernetes/"/>
+      <category term="kubernetes" scheme="http://team.jiunile.com/tags/kubernetes/"/>
     
-      <category term="coredns" scheme="http://icyxp.github.io/tags/coredns/"/>
+      <category term="coredns" scheme="http://team.jiunile.com/tags/coredns/"/>
     
-      <category term="5s" scheme="http://icyxp.github.io/tags/5s/"/>
+      <category term="5s" scheme="http://team.jiunile.com/tags/5s/"/>
     
   </entry>
   
   <entry>
     <title>白话Kubernetes核心组件及原理</title>
-    <link href="http://icyxp.github.io//blog/2019/12/k8s-k8s-intro.html"/>
-    <id>http://icyxp.github.io//blog/2019/12/k8s-k8s-intro.html</id>
+    <link href="http://team.jiunile.com//blog/2019/12/k8s-k8s-intro.html"/>
+    <id>http://team.jiunile.com//blog/2019/12/k8s-k8s-intro.html</id>
     <published>2019-12-06T12:00:00.000Z</published>
     <updated>2019-12-06T08:21:47.000Z</updated>
     
@@ -847,23 +847,23 @@
     
     </summary>
     
-      <category term="kubernetes" scheme="http://icyxp.github.io/categories/kubernetes/"/>
+      <category term="kubernetes" scheme="http://team.jiunile.com/categories/kubernetes/"/>
     
     
-      <category term="k8s" scheme="http://icyxp.github.io/tags/k8s/"/>
+      <category term="k8s" scheme="http://team.jiunile.com/tags/k8s/"/>
     
-      <category term="kubernetes" scheme="http://icyxp.github.io/tags/kubernetes/"/>
+      <category term="kubernetes" scheme="http://team.jiunile.com/tags/kubernetes/"/>
     
-      <category term="k8s组件" scheme="http://icyxp.github.io/tags/k8s%E7%BB%84%E4%BB%B6/"/>
+      <category term="k8s组件" scheme="http://team.jiunile.com/tags/k8s%E7%BB%84%E4%BB%B6/"/>
     
-      <category term="k8s原理" scheme="http://icyxp.github.io/tags/k8s%E5%8E%9F%E7%90%86/"/>
+      <category term="k8s原理" scheme="http://team.jiunile.com/tags/k8s%E5%8E%9F%E7%90%86/"/>
     
   </entry>
   
   <entry>
     <title>kubernetes修改主机ip</title>
-    <link href="http://icyxp.github.io//blog/2019/12/k8s-kubeadm-edit-hostip.html"/>
-    <id>http://icyxp.github.io//blog/2019/12/k8s-kubeadm-edit-hostip.html</id>
+    <link href="http://team.jiunile.com//blog/2019/12/k8s-kubeadm-edit-hostip.html"/>
+    <id>http://team.jiunile.com//blog/2019/12/k8s-kubeadm-edit-hostip.html</id>
     <published>2019-12-05T12:00:00.000Z</published>
     <updated>2019-12-05T06:22:11.000Z</updated>
     
@@ -879,25 +879,25 @@
     
     </summary>
     
-      <category term="kubernetes" scheme="http://icyxp.github.io/categories/kubernetes/"/>
+      <category term="kubernetes" scheme="http://team.jiunile.com/categories/kubernetes/"/>
     
     
-      <category term="k8s" scheme="http://icyxp.github.io/tags/k8s/"/>
+      <category term="k8s" scheme="http://team.jiunile.com/tags/k8s/"/>
     
-      <category term="kubernetes" scheme="http://icyxp.github.io/tags/kubernetes/"/>
+      <category term="kubernetes" scheme="http://team.jiunile.com/tags/kubernetes/"/>
     
-      <category term="kubeadm" scheme="http://icyxp.github.io/tags/kubeadm/"/>
+      <category term="kubeadm" scheme="http://team.jiunile.com/tags/kubeadm/"/>
     
-      <category term="主机名" scheme="http://icyxp.github.io/tags/%E4%B8%BB%E6%9C%BA%E5%90%8D/"/>
+      <category term="主机名" scheme="http://team.jiunile.com/tags/%E4%B8%BB%E6%9C%BA%E5%90%8D/"/>
     
-      <category term="主机ip" scheme="http://icyxp.github.io/tags/%E4%B8%BB%E6%9C%BAip/"/>
+      <category term="主机ip" scheme="http://team.jiunile.com/tags/%E4%B8%BB%E6%9C%BAip/"/>
     
   </entry>
   
   <entry>
     <title>在 Kubernetes 中配置 Container Capabilities</title>
-    <link href="http://icyxp.github.io//blog/2019/12/capabilities.html"/>
-    <id>http://icyxp.github.io//blog/2019/12/capabilities.html</id>
+    <link href="http://team.jiunile.com//blog/2019/12/capabilities.html"/>
+    <id>http://team.jiunile.com//blog/2019/12/capabilities.html</id>
     <published>2019-12-03T12:00:00.000Z</published>
     <updated>2019-12-03T06:09:50.000Z</updated>
     
@@ -956,25 +956,25 @@
     
     </summary>
     
-      <category term="kubernetes" scheme="http://icyxp.github.io/categories/kubernetes/"/>
+      <category term="kubernetes" scheme="http://team.jiunile.com/categories/kubernetes/"/>
     
-      <category term="capabilities" scheme="http://icyxp.github.io/categories/kubernetes/capabilities/"/>
+      <category term="capabilities" scheme="http://team.jiunile.com/categories/kubernetes/capabilities/"/>
     
     
-      <category term="k8s" scheme="http://icyxp.github.io/tags/k8s/"/>
+      <category term="k8s" scheme="http://team.jiunile.com/tags/k8s/"/>
     
-      <category term="kubernetes" scheme="http://icyxp.github.io/tags/kubernetes/"/>
+      <category term="kubernetes" scheme="http://team.jiunile.com/tags/kubernetes/"/>
     
-      <category term="capabilities" scheme="http://icyxp.github.io/tags/capabilities/"/>
+      <category term="capabilities" scheme="http://team.jiunile.com/tags/capabilities/"/>
     
-      <category term="docker" scheme="http://icyxp.github.io/tags/docker/"/>
+      <category term="docker" scheme="http://team.jiunile.com/tags/docker/"/>
     
   </entry>
   
   <entry>
     <title>golang如何取消子 goroutine</title>
-    <link href="http://icyxp.github.io//blog/2019/09/go-cancellation-of-goroutines.html"/>
-    <id>http://icyxp.github.io//blog/2019/09/go-cancellation-of-goroutines.html</id>
+    <link href="http://team.jiunile.com//blog/2019/09/go-cancellation-of-goroutines.html"/>
+    <id>http://team.jiunile.com//blog/2019/09/go-cancellation-of-goroutines.html</id>
     <published>2019-09-27T14:00:00.000Z</published>
     <updated>2019-09-27T09:18:23.000Z</updated>
     
@@ -1003,23 +1003,23 @@
     
     </summary>
     
-      <category term="Go" scheme="http://icyxp.github.io/categories/Go/"/>
+      <category term="Go" scheme="http://team.jiunile.com/categories/Go/"/>
     
     
-      <category term="golang" scheme="http://icyxp.github.io/tags/golang/"/>
+      <category term="golang" scheme="http://team.jiunile.com/tags/golang/"/>
     
-      <category term="goroutine" scheme="http://icyxp.github.io/tags/goroutine/"/>
+      <category term="goroutine" scheme="http://team.jiunile.com/tags/goroutine/"/>
     
-      <category term="chanel" scheme="http://icyxp.github.io/tags/chanel/"/>
+      <category term="chanel" scheme="http://team.jiunile.com/tags/chanel/"/>
     
-      <category term="context" scheme="http://icyxp.github.io/tags/context/"/>
+      <category term="context" scheme="http://team.jiunile.com/tags/context/"/>
     
   </entry>
   
   <entry>
     <title>Go 程序占用大量内存问题分析</title>
-    <link href="http://icyxp.github.io//blog/2019/09/go-debug-memory.html"/>
-    <id>http://icyxp.github.io//blog/2019/09/go-debug-memory.html</id>
+    <link href="http://team.jiunile.com//blog/2019/09/go-debug-memory.html"/>
+    <id>http://team.jiunile.com//blog/2019/09/go-debug-memory.html</id>
     <published>2019-09-25T14:00:00.000Z</published>
     <updated>2019-09-24T08:27:33.000Z</updated>
     
@@ -1052,23 +1052,23 @@
     
     </summary>
     
-      <category term="Go" scheme="http://icyxp.github.io/categories/Go/"/>
+      <category term="Go" scheme="http://team.jiunile.com/categories/Go/"/>
     
     
-      <category term="golang" scheme="http://icyxp.github.io/tags/golang/"/>
+      <category term="golang" scheme="http://team.jiunile.com/tags/golang/"/>
     
-      <category term="pprof" scheme="http://icyxp.github.io/tags/pprof/"/>
+      <category term="pprof" scheme="http://team.jiunile.com/tags/pprof/"/>
     
-      <category term="内存分析" scheme="http://icyxp.github.io/tags/%E5%86%85%E5%AD%98%E5%88%86%E6%9E%90/"/>
+      <category term="内存分析" scheme="http://team.jiunile.com/tags/%E5%86%85%E5%AD%98%E5%88%86%E6%9E%90/"/>
     
-      <category term="ioutil.ReadAll" scheme="http://icyxp.github.io/tags/ioutil-ReadAll/"/>
+      <category term="ioutil.ReadAll" scheme="http://team.jiunile.com/tags/ioutil-ReadAll/"/>
     
   </entry>
   
   <entry>
     <title>慎用&lt;-time.After()，容易导致内存泄漏</title>
-    <link href="http://icyxp.github.io//blog/2019/09/go-select-timer.html"/>
-    <id>http://icyxp.github.io//blog/2019/09/go-select-timer.html</id>
+    <link href="http://team.jiunile.com//blog/2019/09/go-select-timer.html"/>
+    <id>http://team.jiunile.com//blog/2019/09/go-select-timer.html</id>
     <published>2019-09-25T13:00:00.000Z</published>
     <updated>2019-09-24T07:21:43.000Z</updated>
     
@@ -1094,21 +1094,21 @@
     
     </summary>
     
-      <category term="Go" scheme="http://icyxp.github.io/categories/Go/"/>
+      <category term="Go" scheme="http://team.jiunile.com/categories/Go/"/>
     
     
-      <category term="timer.After" scheme="http://icyxp.github.io/tags/timer-After/"/>
+      <category term="timer.After" scheme="http://team.jiunile.com/tags/timer-After/"/>
     
-      <category term="内存泄漏" scheme="http://icyxp.github.io/tags/%E5%86%85%E5%AD%98%E6%B3%84%E6%BC%8F/"/>
+      <category term="内存泄漏" scheme="http://team.jiunile.com/tags/%E5%86%85%E5%AD%98%E6%B3%84%E6%BC%8F/"/>
     
-      <category term="select" scheme="http://icyxp.github.io/tags/select/"/>
+      <category term="select" scheme="http://team.jiunile.com/tags/select/"/>
     
   </entry>
   
   <entry>
     <title>Go 陷阱系列</title>
-    <link href="http://icyxp.github.io//blog/2019/09/go-trap.html"/>
-    <id>http://icyxp.github.io//blog/2019/09/go-trap.html</id>
+    <link href="http://team.jiunile.com//blog/2019/09/go-trap.html"/>
+    <id>http://team.jiunile.com//blog/2019/09/go-trap.html</id>
     <published>2019-09-25T12:00:00.000Z</published>
     <updated>2019-09-24T07:20:05.000Z</updated>
     
@@ -1132,21 +1132,21 @@
     
     </summary>
     
-      <category term="Go" scheme="http://icyxp.github.io/categories/Go/"/>
+      <category term="Go" scheme="http://team.jiunile.com/categories/Go/"/>
     
     
-      <category term="golang" scheme="http://icyxp.github.io/tags/golang/"/>
+      <category term="golang" scheme="http://team.jiunile.com/tags/golang/"/>
     
-      <category term="坑" scheme="http://icyxp.github.io/tags/%E5%9D%91/"/>
+      <category term="坑" scheme="http://team.jiunile.com/tags/%E5%9D%91/"/>
     
-      <category term="陷阱" scheme="http://icyxp.github.io/tags/%E9%99%B7%E9%98%B1/"/>
+      <category term="陷阱" scheme="http://team.jiunile.com/tags/%E9%99%B7%E9%98%B1/"/>
     
   </entry>
   
   <entry>
     <title>控制 Goroutine 的并发数量</title>
-    <link href="http://icyxp.github.io//blog/2019/09/go-control-goroutine-number.html"/>
-    <id>http://icyxp.github.io//blog/2019/09/go-control-goroutine-number.html</id>
+    <link href="http://team.jiunile.com//blog/2019/09/go-control-goroutine-number.html"/>
+    <id>http://team.jiunile.com//blog/2019/09/go-control-goroutine-number.html</id>
     <published>2019-09-18T12:00:00.000Z</published>
     <updated>2019-09-23T02:23:21.000Z</updated>
     
@@ -1182,21 +1182,21 @@
     
     </summary>
     
-      <category term="Go" scheme="http://icyxp.github.io/categories/Go/"/>
+      <category term="Go" scheme="http://team.jiunile.com/categories/Go/"/>
     
     
-      <category term="goroutine" scheme="http://icyxp.github.io/tags/goroutine/"/>
+      <category term="goroutine" scheme="http://team.jiunile.com/tags/goroutine/"/>
     
-      <category term="并发数" scheme="http://icyxp.github.io/tags/%E5%B9%B6%E5%8F%91%E6%95%B0/"/>
+      <category term="并发数" scheme="http://team.jiunile.com/tags/%E5%B9%B6%E5%8F%91%E6%95%B0/"/>
     
-      <category term="channel" scheme="http://icyxp.github.io/tags/channel/"/>
+      <category term="channel" scheme="http://team.jiunile.com/tags/channel/"/>
     
   </entry>
   
   <entry>
     <title>Podman、Skopeo和Buildah下一代容器代替Docker</title>
-    <link href="http://icyxp.github.io//blog/2019/09/containers-podman-skopeo-buildah.html"/>
-    <id>http://icyxp.github.io//blog/2019/09/containers-podman-skopeo-buildah.html</id>
+    <link href="http://team.jiunile.com//blog/2019/09/containers-podman-skopeo-buildah.html"/>
+    <id>http://team.jiunile.com//blog/2019/09/containers-podman-skopeo-buildah.html</id>
     <published>2019-09-12T12:00:00.000Z</published>
     <updated>2019-09-12T03:03:40.000Z</updated>
     
@@ -1241,27 +1241,27 @@
     
     </summary>
     
-      <category term="Containers" scheme="http://icyxp.github.io/categories/Containers/"/>
+      <category term="Containers" scheme="http://team.jiunile.com/categories/Containers/"/>
     
     
-      <category term="docker" scheme="http://icyxp.github.io/tags/docker/"/>
+      <category term="docker" scheme="http://team.jiunile.com/tags/docker/"/>
     
-      <category term="podman" scheme="http://icyxp.github.io/tags/podman/"/>
+      <category term="podman" scheme="http://team.jiunile.com/tags/podman/"/>
     
-      <category term="skopeo" scheme="http://icyxp.github.io/tags/skopeo/"/>
+      <category term="skopeo" scheme="http://team.jiunile.com/tags/skopeo/"/>
     
-      <category term="buildah" scheme="http://icyxp.github.io/tags/buildah/"/>
+      <category term="buildah" scheme="http://team.jiunile.com/tags/buildah/"/>
     
-      <category term="容器" scheme="http://icyxp.github.io/tags/%E5%AE%B9%E5%99%A8/"/>
+      <category term="容器" scheme="http://team.jiunile.com/tags/%E5%AE%B9%E5%99%A8/"/>
     
-      <category term="containers" scheme="http://icyxp.github.io/tags/containers/"/>
+      <category term="containers" scheme="http://team.jiunile.com/tags/containers/"/>
     
   </entry>
   
   <entry>
     <title>Kubelet 状态更新机制</title>
-    <link href="http://icyxp.github.io//blog/2019/08/k8s-kubelet-sync-node-status.html"/>
-    <id>http://icyxp.github.io//blog/2019/08/k8s-kubelet-sync-node-status.html</id>
+    <link href="http://team.jiunile.com//blog/2019/08/k8s-kubelet-sync-node-status.html"/>
+    <id>http://team.jiunile.com//blog/2019/08/k8s-kubelet-sync-node-status.html</id>
     <published>2019-08-27T14:00:00.000Z</published>
     <updated>2019-08-27T07:15:49.000Z</updated>
     
@@ -1436,23 +1436,23 @@
     
     </summary>
     
-      <category term="kubernetes" scheme="http://icyxp.github.io/categories/kubernetes/"/>
+      <category term="kubernetes" scheme="http://team.jiunile.com/categories/kubernetes/"/>
     
-      <category term="kubelet" scheme="http://icyxp.github.io/categories/kubernetes/kubelet/"/>
+      <category term="kubelet" scheme="http://team.jiunile.com/categories/kubernetes/kubelet/"/>
     
     
-      <category term="k8s" scheme="http://icyxp.github.io/tags/k8s/"/>
+      <category term="k8s" scheme="http://team.jiunile.com/tags/k8s/"/>
     
-      <category term="kubelet" scheme="http://icyxp.github.io/tags/kubelet/"/>
+      <category term="kubelet" scheme="http://team.jiunile.com/tags/kubelet/"/>
     
-      <category term="更新机制" scheme="http://icyxp.github.io/tags/%E6%9B%B4%E6%96%B0%E6%9C%BA%E5%88%B6/"/>
+      <category term="更新机制" scheme="http://team.jiunile.com/tags/%E6%9B%B4%E6%96%B0%E6%9C%BA%E5%88%B6/"/>
     
   </entry>
   
   <entry>
     <title>Calico 3.5+ 根据节点标签分配 IP 地址</title>
-    <link href="http://icyxp.github.io//blog/2019/08/k8s-calico-assigning-ip.html"/>
-    <id>http://icyxp.github.io//blog/2019/08/k8s-calico-assigning-ip.html</id>
+    <link href="http://team.jiunile.com//blog/2019/08/k8s-calico-assigning-ip.html"/>
+    <id>http://team.jiunile.com//blog/2019/08/k8s-calico-assigning-ip.html</id>
     <published>2019-08-27T13:00:00.000Z</published>
     <updated>2019-08-27T02:33:32.000Z</updated>
     
@@ -1502,21 +1502,21 @@
     
     </summary>
     
-      <category term="calico" scheme="http://icyxp.github.io/categories/calico/"/>
+      <category term="calico" scheme="http://team.jiunile.com/categories/calico/"/>
     
     
-      <category term="k8s" scheme="http://icyxp.github.io/tags/k8s/"/>
+      <category term="k8s" scheme="http://team.jiunile.com/tags/k8s/"/>
     
-      <category term="ip分配" scheme="http://icyxp.github.io/tags/ip%E5%88%86%E9%85%8D/"/>
+      <category term="ip分配" scheme="http://team.jiunile.com/tags/ip%E5%88%86%E9%85%8D/"/>
     
-      <category term="calico" scheme="http://icyxp.github.io/tags/calico/"/>
+      <category term="calico" scheme="http://team.jiunile.com/tags/calico/"/>
     
   </entry>
   
   <entry>
     <title>镜像漏洞检测工具 -- Trivy</title>
-    <link href="http://icyxp.github.io//blog/2019/08/security-trivy.html"/>
-    <id>http://icyxp.github.io//blog/2019/08/security-trivy.html</id>
+    <link href="http://team.jiunile.com//blog/2019/08/security-trivy.html"/>
+    <id>http://team.jiunile.com//blog/2019/08/security-trivy.html</id>
     <published>2019-08-27T12:00:00.000Z</published>
     <updated>2019-08-27T01:46:11.000Z</updated>
     
@@ -1706,16 +1706,16 @@
     
     </summary>
     
-      <category term="安全" scheme="http://icyxp.github.io/categories/%E5%AE%89%E5%85%A8/"/>
+      <category term="安全" scheme="http://team.jiunile.com/categories/%E5%AE%89%E5%85%A8/"/>
     
     
-      <category term="镜像扫描" scheme="http://icyxp.github.io/tags/%E9%95%9C%E5%83%8F%E6%89%AB%E6%8F%8F/"/>
+      <category term="镜像扫描" scheme="http://team.jiunile.com/tags/%E9%95%9C%E5%83%8F%E6%89%AB%E6%8F%8F/"/>
     
-      <category term="漏洞" scheme="http://icyxp.github.io/tags/%E6%BC%8F%E6%B4%9E/"/>
+      <category term="漏洞" scheme="http://team.jiunile.com/tags/%E6%BC%8F%E6%B4%9E/"/>
     
-      <category term="csv" scheme="http://icyxp.github.io/tags/csv/"/>
+      <category term="csv" scheme="http://team.jiunile.com/tags/csv/"/>
     
-      <category term="trivy" scheme="http://icyxp.github.io/tags/trivy/"/>
+      <category term="trivy" scheme="http://team.jiunile.com/tags/trivy/"/>
     
   </entry>
   
