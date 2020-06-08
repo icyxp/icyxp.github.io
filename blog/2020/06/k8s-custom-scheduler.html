@@ -1,0 +1,1615 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next mist use-motion" lang="zh-Hans">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+<script src="//cdn.bootcss.com/pace/1.0.2/pace.min.js"></script>
+<link href="//cdn.bootcss.com/pace/1.0.2/themes/pink/pace-theme-flash.css" rel="stylesheet">
+<script>
+    (function () {
+        if ('') {
+            if (prompt('请输入文章密码') !== '') {
+                alert('密码错误！');
+                if (history.length === 1) {
+                    location.replace("http://team.jiunile.com"); // 这里替换成你的首页
+                } else {
+                    history.back();
+                }
+            }
+        }
+    })();
+</script>
+<meta name="theme-color" content="#222">
+<style>
+    .pace .pace-progress {
+        background: #1E92FB; /*进度条颜色*/
+        height: 2px;
+    }
+    .pace .pace-progress-inner {
+         box-shadow: 0 0 10px #1E92FB, 0 0 5px     #1E92FB; /*阴影颜色*/
+    }
+    .pace .pace-activity {
+        border-top-color: #1E92FB;    /*上边框颜色*/
+        border-left-color: #1E92FB;    /*左边框颜色*/
+    }
+</style>
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+<!--
+  <script>
+  (function(i,s,o,g,r,a,m){i["DaoVoiceObject"]=r;i[r]=i[r]||function(){(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;a.charset="utf-8";m.parentNode.insertBefore(a,m)})(window,document,"script",('https:' == document.location.protocol ? 'https:' : 'http:') + "//widget.daovoice.io/widget/0f81ff2f.js","daovoice")
+  daovoice('init', {
+      app_id: "2a2a668f"
+    });
+  daovoice('update');
+  </script>
+-->
+<!--
+<script type='text/javascript'>
+  (function (window, a, b) {
+    window[a] = window[a] || function () {
+        (window[a].a = window[a].a || []).push(arguments)
+    };
+    window[b] = window[b] || function () {
+        (window[b].a = window[b].a || []).push(arguments)
+    };
+    var s = document.createElement("script");
+    s.src = "https://jsapi.weiliaokefu.com/Public/dist/js/jsapi.js?v=" + Math.round(Math.random() * 1000);
+    s.async = true;
+    s.charset = "UTF-8";
+    document.getElementsByTagName("head")[0].appendChild(s);
+  })(window, '_FENBOT', "_FENBOT_API");
+  _FENBOT({cid: '36159', type: '0'});
+</script>
+-->
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/favicon.ico?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon.ico?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon.ico?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/favicon.ico?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="k8s,kubernetes,go,scheduler," />
+
+
+
+
+
+  <link rel="alternate" href="/atom.xml" title="CloudNative 架构" type="application/atom+xml" />
+
+
+
+
+
+
+<meta name="description" content="简介kube-scheduler 是 kubernetes 的核心组件之一，主要负责整个集群资源的调度功能，根据特定的调度算法和策略，将 Pod 调度到最优的工作节点上面去，从而更加合理、更加充分的利用集群的资源，这也是我们选择使用 kubernetes 一个非常重要的理由。如果一门新的技术不能帮助企业节约成本、提供效率，我相信是很难推进的。
+调度流程默认情况下，kube-scheduler 提供">
+<meta property="og:type" content="article">
+<meta property="og:title" content="自定义 Kubernetes 调度器">
+<meta property="og:url" content="http://team.jiunile.com/blog/2020/06/k8s-custom-scheduler.html">
+<meta property="og:site_name" content="CloudNative 架构">
+<meta property="og:description" content="简介kube-scheduler 是 kubernetes 的核心组件之一，主要负责整个集群资源的调度功能，根据特定的调度算法和策略，将 Pod 调度到最优的工作节点上面去，从而更加合理、更加充分的利用集群的资源，这也是我们选择使用 kubernetes 一个非常重要的理由。如果一门新的技术不能帮助企业节约成本、提供效率，我相信是很难推进的。
+调度流程默认情况下，kube-scheduler 提供">
+<meta property="og:image" content="http://team.jiunile.com/images/k8s/kube-scheduler-overview.png">
+<meta property="og:image" content="http://team.jiunile.com/images/k8s/scheduling-framework-extensions.png">
+<meta property="og:updated_time" content="2020-06-08T08:35:55.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="自定义 Kubernetes 调度器">
+<meta name="twitter:description" content="简介kube-scheduler 是 kubernetes 的核心组件之一，主要负责整个集群资源的调度功能，根据特定的调度算法和策略，将 Pod 调度到最优的工作节点上面去，从而更加合理、更加充分的利用集群的资源，这也是我们选择使用 kubernetes 一个非常重要的理由。如果一门新的技术不能帮助企业节约成本、提供效率，我相信是很难推进的。
+调度流程默认情况下，kube-scheduler 提供">
+<meta name="twitter:image" content="http://team.jiunile.com/images/k8s/kube-scheduler-overview.png">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Mist',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://team.jiunile.com/blog/2020/06/k8s-custom-scheduler.html"/>
+
+
+
+
+
+  <title>自定义 Kubernetes 调度器 | CloudNative 架构</title>
+  
+
+
+
+
+
+  <script type="text/javascript">
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "https://hm.baidu.com/hm.js?126663bc923877f90024929ac5555b0f";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+
+
+
+  <!-- 页面点击小红心 -->
+  <script type="text/javascript" src="/js/src/love.js"></script>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+    <a href="https://github.com/icyxp"><a href="https://github.com/icyxp" class="github-corner" aria-label="View source on GitHub"><svg width="80" height="80" viewBox="0 0 250 250" style="fill:#151513; color:#fff; position: absolute; top: 0; border: 0; right: 0;" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path></svg></a><style>.github-corner:hover .octo-arm{animation:octocat-wave 560ms ease-in-out}@keyframes octocat-wave{0%,100%{transform:rotate(0)}20%,60%{transform:rotate(-25deg)}40%,80%{transform:rotate(10deg)}}@media (max-width:500px){.github-corner:hover .octo-arm{animation:none}.github-corner .octo-arm{animation:octocat-wave 560ms ease-in-out}}</style></a>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">CloudNative 架构</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <h1 class="site-subtitle" itemprop="description">CloudNative|云原生应用架构|云原生架构|容器化架构|微服务架构|平台架构|基础架构</h1>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br />
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-k8s">
+          <a href="/pro/k8s/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-heartbeat"></i> <br />
+            
+            k8s离线安装包
+          </a>
+        </li>
+      
+
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="popup-trigger">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br />
+            
+            搜索
+          </a>
+        </li>
+      
+    </ul>
+  
+
+  
+    <div class="site-search">
+      
+  <div class="popup search-popup local-search-popup">
+  <div class="local-search-header clearfix">
+    <span class="search-icon">
+      <i class="fa fa-search"></i>
+    </span>
+    <span class="popup-btn-close">
+      <i class="fa fa-times-circle"></i>
+    </span>
+    <div class="local-search-input-wrapper">
+      <input autocomplete="off"
+             placeholder="搜索..." spellcheck="false"
+             type="text" id="local-search-input">
+    </div>
+  </div>
+  <div id="local-search-result"></div>
+</div>
+
+
+
+    </div>
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://team.jiunile.com/blog/2020/06/k8s-custom-scheduler.html">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="icyboy">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="CloudNative 架构">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h2 class="post-title" itemprop="name headline">自定义 Kubernetes 调度器</h2>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2020-06-08T19:00:00+08:00">
+                2020-06-08
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/kubrenetes/" itemprop="url" rel="index">
+                    <span itemprop="name">kubrenetes</span>
+                  </a>
+                </span>
+
+                
+                
+                  ， 
+                
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/kubrenetes/调度器/" itemprop="url" rel="index">
+                    <span itemprop="name">调度器</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+                <a href="/blog/2020/06/k8s-custom-scheduler.html#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count valine-comment-count" data-xid="/blog/2020/06/k8s-custom-scheduler.html" itemprop="commentCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+          
+             <span id="/blog/2020/06/k8s-custom-scheduler.html" class="leancloud_visitors" data-flag-title="自定义 Kubernetes 调度器">
+               <span class="post-meta-divider">|</span>
+               <span class="post-meta-item-icon">
+                 <i class="fa fa-eye"></i>
+               </span>
+               
+                 <span class="post-meta-item-text">热度&#58;</span>
+               
+                 <span class="leancloud-visitors-count"></span>
+		 <span>℃</span>
+             </span>
+          
+
+          
+
+          
+            <div class="post-wordcount">
+              
+                
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-file-word-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">字数统计&#58;</span>
+                
+                <span title="字数统计">
+                  9,413 字
+                </span>
+              
+
+              
+                <span class="post-meta-divider">|</span>
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-clock-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">阅读时长 &asymp;</span>
+                
+                <span title="阅读时长">
+                  42 分钟
+                </span>
+              
+            </div>
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h2 id="简介"><a href="#简介" class="headerlink" title="简介"></a>简介</h2><p><code>kube-scheduler</code> 是 kubernetes 的核心组件之一，主要负责整个集群资源的调度功能，根据特定的调度算法和策略，将 Pod 调度到最优的工作节点上面去，从而更加合理、更加充分的利用集群的资源，这也是我们选择使用 kubernetes 一个非常重要的理由。如果一门新的技术不能帮助企业节约成本、提供效率，我相信是很难推进的。</p>
+<h2 id="调度流程"><a href="#调度流程" class="headerlink" title="调度流程"></a>调度流程</h2><p>默认情况下，<code>kube-scheduler</code> 提供的默认调度器能够满足我们绝大多数的要求，我们前面和大家接触的示例也基本上用的默认的策略，都可以保证我们的 Pod 可以被分配到资源充足的节点上运行。但是在实际的线上项目中，可能我们自己会比 kubernetes 更加了解我们自己的应用，比如我们希望一个 Pod 只能运行在特定的几个节点上，或者这几个节点只能用来运行特定类型的应用，这就需要我们的调度器能够可控。</p>
+<p><code>kube-scheduler</code> 的主要作用就是根据特定的调度算法和调度策略将 Pod 调度到合适的 Node 节点上去，是一个独立的二进制程序，启动之后会一直监听 API Server，获取到 <code>PodSpec.NodeName</code> 为空的 Pod，对每个 Pod 都会创建一个 binding。<br><img src="/images/k8s/kube-scheduler-overview.png" alt="kube-scheduler-overview"><br><a id="more"></a><br>这个过程在我们看来好像比较简单，但在实际的生产环境中，需要考虑的问题就有很多了：</p>
+<ul>
+<li>如何保证全部的节点调度的公平性？要知道并不是所有节点资源配置一定都是一样的</li>
+<li>如何保证每个节点都能被分配资源？</li>
+<li>集群资源如何能够被高效利用？</li>
+<li>集群资源如何才能被最大化使用？</li>
+<li>如何保证 Pod 调度的性能和效率？</li>
+<li>用户是否可以根据自己的实际需求定制自己的调度策略？</li>
+</ul>
+<p>考虑到实际环境中的各种复杂情况，kubernetes 的调度器采用插件化的形式实现，可以方便用户进行定制或者二次开发，我们可以自定义一个调度器并以插件形式和 kubernetes 进行集成。</p>
+<p>kubernetes 调度器的源码位于 <code>kubernetes/pkg/scheduler</code> 中，大体的代码目录结构如下所示：(不同的版本目录结构可能不太一样)<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">kubernetes/pkg/scheduler</span><br><span class="line">-- scheduler.go         //调度相关的具体实现</span><br><span class="line">|-- algorithm</span><br><span class="line">|   |-- predicates      //节点筛选策略</span><br><span class="line">|   |-- priorities      //节点打分策略</span><br><span class="line">|-- algorithmprovider</span><br><span class="line">|   |-- defaults         //定义默认的调度器</span><br></pre></td></tr></table></figure></p>
+<p>其中 Scheduler 创建和运行的核心程序，对应的代码在 <code>pkg/scheduler/scheduler.go</code>，如果要查看 <code>kube-scheduler</code> 的入口程序，对应的代码在 <code>cmd/kube-scheduler/scheduler.go</code>。</p>
+<h2 id="自定义调度器"><a href="#自定义调度器" class="headerlink" title="自定义调度器"></a>自定义调度器</h2><p>一般来说，我们有4种扩展 Kubernetes 调度器的方法。</p>
+<ul>
+<li>一种方法就是直接 clone 官方的 kube-scheduler 源代码，在合适的位置直接修改代码，然后重新编译运行修改后的程序，当然这种方法是最不建议使用的，也不实用，因为需要花费大量额外的精力来和上游的调度程序更改保持一致。</li>
+<li>第二种方法就是和默认的调度程序一起运行独立的调度程序，默认的调度器和我们自定义的调度器可以通过 Pod 的 <code>spec.schedulerName</code> 来覆盖各自的 Pod，默认是使用 default 默认的调度器，但是多个调度程序共存的情况下也比较麻烦，比如当多个调度器将 Pod 调度到同一个节点的时候，可能会遇到一些问题，因为很有可能两个调度器都同时将两个 Pod 调度到同一个节点上去，但是很有可能其中一个 Pod 运行后其实资源就消耗完了，并且维护一个高质量的自定义调度程序也不是很容易的，因为我们需要全面了解默认的调度程序，整体 Kubernetes 的架构知识以及各种 Kubernetes API 对象的各种关系或限制。</li>
+<li>第三种方法是<a href="https://github.com/kubernetes/community/blob/master/contributors/design-proposals/scheduling/scheduler_extender.md" target="_blank" rel="external">调度器扩展程序</a>，这个方案目前是一个可行的方案，可以和上游调度程序兼容，所谓的调度器扩展程序其实就是一个可配置的 Webhook 而已，里面包含 <code>过滤器</code> 和 <code>优先级</code> 两个端点，分别对应调度周期中的两个主要阶段（过滤和打分）。</li>
+<li>第四种方法是通过调度框架（Scheduling Framework），Kubernetes v1.15 版本中引入了可插拔架构的调度框架，使得定制调度器这个任务变得更加的容易。调库框架向现有的调度器中添加了一组插件化的 API，该 API 在保持调度程序“核心”简单且易于维护的同时，使得大部分的调度功能以插件的形式存在，而且在我们现在的 v1.16 版本中上面的 <code>调度器扩展程序</code> 也已经被废弃了，所以以后调度框架才是自定义调度器的核心方式。</li>
+</ul>
+<p>这里我们可以简单介绍下后面两种方式的实现。</p>
+<h3 id="调度器扩展程序"><a href="#调度器扩展程序" class="headerlink" title="调度器扩展程序"></a>调度器扩展程序</h3><p>在进入调度器扩展程序之前，我们再来了解下 Kubernetes 调度程序是如何工作的:</p>
+<ol>
+<li>默认调度器根据指定的参数启动（我们使用 kubeadm 搭建的集群，启动配置文件位于 <code>/etc/kubernetes/manifests/kube-schdueler.yaml</code>）</li>
+<li>watch apiserver，将 <code>spec.nodeName</code> 为空的 Pod 放入调度器内部的调度队列中</li>
+<li>从调度队列中 Pop 出一个 Pod，开始一个标准的调度周期</li>
+<li>从 Pod 属性中检索“硬性要求”（比如 CPU/内存请求值，nodeSelector/nodeAffinity），然后过滤阶段发生，在该阶段计算出满足要求的节点候选列表</li>
+<li>从 Pod 属性中检索“软需求”，并应用一些默认的“软策略”（比如 Pod 倾向于在节点上更加聚拢或分散），最后，它为每个候选节点给出一个分数，并挑选出得分最高的最终获胜者</li>
+<li>和 apiserver 通信（发送绑定调用），然后设置 Pod 的 <code>spec.nodeName</code> 属性以表示将该 Pod 调度到的节点。</li>
+</ol>
+<p>我们可以通过查看<a href="https://kubernetes.io/docs/reference/command-line-tools-reference/kube-scheduler/" target="_blank" rel="external">官方文档</a>，可以通过 <code>--config</code> 参数指定调度器将使用哪些参数，该配置文件应该包含一个 <a href="https://godoc.org/k8s.io/kubernetes/pkg/scheduler/apis/config#KubeSchedulerConfiguration" target="_blank" rel="external">KubeSchedulerConfiguration</a> 对象，如下所示格式：（/etc/kubernetes/scheduler-extender.yaml)<br><figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"> <span class="comment"># 通过"--config" 传递文件内容</span></span><br><span class="line"><span class="attr">apiVersion:</span> kubescheduler.config.k8s.io/v1alpha1</span><br><span class="line"><span class="attr">kind:</span> KubeSchedulerConfiguration</span><br><span class="line"><span class="attr">clientConnection:</span></span><br><span class="line"><span class="attr">  kubeconfig:</span> <span class="string">"/etc/kubernetes/scheduler.conf"</span></span><br><span class="line"><span class="attr">algorithmSource:</span></span><br><span class="line"><span class="attr">  policy:</span></span><br><span class="line"><span class="attr">    file:</span></span><br><span class="line"><span class="attr">      path:</span> <span class="string">"/etc/kubernetes/scheduler-extender-policy.yaml"</span>  <span class="comment"># 指定自定义调度策略文件</span></span><br></pre></td></tr></table></figure></p>
+<p>我们在这里应该输入的关键参数是 <code>algorithmSource.policy</code>，这个策略文件可以是本地文件也可以是 ConfigMap 资源对象，这取决于调度程序的部署方式，比如我们这里默认的调度器是静态 Pod 方式启动的，所以我们可以用本地文件的形式来配置。</p>
+<p>该策略文件 <code>/etc/kubernetes/scheduler-extender-policy.yaml</code> 应该遵循 <a href="https://godoc.org/k8s.io/kubernetes/pkg/scheduler/apis/config#Policy" target="_blank" rel="external">kubernetes/pkg/scheduler/apis/config/legacy_types.go#L28</a> 的要求，在我们这里的 v1.16.2 版本中已经支持 JSON 和 YAML 两种格式的策略文件，下面是我们定义的一个简单的示例，可以查看 <a href="https://godoc.org/k8s.io/kubernetes/pkg/scheduler/apis/config#Extender" target="_blank" rel="external">Extender</a> 描述了解策略文件的定义规范：<br><figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">apiVersion:</span> v1</span><br><span class="line"><span class="attr">kind:</span> Policy</span><br><span class="line"><span class="attr">extenders:</span></span><br><span class="line"><span class="attr">- urlPrefix:</span> <span class="string">"http://127.0.0.1:8888/"</span></span><br><span class="line"><span class="attr">  filterVerb:</span> <span class="string">"filter"</span></span><br><span class="line"><span class="attr">  prioritizeVerb:</span> <span class="string">"prioritize"</span></span><br><span class="line"><span class="attr">  weight:</span> <span class="number">1</span></span><br><span class="line"><span class="attr">  enableHttps:</span> <span class="literal">false</span></span><br></pre></td></tr></table></figure></p>
+<p>我们这里的 Policy 策略文件是通过定义 <code>extenders</code> 来扩展调度器的，有时候我们不需要去编写代码，可以直接在该配置文件中通过指定 <code>predicates</code> 和 <code>priorities</code> 来进行自定义，如果没有指定则会使用默认的 <code>DefaultProvier</code>：<br><figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">    <span class="attr">"kind"</span>: <span class="string">"Policy"</span>,</span><br><span class="line">    <span class="attr">"apiVersion"</span>: <span class="string">"v1"</span>,</span><br><span class="line">    <span class="attr">"predicates"</span>: [&#123;</span><br><span class="line">        <span class="attr">"name"</span>: <span class="string">"MatchNodeSelector"</span></span><br><span class="line">    &#125;, &#123;</span><br><span class="line">        <span class="attr">"name"</span>: <span class="string">"PodFitsResources"</span></span><br><span class="line">    &#125;, &#123;</span><br><span class="line">        <span class="attr">"name"</span>: <span class="string">"PodFitsHostPorts"</span></span><br><span class="line">    &#125;,&#123;</span><br><span class="line">        <span class="attr">"name"</span>: <span class="string">"HostName"</span></span><br><span class="line">    &#125;</span><br><span class="line">    ],</span><br><span class="line">    <span class="attr">"priorities"</span>: [&#123;</span><br><span class="line">        <span class="attr">"name"</span>: <span class="string">"EqualPriority"</span>,</span><br><span class="line">        <span class="attr">"weight"</span>: <span class="number">2</span></span><br><span class="line">    &#125;, &#123;</span><br><span class="line">        <span class="attr">"name"</span>: <span class="string">"ImageLocalityPriority"</span>,</span><br><span class="line">        <span class="attr">"weight"</span>: <span class="number">4</span></span><br><span class="line">    &#125;, &#123;</span><br><span class="line">        <span class="attr">"name"</span>: <span class="string">"LeastRequestedPriority"</span>,</span><br><span class="line">        <span class="attr">"weight"</span>: <span class="number">2</span></span><br><span class="line">    &#125;, &#123;</span><br><span class="line">        <span class="attr">"name"</span>: <span class="string">"BalancedResourceAllocation"</span>,</span><br><span class="line">        <span class="attr">"weight"</span>: <span class="number">2</span></span><br><span class="line">    &#125;</span><br><span class="line">    ],</span><br><span class="line">    <span class="attr">"extenders"</span>: [&#123;</span><br><span class="line">        <span class="attr">"urlPrefix"</span>: <span class="string">"/prefix"</span>,</span><br><span class="line">        <span class="attr">"filterVerb"</span>: <span class="string">"filter"</span>,</span><br><span class="line">        <span class="attr">"prioritizeVerb"</span>: <span class="string">"prioritize"</span>,</span><br><span class="line">        <span class="attr">"weight"</span>: <span class="number">1</span>,</span><br><span class="line">        <span class="attr">"bindVerb"</span>: <span class="string">"bind"</span>,</span><br><span class="line">        <span class="attr">"enableHttps"</span>: <span class="literal">false</span></span><br><span class="line">    &#125;]</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>改策略文件定义了一个 HTTP 的扩展程序服务，该服务运行在 <code>127.0.0.1:8888</code> 下面，并且已经将该策略注册到了默认的调度器中，这样在过滤和打分阶段结束后，可以将结果分别传递给该扩展程序的端点 <code>&lt;urlPrefix&gt;/&lt;filterVerb&gt;</code> 和 <code>&lt;urlPrefix&gt;/&lt;prioritizeVerb&gt;</code>，在扩展程序中，我们可以进一步过滤并确定优先级，以适应我们的特定业务需求。</p>
+<h4 id="示例"><a href="#示例" class="headerlink" title="示例"></a>示例</h4><p>我们直接用 golang 来实现一个简单的调度器扩展程序，当然你可以使用其他任何编程语言，如下所示：<br><figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> &#123;</span><br><span class="line">    router := httprouter.New()</span><br><span class="line">    router.GET(<span class="string">"/"</span>, Index)</span><br><span class="line">    router.POST(<span class="string">"/filter"</span>, Filter)</span><br><span class="line">    router.POST(<span class="string">"/prioritize"</span>, Prioritize)</span><br><span class="line"></span><br><span class="line">    log.Fatal(http.ListenAndServe(<span class="string">":8888"</span>, router))</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>然后接下来我们需要实现 <code>/filter</code> 和 <code>/prioritize</code> 两个端点的处理程序。</p>
+<p>其中 <code>Filter</code> 这个扩展函数接收一个输入类型为 <code>schedulerapi.ExtenderArgs</code> 的参数，然后返回一个类型为 <code>*schedulerapi.ExtenderFilterResult</code> 的值。在函数中，我们可以进一步过滤输入的节点：<br><figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// filter 根据扩展程序定义的预选规则来过滤节点</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">filter</span><span class="params">(args schedulerapi.ExtenderArgs)</span> *<span class="title">schedulerapi</span>.<span class="title">ExtenderFilterResult</span></span> &#123;</span><br><span class="line">	<span class="keyword">var</span> filteredNodes []v1.Node</span><br><span class="line">	failedNodes := <span class="built_in">make</span>(schedulerapi.FailedNodesMap)</span><br><span class="line">	pod := args.Pod</span><br><span class="line"></span><br><span class="line">	<span class="keyword">for</span> _, node := <span class="keyword">range</span> args.Nodes.Items &#123;</span><br><span class="line">		fits, failReasons, _ := podFitsOnNode(pod, node)</span><br><span class="line">		<span class="keyword">if</span> fits &#123;</span><br><span class="line">			filteredNodes = <span class="built_in">append</span>(filteredNodes, node)</span><br><span class="line">		&#125; <span class="keyword">else</span> &#123;</span><br><span class="line">			failedNodes[node.Name] = strings.Join(failReasons, <span class="string">","</span>)</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	result := schedulerapi.ExtenderFilterResult&#123;</span><br><span class="line">		Nodes: &amp;v1.NodeList&#123;</span><br><span class="line">			Items: filteredNodes,</span><br><span class="line">		&#125;,</span><br><span class="line">		FailedNodes: failedNodes,</span><br><span class="line">		Error:       <span class="string">""</span>,</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="keyword">return</span> &amp;result</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>在过滤函数中，我们循环每个节点然后用我们自己实现的业务逻辑来判断是否应该批准该节点，这里我们实现比较简单，在 <code>podFitsOnNode()</code> 函数中我们只是简单的检查随机数是否为偶数来判断即可，如果是的话我们就认为这是一个幸运的节点，否则拒绝批准该节点。<br><figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> predicatesSorted = []<span class="keyword">string</span>&#123;LuckyPred&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">var</span> predicatesFuncs = <span class="keyword">map</span>[<span class="keyword">string</span>]FitPredicate&#123;</span><br><span class="line">    LuckyPred: LuckyPredicate,</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">type</span> FitPredicate <span class="function"><span class="keyword">func</span><span class="params">(pod *v1.Pod, node v1.Node)</span> <span class="params">(<span class="keyword">bool</span>, []<span class="keyword">string</span>, error)</span></span><br><span class="line"></span><br><span class="line"><span class="title">func</span> <span class="title">podFitsOnNode</span><span class="params">(pod *v1.Pod, node v1.Node)</span> <span class="params">(<span class="keyword">bool</span>, []<span class="keyword">string</span>, error)</span></span> &#123;</span><br><span class="line">    fits := <span class="literal">true</span></span><br><span class="line">    <span class="keyword">var</span> failReasons []<span class="keyword">string</span></span><br><span class="line">    <span class="keyword">for</span> _, predicateKey := <span class="keyword">range</span> predicatesSorted &#123;</span><br><span class="line">        fit, failures, err := predicatesFuncs[predicateKey](pod, node)</span><br><span class="line">        <span class="keyword">if</span> err != <span class="literal">nil</span> &#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="literal">false</span>, <span class="literal">nil</span>, err</span><br><span class="line">        &#125;</span><br><span class="line">        fits = fits &amp;&amp; fit</span><br><span class="line">        failReasons = <span class="built_in">append</span>(failReasons, failures...)</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> fits, failReasons, <span class="literal">nil</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">LuckyPredicate</span><span class="params">(pod *v1.Pod, node v1.Node)</span> <span class="params">(<span class="keyword">bool</span>, []<span class="keyword">string</span>, error)</span></span> &#123;</span><br><span class="line">    lucky := rand.Intn(<span class="number">2</span>) == <span class="number">0</span></span><br><span class="line">    <span class="keyword">if</span> lucky &#123;</span><br><span class="line">        log.Printf(<span class="string">"pod %v/%v is lucky to fit on node %v\n"</span>, pod.Name, pod.Namespace, node.Name)</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">true</span>, <span class="literal">nil</span>, <span class="literal">nil</span></span><br><span class="line">    &#125;</span><br><span class="line">    log.Printf(<span class="string">"pod %v/%v is unlucky to fit on node %v\n"</span>, pod.Name, pod.Namespace, node.Name)</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">false</span>, []<span class="keyword">string</span>&#123;LuckyPredFailMsg&#125;, <span class="literal">nil</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>同样的打分功能用同样的方式来实现，我们在每个节点上随机给出一个分数：<br><figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// it's webhooked to pkg/scheduler/core/generic_scheduler.go#PrioritizeNodes()</span></span><br><span class="line"><span class="comment">// 这个函数输出的分数会被添加会默认的调度器</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">prioritize</span><span class="params">(args schedulerapi.ExtenderArgs)</span> *<span class="title">schedulerapi</span>.<span class="title">HostPriorityList</span></span> &#123;</span><br><span class="line">	pod := args.Pod</span><br><span class="line">	nodes := args.Nodes.Items</span><br><span class="line"></span><br><span class="line">	hostPriorityList := <span class="built_in">make</span>(schedulerapi.HostPriorityList, <span class="built_in">len</span>(nodes))</span><br><span class="line">	<span class="keyword">for</span> i, node := <span class="keyword">range</span> nodes &#123;</span><br><span class="line">		score := rand.Intn(schedulerapi.MaxPriority + <span class="number">1</span>)  <span class="comment">// 在最大优先级内随机取一个值</span></span><br><span class="line">		log.Printf(luckyPrioMsg, pod.Name, pod.Namespace, score)</span><br><span class="line">		hostPriorityList[i] = schedulerapi.HostPriority&#123;</span><br><span class="line">			Host:  node.Name,</span><br><span class="line">			Score: score,</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="keyword">return</span> &amp;hostPriorityList</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>然后我们可以使用下面的命令来编译打包我们的应用：<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ GOOS=linux GOARCH=amd64 go build -o app</span><br></pre></td></tr></table></figure></p>
+<blockquote>
+<p>本节调度器扩展程序完整的代码获取地址：<a href="https://github.com/icyxp/sample-scheduler-extender" target="_blank" rel="external">https://github.com/icyxp/sample-scheduler-extender</a>。</p>
+</blockquote>
+<p>构建完成后，将应用 <code>app</code> 拷贝到 <code>kube-scheduler</code> 所在的节点直接运行即可。现在我们就可以将上面的策略文件配置到 <code>kube-scheduler</code> 组件中去了，我们这里集群是 kubeadm 搭建的，所以直接修改文件 <code>/etc/kubernetes/manifests/kube-schduler.yaml</code> 文件即可，内容如下所示：<br><figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">apiVersion:</span> v1</span><br><span class="line"><span class="attr">kind:</span> Pod</span><br><span class="line"><span class="attr">metadata:</span></span><br><span class="line"><span class="attr">  creationTimestamp:</span> <span class="literal">null</span></span><br><span class="line"><span class="attr">  labels:</span></span><br><span class="line"><span class="attr">    component:</span> kube-scheduler</span><br><span class="line"><span class="attr">    tier:</span> control-plane</span><br><span class="line"><span class="attr">  name:</span> kube-scheduler</span><br><span class="line"><span class="attr">  namespace:</span> kube-system</span><br><span class="line"><span class="attr">spec:</span></span><br><span class="line"><span class="attr">  containers:</span></span><br><span class="line"><span class="attr">  - command:</span></span><br><span class="line"><span class="bullet">    -</span> kube-scheduler</span><br><span class="line"><span class="bullet">    -</span> --authentication-kubeconfig=/etc/kubernetes/scheduler.conf</span><br><span class="line"><span class="bullet">    -</span> --authorization-kubeconfig=/etc/kubernetes/scheduler.conf</span><br><span class="line"><span class="bullet">    -</span> --bind-address=<span class="number">127.0</span><span class="number">.0</span><span class="number">.1</span></span><br><span class="line"><span class="bullet">    -</span> --kubeconfig=/etc/kubernetes/scheduler.conf</span><br><span class="line"><span class="bullet">    -</span> --leader-elect=<span class="literal">true</span></span><br><span class="line"><span class="bullet">    -</span> --config=/etc/kubernetes/scheduler-extender.yaml</span><br><span class="line"><span class="bullet">    -</span> --v=<span class="number">9</span></span><br><span class="line"><span class="attr">    image:</span> gcr.azk8s.cn/google_containers/kube-scheduler:v1<span class="number">.16</span><span class="number">.2</span></span><br><span class="line"><span class="attr">    imagePullPolicy:</span> IfNotPresent</span><br><span class="line"><span class="attr">    livenessProbe:</span></span><br><span class="line"><span class="attr">      failureThreshold:</span> <span class="number">8</span></span><br><span class="line"><span class="attr">      httpGet:</span></span><br><span class="line"><span class="attr">        host:</span> <span class="number">127.0</span><span class="number">.0</span><span class="number">.1</span></span><br><span class="line"><span class="attr">        path:</span> /healthz</span><br><span class="line"><span class="attr">        port:</span> <span class="number">10251</span></span><br><span class="line"><span class="attr">        scheme:</span> HTTP</span><br><span class="line"><span class="attr">      initialDelaySeconds:</span> <span class="number">15</span></span><br><span class="line"><span class="attr">      timeoutSeconds:</span> <span class="number">15</span></span><br><span class="line"><span class="attr">    name:</span> kube-scheduler</span><br><span class="line"><span class="attr">    resources:</span></span><br><span class="line"><span class="attr">      requests:</span></span><br><span class="line"><span class="attr">        cpu:</span> <span class="number">100</span>m</span><br><span class="line"><span class="attr">    volumeMounts:</span></span><br><span class="line"><span class="attr">    - mountPath:</span> /etc/kubernetes/scheduler.conf</span><br><span class="line"><span class="attr">      name:</span> kubeconfig</span><br><span class="line"><span class="attr">      readOnly:</span> <span class="literal">true</span></span><br><span class="line"><span class="attr">    - mountPath:</span> /etc/kubernetes/scheduler-extender.yaml</span><br><span class="line"><span class="attr">      name:</span> extender</span><br><span class="line"><span class="attr">      readOnly:</span> <span class="literal">true</span></span><br><span class="line"><span class="attr">    - mountPath:</span> /etc/kubernetes/scheduler-extender-policy.yaml</span><br><span class="line"><span class="attr">      name:</span> extender-policy</span><br><span class="line"><span class="attr">      readOnly:</span> <span class="literal">true</span></span><br><span class="line"><span class="attr">  hostNetwork:</span> <span class="literal">true</span></span><br><span class="line"><span class="attr">  priorityClassName:</span> system-cluster-critical</span><br><span class="line"><span class="attr">  volumes:</span></span><br><span class="line"><span class="attr">  - hostPath:</span></span><br><span class="line"><span class="attr">      path:</span> /etc/kubernetes/scheduler.conf</span><br><span class="line"><span class="attr">      type:</span> FileOrCreate</span><br><span class="line"><span class="attr">    name:</span> kubeconfig</span><br><span class="line"><span class="attr">  - hostPath:</span></span><br><span class="line"><span class="attr">      path:</span> /etc/kubernetes/scheduler-extender.yaml</span><br><span class="line"><span class="attr">      type:</span> FileOrCreate</span><br><span class="line"><span class="attr">    name:</span> extender</span><br><span class="line"><span class="attr">  - hostPath:</span></span><br><span class="line"><span class="attr">      path:</span> /etc/kubernetes/scheduler-extender-policy.yaml</span><br><span class="line"><span class="attr">      type:</span> FileOrCreate</span><br><span class="line"><span class="attr">    name:</span> extender-policy</span><br><span class="line"><span class="attr">status:</span> &#123;&#125;</span><br></pre></td></tr></table></figure></p>
+<blockquote>
+<p>当然我们这个地方是直接在系统默认的 <code>kube-scheduler</code> 上面配置的，我们也可以复制一个调度器的 YAML 文件然后更改下 schedulerName 来部署，这样就不会影响默认的调度器了，然后在需要使用这个测试的调度器的 Pod 上面指定 <code>spec.schedulerName</code> 即可。对于多调度器的使用可以查看官方文档 <a href="https://kubernetes.io/zh/docs/tasks/administer-cluster/configure-multiple-schedulers/" target="_blank" rel="external">配置多个调度器</a>。</p>
+</blockquote>
+<p><code>kube-scheduler</code> 重新配置后可以查看日志来验证是否重启成功，需要注意的是一定需要将 <code>/etc/kubernetes/scheduler-extender.yaml</code> 和 <code>/etc/kubernetes/scheduler-extender-policy.yaml</code> 两个文件挂载到 Pod 中去：<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">$ kubectl logs <span class="_">-f</span> kube-scheduler-ydzs-master -n kube-system</span><br><span class="line">I0102 15:17:38.824657       1 serving.go:319] Generated self-signed cert <span class="keyword">in</span>-memory</span><br><span class="line">I0102 15:17:39.472276       1 server.go:143] Version: v1.16.2</span><br><span class="line">I0102 15:17:39.472674       1 defaults.go:91] TaintNodesByCondition is enabled, PodToleratesNodeTaints predicate is mandatory</span><br><span class="line">W0102 15:17:39.479704       1 authorization.go:47] Authorization is disabled</span><br><span class="line">W0102 15:17:39.479733       1 authentication.go:79] Authentication is disabled</span><br><span class="line">I0102 15:17:39.479777       1 deprecated_insecure_serving.go:51] Serving healthz insecurely on [::]:10251</span><br><span class="line">I0102 15:17:39.480559       1 secure_serving.go:123] Serving securely on 127.0.0.1:10259</span><br><span class="line">I0102 15:17:39.682180       1 leaderelection.go:241] attempting to acquire leader lease  kube-system/kube-scheduler...</span><br><span class="line">I0102 15:17:56.500505       1 leaderelection.go:251] successfully acquired lease kube-system/kube-scheduler</span><br></pre></td></tr></table></figure></p>
+<p>到这里我们就创建并配置了一个非常简单的调度扩展程序，现在我们来运行一个 Deployment 查看其工作原理，我们准备一个包含20个副本的部署 Yaml：(test-scheduler.yaml)<br><figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">apiVersion:</span> apps/v1</span><br><span class="line"><span class="attr">kind:</span> Deployment</span><br><span class="line"><span class="attr">metadata:</span></span><br><span class="line"><span class="attr">  name:</span> pause</span><br><span class="line"><span class="attr">spec:</span></span><br><span class="line"><span class="attr">  replicas:</span> <span class="number">20</span></span><br><span class="line"><span class="attr">  selector:</span></span><br><span class="line"><span class="attr">    matchLabels:</span></span><br><span class="line"><span class="attr">      app:</span> pause</span><br><span class="line"><span class="attr">  template:</span></span><br><span class="line"><span class="attr">    metadata:</span></span><br><span class="line"><span class="attr">      labels:</span></span><br><span class="line"><span class="attr">        app:</span> pause</span><br><span class="line"><span class="attr">    spec:</span></span><br><span class="line"><span class="attr">      containers:</span></span><br><span class="line"><span class="attr">      - name:</span> pause</span><br><span class="line"><span class="attr">        image:</span> gcr.azk8s.cn/google_containers/pause:<span class="number">3.1</span></span><br></pre></td></tr></table></figure></p>
+<p>直接创建上面的资源对象：<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">$ kuectl apply <span class="_">-f</span> <span class="built_in">test</span>-scheduler.yaml</span><br><span class="line">deployment.apps/pause created</span><br></pre></td></tr></table></figure></p>
+<p>这个时候我们去查看下我们编写的调度器扩展程序日志：<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">$ ./app</span><br><span class="line">......</span><br><span class="line">2020/01/03 12:27:29 pod pause-58584fbc95-bwn7t/default is unlucky to fit on node ydzs-node1</span><br><span class="line">2020/01/03 12:27:29 pod pause-58584fbc95-bwn7t/default is lucky to get score 7</span><br><span class="line">2020/01/03 12:27:29 pod pause-58584fbc95-bwn7t/default is lucky to get score 9</span><br><span class="line">2020/01/03 12:27:29 pod pause-58584fbc95-86w92/default is unlucky to fit on node ydzs-node3</span><br><span class="line">2020/01/03 12:27:29 pod pause-58584fbc95-86w92/default is unlucky to fit on node ydzs-node4</span><br><span class="line">2020/01/03 12:27:29 pod pause-58584fbc95-86w92/default is lucky to fit on node ydzs-node1</span><br><span class="line">2020/01/03 12:27:29 pod pause-58584fbc95-86w92/default is lucky to fit on node ydzs-node2</span><br><span class="line">2020/01/03 12:27:29 pod pause-58584fbc95-86w92/default is lucky to get score 4</span><br><span class="line">2020/01/03 12:27:29 pod pause-58584fbc95-86w92/default is lucky to get score 8</span><br><span class="line">......</span><br></pre></td></tr></table></figure></p>
+<p>我们可以看到 Pod 调度的过程，另外默认调度程序会定期重试失败的 Pod，因此它们将一次又一次地重新传递到我们的调度扩展程序上，我们的逻辑是检查随机数是否为偶数，所以最终所有 Pod 都将处于运行状态。</p>
+<p>调度器扩展程序可能是在一些情况下可以满足我们的需求，但是他仍然有一些限制和缺点：</p>
+<ul>
+<li>通信成本：数据在默认调度程序和调度器扩展程序之间以 <code>http（s）</code> 传输，在执行序列化和反序列化的时候有一定成本</li>
+<li>有限的扩展点：扩展程序只能在某些阶段的末尾参与，例如 <code>“Filter”</code> 和 <code>“Prioritize”</code> ，它们不能在任何阶段的开始或中间被调用</li>
+<li>减法优于加法：与默认调度程序传递的节点候选列表相比，我们可能有一些需求需要添加新的候选节点列表，但这是比较冒险的操作，因为不能保证新节点可以通过其他要求，所以，调度器扩展程序最好执行 <code>“减法”</code>（进一步过滤），而不是 <code>“加法”</code>（添加节点）</li>
+<li>缓存共享：上面只是一个简单的测试示例，但在真实的项目中，我们是需要通过查看整个集群的状态来做出调度决策的，默认调度程序可以很好地调度决策，但是无法共享其缓存，这意味着我们必须构建和维护自己的缓存</li>
+</ul>
+<p>由于这些局限性，Kubernetes 调度小组就提出了上面第四种方法来进行更好的扩展，也就是<code>调度框架（Scheduler Framework）</code>，它基本上可以解决我们遇到的所有难题，现在也已经成官方推荐的扩展方式，所以这将是以后扩展调度器的最主流的方式。</p>
+<h2 id="调度框架"><a href="#调度框架" class="headerlink" title="调度框架"></a>调度框架</h2><p>调度框架定义了一组扩展点，用户可以实现扩展点定义的接口来定义自己的调度逻辑（我们称之为扩展），并将扩展注册到扩展点上，调度框架在执行调度工作流时，遇到对应的扩展点时，将调用用户注册的扩展。调度框架在预留扩展点时，都是有特定的目的，有些扩展点上的扩展可以改变调度程序的决策方法，有些扩展点上的扩展只是发送一个通知。</p>
+<p>我们知道每当调度一个 Pod 时，都会按照两个过程来执行：调度过程和绑定过程。</p>
+<p>调度过程为 Pod 选择一个合适的节点，绑定过程则将调度过程的决策应用到集群中（也就是在被选定的节点上运行 Pod），将调度过程和绑定过程合在一起，称之为调度上下文（<strong>scheduling context</strong>）。需要注意的是调度过程是<code>同步</code>运行的（同一时间点只为一个 Pod 进行调度），绑定过程可异步运行（同一时间点可并发为多个 Pod 执行绑定）。</p>
+<p>调度过程和绑定过程遇到如下情况时会中途退出：</p>
+<ul>
+<li>调度程序认为当前没有该 Pod 的可选节点</li>
+<li>内部错误</li>
+</ul>
+<p>这个时候，该 Pod 将被放回到 待调度队列，并等待下次重试。</p>
+<h3 id="扩展点（Extension-Points）"><a href="#扩展点（Extension-Points）" class="headerlink" title="扩展点（Extension Points）"></a>扩展点（Extension Points）</h3><p>下图展示了调度框架中的调度上下文及其中的扩展点，一个扩展可以注册多个扩展点，以便可以执行更复杂的有状态的任务。<br><img src="/images/k8s/scheduling-framework-extensions.png" alt="scheduling-framework-extensions"></p>
+<ol>
+<li><code>QueueSort</code> 扩展用于对 Pod 的待调度队列进行排序，以决定先调度哪个 Pod，<code>QueueSort</code> 扩展本质上只需要实现一个方法 <code>Less(Pod1, Pod2)</code> 用于比较两个 Pod 谁更优先获得调度即可，同一时间点只能有一个 <code>QueueSort</code> 插件生效。</li>
+<li><code>Pre-filter</code> 扩展用于对 Pod 的信息进行预处理，或者检查一些集群或 Pod 必须满足的前提条件，如果 <code>pre-filter</code> 返回了 error，则调度过程终止。</li>
+<li><code>Filter</code> 扩展用于排除那些不能运行该 Pod 的节点，对于每一个节点，调度器将按顺序执行 <code>filter</code> 扩展；如果任何一个 <code>filter</code> 将节点标记为不可选，则余下的 <code>filter</code> 扩展将不会被执行。调度器可以同时对多个节点执行 <code>filter</code> 扩展。</li>
+<li><code>Post-filter</code> 是一个通知类型的扩展点，调用该扩展的参数是 <code>filter</code> 阶段结束后被筛选为可选节点的节点列表，可以在扩展中使用这些信息更新内部状态，或者产生日志或 metrics 信息。</li>
+<li><code>Scoring</code> 扩展用于为所有可选节点进行打分，调度器将针对每一个节点调用 <code>Soring</code> 扩展，评分结果是一个范围内的整数。在 <code>normalize scoring</code> 阶段，调度器将会把每个 <code>scoring</code> 扩展对具体某个节点的评分结果和该扩展的权重合并起来，作为最终评分结果。</li>
+<li><code>Normalize scoring</code> 扩展在调度器对节点进行最终排序之前修改每个节点的评分结果，注册到该扩展点的扩展在被调用时，将获得同一个插件中的 <code>scoring</code> 扩展的评分结果作为参数，调度框架每执行一次调度，都将调用所有插件中的一个 <code>normalize scoring</code> 扩展一次。</li>
+<li><code>Reserve</code> 是一个通知性质的扩展点，有状态的插件可以使用该扩展点来获得节点上为 Pod 预留的资源，该事件发生在调度器将 Pod 绑定到节点之前，目的是避免调度器在等待 Pod 与节点绑定的过程中调度新的 Pod 到节点上时，发生实际使用资源超出可用资源的情况。（因为绑定 Pod 到节点上是异步发生的）。这是调度过程的最后一个步骤，Pod 进入 <code>reserved</code> 状态以后，要么在绑定失败时触发 <code>Unreserve</code> 扩展，要么在绑定成功时，由 <code>Post-bind</code> 扩展结束绑定过程。</li>
+<li><code>Permit</code> 扩展用于阻止或者延迟 Pod 与节点的绑定。Permit 扩展可以做下面三件事中的一项：<ul>
+<li><code>approve</code>（批准）：当所有的 <code>permit</code> 扩展都 <code>approve</code> 了 Pod 与节点的绑定，调度器将继续执行绑定过程</li>
+<li><code>deny</code>（拒绝）：如果任何一个 <code>permit</code> 扩展 <code>deny</code> 了 Pod 与节点的绑定，Pod 将被放回到待调度队列，此时将触发 <code>Unreserve</code> 扩展</li>
+<li><code>wait</code>（等待）：如果一个 <code>permit</code> 扩展返回了 <code>wait</code>，则 Pod 将保持在 <code>permit</code> 阶段，直到被其他扩展 <code>approve</code>，如果超时事件发生，<code>wait</code> 状态变成 <code>deny</code>，Pod 将被放回到待调度队列，此时将触发 <code>Unreserve</code> 扩展</li>
+</ul>
+</li>
+<li><code>Pre-bind</code> 扩展用于在 Pod 绑定之前执行某些逻辑。例如，<code>pre-bind</code> 扩展可以将一个基于网络的数据卷挂载到节点上，以便 Pod 可以使用。如果任何一个 <code>pre-bind</code> 扩展返回错误，Pod 将被放回到待调度队列，此时将触发 <code>Unreserve</code> 扩展。</li>
+<li><code>Bind</code> 扩展用于将 Pod 绑定到节点上：<ul>
+<li>只有所有的 <code>pre-bind</code> 扩展都成功执行了，<code>bind</code> 扩展才会执行</li>
+<li>调度框架按照 <code>bind</code> 扩展注册的顺序逐个调用 <code>bind</code> 扩展</li>
+<li>具体某个 <code>bind</code> 扩展可以选择处理或者不处理该 Pod</li>
+<li>如果某个 <code>` 扩展处理了该 Pod 与节点的绑定，余下的</code>bind` 扩展将被忽略</li>
+</ul>
+</li>
+<li><code>Post-bind</code> 是一个通知性质的扩展：<ul>
+<li><code>Post-bind</code> 扩展在 Pod 成功绑定到节点上之后被动调用</li>
+<li><code>Post-bind</code> 扩展是绑定过程的最后一个步骤，可以用来执行资源清理的动作</li>
+</ul>
+</li>
+<li><code>Unreserve</code> 是一个通知性质的扩展，如果为 Pod 预留了资源，Pod 又在被绑定过程中被拒绝绑定，则 <code>unreserve</code> 扩展将被调用。<code>Unreserve</code> 扩展应该释放已经为 Pod 预留的节点上的计算资源。在一个插件中，<code>reserve</code> 扩展和 <code>unreserve</code> 扩展应该成对出现。</li>
+</ol>
+<p>如果我们要实现自己的插件，必须向调度框架注册插件并完成配置，另外还必须实现扩展点接口，对应的扩展点接口我们可以在源码 <code>pkg/scheduler/framework/v1alpha1/interface.go</code> 文件中找到，如下所示：<br><figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// Plugin is the parent type for all the scheduling framework plugins.</span></span><br><span class="line"><span class="keyword">type</span> Plugin <span class="keyword">interface</span> &#123;</span><br><span class="line">	Name() <span class="keyword">string</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">type</span> QueueSortPlugin <span class="keyword">interface</span> &#123;</span><br><span class="line">	Plugin</span><br><span class="line">	Less(*PodInfo, *PodInfo) <span class="keyword">bool</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// PreFilterPlugin is an interface that must be implemented by "prefilter" plugins.</span></span><br><span class="line"><span class="comment">// These plugins are called at the beginning of the scheduling cycle.</span></span><br><span class="line"><span class="keyword">type</span> PreFilterPlugin <span class="keyword">interface</span> &#123;</span><br><span class="line">	Plugin</span><br><span class="line">	PreFilter(pc *PluginContext, p *v1.Pod) *Status</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// FilterPlugin is an interface for Filter plugins. These plugins are called at the</span></span><br><span class="line"><span class="comment">// filter extension point for filtering out hosts that cannot run a pod.</span></span><br><span class="line"><span class="comment">// This concept used to be called 'predicate' in the original scheduler.</span></span><br><span class="line"><span class="comment">// These plugins should return "Success", "Unschedulable" or "Error" in Status.code.</span></span><br><span class="line"><span class="comment">// However, the scheduler accepts other valid codes as well.</span></span><br><span class="line"><span class="comment">// Anything other than "Success" will lead to exclusion of the given host from</span></span><br><span class="line"><span class="comment">// running the pod.</span></span><br><span class="line"><span class="keyword">type</span> FilterPlugin <span class="keyword">interface</span> &#123;</span><br><span class="line">	Plugin</span><br><span class="line">	Filter(pc *PluginContext, pod *v1.Pod, nodeName <span class="keyword">string</span>) *Status</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// PostFilterPlugin is an interface for Post-filter plugin. Post-filter is an</span></span><br><span class="line"><span class="comment">// informational extension point. Plugins will be called with a list of nodes</span></span><br><span class="line"><span class="comment">// that passed the filtering phase. A plugin may use this data to update internal</span></span><br><span class="line"><span class="comment">// state or to generate logs/metrics.</span></span><br><span class="line"><span class="keyword">type</span> PostFilterPlugin <span class="keyword">interface</span> &#123;</span><br><span class="line">	Plugin</span><br><span class="line">	PostFilter(pc *PluginContext, pod *v1.Pod, nodes []*v1.Node, filteredNodesStatuses NodeToStatusMap) *Status</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// ScorePlugin is an interface that must be implemented by "score" plugins to rank</span></span><br><span class="line"><span class="comment">// nodes that passed the filtering phase.</span></span><br><span class="line"><span class="keyword">type</span> ScorePlugin <span class="keyword">interface</span> &#123;</span><br><span class="line">	Plugin</span><br><span class="line">	Score(pc *PluginContext, p *v1.Pod, nodeName <span class="keyword">string</span>) (<span class="keyword">int</span>, *Status)</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// ScoreWithNormalizePlugin is an interface that must be implemented by "score"</span></span><br><span class="line"><span class="comment">// plugins that also need to normalize the node scoring results produced by the same</span></span><br><span class="line"><span class="comment">// plugin's "Score" method.</span></span><br><span class="line"><span class="keyword">type</span> ScoreWithNormalizePlugin <span class="keyword">interface</span> &#123;</span><br><span class="line">	ScorePlugin</span><br><span class="line">	NormalizeScore(pc *PluginContext, p *v1.Pod, scores NodeScoreList) *Status</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// ReservePlugin is an interface for Reserve plugins. These plugins are called</span></span><br><span class="line"><span class="comment">// at the reservation point. These are meant to update the state of the plugin.</span></span><br><span class="line"><span class="comment">// This concept used to be called 'assume' in the original scheduler.</span></span><br><span class="line"><span class="comment">// These plugins should return only Success or Error in Status.code. However,</span></span><br><span class="line"><span class="comment">// the scheduler accepts other valid codes as well. Anything other than Success</span></span><br><span class="line"><span class="comment">// will lead to rejection of the pod.</span></span><br><span class="line"><span class="keyword">type</span> ReservePlugin <span class="keyword">interface</span> &#123;</span><br><span class="line">	Plugin</span><br><span class="line">	Reserve(pc *PluginContext, p *v1.Pod, nodeName <span class="keyword">string</span>) *Status</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// PreBindPlugin is an interface that must be implemented by "prebind" plugins.</span></span><br><span class="line"><span class="comment">// These plugins are called before a pod being scheduled.</span></span><br><span class="line"><span class="keyword">type</span> PreBindPlugin <span class="keyword">interface</span> &#123;</span><br><span class="line">	Plugin</span><br><span class="line">	PreBind(pc *PluginContext, p *v1.Pod, nodeName <span class="keyword">string</span>) *Status</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// PostBindPlugin is an interface that must be implemented by "postbind" plugins.</span></span><br><span class="line"><span class="comment">// These plugins are called after a pod is successfully bound to a node.</span></span><br><span class="line"><span class="keyword">type</span> PostBindPlugin <span class="keyword">interface</span> &#123;</span><br><span class="line">	Plugin</span><br><span class="line">	PostBind(pc *PluginContext, p *v1.Pod, nodeName <span class="keyword">string</span>)</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// UnreservePlugin is an interface for Unreserve plugins. This is an informational</span></span><br><span class="line"><span class="comment">// extension point. If a pod was reserved and then rejected in a later phase, then</span></span><br><span class="line"><span class="comment">// un-reserve plugins will be notified. Un-reserve plugins should clean up state</span></span><br><span class="line"><span class="comment">// associated with the reserved Pod.</span></span><br><span class="line"><span class="keyword">type</span> UnreservePlugin <span class="keyword">interface</span> &#123;</span><br><span class="line">	Plugin</span><br><span class="line">	Unreserve(pc *PluginContext, p *v1.Pod, nodeName <span class="keyword">string</span>)</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// PermitPlugin is an interface that must be implemented by "permit" plugins.</span></span><br><span class="line"><span class="comment">// These plugins are called before a pod is bound to a node.</span></span><br><span class="line"><span class="keyword">type</span> PermitPlugin <span class="keyword">interface</span> &#123;</span><br><span class="line">	Plugin</span><br><span class="line">	Permit(pc *PluginContext, p *v1.Pod, nodeName <span class="keyword">string</span>) (*Status, time.Duration)</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// BindPlugin is an interface that must be implemented by "bind" plugins. Bind</span></span><br><span class="line"><span class="comment">// plugins are used to bind a pod to a Node.</span></span><br><span class="line"><span class="keyword">type</span> BindPlugin <span class="keyword">interface</span> &#123;</span><br><span class="line">	Plugin</span><br><span class="line">	Bind(pc *PluginContext, p *v1.Pod, nodeName <span class="keyword">string</span>) *Status</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>对于调度框架插件的启用或者禁用，我们同样可以使用上面的 <a href="https://godoc.org/k8s.io/kubernetes/pkg/scheduler/apis/config#KubeSchedulerConfiguration" target="_blank" rel="external">KubeSchedulerConfiguration</a> 资源对象来进行配置。下面的例子中的配置启用了一个实现了 <code>reserve</code> 和 <code>preBind</code> 扩展点的插件，并且禁用了另外一个插件，同时为插件 foo 提供了一些配置信息：<br><figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">apiVersion:</span> kubescheduler.config.k8s.io/v1alpha1</span><br><span class="line"><span class="attr">kind:</span> KubeSchedulerConfiguration</span><br><span class="line"></span><br><span class="line">...</span><br><span class="line"></span><br><span class="line"><span class="attr">plugins:</span></span><br><span class="line"><span class="attr">  reserve:</span></span><br><span class="line"><span class="attr">    enabled:</span></span><br><span class="line"><span class="attr">    - name:</span> foo</span><br><span class="line"><span class="attr">    - name:</span> bar</span><br><span class="line"><span class="attr">    disabled:</span></span><br><span class="line"><span class="attr">    - name:</span> baz</span><br><span class="line"><span class="attr">  preBind:</span></span><br><span class="line"><span class="attr">    enabled:</span></span><br><span class="line"><span class="attr">    - name:</span> foo</span><br><span class="line"><span class="attr">    disabled:</span></span><br><span class="line"><span class="attr">    - name:</span> baz</span><br><span class="line"></span><br><span class="line"><span class="attr">pluginConfig:</span></span><br><span class="line"><span class="attr">- name:</span> foo</span><br><span class="line"><span class="attr">  args:</span> <span class="string">&gt;</span><br><span class="line">    foo插件可以解析的任意内容</span></span><br></pre></td></tr></table></figure></p>
+<p>扩展的调用顺序如下：</p>
+<ul>
+<li>如果某个扩展点没有配置对应的扩展，调度框架将使用默认插件中的扩展</li>
+<li>如果为某个扩展点配置且激活了扩展，则调度框架将先调用默认插件的扩展，再调用配置中的扩展</li>
+<li>默认插件的扩展始终被最先调用，然后按照 <code>KubeSchedulerConfiguration</code> 中扩展的激活 <code>enabled</code> 顺序逐个调用扩展点的扩展</li>
+<li>可以先禁用默认插件的扩展，然后在 <code>enabled</code> 列表中的某个位置激活默认插件的扩展，这种做法可以改变默认插件的扩展被调用时的顺序</li>
+</ul>
+<p>假设默认插件 foo 实现了 <code>reserve</code> 扩展点，此时我们要添加一个插件 bar，想要在 foo 之前被调用，则应该先禁用 foo 再按照 bar foo 的顺序激活。示例配置如下所示：<br><figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">apiVersion:</span> kubescheduler.config.k8s.io/v1alpha1</span><br><span class="line"><span class="attr">kind:</span> KubeSchedulerConfiguration</span><br><span class="line"></span><br><span class="line">...</span><br><span class="line"></span><br><span class="line"><span class="attr">plugins:</span></span><br><span class="line"><span class="attr">  reserve:</span></span><br><span class="line"><span class="attr">    enabled:</span></span><br><span class="line"><span class="attr">    - name:</span> bar</span><br><span class="line"><span class="attr">    - name:</span> foo</span><br><span class="line"><span class="attr">    disabled:</span></span><br><span class="line"><span class="attr">    - name:</span> foo</span><br></pre></td></tr></table></figure></p>
+<p>在源码目录 <code>pkg/scheduler/framework/plugins/examples</code> 中有几个示范插件，我们可以参照其实现方式。</p>
+<h3 id="示例-1"><a href="#示例-1" class="headerlink" title="示例"></a>示例</h3><p>其实要实现一个调度框架的插件，并不难，我们只要实现对应的扩展点，然后将插件注册到调度器中即可，下面是默认调度器在初始化的时候注册的插件：<br><figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">NewRegistry</span><span class="params">()</span> <span class="title">Registry</span></span> &#123;</span><br><span class="line">	<span class="keyword">return</span> Registry&#123;</span><br><span class="line">		<span class="comment">// FactoryMap:</span></span><br><span class="line">		<span class="comment">// New plugins are registered here.</span></span><br><span class="line">		<span class="comment">// example:</span></span><br><span class="line">		<span class="comment">// &#123;</span></span><br><span class="line">		<span class="comment">//  stateful_plugin.Name: stateful.NewStatefulMultipointExample,</span></span><br><span class="line">		<span class="comment">//  fooplugin.Name: fooplugin.New,</span></span><br><span class="line">		<span class="comment">// &#125;</span></span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>但是可以看到默认并没有注册一些插件，所以要想让调度器能够识别我们的插件代码，就需要自己来实现一个调度器了，当然这个调度器我们完全没必要完全自己实现，直接调用默认的调度器，然后在上面的 <code>NewRegistry()</code> 函数中将我们的插件注册进去即可。在 <code>kube-scheduler</code> 的源码文件 <code>kubernetes/cmd/kube-scheduler/app/server.go</code> 中有一个 <code>NewSchedulerCommand</code> 入口函数，其中的参数是一个类型为 <code>Option</code> 的列表，而这个 <code>Option</code> 恰好就是一个插件配置的定义：<br><figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// Option configures a framework.Registry.</span></span><br><span class="line"><span class="keyword">type</span> Option <span class="function"><span class="keyword">func</span><span class="params">(framework.Registry)</span> <span class="title">error</span></span><br><span class="line"></span><br><span class="line">// <span class="title">NewSchedulerCommand</span> <span class="title">creates</span> <span class="title">a</span> *<span class="title">cobra</span>.<span class="title">Command</span> <span class="title">object</span> <span class="title">with</span> <span class="title">default</span> <span class="title">parameters</span> <span class="title">and</span> <span class="title">registryOptions</span></span><br><span class="line"><span class="title">func</span> <span class="title">NewSchedulerCommand</span><span class="params">(registryOptions ...Option)</span> *<span class="title">cobra</span>.<span class="title">Command</span></span> &#123;</span><br><span class="line">  ......</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>所以我们完全就可以直接调用这个函数来作为我们的函数入口，并且传入我们自己实现的插件作为参数即可，而且该文件下面还有一个名为 <code>WithPlugin</code> 的函数可以来创建一个 <code>Option</code> 实例：<br><figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// WithPlugin creates an Option based on plugin name and factory.</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">WithPlugin</span><span class="params">(name <span class="keyword">string</span>, factory framework.PluginFactory)</span> <span class="title">Option</span></span> &#123;</span><br><span class="line">	<span class="keyword">return</span> <span class="function"><span class="keyword">func</span><span class="params">(registry framework.Registry)</span> <span class="title">error</span></span> &#123;</span><br><span class="line">		<span class="keyword">return</span> registry.Register(name, factory)</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>所以最终我们的入口函数如下所示：<br><figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> &#123;</span><br><span class="line">	rand.Seed(time.Now().UTC().UnixNano())</span><br><span class="line"></span><br><span class="line">	command := app.NewSchedulerCommand(</span><br><span class="line">		app.WithPlugin(sample.Name, sample.New), </span><br><span class="line">	)</span><br><span class="line"></span><br><span class="line">	logs.InitLogs()</span><br><span class="line">	<span class="keyword">defer</span> logs.FlushLogs()</span><br><span class="line"></span><br><span class="line">	<span class="keyword">if</span> err := command.Execute(); err != <span class="literal">nil</span> &#123;</span><br><span class="line">		_, _ = fmt.Fprintf(os.Stderr, <span class="string">"%v\n"</span>, err)</span><br><span class="line">		os.Exit(<span class="number">1</span>)</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>其中 <code>app.WithPlugin(sample.Name, sample.New)</code> 就是我们接下来要实现的插件，从 <code>WithPlugin</code> 函数的参数也可以看出我们这里的 <code>sample.New</code> 必须是一个 <code>framework.PluginFactory</code> 类型的值，而 <code>PluginFactory</code> 的定义就是一个函数：<br><figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">type</span> PluginFactory = <span class="function"><span class="keyword">func</span><span class="params">(configuration *runtime.Unknown, f FrameworkHandle)</span> <span class="params">(Plugin, error)</span></span></span><br></pre></td></tr></table></figure></p>
+<p>所以 <code>sample.New</code> 实际上就是上面的这个函数，在这个函数中我们可以获取到插件中的一些数据然后进行逻辑处理即可，插件实现如下所示，我们这里只是简单获取下数据打印日志，如果你有实际需求的可以根据获取的数据就行处理即可，我们这里只是实现了 <code>PreFilter</code>、<code>Filter</code>、<code>PreBind</code> 三个扩展点，其他的可以用同样的方式来扩展即可：<br><figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 插件名称</span></span><br><span class="line"><span class="keyword">const</span> Name = <span class="string">"sample-plugin"</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">type</span> Args <span class="keyword">struct</span> &#123;</span><br><span class="line">	FavoriteColor  <span class="keyword">string</span> <span class="string">`json:"favorite_color,omitempty"`</span></span><br><span class="line">	FavoriteNumber <span class="keyword">int</span>    <span class="string">`json:"favorite_number,omitempty"`</span></span><br><span class="line">	ThanksTo       <span class="keyword">string</span> <span class="string">`json:"thanks_to,omitempty"`</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">type</span> Sample <span class="keyword">struct</span> &#123;</span><br><span class="line">	args   *Args</span><br><span class="line">	handle framework.FrameworkHandle</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(s *Sample)</span> <span class="title">Name</span><span class="params">()</span> <span class="title">string</span></span> &#123;</span><br><span class="line">	<span class="keyword">return</span> Name</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(s *Sample)</span> <span class="title">PreFilter</span><span class="params">(pc *framework.PluginContext, pod *v1.Pod)</span> *<span class="title">framework</span>.<span class="title">Status</span></span> &#123;</span><br><span class="line">	klog.V(<span class="number">3</span>).Infof(<span class="string">"prefilter pod: %v"</span>, pod.Name)</span><br><span class="line">	<span class="keyword">return</span> framework.NewStatus(framework.Success, <span class="string">""</span>)</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(s *Sample)</span> <span class="title">Filter</span><span class="params">(pc *framework.PluginContext, pod *v1.Pod, nodeName <span class="keyword">string</span>)</span> *<span class="title">framework</span>.<span class="title">Status</span></span> &#123;</span><br><span class="line">	klog.V(<span class="number">3</span>).Infof(<span class="string">"filter pod: %v, node: %v"</span>, pod.Name, nodeName)</span><br><span class="line">	<span class="keyword">return</span> framework.NewStatus(framework.Success, <span class="string">""</span>)</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(s *Sample)</span> <span class="title">PreBind</span><span class="params">(pc *framework.PluginContext, pod *v1.Pod, nodeName <span class="keyword">string</span>)</span> *<span class="title">framework</span>.<span class="title">Status</span></span> &#123;</span><br><span class="line">	<span class="keyword">if</span> nodeInfo, ok := s.handle.NodeInfoSnapshot().NodeInfoMap[nodeName]; !ok &#123;</span><br><span class="line">		<span class="keyword">return</span> framework.NewStatus(framework.Error, fmt.Sprintf(<span class="string">"prebind get node info error: %+v"</span>, nodeName))</span><br><span class="line">	&#125; <span class="keyword">else</span> &#123;</span><br><span class="line">		klog.V(<span class="number">3</span>).Infof(<span class="string">"prebind node info: %+v"</span>, nodeInfo.Node())</span><br><span class="line">		<span class="keyword">return</span> framework.NewStatus(framework.Success, <span class="string">""</span>)</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">//type PluginFactory = func(configuration *runtime.Unknown, f FrameworkHandle) (Plugin, error)</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">New</span><span class="params">(configuration *runtime.Unknown, f framework.FrameworkHandle)</span> <span class="params">(framework.Plugin, error)</span></span> &#123;</span><br><span class="line">	args := &amp;Args&#123;&#125;</span><br><span class="line">	<span class="keyword">if</span> err := framework.DecodeInto(configuration, args); err != <span class="literal">nil</span> &#123;</span><br><span class="line">		<span class="keyword">return</span> <span class="literal">nil</span>, err</span><br><span class="line">	&#125;</span><br><span class="line">	klog.V(<span class="number">3</span>).Infof(<span class="string">"get plugin config args: %+v"</span>, args)</span><br><span class="line">	<span class="keyword">return</span> &amp;Sample&#123;</span><br><span class="line">		args: args,</span><br><span class="line">		handle: f,</span><br><span class="line">	&#125;, <span class="literal">nil</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<blockquote>
+<p>完整代码可以前往仓库 <a href="https://github.com/icyxp/sample-scheduler-framework" target="_blank" rel="external">https://github.com/icyxp/sample-scheduler-framework</a> 获取。</p>
+</blockquote>
+<p>实现完成后，编译打包成镜像即可，然后我们就可以当成普通的应用用一个 <code>Deployment</code> 控制器来部署即可，由于我们需要去获取集群中的一些资源对象，所以当然需要申请 RBAC 权限，然后同样通过 <code>--config</code> 参数来配置我们的调度器，同样还是使用一个 <code>KubeSchedulerConfiguration</code> 资源对象配置，可以通过 <code>plugins</code> 来启用或者禁用我们实现的插件，也可以通过 <code>pluginConfig</code> 来传递一些参数值给插件：<br><figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br><span class="line">128</span><br><span class="line">129</span><br><span class="line">130</span><br><span class="line">131</span><br><span class="line">132</span><br><span class="line">133</span><br><span class="line">134</span><br><span class="line">135</span><br><span class="line">136</span><br><span class="line">137</span><br><span class="line">138</span><br><span class="line">139</span><br><span class="line">140</span><br><span class="line">141</span><br><span class="line">142</span><br><span class="line">143</span><br><span class="line">144</span><br><span class="line">145</span><br><span class="line">146</span><br><span class="line">147</span><br><span class="line">148</span><br><span class="line">149</span><br><span class="line">150</span><br><span class="line">151</span><br><span class="line">152</span><br><span class="line">153</span><br><span class="line">154</span><br><span class="line">155</span><br><span class="line">156</span><br><span class="line">157</span><br><span class="line">158</span><br><span class="line">159</span><br><span class="line">160</span><br><span class="line">161</span><br><span class="line">162</span><br><span class="line">163</span><br><span class="line">164</span><br><span class="line">165</span><br><span class="line">166</span><br><span class="line">167</span><br><span class="line">168</span><br><span class="line">169</span><br><span class="line">170</span><br><span class="line">171</span><br><span class="line">172</span><br><span class="line">173</span><br><span class="line">174</span><br><span class="line">175</span><br><span class="line">176</span><br><span class="line">177</span><br><span class="line">178</span><br><span class="line">179</span><br><span class="line">180</span><br><span class="line">181</span><br><span class="line">182</span><br><span class="line">183</span><br><span class="line">184</span><br><span class="line">185</span><br><span class="line">186</span><br><span class="line">187</span><br><span class="line">188</span><br><span class="line">189</span><br><span class="line">190</span><br><span class="line">191</span><br><span class="line">192</span><br><span class="line">193</span><br><span class="line">194</span><br><span class="line">195</span><br><span class="line">196</span><br><span class="line">197</span><br><span class="line">198</span><br><span class="line">199</span><br><span class="line">200</span><br><span class="line">201</span><br><span class="line">202</span><br><span class="line">203</span><br><span class="line">204</span><br><span class="line">205</span><br><span class="line">206</span><br><span class="line">207</span><br><span class="line">208</span><br><span class="line">209</span><br><span class="line">210</span><br><span class="line">211</span><br><span class="line">212</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">kind:</span> ClusterRole</span><br><span class="line"><span class="attr">apiVersion:</span> rbac.authorization.k8s.io/v1</span><br><span class="line"><span class="attr">metadata:</span></span><br><span class="line"><span class="attr">  name:</span> sample-scheduler-clusterrole</span><br><span class="line"><span class="attr">rules:</span></span><br><span class="line"><span class="attr">  - apiGroups:</span></span><br><span class="line"><span class="bullet">      -</span> <span class="string">""</span></span><br><span class="line"><span class="attr">    resources:</span></span><br><span class="line"><span class="bullet">      -</span> endpoints</span><br><span class="line"><span class="bullet">      -</span> events</span><br><span class="line"><span class="attr">    verbs:</span></span><br><span class="line"><span class="bullet">      -</span> create</span><br><span class="line"><span class="bullet">      -</span> get</span><br><span class="line"><span class="bullet">      -</span> update</span><br><span class="line"><span class="attr">  - apiGroups:</span></span><br><span class="line"><span class="bullet">      -</span> <span class="string">""</span></span><br><span class="line"><span class="attr">    resources:</span></span><br><span class="line"><span class="bullet">      -</span> nodes</span><br><span class="line"><span class="attr">    verbs:</span></span><br><span class="line"><span class="bullet">      -</span> get</span><br><span class="line"><span class="bullet">      -</span> list</span><br><span class="line"><span class="bullet">      -</span> watch</span><br><span class="line"><span class="attr">  - apiGroups:</span></span><br><span class="line"><span class="bullet">      -</span> <span class="string">""</span></span><br><span class="line"><span class="attr">    resources:</span></span><br><span class="line"><span class="bullet">      -</span> pods</span><br><span class="line"><span class="attr">    verbs:</span></span><br><span class="line"><span class="bullet">      -</span> delete</span><br><span class="line"><span class="bullet">      -</span> get</span><br><span class="line"><span class="bullet">      -</span> list</span><br><span class="line"><span class="bullet">      -</span> watch</span><br><span class="line"><span class="bullet">      -</span> update</span><br><span class="line"><span class="attr">  - apiGroups:</span></span><br><span class="line"><span class="bullet">      -</span> <span class="string">""</span></span><br><span class="line"><span class="attr">    resources:</span></span><br><span class="line"><span class="bullet">      -</span> bindings</span><br><span class="line"><span class="bullet">      -</span> pods/binding</span><br><span class="line"><span class="attr">    verbs:</span></span><br><span class="line"><span class="bullet">      -</span> create</span><br><span class="line"><span class="attr">  - apiGroups:</span></span><br><span class="line"><span class="bullet">      -</span> <span class="string">""</span></span><br><span class="line"><span class="attr">    resources:</span></span><br><span class="line"><span class="bullet">      -</span> pods/status</span><br><span class="line"><span class="attr">    verbs:</span></span><br><span class="line"><span class="bullet">      -</span> patch</span><br><span class="line"><span class="bullet">      -</span> update</span><br><span class="line"><span class="attr">  - apiGroups:</span></span><br><span class="line"><span class="bullet">      -</span> <span class="string">""</span></span><br><span class="line"><span class="attr">    resources:</span></span><br><span class="line"><span class="bullet">      -</span> replicationcontrollers</span><br><span class="line"><span class="bullet">      -</span> services</span><br><span class="line"><span class="attr">    verbs:</span></span><br><span class="line"><span class="bullet">      -</span> get</span><br><span class="line"><span class="bullet">      -</span> list</span><br><span class="line"><span class="bullet">      -</span> watch</span><br><span class="line"><span class="attr">  - apiGroups:</span></span><br><span class="line"><span class="bullet">      -</span> apps</span><br><span class="line"><span class="bullet">      -</span> extensions</span><br><span class="line"><span class="attr">    resources:</span></span><br><span class="line"><span class="bullet">      -</span> replicasets</span><br><span class="line"><span class="attr">    verbs:</span></span><br><span class="line"><span class="bullet">      -</span> get</span><br><span class="line"><span class="bullet">      -</span> list</span><br><span class="line"><span class="bullet">      -</span> watch</span><br><span class="line"><span class="attr">  - apiGroups:</span></span><br><span class="line"><span class="bullet">      -</span> apps</span><br><span class="line"><span class="attr">    resources:</span></span><br><span class="line"><span class="bullet">      -</span> statefulsets</span><br><span class="line"><span class="attr">    verbs:</span></span><br><span class="line"><span class="bullet">      -</span> get</span><br><span class="line"><span class="bullet">      -</span> list</span><br><span class="line"><span class="bullet">      -</span> watch</span><br><span class="line"><span class="attr">  - apiGroups:</span></span><br><span class="line"><span class="bullet">      -</span> policy</span><br><span class="line"><span class="attr">    resources:</span></span><br><span class="line"><span class="bullet">      -</span> poddisruptionbudgets</span><br><span class="line"><span class="attr">    verbs:</span></span><br><span class="line"><span class="bullet">      -</span> get</span><br><span class="line"><span class="bullet">      -</span> list</span><br><span class="line"><span class="bullet">      -</span> watch</span><br><span class="line"><span class="attr">  - apiGroups:</span></span><br><span class="line"><span class="bullet">      -</span> <span class="string">""</span></span><br><span class="line"><span class="attr">    resources:</span></span><br><span class="line"><span class="bullet">      -</span> persistentvolumeclaims</span><br><span class="line"><span class="bullet">      -</span> persistentvolumes</span><br><span class="line"><span class="attr">    verbs:</span></span><br><span class="line"><span class="bullet">      -</span> get</span><br><span class="line"><span class="bullet">      -</span> list</span><br><span class="line"><span class="bullet">      -</span> watch</span><br><span class="line"><span class="attr">  - apiGroups:</span></span><br><span class="line"><span class="bullet">      -</span> <span class="string">""</span></span><br><span class="line"><span class="attr">    resources:</span></span><br><span class="line"><span class="bullet">      -</span> configmaps</span><br><span class="line"><span class="attr">    verbs:</span></span><br><span class="line"><span class="bullet">      -</span> get</span><br><span class="line"><span class="bullet">      -</span> list</span><br><span class="line"><span class="bullet">      -</span> watch</span><br><span class="line"><span class="attr">  - apiGroups:</span></span><br><span class="line"><span class="bullet">      -</span> <span class="string">"storage.k8s.io"</span></span><br><span class="line"><span class="attr">    resources:</span></span><br><span class="line"><span class="bullet">      -</span> storageclasses</span><br><span class="line"><span class="bullet">      -</span> csinodes</span><br><span class="line"><span class="attr">    verbs:</span></span><br><span class="line"><span class="bullet">      -</span> get</span><br><span class="line"><span class="bullet">      -</span> list</span><br><span class="line"><span class="bullet">      -</span> watch</span><br><span class="line"><span class="attr">  - apiGroups:</span></span><br><span class="line"><span class="bullet">      -</span> <span class="string">"coordination.k8s.io"</span></span><br><span class="line"><span class="attr">    resources:</span></span><br><span class="line"><span class="bullet">      -</span> leases</span><br><span class="line"><span class="attr">    verbs:</span></span><br><span class="line"><span class="bullet">      -</span> create</span><br><span class="line"><span class="bullet">      -</span> get</span><br><span class="line"><span class="bullet">      -</span> list</span><br><span class="line"><span class="bullet">      -</span> update</span><br><span class="line"><span class="attr">  - apiGroups:</span></span><br><span class="line"><span class="bullet">      -</span> <span class="string">"events.k8s.io"</span></span><br><span class="line"><span class="attr">    resources:</span></span><br><span class="line"><span class="bullet">      -</span> events</span><br><span class="line"><span class="attr">    verbs:</span></span><br><span class="line"><span class="bullet">      -</span> create</span><br><span class="line"><span class="bullet">      -</span> patch</span><br><span class="line"><span class="bullet">      -</span> update</span><br><span class="line"><span class="meta">---</span></span><br><span class="line"><span class="attr">apiVersion:</span> v1</span><br><span class="line"><span class="attr">kind:</span> ServiceAccount</span><br><span class="line"><span class="attr">metadata:</span></span><br><span class="line"><span class="attr">  name:</span> sample-scheduler-sa</span><br><span class="line"><span class="attr">  namespace:</span> kube-system</span><br><span class="line"><span class="meta">---</span></span><br><span class="line"><span class="attr">kind:</span> ClusterRoleBinding</span><br><span class="line"><span class="attr">apiVersion:</span> rbac.authorization.k8s.io/v1</span><br><span class="line"><span class="attr">metadata:</span></span><br><span class="line"><span class="attr">  name:</span> sample-scheduler-clusterrolebinding</span><br><span class="line"><span class="attr">  namespace:</span> kube-system</span><br><span class="line"><span class="attr">roleRef:</span></span><br><span class="line"><span class="attr">  apiGroup:</span> rbac.authorization.k8s.io</span><br><span class="line"><span class="attr">  kind:</span> ClusterRole</span><br><span class="line"><span class="attr">  name:</span> sample-scheduler-clusterrole</span><br><span class="line"><span class="attr">subjects:</span></span><br><span class="line"><span class="attr">- kind:</span> ServiceAccount</span><br><span class="line"><span class="attr">  name:</span> sample-scheduler-sa</span><br><span class="line"><span class="attr">  namespace:</span> kube-system</span><br><span class="line"><span class="meta">---</span></span><br><span class="line"><span class="attr">apiVersion:</span> v1</span><br><span class="line"><span class="attr">kind:</span> ConfigMap</span><br><span class="line"><span class="attr">metadata:</span></span><br><span class="line"><span class="attr">  name:</span> scheduler-config</span><br><span class="line"><span class="attr">  namespace:</span> kube-system</span><br><span class="line"><span class="attr">data:</span></span><br><span class="line">  scheduler-config.yaml: <span class="string">|</span><br><span class="line"></span><span class="attr">    apiVersion:</span> kubescheduler.config.k8s.io/v1alpha1</span><br><span class="line"><span class="attr">    kind:</span> KubeSchedulerConfiguration</span><br><span class="line"><span class="attr">    schedulerName:</span> sample-scheduler</span><br><span class="line"><span class="attr">    leaderElection:</span></span><br><span class="line"><span class="attr">      leaderElect:</span> <span class="literal">true</span></span><br><span class="line"><span class="attr">      lockObjectName:</span> sample-scheduler</span><br><span class="line"><span class="attr">      lockObjectNamespace:</span> kube-system</span><br><span class="line"><span class="attr">    plugins:</span></span><br><span class="line"><span class="attr">      preFilter:</span></span><br><span class="line"><span class="attr">        enabled:</span></span><br><span class="line"><span class="attr">        - name:</span> <span class="string">"sample-plugin"</span></span><br><span class="line"><span class="attr">      filter:</span></span><br><span class="line"><span class="attr">        enabled:</span></span><br><span class="line"><span class="attr">        - name:</span> <span class="string">"sample-plugin"</span></span><br><span class="line"><span class="attr">      preBind:</span></span><br><span class="line"><span class="attr">        enabled:</span></span><br><span class="line"><span class="attr">        - name:</span> <span class="string">"sample-plugin"</span></span><br><span class="line"><span class="attr">    pluginConfig:</span></span><br><span class="line"><span class="attr">    - name:</span> <span class="string">"sample-plugin"</span></span><br><span class="line"><span class="attr">      args:</span></span><br><span class="line"><span class="attr">        favorite_color:</span> <span class="string">"#326CE5"</span></span><br><span class="line"><span class="attr">        favorite_number:</span> <span class="number">7</span></span><br><span class="line"><span class="attr">        thanks_to:</span> <span class="string">"thockin"</span></span><br><span class="line"><span class="meta">---</span></span><br><span class="line"><span class="attr">apiVersion:</span> apps/v1</span><br><span class="line"><span class="attr">kind:</span> Deployment</span><br><span class="line"><span class="attr">metadata:</span></span><br><span class="line"><span class="attr">  name:</span> sample-scheduler</span><br><span class="line"><span class="attr">  namespace:</span> kube-system</span><br><span class="line"><span class="attr">  labels:</span></span><br><span class="line"><span class="attr">    component:</span> sample-scheduler</span><br><span class="line"><span class="attr">spec:</span></span><br><span class="line"><span class="attr">  replicas:</span> <span class="number">1</span></span><br><span class="line"><span class="attr">  selector:</span></span><br><span class="line"><span class="attr">    matchLabels:</span></span><br><span class="line"><span class="attr">      component:</span> sample-scheduler</span><br><span class="line"><span class="attr">  template:</span></span><br><span class="line"><span class="attr">    metadata:</span></span><br><span class="line"><span class="attr">      labels:</span></span><br><span class="line"><span class="attr">        component:</span> sample-scheduler</span><br><span class="line"><span class="attr">    spec:</span></span><br><span class="line"><span class="attr">      serviceAccount:</span> sample-scheduler-sa</span><br><span class="line"><span class="attr">      priorityClassName:</span> system-cluster-critical</span><br><span class="line"><span class="attr">      volumes:</span></span><br><span class="line"><span class="attr">        - name:</span> scheduler-config</span><br><span class="line"><span class="attr">          configMap:</span></span><br><span class="line"><span class="attr">            name:</span> scheduler-config</span><br><span class="line"><span class="attr">      containers:</span></span><br><span class="line"><span class="attr">        - name:</span> scheduler-ctrl</span><br><span class="line"><span class="attr">          image:</span> cnych/sample-scheduler:v0<span class="number">.1</span><span class="number">.6</span></span><br><span class="line"><span class="attr">          imagePullPolicy:</span> IfNotPresent</span><br><span class="line"><span class="attr">          args:</span></span><br><span class="line"><span class="bullet">            -</span> sample-scheduler-framework</span><br><span class="line"><span class="bullet">            -</span> --config=/etc/kubernetes/scheduler-config.yaml</span><br><span class="line"><span class="bullet">            -</span> --v=<span class="number">3</span></span><br><span class="line"><span class="attr">          resources:</span></span><br><span class="line"><span class="attr">            requests:</span></span><br><span class="line"><span class="attr">              cpu:</span> <span class="string">"50m"</span></span><br><span class="line"><span class="attr">          volumeMounts:</span></span><br><span class="line"><span class="attr">            - name:</span> scheduler-config</span><br><span class="line"><span class="attr">              mountPath:</span> /etc/kubernetes</span><br></pre></td></tr></table></figure></p>
+<p>直接部署上面的资源对象即可，这样我们就部署了一个名为 <code>sample-scheduler</code> 的调度器了，接下来我们可以部署一个应用来使用这个调度器进行调度：<br><figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">apiVersion:</span> apps/v1</span><br><span class="line"><span class="attr">kind:</span> Deployment</span><br><span class="line"><span class="attr">metadata:</span></span><br><span class="line"><span class="attr">  name:</span> test-scheduler</span><br><span class="line"><span class="attr">spec:</span></span><br><span class="line"><span class="attr">  replicas:</span> <span class="number">1</span></span><br><span class="line"><span class="attr">  selector:</span></span><br><span class="line"><span class="attr">    matchLabels:</span></span><br><span class="line"><span class="attr">      app:</span> test-scheduler</span><br><span class="line"><span class="attr">  template:</span></span><br><span class="line"><span class="attr">    metadata:</span></span><br><span class="line"><span class="attr">      labels:</span></span><br><span class="line"><span class="attr">        app:</span> test-scheduler</span><br><span class="line"><span class="attr">    spec:</span></span><br><span class="line"><span class="attr">      schedulerName:</span> sample-scheduler</span><br><span class="line"><span class="attr">      containers:</span></span><br><span class="line"><span class="attr">      - image:</span> nginx</span><br><span class="line"><span class="attr">        imagePullPolicy:</span> IfNotPresent</span><br><span class="line"><span class="attr">        name:</span> nginx</span><br><span class="line"><span class="attr">        ports:</span></span><br><span class="line"><span class="attr">        - containerPort:</span> <span class="number">80</span></span><br></pre></td></tr></table></figure></p>
+<p>这里需要注意的是我们现在手动指定了一个 <code>schedulerName</code> 的字段，将其设置成上面我们自定义的调度器名称 <code>sample-scheduler</code>。</p>
+<p>我们直接创建这个资源对象，创建完成后查看我们自定义调度器的日志信息：<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">$ kubectl get pods -n kube-system <span class="_">-l</span> component=sample-scheduler</span><br><span class="line">NAME                               READY   STATUS    RESTARTS   AGE</span><br><span class="line">sample-scheduler-7c469787f-rwhhd   1/1     Running   0          13m</span><br><span class="line">$ kubectl logs <span class="_">-f</span> sample-scheduler-7c469787f-rwhhd -n kube-system</span><br><span class="line">I0104 08:24:22.087881       1 scheduler.go:530] Attempting to schedule pod: default/<span class="built_in">test</span>-scheduler-6d779d9465-rq2bb</span><br><span class="line">I0104 08:24:22.087992       1 plugins.go:23] prefilter pod: <span class="built_in">test</span>-scheduler-6d779d9465-rq2bb</span><br><span class="line">I0104 08:24:22.088657       1 plugins.go:28] filter pod: <span class="built_in">test</span>-scheduler-6d779d9465-rq2bb, node: ydzs-node1</span><br><span class="line">I0104 08:24:22.088797       1 plugins.go:28] filter pod: <span class="built_in">test</span>-scheduler-6d779d9465-rq2bb, node: ydzs-node2</span><br><span class="line">I0104 08:24:22.088871       1 plugins.go:28] filter pod: <span class="built_in">test</span>-scheduler-6d779d9465-rq2bb, node: ydzs-node3</span><br><span class="line">I0104 08:24:22.088946       1 plugins.go:28] filter pod: <span class="built_in">test</span>-scheduler-6d779d9465-rq2bb, node: ydzs-node4</span><br><span class="line">I0104 08:24:22.088992       1 plugins.go:28] filter pod: <span class="built_in">test</span>-scheduler-6d779d9465-rq2bb, node: ydzs-master</span><br><span class="line">I0104 08:24:22.090653       1 plugins.go:36] prebind node info: &amp;Node&#123;ObjectMeta:&#123;ydzs-node3   /api/v1/nodes/ydzs-node3 1ff6e228-4d98-4737-b6d3-30a5d55ccdc2 15466372 0 2019-11-10 09:05:09 +0000 UTC &lt;nil&gt; &lt;nil&gt; ......&#125;</span><br><span class="line">I0104 08:24:22.091761       1 factory.go:610] Attempting to <span class="built_in">bind</span> <span class="built_in">test</span>-scheduler-6d779d9465-rq2bb to ydzs-node3</span><br><span class="line">I0104 08:24:22.104994       1 scheduler.go:667] pod default/<span class="built_in">test</span>-scheduler-6d779d9465-rq2bb is bound successfully on node <span class="string">"ydzs-node3"</span>, 5 nodes evaluated, 4 nodes were found feasible. Bound node resource: <span class="string">"Capacity: CPU&lt;4&gt;|Memory&lt;8008820Ki&gt;|Pods&lt;110&gt;|StorageEphemeral&lt;17921Mi&gt;; Allocatable: CPU&lt;4&gt;|Memory&lt;7906420Ki&gt;|Pods&lt;110&gt;|StorageEphemeral&lt;16912377419&gt;."</span>.</span><br></pre></td></tr></table></figure></p>
+<p>可以看到当我们创建完 Pod 后，在我们自定义的调度器中就出现了对应的日志，并且在我们定义的扩展点上面都出现了对应的日志，证明我们的示例成功了，也可以通过查看 Pod 的 <code>schedulerName</code> 来验证：<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">$ kubectl get pods</span><br><span class="line">NAME                                      READY   STATUS    RESTARTS   AGE</span><br><span class="line"><span class="built_in">test</span>-scheduler-6d779d9465-rq2bb           1/1     Running   0          22m</span><br><span class="line">$ kubectl get pod <span class="built_in">test</span>-scheduler-6d779d9465-rq2bb -o yaml</span><br><span class="line">......</span><br><span class="line">restartPolicy: Always</span><br><span class="line">schedulerName: sample-scheduler</span><br><span class="line">securityContext: &#123;&#125;</span><br><span class="line">serviceAccount: default</span><br><span class="line">......</span><br></pre></td></tr></table></figure></p>
+<p>在最新的 Kubernetes v1.17 版本中，<code>Scheduler Framework</code> 内置的预选和优选函数已经全部插件化，所以要扩展调度器我们应该掌握并理解调度框架这种方式。</p>
+<p>参考：明阳的博客</p>
+
+      
+    </div>
+    
+    
+    
+
+    <div>
+    
+        <div>
+    
+        <div style="text-align:center;color: #ccc;font-size:14px;">-------------本文结束<i class="fa fa-paw"></i>感谢您的阅读-------------</div>
+    
+</div>
+
+    
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    
+
+    
+      <div>
+        <div style="padding: 10px 0; margin: 20px auto; width: 90%; text-align: center;">
+  <div></div>
+  <button id="rewardButton" disable="enable" onclick="var qr = document.getElementById('QR'); if (qr.style.display === 'none') {qr.style.display='block';} else {qr.style.display='none'}">
+    <span>打赏</span>
+  </button>
+  <div id="QR" style="display: none;">
+
+    
+      <div id="wechat" style="display: inline-block">
+        <img id="wechat_qr" src="/images/wechatpay.jpg" alt="icyboy 微信支付"/>
+        <p>微信支付</p>
+      </div>
+    
+
+    
+      <div id="alipay" style="display: inline-block">
+        <img id="alipay_qr" src="/images/alipay.jpg" alt="icyboy 支付宝"/>
+        <p>支付宝</p>
+      </div>
+    
+
+    
+
+  </div>
+</div>
+
+      </div>
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/k8s/" rel="tag"># k8s</a>
+          
+            <a href="/tags/kubernetes/" rel="tag"># kubernetes</a>
+          
+            <a href="/tags/go/" rel="tag"># go</a>
+          
+            <a href="/tags/scheduler/" rel="tag"># scheduler</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/blog/2020/05/k8s-service-topology.html" rel="next" title="k8s v1.17 新增拓扑感知服务路由">
+                <i class="fa fa-chevron-left"></i> k8s v1.17 新增拓扑感知服务路由
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+    <div class="comments" id="comments">
+    </div>
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image"
+                src="/images/avatar.jpg"
+                alt="icyboy" />
+            
+              <p class="site-author-name" itemprop="name">icyboy</p>
+              <p class="site-description motion-element" itemprop="description"></p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">68</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-categories">
+                <a href="/categories/index.html">
+                  <span class="site-state-item-count">50</span>
+                  <span class="site-state-item-name">分类</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                <a href="/tags/index.html">
+                  <span class="site-state-item-count">120</span>
+                  <span class="site-state-item-name">标签</span>
+                </a>
+              </div>
+            
+
+          </nav>
+
+          
+            <div class="feed-link motion-element">
+              <a href="/atom.xml" rel="alternate">
+                <i class="fa fa-rss"></i>
+                RSS
+              </a>
+            </div>
+          
+
+          
+            <div class="links-of-author motion-element">
+                
+                  <span class="links-of-author-item">
+                    <a href="https://github.com/icyxp" target="_blank" title="GitHub">
+                      
+                        <i class="fa fa-fw fa-github"></i>GitHub</a>
+                  </span>
+                
+                  <span class="links-of-author-item">
+                    <a href="http://weibo.com/joysteam" target="_blank" title="微博">
+                      
+                        <i class="fa fa-fw fa-weibo"></i>微博</a>
+                  </span>
+                
+                  <span class="links-of-author-item">
+                    <a href="http://www.zhihu.com/people/xupeng" target="_blank" title="知乎">
+                      
+                        <i class="fa fa-fw fa-zhihu"></i>知乎</a>
+                  </span>
+                
+            </div>
+          
+
+          
+          
+
+          
+          
+            <div class="links-of-blogroll motion-element links-of-blogroll-inline">
+              <div class="links-of-blogroll-title">
+                <i class="fa  fa-fw fa-link"></i>
+                友情链接
+              </div>
+              <ul class="links-of-blogroll-list">
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="http://www.zjgsmt.com" title="张家港水蜜桃" target="_blank">张家港水蜜桃</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="http://blog.jiunile.com" title="运维开发" target="_blank">运维开发</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="http://devops.jiunile.com" title="DevOps" target="_blank">DevOps</a>
+                  </li>
+                
+              </ul>
+            </div>
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#简介"><span class="nav-number">1.</span> <span class="nav-text">简介</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#调度流程"><span class="nav-number">2.</span> <span class="nav-text">调度流程</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#自定义调度器"><span class="nav-number">3.</span> <span class="nav-text">自定义调度器</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#调度器扩展程序"><span class="nav-number">3.1.</span> <span class="nav-text">调度器扩展程序</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#示例"><span class="nav-number">3.1.1.</span> <span class="nav-text">示例</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#调度框架"><span class="nav-number">4.</span> <span class="nav-text">调度框架</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#扩展点（Extension-Points）"><span class="nav-number">4.1.</span> <span class="nav-text">扩展点（Extension Points）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#示例-1"><span class="nav-number">4.2.</span> <span class="nav-text">示例</span></a></li></ol></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+<div class="copyright">&copy; 2016 &mdash; <span itemprop="copyrightYear">2020</span>
+  <span class="with-love" id="heart">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">icyboy</span>
+
+  
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-area-chart"></i>
+    </span>
+    
+      <span class="post-meta-item-text">Site words total count&#58;</span>
+    
+    <span title="Site words total count">190.9k</span>
+  
+</div>
+
+<div class="powered-by">
+<i class="fa fa-user-md"></i><span id="busuanzi_container_site_uv">
+  本站访客数:<span id="busuanzi_value_site_uv"></span>
+</span>
+</div>
+
+<div class="theme-info">
+  <div class="powered-by"></div>
+  <span class="post-count">博客全站共190.9k字</span>
+</div>
+
+
+
+
+
+
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/canvas-nest/canvas-nest.min.js"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+  <script src="//cdn1.lncld.net/static/js/3.0.4/av-min.js"></script>
+  <script src="//unpkg.com/valine/dist/Valine.min.js"></script>
+  
+  <script type="text/javascript">
+    var GUEST = ['nick','mail','link'];
+    var guest = 'nick,mail,link';
+    guest = guest.split(',').filter(item=>{
+      return GUEST.indexOf(item)>-1;
+    });
+    new Valine({
+        el: '#comments' ,
+        verify: false,
+        notify: false,
+        appId: 'B6yqSmGPw5uBIAfWEqm7Xyws-gzGzoHsz',
+        appKey: '2soiHGUrbGw33caCmkT47236',
+        placeholder: 'Just do it!',
+        avatar:'mm',
+        guest_info:guest,
+        pageSize:'10' || 10,
+    });
+  </script>
+
+
+
+  
+
+  <script type="text/javascript">
+    // Popup Window;
+    var isfetched = false;
+    var isXml = true;
+    // Search DB path;
+    var search_path = "search.xml";
+    if (search_path.length === 0) {
+      search_path = "search.xml";
+    } else if (/json$/i.test(search_path)) {
+      isXml = false;
+    }
+    var path = "/" + search_path;
+    // monitor main search box;
+
+    var onPopupClose = function (e) {
+      $('.popup').hide();
+      $('#local-search-input').val('');
+      $('.search-result-list').remove();
+      $('#no-result').remove();
+      $(".local-search-pop-overlay").remove();
+      $('body').css('overflow', '');
+    }
+
+    function proceedsearch() {
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay"></div>')
+        .css('overflow', 'hidden');
+      $('.search-popup-overlay').click(onPopupClose);
+      $('.popup').toggle();
+      var $localSearchInput = $('#local-search-input');
+      $localSearchInput.attr("autocapitalize", "none");
+      $localSearchInput.attr("autocorrect", "off");
+      $localSearchInput.focus();
+    }
+
+    // search function;
+    var searchFunc = function(path, search_id, content_id) {
+      'use strict';
+
+      // start loading animation
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay">' +
+          '<div id="search-loading-icon">' +
+          '<i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>' +
+          '</div>' +
+          '</div>')
+        .css('overflow', 'hidden');
+      $("#search-loading-icon").css('margin', '20% auto 0 auto').css('text-align', 'center');
+
+      $.ajax({
+        url: path,
+        dataType: isXml ? "xml" : "json",
+        async: true,
+        success: function(res) {
+          // get the contents from search data
+          isfetched = true;
+          $('.popup').detach().appendTo('.header-inner');
+          var datas = isXml ? $("entry", res).map(function() {
+            return {
+              title: $("title", this).text(),
+              content: $("content",this).text(),
+              url: $("url" , this).text()
+            };
+          }).get() : res;
+          var input = document.getElementById(search_id);
+          var resultContent = document.getElementById(content_id);
+          var inputEventFunction = function() {
+            var searchText = input.value.trim().toLowerCase();
+            var keywords = searchText.split(/[\s\-]+/);
+            if (keywords.length > 1) {
+              keywords.push(searchText);
+            }
+            var resultItems = [];
+            if (searchText.length > 0) {
+              // perform local searching
+              datas.forEach(function(data) {
+                var isMatch = false;
+                var hitCount = 0;
+                var searchTextCount = 0;
+                var title = data.title.trim();
+                var titleInLowerCase = title.toLowerCase();
+                var content = data.content.trim().replace(/<[^>]+>/g,"");
+                var contentInLowerCase = content.toLowerCase();
+                var articleUrl = decodeURIComponent(data.url);
+                var indexOfTitle = [];
+                var indexOfContent = [];
+                // only match articles with not empty titles
+                if(title != '') {
+                  keywords.forEach(function(keyword) {
+                    function getIndexByWord(word, text, caseSensitive) {
+                      var wordLen = word.length;
+                      if (wordLen === 0) {
+                        return [];
+                      }
+                      var startPosition = 0, position = [], index = [];
+                      if (!caseSensitive) {
+                        text = text.toLowerCase();
+                        word = word.toLowerCase();
+                      }
+                      while ((position = text.indexOf(word, startPosition)) > -1) {
+                        index.push({position: position, word: word});
+                        startPosition = position + wordLen;
+                      }
+                      return index;
+                    }
+
+                    indexOfTitle = indexOfTitle.concat(getIndexByWord(keyword, titleInLowerCase, false));
+                    indexOfContent = indexOfContent.concat(getIndexByWord(keyword, contentInLowerCase, false));
+                  });
+                  if (indexOfTitle.length > 0 || indexOfContent.length > 0) {
+                    isMatch = true;
+                    hitCount = indexOfTitle.length + indexOfContent.length;
+                  }
+                }
+
+                // show search results
+
+                if (isMatch) {
+                  // sort index by position of keyword
+
+                  [indexOfTitle, indexOfContent].forEach(function (index) {
+                    index.sort(function (itemLeft, itemRight) {
+                      if (itemRight.position !== itemLeft.position) {
+                        return itemRight.position - itemLeft.position;
+                      } else {
+                        return itemLeft.word.length - itemRight.word.length;
+                      }
+                    });
+                  });
+
+                  // merge hits into slices
+
+                  function mergeIntoSlice(text, start, end, index) {
+                    var item = index[index.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    var hits = [];
+                    var searchTextCountInSlice = 0;
+                    while (position + word.length <= end && index.length != 0) {
+                      if (word === searchText) {
+                        searchTextCountInSlice++;
+                      }
+                      hits.push({position: position, length: word.length});
+                      var wordEnd = position + word.length;
+
+                      // move to next position of hit
+
+                      index.pop();
+                      while (index.length != 0) {
+                        item = index[index.length - 1];
+                        position = item.position;
+                        word = item.word;
+                        if (wordEnd > position) {
+                          index.pop();
+                        } else {
+                          break;
+                        }
+                      }
+                    }
+                    searchTextCount += searchTextCountInSlice;
+                    return {
+                      hits: hits,
+                      start: start,
+                      end: end,
+                      searchTextCount: searchTextCountInSlice
+                    };
+                  }
+
+                  var slicesOfTitle = [];
+                  if (indexOfTitle.length != 0) {
+                    slicesOfTitle.push(mergeIntoSlice(title, 0, title.length, indexOfTitle));
+                  }
+
+                  var slicesOfContent = [];
+                  while (indexOfContent.length != 0) {
+                    var item = indexOfContent[indexOfContent.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    // cut out 100 characters
+                    var start = position - 20;
+                    var end = position + 80;
+                    if(start < 0){
+                      start = 0;
+                    }
+                    if (end < position + word.length) {
+                      end = position + word.length;
+                    }
+                    if(end > content.length){
+                      end = content.length;
+                    }
+                    slicesOfContent.push(mergeIntoSlice(content, start, end, indexOfContent));
+                  }
+
+                  // sort slices in content by search text's count and hits' count
+
+                  slicesOfContent.sort(function (sliceLeft, sliceRight) {
+                    if (sliceLeft.searchTextCount !== sliceRight.searchTextCount) {
+                      return sliceRight.searchTextCount - sliceLeft.searchTextCount;
+                    } else if (sliceLeft.hits.length !== sliceRight.hits.length) {
+                      return sliceRight.hits.length - sliceLeft.hits.length;
+                    } else {
+                      return sliceLeft.start - sliceRight.start;
+                    }
+                  });
+
+                  // select top N slices in content
+
+                  var upperBound = parseInt('1');
+                  if (upperBound >= 0) {
+                    slicesOfContent = slicesOfContent.slice(0, upperBound);
+                  }
+
+                  // highlight title and content
+
+                  function highlightKeyword(text, slice) {
+                    var result = '';
+                    var prevEnd = slice.start;
+                    slice.hits.forEach(function (hit) {
+                      result += text.substring(prevEnd, hit.position);
+                      var end = hit.position + hit.length;
+                      result += '<b class="search-keyword">' + text.substring(hit.position, end) + '</b>';
+                      prevEnd = end;
+                    });
+                    result += text.substring(prevEnd, slice.end);
+                    return result;
+                  }
+
+                  var resultItem = '';
+
+                  if (slicesOfTitle.length != 0) {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + highlightKeyword(title, slicesOfTitle[0]) + "</a>";
+                  } else {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + title + "</a>";
+                  }
+
+                  slicesOfContent.forEach(function (slice) {
+                    resultItem += "<a href='" + articleUrl + "'>" +
+                      "<p class=\"search-result\">" + highlightKeyword(content, slice) +
+                      "...</p>" + "</a>";
+                  });
+
+                  resultItem += "</li>";
+                  resultItems.push({
+                    item: resultItem,
+                    searchTextCount: searchTextCount,
+                    hitCount: hitCount,
+                    id: resultItems.length
+                  });
+                }
+              })
+            };
+            if (keywords.length === 1 && keywords[0] === "") {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-search fa-5x" /></div>'
+            } else if (resultItems.length === 0) {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-frown-o fa-5x" /></div>'
+            } else {
+              resultItems.sort(function (resultLeft, resultRight) {
+                if (resultLeft.searchTextCount !== resultRight.searchTextCount) {
+                  return resultRight.searchTextCount - resultLeft.searchTextCount;
+                } else if (resultLeft.hitCount !== resultRight.hitCount) {
+                  return resultRight.hitCount - resultLeft.hitCount;
+                } else {
+                  return resultRight.id - resultLeft.id;
+                }
+              });
+              var searchResultList = '<ul class=\"search-result-list\">';
+              resultItems.forEach(function (result) {
+                searchResultList += result.item;
+              })
+              searchResultList += "</ul>";
+              resultContent.innerHTML = searchResultList;
+            }
+          }
+
+          if ('auto' === 'auto') {
+            input.addEventListener('input', inputEventFunction);
+          } else {
+            $('.search-icon').click(inputEventFunction);
+            input.addEventListener('keypress', function (event) {
+              if (event.keyCode === 13) {
+                inputEventFunction();
+              }
+            });
+          }
+
+          // remove loading animation
+          $(".local-search-pop-overlay").remove();
+          $('body').css('overflow', '');
+
+          proceedsearch();
+        }
+      });
+    }
+
+    // handle and trigger popup window;
+    $('.popup-trigger').click(function(e) {
+      e.stopPropagation();
+      if (isfetched === false) {
+        searchFunc(path, 'local-search-input', 'local-search-result');
+      } else {
+        proceedsearch();
+      };
+    });
+
+    $('.popup-btn-close').click(onPopupClose);
+    $('.popup').click(function(e){
+      e.stopPropagation();
+    });
+    $(document).on('keyup', function (event) {
+      var shouldDismissSearchPopup = event.which === 27 &&
+        $('.search-popup').is(':visible');
+      if (shouldDismissSearchPopup) {
+        onPopupClose();
+      }
+    });
+  </script>
+
+
+
+
+
+  
+
+  
+  <script src="https://cdn1.lncld.net/static/js/av-core-mini-0.6.4.js"></script>
+  <script>AV.initialize("B6yqSmGPw5uBIAfWEqm7Xyws-gzGzoHsz", "2soiHGUrbGw33caCmkT47236");</script>
+  <script>
+    function showTime(Counter) {
+      var query = new AV.Query(Counter);
+      var entries = [];
+      var $visitors = $(".leancloud_visitors");
+
+      $visitors.each(function () {
+        entries.push( $(this).attr("id").trim() );
+      });
+
+      query.containedIn('url', entries);
+      query.find()
+        .done(function (results) {
+          var COUNT_CONTAINER_REF = '.leancloud-visitors-count';
+
+          if (results.length === 0) {
+            $visitors.find(COUNT_CONTAINER_REF).text(0);
+            return;
+          }
+
+          for (var i = 0; i < results.length; i++) {
+            var item = results[i];
+            var url = item.get('url');
+            var time = item.get('time');
+            var element = document.getElementById(url);
+
+            $(element).find(COUNT_CONTAINER_REF).text(time);
+          }
+          for(var i = 0; i < entries.length; i++) {
+            var url = entries[i];
+            var element = document.getElementById(url);
+            var countSpan = $(element).find(COUNT_CONTAINER_REF);
+            if( countSpan.text() == '') {
+              countSpan.text(0);
+            }
+          }
+        })
+        .fail(function (object, error) {
+          console.log("Error: " + error.code + " " + error.message);
+        });
+    }
+
+    function addCount(Counter) {
+      var $visitors = $(".leancloud_visitors");
+      var url = $visitors.attr('id').trim();
+      var title = $visitors.attr('data-flag-title').trim();
+      var query = new AV.Query(Counter);
+
+      query.equalTo("url", url);
+      query.find({
+        success: function(results) {
+          if (results.length > 0) {
+            var counter = results[0];
+            counter.fetchWhenSave(true);
+            counter.increment("time");
+            counter.save(null, {
+              success: function(counter) {
+                var $element = $(document.getElementById(url));
+                $element.find('.leancloud-visitors-count').text(counter.get('time'));
+              },
+              error: function(counter, error) {
+                console.log('Failed to save Visitor num, with error message: ' + error.message);
+              }
+            });
+          } else {
+            var newcounter = new Counter();
+            /* Set ACL */
+            var acl = new AV.ACL();
+            acl.setPublicReadAccess(true);
+            acl.setPublicWriteAccess(true);
+            newcounter.setACL(acl);
+            /* End Set ACL */
+            newcounter.set("title", title);
+            newcounter.set("url", url);
+            newcounter.set("time", 1);
+            newcounter.save(null, {
+              success: function(newcounter) {
+                var $element = $(document.getElementById(url));
+                $element.find('.leancloud-visitors-count').text(newcounter.get('time'));
+              },
+              error: function(newcounter, error) {
+                console.log('Failed to create');
+              }
+            });
+          }
+        },
+        error: function(error) {
+          console.log('Error:' + error.code + " " + error.message);
+        }
+      });
+    }
+
+    $(function() {
+      var Counter = AV.Object.extend("Counter");
+      if ($('.leancloud_visitors').length == 1) {
+        addCount(Counter);
+      } else if ($('.post-title-link').length > 1) {
+        showTime(Counter);
+      }
+    });
+  </script>
+
+
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>
