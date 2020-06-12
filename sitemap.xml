@@ -2,6 +2,13 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   
   <url>
+    <loc>http://team.jiunile.com/blog/2020/06/k8s-k8s-in-k8s.html</loc>
+    
+    <lastmod>2020-06-12T05:58:14.000Z</lastmod>
+    
+  </url>
+  
+  <url>
     <loc>http://team.jiunile.com/blog/2020/06/k8s-mutiboard-ldap.html</loc>
     
     <lastmod>2020-06-12T02:11:26.000Z</lastmod>
