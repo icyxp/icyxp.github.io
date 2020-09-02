@@ -152,13 +152,15 @@ CoreDNS 版本：1.6.7Docker 版本：18.06.3-ceKubernetes 版本：1.18.1操作
 CoreDNS 版本：1.6.7Docker 版本：18.06.3-ceKubernetes 版本：1.18.1操作系统版本：CentOS 7.xCentOS 内核版本：3.10.0-693.2.2.el7.x86_64
 
 问题现象由于最近要向组内演示 Istio 1.5，故在云服务器上安装了kubernetes 1.18.1 (使用ipvs) 来配合 Istio 1.5 的演示，kub">
-<meta property="og:updated_time" content="2020-05-09T04:46:02.000Z">
+<meta property="og:image" content="http://team.jiunile.com/images/wx_dyh.png">
+<meta property="og:updated_time" content="2020-09-02T03:29:58.000Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="kubernetes 1.18+ 使用ipvs后coredns无法解析域名采坑记">
 <meta name="twitter:description" content="环境现象
 CoreDNS 版本：1.6.7Docker 版本：18.06.3-ceKubernetes 版本：1.18.1操作系统版本：CentOS 7.xCentOS 内核版本：3.10.0-693.2.2.el7.x86_64
 
 问题现象由于最近要向组内演示 Istio 1.5，故在云服务器上安装了kubernetes 1.18.1 (使用ipvs) 来配合 Istio 1.5 的演示，kub">
+<meta name="twitter:image" content="http://team.jiunile.com/images/wx_dyh.png">
 
 
 
@@ -623,6 +625,7 @@ CoreDNS 版本：1.6.7Docker 版本：18.06.3-ceKubernetes 版本：1.18.1操作
 <h3 id="测试-Pod-中-DNS-是否能够正常解析"><a href="#测试-Pod-中-DNS-是否能够正常解析" class="headerlink" title="测试 Pod 中 DNS 是否能够正常解析"></a>测试 Pod 中 DNS 是否能够正常解析</h3><p>进入 Pod 内部使用 ping 命令测试 DNS 是否能正常解析：<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 进入 dnsutils Pod 内部 sh 命令行</span></span><br><span class="line">$ kubectl <span class="built_in">exec</span> -it dnsutils /bin/sh -n kube-system</span><br><span class="line"></span><br><span class="line"><span class="comment"># Ping 集群外部，例如这里 ping 一下百度</span></span><br><span class="line">$ ping www.baidu.com</span><br><span class="line">64 bytes from 39.156.66.14 (39.156.66.14): icmp_seq=1 ttl=127 time=7.20 ms</span><br><span class="line">64 bytes from 39.156.66.14 (39.156.66.14): icmp_seq=2 ttl=127 time=6.60 ms</span><br><span class="line">64 bytes from 39.156.66.14 (39.156.66.14): icmp_seq=3 ttl=127 time=6.38 ms</span><br><span class="line"></span><br><span class="line"><span class="comment"># Ping 集群内部 kube-api 的 Service 地址</span></span><br><span class="line">$ ping kubernetes.default</span><br><span class="line">64 bytes from kubernetes.default.svc.cluster.local (10.96.0.1): icmp_seq=1 ttl=64 time=0.051 ms</span><br><span class="line">64 bytes from kubernetes.default.svc.cluster.local (10.96.0.1): icmp_seq=2 ttl=64 time=0.051 ms</span><br><span class="line">64 bytes from kubernetes.default.svc.cluster.local (10.96.0.1): icmp_seq=3 ttl=64 time=0.064 ms</span><br></pre></td></tr></table></figure></p>
 <p>可以看到 Pod 中的域名解析已经恢复正常。</p>
 <p>参考: mydlq.club</p>
+<p><img src="/images/wx_dyh.png" alt="微信订阅号"></p>
 
       
     </div>

@@ -152,13 +152,15 @@
 原本用kubeadm安装的的kubernetes 1.11.x集群升级到1.12.x 后（使用kubeadm upgrade升级）发现无法将新的node加入到集群中，会出现以下报错信息
 
 12345678910111213[preflight] running pre-flight checks    [WARNING RequiredIPVSKernelModulesAvailable">
-<meta property="og:updated_time" content="2019-05-15T08:00:54.000Z">
+<meta property="og:image" content="http://team.jiunile.com/images/wx_dyh.png">
+<meta property="og:updated_time" content="2020-09-02T03:33:28.000Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="kuberenetes 升级后新加入节点报错">
 <meta name="twitter:description" content="问题简述
 原本用kubeadm安装的的kubernetes 1.11.x集群升级到1.12.x 后（使用kubeadm upgrade升级）发现无法将新的node加入到集群中，会出现以下报错信息
 
 12345678910111213[preflight] running pre-flight checks    [WARNING RequiredIPVSKernelModulesAvailable">
+<meta name="twitter:image" content="http://team.jiunile.com/images/wx_dyh.png">
 
 
 
@@ -547,6 +549,7 @@
 <h3 id="步骤四"><a href="#步骤四" class="headerlink" title="步骤四"></a>步骤四</h3><p><strong>从现有角色绑定 “kubeadm：kubelet-config-1.11” 创建一个新角色绑定 “kubeadm：kubelet-config-1.12” </strong></p>
 <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">$ kubectl get rolebindings --all-namespaces</span><br><span class="line">$ kubectl -n kube-system get rolebinding kubeadm:kubelet-config-1.11 -o yaml &gt; kubeadm:kubelet-config-1.12-rolebinding.yaml</span><br><span class="line">$ vim kubeadm\:kubelet-config-1.12-rolebinding.yaml     <span class="comment">#modify the following:</span></span><br><span class="line">                                                            <span class="comment">#metadata/name: kubeadm:kubelet-config-1.12</span></span><br><span class="line">                                                            <span class="comment">#roleRef/name: kubeadm:kubelet-config-1.12</span></span><br><span class="line">                                                            <span class="comment">#delete creationTimestamp, resourceVersion, selfLink, uid (because --export option is not supported)</span></span><br><span class="line">- apiGroup: rbac.authorization.k8s.io                       <span class="comment">#add these 3 lines as another group in "subjects:" at the bottom, with the 6 character token prefix from STEP 2</span></span><br><span class="line">  kind: Group</span><br><span class="line">  name: system:bootstrap:a0b1c2 </span><br><span class="line">$ kubectl -n kube-system create <span class="_">-f</span> kubeadm\:kubelet-config-1.12-rolebinding.yaml</span><br></pre></td></tr></table></figure>
 <h3 id="步骤5：从工作节点启动kubeadm-join"><a href="#步骤5：从工作节点启动kubeadm-join" class="headerlink" title="步骤5：从工作节点启动kubeadm join"></a>步骤5：从工作节点启动kubeadm join</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">$ sudo kubeadm join --token &lt;token&gt; &lt;master-IP&gt;:6443 --discovery-token-ca-cert-hash sha256:&lt;key-value&gt; </span><br><span class="line"><span class="comment"># If you receive 2 ERRORS, run kubeadm join again with the following options:</span></span><br><span class="line">$ sudo kubeadm join --token &lt;token&gt; &lt;master-IP&gt;:6443 --discovery-token-ca-cert-hash sha256:&lt;key-value&gt; --ignore-preflight-errors=FileAvailable--etc-kubernetes-bootstrap-kubelet.conf,FileAvailable--etc-kubernetes-pki-ca.crt</span><br></pre></td></tr></table></figure>
+<p><img src="/images/wx_dyh.png" alt="微信订阅号"></p>
 
       
     </div>
@@ -577,7 +580,7 @@
   <p><span>本文标题:</span><a href="/blog/2019/05/k8s-kubeadm-up-node-join-failed.html">kuberenetes 升级后新加入节点报错</a></p>
   <p><span>文章作者:</span><a href="/" title="访问 icyboy 的个人博客">icyboy</a></p>
   <p><span>发布时间:</span>2019年05月15日 - 20:00</p>
-  <p><span>最后更新:</span>2019年05月15日 - 16:00</p>
+  <p><span>最后更新:</span>2020年09月02日 - 11:33</p>
   <p><span>原始链接:</span><a href="/blog/2019/05/k8s-kubeadm-up-node-join-failed.html" title="kuberenetes 升级后新加入节点报错">http://team.jiunile.com/blog/2019/05/k8s-kubeadm-up-node-join-failed.html</a>
     <span class="copy-path"  title="点击复制文章链接"><i class="fa fa-clipboard" data-clipboard-text="http://team.jiunile.com/blog/2019/05/k8s-kubeadm-up-node-join-failed.html"  aria-label="复制成功！"></i></span>
   </p>

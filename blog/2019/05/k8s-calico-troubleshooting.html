@@ -148,11 +148,13 @@
 <meta property="og:site_name" content="CloudNative 架构">
 <meta property="og:description" content="故障一问题表现集群中有台node服务器因为资源达到上限出现假死现状，重启后发现calico node 无法启动成功，提示如下信息：1:Readiness probe failed: caliconode is not ready: BIRD is not ready: BGP not established with 172.18.0.1
 使用calicoctl node status 命令查看n">
-<meta property="og:updated_time" content="2019-05-21T02:40:48.000Z">
+<meta property="og:image" content="http://team.jiunile.com/images/wx_dyh.png">
+<meta property="og:updated_time" content="2020-09-02T03:32:54.000Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Calico 问题排障">
 <meta name="twitter:description" content="故障一问题表现集群中有台node服务器因为资源达到上限出现假死现状，重启后发现calico node 无法启动成功，提示如下信息：1:Readiness probe failed: caliconode is not ready: BIRD is not ready: BGP not established with 172.18.0.1
 使用calicoctl node status 命令查看n">
+<meta name="twitter:image" content="http://team.jiunile.com/images/wx_dyh.png">
 
 
 
@@ -566,6 +568,7 @@
 <p>至此，问题原因就明确了：<strong><code>由于集群节点越来越多，calico-node启动所需时间也随着变长了，超出了liveness probe的重启时间限制，从而被k8s干掉重启</code></strong>。</p>
 <p>那么为什么新加坡区域的节点启动成功，而美东的节点启动失败？</p>
 <p>原因应该是，我们的master与etcd都在新加坡区域，因此新加坡节点从etcd获取数据较快，calico-node启动速度也就更快，可以在限定的时间内启动完毕。而美东节点访问新加坡etcd的延迟较长，因此美东calico-node启动更慢。</p>
+<p><img src="/images/wx_dyh.png" alt="微信订阅号"></p>
 
       
     </div>
@@ -596,7 +599,7 @@
   <p><span>本文标题:</span><a href="/blog/2019/05/k8s-calico-troubleshooting.html">Calico 问题排障</a></p>
   <p><span>文章作者:</span><a href="/" title="访问 icyboy 的个人博客">icyboy</a></p>
   <p><span>发布时间:</span>2019年05月21日 - 12:00</p>
-  <p><span>最后更新:</span>2019年05月21日 - 10:40</p>
+  <p><span>最后更新:</span>2020年09月02日 - 11:32</p>
   <p><span>原始链接:</span><a href="/blog/2019/05/k8s-calico-troubleshooting.html" title="Calico 问题排障">http://team.jiunile.com/blog/2019/05/k8s-calico-troubleshooting.html</a>
     <span class="copy-path"  title="点击复制文章链接"><i class="fa fa-clipboard" data-clipboard-text="http://team.jiunile.com/blog/2019/05/k8s-calico-troubleshooting.html"  aria-label="复制成功！"></i></span>
   </p>
