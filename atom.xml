@@ -1090,9 +1090,9 @@
     
       <category term="kubernetes" scheme="http://team.jiunile.com/tags/kubernetes/"/>
     
-      <category term="kubeadm" scheme="http://team.jiunile.com/tags/kubeadm/"/>
-    
       <category term="etcd" scheme="http://team.jiunile.com/tags/etcd/"/>
+    
+      <category term="kubeadm" scheme="http://team.jiunile.com/tags/kubeadm/"/>
     
   </entry>
   
