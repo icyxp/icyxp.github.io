@@ -2,6 +2,13 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   
   <url>
+    <loc>http://team.jiunile.com/blog/2020/01/k8s-k8s-in-aws-arch.html</loc>
+    
+    <lastmod>2020-09-02T02:03:50.000Z</lastmod>
+    
+  </url>
+  
+  <url>
     <loc>http://team.jiunile.com/blog/2020/06/k8s-k8s-in-k8s.html</loc>
     
     <lastmod>2020-06-12T05:58:14.000Z</lastmod>
@@ -103,13 +110,6 @@
     <loc>http://team.jiunile.com/blog/2019/03/k8s-best-practices.html</loc>
     
     <lastmod>2020-05-07T02:46:19.000Z</lastmod>
-    
-  </url>
-  
-  <url>
-    <loc>http://team.jiunile.com/blog/2020/01/k8s-k8s-in-aws-arch.html</loc>
-    
-    <lastmod>2020-01-08T06:26:45.000Z</lastmod>
     
   </url>
   

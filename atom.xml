@@ -1090,9 +1090,9 @@
     
       <category term="kubernetes" scheme="http://team.jiunile.com/tags/kubernetes/"/>
     
-      <category term="etcd" scheme="http://team.jiunile.com/tags/etcd/"/>
-    
       <category term="kubeadm" scheme="http://team.jiunile.com/tags/kubeadm/"/>
+    
+      <category term="etcd" scheme="http://team.jiunile.com/tags/etcd/"/>
     
   </entry>
   
@@ -1219,7 +1219,7 @@
     <link href="http://team.jiunile.com//blog/2020/01/k8s-k8s-in-aws-arch.html"/>
     <id>http://team.jiunile.com//blog/2020/01/k8s-k8s-in-aws-arch.html</id>
     <published>2020-01-08T13:00:00.000Z</published>
-    <updated>2020-01-08T06:26:45.000Z</updated>
+    <updated>2020-09-02T02:03:50.000Z</updated>
     
     <content type="html">&lt;h2 id=&quot;kubernetes-in-aws-Overview（EKS）&quot;&gt;&lt;a href=&quot;#kubernetes-in-aws-Overview（EKS）&quot; class=&quot;headerlink&quot; title=&quot;kubernetes in aws Overview（EKS）&quot;&gt;&lt;/a&gt;kubernetes in aws Overview（EKS）&lt;/h2&gt;&lt;p&gt;&lt;img src=&quot;/images/k8s/aws_eks_arch.png&quot; alt=&quot;eks_in_aws&quot;&gt;&lt;br&gt;&lt;a id=&quot;more&quot;&gt;&lt;/a&gt;&lt;br&gt;上图是 kubernetes(EKS) 在 aws 上的整体情况，下面我会对每块进行展开说明&lt;/p&gt;
 &lt;h2 id=&quot;分解说明&quot;&gt;&lt;a href=&quot;#分解说明&quot; class=&quot;headerlink&quot; title=&quot;分解说明&quot;&gt;&lt;/a&gt;分解说明&lt;/h2&gt;&lt;h3 id=&quot;kubernetes-or-eks&quot;&gt;&lt;a href=&quot;#kubernetes-or-eks&quot; class=&quot;headerlink&quot; title=&quot;kubernetes or eks&quot;&gt;&lt;/a&gt;kubernetes or eks&lt;/h3&gt;&lt;p&gt;kubernetes 原生支持在 aws 上使用，具体如何启用可参考&lt;a href=&quot;http://team.jiunile.com/blog/2019/03/k8s-cloud.html&quot;&gt;kuberenetes 云应用实践&lt;/a&gt;，这里不在累赘说明。既然选择在云上使用 k8s ，那就直接使用云本身提供的能力（&lt;a href=&quot;https://eksworkshop.com/&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;EKS&lt;/a&gt;），就没必要自己再去适配一遍，毕竟云厂商已经提供了这样的服务，为什么不去使用呢？不过自己也可以去了解EKS为我们做了什么？怎么去管理它？&lt;/p&gt;
@@ -1274,6 +1274,7 @@
 &lt;li&gt;&lt;a href=&quot;https://eksctl.io/&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;https://eksctl.io/&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;&lt;a href=&quot;https://eksworkshop.com&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;https://eksworkshop.com&lt;/a&gt;&lt;/li&gt;
 &lt;/ul&gt;
+&lt;p&gt;&lt;img src=&quot;/images/wx_dyh.png&quot; alt=&quot;微信订阅号&quot;&gt;&lt;/p&gt;
 </content>
     
     <summary type="html">
