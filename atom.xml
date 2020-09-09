@@ -5,7 +5,7 @@
   <link href="/atom.xml" rel="self"/>
   
   <link href="http://team.jiunile.com/"/>
-  <updated>2020-09-09T09:39:57.000Z</updated>
+  <updated>2020-09-09T10:25:47.000Z</updated>
   <id>http://team.jiunile.com/</id>
   
   <author>
@@ -20,7 +20,7 @@
     <link href="http://team.jiunile.com//blog/2020/09/k8s-securitycontext.html"/>
     <id>http://team.jiunile.com//blog/2020/09/k8s-securitycontext.html</id>
     <published>2020-09-09T12:00:00.000Z</published>
-    <updated>2020-09-09T09:39:57.000Z</updated>
+    <updated>2020-09-09T10:25:47.000Z</updated>
     
     <content type="html">&lt;h2 id=&quot;前言&quot;&gt;&lt;a href=&quot;#前言&quot; class=&quot;headerlink&quot; title=&quot;前言&quot;&gt;&lt;/a&gt;前言&lt;/h2&gt;&lt;p&gt;kubernetes 中的 &lt;code&gt;securityContext&lt;/code&gt; 是什么？在什么场景下来使用？第一感觉反正是和安全相关的东西，来自官方定义如下：&lt;/p&gt;
 &lt;p&gt;安全上下文（Security Context）定义 Pod 或 Container 的特权与访问控制设置。 安全上下文包括但不限于：&lt;/p&gt;
@@ -65,7 +65,11 @@
 &lt;blockquote&gt;
 &lt;p&gt;要指定 SELinux，需要在宿主操作系统中装载 SELinux 安全性模块。&lt;code&gt;seLinuxOptions&lt;/code&gt; 字段的取值是一个 &lt;a href=&quot;https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.19/#selinuxoptions-v1-core&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;SELinuxOptions&lt;/a&gt; 对象&lt;/p&gt;
 &lt;/blockquote&gt;
-&lt;p&gt;参考：&lt;a href=&quot;https://kubernetes.io/zh/docs/tasks/configure-pod-container/security-context/&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;https://kubernetes.io/zh/docs/tasks/configure-pod-container/security-context/&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;参考&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href=&quot;https://kubernetes.io/zh/docs/tasks/configure-pod-container/security-context/&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;https://kubernetes.io/zh/docs/tasks/configure-pod-container/security-context/&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;&lt;img src=&quot;/images/wx_dyh.png&quot; alt=&quot;微信订阅号&quot;&gt;&lt;/p&gt;
 </content>
     
     <summary type="html">
@@ -1885,9 +1889,9 @@
       <category term="Go" scheme="http://team.jiunile.com/categories/Go/"/>
     
     
-      <category term="golang" scheme="http://team.jiunile.com/tags/golang/"/>
-    
       <category term="goroutine" scheme="http://team.jiunile.com/tags/goroutine/"/>
+    
+      <category term="golang" scheme="http://team.jiunile.com/tags/golang/"/>
     
       <category term="chanel" scheme="http://team.jiunile.com/tags/chanel/"/>
     
