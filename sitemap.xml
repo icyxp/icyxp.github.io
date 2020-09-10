@@ -2,6 +2,13 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   
   <url>
+    <loc>http://team.jiunile.com/blog/2020/09/istio-depend-sidecar.html</loc>
+    
+    <lastmod>2020-09-10T03:14:14.000Z</lastmod>
+    
+  </url>
+  
+  <url>
     <loc>http://team.jiunile.com/blog/2020/09/k8s-securitycontext.html</loc>
     
     <lastmod>2020-09-09T10:25:47.000Z</lastmod>
