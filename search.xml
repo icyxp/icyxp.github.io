@@ -4,6 +4,95 @@
   
     
     <entry>
+      <title><![CDATA[Kubernetes hostpath和local volume区别]]></title>
+      <url>http://team.jiunile.com/blog/2020/09/k8s-local-volume.html</url>
+      <content type="html"><![CDATA[<blockquote>
+<p>很多人对hostPath volume和local persistent volume的使用场景还存在很多困惑。下面对着两种volume的使用场景、基本的工作机制进行了分析，介绍了使用时的注意事项，并简单介绍<a href="https://github.com/kubernetes-incubator/external-storage/tree/master/local-volume" target="_blank" rel="external">local volume manager</a>如何帮助administrator进行local persistent volume的生命周期管理的</p>
+</blockquote>
+<h2 id="hostPath-volume存在的问题"><a href="#hostPath-volume存在的问题" class="headerlink" title="hostPath volume存在的问题"></a>hostPath volume存在的问题</h2><p>过去我们经常会通过hostPath volume让Pod能够使用本地存储，将Node文件系统中的文件或者目录挂载到容器内，但是hostPath volume的使用是很难受的，并不适合在生产环境中使用。</p>
+<p>我们先看看hostPath Type有哪些类型：</p>
+<table>
+<thead>
+<tr>
+<th><strong>取值</strong></th>
+<th><strong>行为</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td></td>
+<td>空字符串（默认）用于向后兼容，这意味着在安装 hostPath 卷之前不会执行任何检查。</td>
+</tr>
+<tr>
+<td><strong>DirectoryOrCreate</strong></td>
+<td>在给定路径上必须存在的目录。</td>
+</tr>
+<tr>
+<td><strong>FileOrCreate</strong></td>
+<td>如果在给定路径上什么都不存在，那么将在那里根据需要创建空文件，权限设置为 0644，具有与 Kubelet 相同的组和所有权。</td>
+</tr>
+<tr>
+<td><strong>File</strong></td>
+<td>在给定路径上必须存在的文件。</td>
+</tr>
+<tr>
+<td><strong>Socket</strong></td>
+<td>在给定路径上必须存在的 UNIX 套接字。</td>
+</tr>
+<tr>
+<td><strong>CharDevice</strong></td>
+<td>在给定路径上必须存在的字符设备。</td>
+</tr>
+<tr>
+<td><strong>BlockDevice</strong></td>
+<td>在给定路径上必须存在的块设备。</td>
+</tr>
+</tbody>
+</table>
+<p>看起来支持这么多type还是挺好的，但为什么说不适合在生产环境中使用呢？<br><a id="more"></a></p>
+<ul>
+<li>由于集群内每个节点的差异化，要使用 <code>hostPath Volume</code>，我们需要通过<code>NodeSelector</code> 等方式进行精确调度，这种事情多了，你就会不耐烦了。</li>
+<li>注意 <code>DirectoryOrCreate</code> 和 <code>FileOrCreate</code> 两种类型的 <code>hostPath</code>，当Node上没有对应的 <code>File/Directory</code> 时，你需要保证kubelet有在 <code>Node上Create File/Directory</code> 的权限。</li>
+<li>另外，如果 Node 上的文件或目录是由 root 创建的，挂载到容器内之后，你通常还要保证容器内进程有权限对该文件或者目录进行写入，比如你需要以 root 用户启动进程并运行于 privileged 容器，或者你需要事先修改好 Node 上的文件权限配置。</li>
+<li><code>Scheduler</code> 并不会考虑 <code>hostPath volume</code> 的大小，<code>hostPath</code> 也不能申明需要的 <code>storage size</code>，这样调度时存储的考虑，就需要人为检查并保证。</li>
+</ul>
+<h2 id="local-persistent-volume工作机制"><a href="#local-persistent-volume工作机制" class="headerlink" title="local persistent volume工作机制"></a>local persistent volume工作机制</h2><p><code>Local persistent volume</code> 就是用来解决 <code>hostPath volume</code> 面临的 <strong>portability, disk accounting, and scheduling</strong> 的缺陷。<code>PV Controller</code> 和 <code>Scheduler</code> 会对 <code>local PV</code> 做特殊的逻辑处理，以实现 Pod 使用本地存储时发生Pod <code>re-schedule</code> 的情况下能再次调度到 <code>local volume</code> 所在的 Node。</p>
+<p><code>local pv</code> 在生产中使用，也是需要谨慎的，毕竟它本质上还是使用的是节点上的本地存储，如果没有相应的存储副本机制，那意味着一旦节点或者磁盘异常，使用该volume的Pod也会异常，甚至出现数据丢失，除非你明确知道这个风险不会对你的应用造成很大影响或者允许数据丢失。</p>
+<p>那么通常什么情况会使用Local PV呢？</p>
+<ul>
+<li>比如节点上的目录数据是从远程的网络存储上挂载或者预先读取到本地的，为了能加速Pod读取这些数据的速度，相当于起Cache作用，这种情况下因为只读，不存在惧怕数据丢失。这种AI训练中存在需要重复利用并且训练数据巨大的时候可能会采取的方式。</li>
+<li>如果本地节点上目录/磁盘实际是具有副本/分片机制的分布式存储(比如gluster, ceph等)挂载过来的，这种情况也可以使用<code>local pv</code>。</li>
+</ul>
+<p><code>Local volume</code> 允许挂载本地的 disk, partition, directory 到容器内某个挂载点。在 Kuberentes 1.11 仍然仅支持 <code>local pv</code> 的 <code>static provision</code>，不支持<code>dynamic provision</code>。</p>
+<ul>
+<li>Kubernetes 使用 <code>PersistentVolume</code> 的 <code>.spec.nodeAffinityfield</code> 来描述<code>local volume</code> 与 Node 的绑定关系。</li>
+<li>使用 <code>volumeBindingMode: WaitForFirstConsumer</code> 的 <code>local-storage StorageClass</code> 来实现 PVC 的延迟绑定，使得 <code>PV Controller</code> 并不会立刻为 PVC 做 Bound，而是等待某个需要使用该 <code>local pv</code> 的 Pod 完成调度后，才去做 Bound。</li>
+</ul>
+<p>下面是定义local pv的Sample：<br><figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">apiVersion:</span> v1</span><br><span class="line"><span class="attr">kind:</span> PersistentVolume</span><br><span class="line"><span class="attr">metadata:</span></span><br><span class="line"><span class="attr">  name:</span> example-pv</span><br><span class="line"><span class="attr">spec:</span></span><br><span class="line"><span class="attr">  capacity:</span></span><br><span class="line"><span class="attr">    storage:</span> <span class="number">100</span>Gi</span><br><span class="line">  <span class="comment"># volumeMode field requires BlockVolume Alpha feature gate to be enabled.</span></span><br><span class="line"><span class="attr">  volumeMode:</span> Filesystem</span><br><span class="line"><span class="attr">  accessModes:</span></span><br><span class="line"><span class="bullet">  -</span> ReadWriteOnce</span><br><span class="line"><span class="attr">  persistentVolumeReclaimPolicy:</span> Retain</span><br><span class="line"><span class="attr">  storageClassName:</span> local-storage</span><br><span class="line"><span class="attr">  local:</span></span><br><span class="line"><span class="attr">    path:</span> /mnt/disks/ssd1</span><br><span class="line"><span class="attr">  nodeAffinity:</span></span><br><span class="line"><span class="attr">    required:</span></span><br><span class="line"><span class="attr">      nodeSelectorTerms:</span></span><br><span class="line"><span class="attr">      - matchExpressions:</span></span><br><span class="line"><span class="attr">        - key:</span> kubernetes.io/hostname</span><br><span class="line"><span class="attr">          operator:</span> In</span><br><span class="line"><span class="attr">          values:</span></span><br><span class="line"><span class="bullet">          -</span> example-node</span><br></pre></td></tr></table></figure></p>
+<p>对应的<code>local-storage storageClass</code>定义如下：<br><figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">kind:</span> StorageClass</span><br><span class="line"><span class="attr">apiVersion:</span> storage.k8s.io/v1</span><br><span class="line"><span class="attr">metadata:</span></span><br><span class="line"><span class="attr">  name:</span> local-storage</span><br><span class="line"><span class="attr">provisioner:</span> kubernetes.io/<span class="literal">no</span>-provisioner</span><br><span class="line"><span class="attr">volumeBindingMode:</span> WaitForFirstConsumer</span><br></pre></td></tr></table></figure></p>
+<h2 id="使用local-persistent-volume注意事项"><a href="#使用local-persistent-volume注意事项" class="headerlink" title="使用local persistent volume注意事项"></a>使用local persistent volume注意事项</h2><ul>
+<li>使用 <code>local pv</code> 时必须定义 <code>nodeAffinity</code>，Kubernetes Scheduler 需要使用PV 的 <code>nodeAffinity</code> 描述信息来保证 Pod 能够调度到有对应 <code>local volume</code> 的Node 上。</li>
+<li><code>volumeMode</code> 可以是 <code>FileSystem（Default）</code>和 Block，并且需要 <code>enable BlockVolume Alpha feature gate</code>。</li>
+<li><p>创建 <code>local PV</code> 之前，你需要先保证有对应的 <code>storageClass</code> 已经创建。并且该<code>storageClass</code> 的 <code>volumeBindingMode</code> 必须是 <code>WaitForFirstConsumer</code> 以标识延迟 <code>Volume Binding</code> 。<code>WaitForFirstConsumer</code> 可以保证正常的 Pod 调度要求（resource requirements, node selectors, Pod affinity, and Pod anti-affinity等），又能保证 Pod 需要的 <code>Local PV</code> 的 <code>nodeAffinity</code> 得到满足，实际上，一共有以下两种 <code>volumeBindingMode</code>：</p>
+<figure class="highlight golang"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// VolumeBindingImmediate indicates that PersistentVolumeClaims should be</span></span><br><span class="line"><span class="comment">// immediately provisioned and bound.</span></span><br><span class="line">VolumeBindingImmediate VolumeBindingMode = <span class="string">"Immediate"</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// VolumeBindingWaitForFirstConsumer indicates that PersistentVolumeClaims</span></span><br><span class="line"><span class="comment">// should not be provisioned and bound until the first Pod is created that</span></span><br><span class="line"><span class="comment">// references the PeristentVolumeClaim.  The volume provisioning and</span></span><br><span class="line"><span class="comment">// binding will occur during Pod scheduing.</span></span><br><span class="line">VolumeBindingWaitForFirstConsumer VolumeBindingMode = <span class="string">"WaitForFirstConsumer"</span></span><br></pre></td></tr></table></figure>
+</li>
+<li><p>节点上 <code>local volume</code> 的初始化需要我们人为去完成（比如 <code>local disk</code> 需要 pre-partitioned, formatted, and mounted. 共享存储对应的 Directories 也需要 pre-created），并且人工创建这个 <code>local PV</code>，当 Pod 结束，我们还需要手动的清理 <code>local volume</code>，然后手动删除该 <code>local PV</code> 对象。因此，<code>persistentVolumeReclaimPolicy</code> 只能是 <code>Retain</code>。</p>
+</li>
+</ul>
+<h2 id="local-volume-manager"><a href="#local-volume-manager" class="headerlink" title="local volume manager"></a>local volume manager</h2><p>上面这么多事情需要人为的去做预处理的工作，我们必须要有解决方案帮我们自动完成 <code>local volume</code> 的 create 和 cleanup 的工作。官方给出了一个简单的 <a href="https://github.com/kubernetes-incubator/external-storage/tree/master/local-volume" target="_blank" rel="external">local volume manager</a> ，注意它仍然只是一个 <code>static provisioner</code>，目前主要帮我们做两件事：</p>
+<ul>
+<li><code>local volume manager</code> 监控配置好的 discovery directory 的新的挂载点，并为每个挂载点根据对应的 storageClassName, path, nodeAffinity, and capacity 创建<code>PersistentVolume object</code>。</li>
+<li>当Pod结束并删除了使用 <code>local volume</code> 的 PVC，<code>local volume manager</code> 将自动清理该 local mount 上的所有文件, 然后删除对应的 <code>PersistentVolume object</code>.</li>
+</ul>
+<p>因此，除了需要人为的完成 <code>local volume</code> 的 mount 操作，<code>local PV</code> 的生命周期管理就全部交给 <a href="https://github.com/kubernetes-incubator/external-storage/tree/master/local-volume" target="_blank" rel="external">local volume manager</a> 了。下面我们专门介绍下这个 <code>Static Local Volume Provisioner</code>。</p>
+<p>后面我会单独写一个博文对 <a href="https://github.com/kubernetes-incubator/external-storage/tree/master/local-volume" target="_blank" rel="external">local volume manager</a> 进行深度剖析。</p>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>本文对 <code>hostPath volume</code> 不能在生产环境中很好使用的原因进行了阐述，然后对 <code>local persistent volume</code> 的使用场景、基本的工作机制进行了分析，介绍了使用时的注意事项，最后简单介绍了 <code>local volume manager</code> 如何帮助 administrator 进行 <code>local persistent volume</code> 的生命周期管理的。</p>
+<p>来源：oschina</p>
+<p><img src="/images/wx_dyh.png" alt="微信订阅号"></p>
+]]></content>
+    </entry>
+    
+    <entry>
       <title><![CDATA[Go Singleflight导致死锁问题分析]]></title>
       <url>http://team.jiunile.com/blog/2020/09/go-singleflight-deadlock.html</url>
       <content type="html"><![CDATA[<h2 id="思路排查"><a href="#思路排查" class="headerlink" title="思路排查"></a>思路排查</h2><h3 id="Dump-堆栈很重要"><a href="#Dump-堆栈很重要" class="headerlink" title="Dump 堆栈很重要"></a>Dump 堆栈很重要</h3><p>线上某个环境发现 S3 上传请求卡住，请求不返回，卡了30分钟，长时间没有发现有效日志。一般来讲，死锁问题还是好排查的，因为现场一般都在。类似于 c 程序，遇到死锁问题都会用 pstack 看一把。golang 死锁排查思路也类似（golang 不适合使用 pstack，因为 golang 调度的是协程，pstack 只能看到线程栈），我们其实是需要知道 S3 程序里 goroutine 的栈状态。golang 遇到这个问题我们有两个办法：</p>
