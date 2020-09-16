@@ -4,6 +4,74 @@
   
     
     <entry>
+      <title><![CDATA[Go Singleflight导致死锁问题分析]]></title>
+      <url>http://team.jiunile.com/blog/2020/09/go-singleflight-deadlock.html</url>
+      <content type="html"><![CDATA[<h2 id="思路排查"><a href="#思路排查" class="headerlink" title="思路排查"></a>思路排查</h2><h3 id="Dump-堆栈很重要"><a href="#Dump-堆栈很重要" class="headerlink" title="Dump 堆栈很重要"></a>Dump 堆栈很重要</h3><p>线上某个环境发现 S3 上传请求卡住，请求不返回，卡了30分钟，长时间没有发现有效日志。一般来讲，死锁问题还是好排查的，因为现场一般都在。类似于 c 程序，遇到死锁问题都会用 pstack 看一把。golang 死锁排查思路也类似（golang 不适合使用 pstack，因为 golang 调度的是协程，pstack 只能看到线程栈），我们其实是需要知道 S3 程序里 goroutine 的栈状态。golang 遇到这个问题我们有两个办法：</p>
+<ol>
+<li>方法一：条件允许的话，gcore 出一个堆栈，这个是最有效的方法，因为是把整个 golang 程序的内存镜像 dump 出来，然后用 dlv 分析</li>
+<li>方法二：如果你提前开启 net/pprof 库的引用，开启了 debug 接口，那么就可以调用 curl 接口，通过 http 接口获取进程的状态信息</li>
+</ol>
+<p>需要注意到，golang 程序和 c 程序还是有点区别，goroutine 非常多，成百上千个 goroutine 是常态，甚至上万个也不稀奇。所以我们一般无法在终端上直接看完所有的栈，一般都是把所有的 goroutine 栈 dump 到文件，然用 vi 打开慢慢分析。</p>
+<ul>
+<li>调试这个 core 文件，意图从堆栈里找到些东西，由于堆栈太多了，所以就使用 <code>gorouties -t -u</code> 这个命令，并且把输出 dump 到文件；</li>
+<li><code>curl xxx/debug/pprof/goroutine</code></li>
+</ul>
+<a id="more"></a>
+<h3 id="关键思路"><a href="#关键思路" class="headerlink" title="关键思路"></a>关键思路</h3><p>成千上万个 goroutine ，直接显示到终端是不合适的，我们 dump 到文件 test.txt，然后分析 test.txt 这个文件。<strong>去查找发现了一些可疑堆栈，那么什么是可疑堆栈？重点关注加锁等待的堆栈，关键字是 <code>runtime_notifyListWait</code> 、<code>semaphore</code> 、<code>sync.(*Cond).Wait</code> 、<code>Acquire</code>  这些阻塞场景才会用到的，如果业务堆栈上出现这个加锁调用，就非常可疑</strong>。</p>
+<p><strong>划重点：</strong></p>
+<ol>
+<li>留意阻塞关键字 <code>runtime_notifyListWait</code> 、<code>semaphore</code> 、<code>sync.(*Cond).Wait</code> 、<code>Acquire</code></li>
+<li>业务堆栈（非 runtime 的一些内部堆栈）</li>
+</ol>
+<p><img src="/images/go/singleflight01.png" alt="singleflight-heap"></p>
+<p>统计分析发现，有 11 个这个堆栈都在这同一个地方，都是在等同一把锁 <code>blockingKeyCountLimit.lock</code>，所以基本确认了阻塞的位置，就是这个地方阻塞到了所有的请求，但是这把锁我们使用 defer 释放的，使用姿势如下：<br><figure class="highlight golang"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// do someting</span></span><br><span class="line">lock.Acquire(key)</span><br><span class="line"><span class="keyword">defer</span> lock.Release(key)</span><br><span class="line"></span><br><span class="line"><span class="comment">// 以下为锁内操作；</span></span><br></pre></td></tr></table></figure></p>
+<blockquote>
+<p>blockingKeyCountLimit 是我们封装针对 key 操作流控的组件。举个例子，如果 limit == 1，key为 “test” 在 g1 上 Acquire 成功，g2 acquire(“test”) 就会等待，这个可以算是我们优化的一个逻辑。如果 limit == 2，那么就允许两个人加锁到，后面的人都等待。</p>
+</blockquote>
+<p>从代码来看，函数退出一定会释放的，但是偏偏现在锁就卡在这个地方，所以就非常奇怪。我们先找哪个 goroutine 占着这把锁不释放，看看能不能搞清楚怎样导致这里抢不到锁的原因。</p>
+<p>通过审查业务代码分析，发现可能的源头函数（这个函数是向后端请求的函数）：<br><figure class="highlight golang"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">api.(*Client).getBytesNolc</span><br></pre></td></tr></table></figure></p>
+<p>确认是 <code>getBytesNolc</code> 这个函数执行的操作，那么大概率就是卡在这个地方了。用这个 <code>getBytesNolc</code> 字符串搜索堆栈，找下是哪个堆栈 ？搜索到这个堆栈 <code>goroutine 19458</code><br><img src="/images/go/singleflight02.png" alt="singleflight-heap"></p>
+<p>大概率就是第 1 个堆栈了，也就是其他的 11 个 goroutine 都在等这 <code>goroutine 19458</code>  来放锁，仔细看这个堆栈。那么为啥这个堆栈不放锁呢？这里有个细节要注意下，这里是卡到 <code>gihub.com/golang/groupcache/singleflight/singleflight.go:48</code> 这一行：<br><img src="/images/go/singleflight03.png" alt="singleflight"></p>
+<p>这是一个开源库，singleflight 实现了缓存防击穿的功能。</p>
+<blockquote>
+<p>简单介绍下 <code>singleflight</code> 的功能，这是一个非常有效的工具。在缓存大量失效的场景，如果针对同一个 key ，其实只需要有一个人穿透到后端请求数据，其他人等待他完成，然后取缓存结果即可。这个就是 <code>singleflight</code> 实现的功能。具体实现就是：来了请求之后，把 key 插入到 map 里，后面的请求如果发现同名 key 在 map 里面，那么就等待它完成就好；</p>
+</blockquote>
+<p>截屏显示卡到 <code>c.wg.Wait()</code> 这一行，那么说明 map 里面肯定有已经存在的 key，说明 <code>goroutine 19458</code> 不是第一个人？但是外面还有一个 <code>blockingKeyCountLimit</code> 的互斥呢，按道理其他的人也进不来（因为 limit == 1），这里这么讲来肯定要是源头才对？</p>
+<h3 id="思路整理"><a href="#思路整理" class="headerlink" title="思路整理"></a>思路整理</h3><p>伪代码显示如下：<br><figure class="highlight golang"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">xxx</span> <span class="params">()</span></span> &#123;</span><br><span class="line">    <span class="comment">// 大部分协程都卡在这里（11个）</span></span><br><span class="line">    <span class="comment">// 这个锁的效果主要是流控，limit 值初始化赋值，可以是 1，也可以是其他；</span></span><br><span class="line">    <span class="comment">// locker 为 blockingKeyCountLimit 类型</span></span><br><span class="line">    limitLocker.Acquire( key )</span><br><span class="line">    <span class="keyword">defer</span> limitLocker.Release( key )</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 获取数据</span></span><br><span class="line">    getBytesNolc( key , ...)</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">getBytesNolc</span> <span class="params">()</span></span> &#123;</span><br><span class="line">    <span class="comment">// ...</span></span><br><span class="line">    <span class="comment">// 下面就是 singleflight.Group 的用法，防穿透</span></span><br><span class="line">    <span class="comment">// 同一时间只允许一个人去后端更新</span></span><br><span class="line">    ret, err = x.Group.Do(id, <span class="function"><span class="keyword">func</span><span class="params">()</span> <span class="params">(<span class="keyword">interface</span>&#123;&#125;, error)</span></span> &#123;</span><br><span class="line">        <span class="comment">// 去服务后台获取，更新数据；</span></span><br><span class="line">    &#125;)</span><br><span class="line">    <span class="comment">// ...</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>图示显示当前的现状：<br><img src="/images/go/singleflight04.png" alt="singleflight"></p>
+<p>现状小结：</p>
+<ol>
+<li>大量的协程都在等 <code>blockingKeyCountLimit</code> 这把锁释放；</li>
+<li>协程 <code>goroutine 19458</code> 持有 <code>blockingKeyCountLimit</code> 这把锁；</li>
+<li>协程 <code>goroutine 19458</code>  却在等一个相同 key 名字的任务的完成（ <code>singleflight</code> 一个防击穿的库，同一时间相同 key 只允许放到一个后端去执行），却永远没等到，协程因此呈现死锁；</li>
+</ol>
+<p>当前的疑问就是第一个 key 的任务为啥永远完不成，堆栈也找不到了，去哪里了？</p>
+<h3 id="发现蛛丝马迹"><a href="#发现蛛丝马迹" class="headerlink" title="发现蛛丝马迹"></a>发现蛛丝马迹</h3><p>我们再仔细审一下 <code>singleflight</code> 的代码：<br><figure class="highlight golang"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(g *Group)</span> <span class="title">Do</span><span class="params">(key <span class="keyword">string</span>, fn <span class="keyword">func</span>()</span> <span class="params">(<span class="keyword">interface</span>&#123;&#125;, error)</span>) <span class="params">(<span class="keyword">interface</span>&#123;&#125;, error)</span></span> &#123;</span><br><span class="line">    g.mu.Lock()</span><br><span class="line">    <span class="keyword">if</span> g.m == <span class="literal">nil</span> &#123;</span><br><span class="line">        g.m = <span class="built_in">make</span>(<span class="keyword">map</span>[<span class="keyword">string</span>]*call)</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// 如果找到同名 key 已经存在；</span></span><br><span class="line">    <span class="keyword">if</span> c, ok := g.m[key]; ok &#123;</span><br><span class="line">        g.mu.Unlock()</span><br><span class="line">        <span class="comment">// 等待者走到这个分支：等待第一个人执行完成，最后直接返回它的结果就行了；</span></span><br><span class="line">        c.wg.Wait()</span><br><span class="line">        <span class="keyword">return</span> c.val, c.err</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// 如果同名 key 不存在（第一个人走到这个分支）</span></span><br><span class="line">    c := <span class="built_in">new</span>(call)</span><br><span class="line">    c.wg.Add(<span class="number">1</span>)</span><br><span class="line">    <span class="comment">// map 里放置 key</span></span><br><span class="line">    g.m[key] = c</span><br><span class="line">    g.mu.Unlock()</span><br><span class="line">    <span class="comment">// 执行任务</span></span><br><span class="line">    c.val, c.err = fn()</span><br><span class="line">    <span class="comment">// 唤醒所有的等待者</span></span><br><span class="line">    c.wg.Done()</span><br><span class="line"></span><br><span class="line">    g.mu.Lock()</span><br><span class="line">    <span class="comment">// 删除 map 里的 key</span></span><br><span class="line">    <span class="built_in">delete</span>(g.m, key)</span><br><span class="line">    g.mu.Unlock()</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> c.val, c.err</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>发现有个线索，我们的 S3 服务程序一个 http 请求对应一个协程处理，为了提高服务端进程的可用性，在框架里会捕捉 <code>panic</code>，这样确保单个协程处理不会影响到其他的请求。基于这个前提，我们假设：如果 <code>fn()</code> 执行异常，<code>panic</code> 掉了，那么就不会走 <code>delete(g.m, key)</code> 的代码，那么 key 就永远都残留在 map 里面，而进程却又还活着。恍然大悟。</p>
+<h3 id="完整的推理流程"><a href="#完整的推理流程" class="headerlink" title="完整的推理流程"></a>完整的推理流程</h3><ol>
+<li>第一个协程 g1 来了，加了 <code>blockingKeyCountLimit</code> 锁，然后准备穿透到后端，调用函数 <code>getBytesNolc</code> 获取数据，并走进了 <code>singlelight</code> ，添加了一个 key：x， 准备干活；<ol>
+<li>干活发生了一些不可预期的异常（后面发现是配置的异常），nil 指针引用之类的， <code>panic</code> 堆栈了，<code>panic</code> 导致后面 <code>delete key</code> 操作没有执行</li>
+<li>虽然 g1 现在 <code>panic</code> 了，但是由于在函数 <code>func xxx</code> 里面 <code>blockingKeyCountLimit</code> 是 defer 执行的，所以这把锁还是，但是 <code>singlelight</code> 的 key 还存在，于是残留在 map 里面</li>
+<li>但是由于我们服务程序为了高可用是 <code>recover</code> 了 <code>panic</code> 的，单个请求的失败不会导致整个进程挂掉，所以进程还是好好的</li>
+</ol>
+</li>
+<li>第二个 <code>goroutine 19458</code> 协程来了，<code>blockingKeyCountLimit</code> 加锁，然后走到 <code>singlelight</code> 的时候，发现有 <code>key: x</code> 了，于是就等待<ol>
+<li>并且等待的是一个永远得不到的锁，因为 g1 早就没了；</li>
+</ol>
+</li>
+<li>后续的 11 个 协程来了，于是被 <code>blockingKeyCountLimit</code> 阻塞住，并且永远不能释放</li>
+</ol>
+<p>实锤：后续基于这个猜想，再去搜索一遍日志，发现确实是有一条 panic 相关的日志。这个时间点后面的请求全部被卡住。</p>
+<h2 id="思考总结"><a href="#思考总结" class="headerlink" title="思考总结"></a>思考总结</h2><p>一般来讲 c 语言写程序容易出现死锁问题，因为各种异常逻辑可能会导致忘记放锁，从而导致抢一个永远都不可能得到的锁。<strong>golang 为了解决这个问题，一般是用 defer 机制来实现，使用姿势如下</strong>：<br><figure class="highlight golang"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">test</span> <span class="params">()</span></span> &#123;</span><br><span class="line">    mtx.Lock()</span><br><span class="line">    <span class="keyword">defer</span> mtx.Unlock()</span><br><span class="line"></span><br><span class="line">    <span class="comment">/* 临界区 */</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p><strong>golang 的 defer 机制是一个经过经验沉淀下来的有效功能</strong>。我们必须要合理使用。defer 实现原理是和所在函数绑定，保证函数 return 的时候一定能调用到（ panic 退出也能），所以 golang 加锁放锁的有效实践是写在相邻的两行。</p>
+<p>其实思考下，<strong><code>singleflight</code> 作为一个通用开源库，其实可以把 <code>delete map key</code> 放到 defer 里，这样就能保证 map 里面的 key 一定是可以被清理的</strong>。</p>
+<p>还有一点，<strong>其实 golang 是不提倡异常-捕捉这样的方式编程</strong>，<code>panic</code> 一般不让随便用，如果真是严重的问题，挂掉就挂掉，这个估计还好一些。当然这是要看场景的，还是有一些特殊场景的，毕竟 golang 都已经提供了 <code>panic-recover</code> 这样的一个手段，就说明还是有需求。这个就跟 unsafe 库一样，你只有明确知道自己的行为影响，才去使用这个工具，否则别用。</p>
+<p>来源：奇伢云存储</p>
+<p><img src="/images/wx_dyh.png" alt="微信订阅号"></p>
+]]></content>
+    </entry>
+    
+    <entry>
       <title><![CDATA[Istio 实战系列(1) - 应用容器对 Envoy Sidecar 的启动依赖问题]]></title>
       <url>http://team.jiunile.com/blog/2020/09/istio-depend-sidecar.html</url>
       <content type="html"><![CDATA[<h2 id="故障现象"><a href="#故障现象" class="headerlink" title="故障现象"></a>故障现象</h2><p>典型案例：某运维同学反馈：昨天晚上 <code>Istio</code> 环境中应用的心跳检测报 <code>connect reset</code>，然后服务重启了。怀疑是 <code>Istio</code> 环境中网络不稳定导致了服务重启。</p>
