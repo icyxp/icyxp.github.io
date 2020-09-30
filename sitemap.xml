@@ -2,6 +2,13 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   
   <url>
+    <loc>http://team.jiunile.com/blog/2020/09/go-pprof.html</loc>
+    
+    <lastmod>2020-09-30T02:59:33.000Z</lastmod>
+    
+  </url>
+  
+  <url>
     <loc>http://team.jiunile.com/blog/2020/09/k8s-local-volume.html</loc>
     
     <lastmod>2020-09-16T09:45:48.000Z</lastmod>
