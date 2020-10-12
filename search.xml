@@ -4,6 +4,46 @@
   
     
     <entry>
+      <title><![CDATA[记一次线上Go服务内存占用率过高问题排查]]></title>
+      <url>http://team.jiunile.com/blog/2020/10/go-debug-memory2.html</url>
+      <content type="html"><![CDATA[<h2 id="故障现象"><a href="#故障现象" class="headerlink" title="故障现象"></a>故障现象</h2><p>某线上埋点上报机器偶尔触发内存占用过多的报警。ssh到机器top发现主要内存被埋点服务占用。之前重启过几次，但是过段时间仍然会发生内存占用过多的警报。下面是报警详情。</p>
+<blockquote>
+<p>[P1][PROBLEM][ali-e-xxx-service03.bj][][ all(#3) mem.memfree.percent 4.19575<5][o3>2019-10-28 10:20:00]</5][o3></p>
+</blockquote>
+<h2 id="问题推断"><a href="#问题推断" class="headerlink" title="问题推断"></a>问题推断</h2><p>埋点服务主要接收客户端压缩过的上报请求，并对请求数据做解压，投递到kafka，逻辑功能相对简单。初步怀疑是某些资源没有释放导致的内存泄露或Groutine泄露。</p>
+<h2 id="问题排查"><a href="#问题排查" class="headerlink" title="问题排查"></a>问题排查</h2><p>由于代码不是由我们业务方维护的，首先向相关部门索要了代码权限。阅读了一下源码，所有资源释放都是由defer进行操作的，并没有发现很明显的资源未释放的情况。<br><a id="more"></a></p>
+<h3 id="1-修改线上环境配置，打开trace端口"><a href="#1-修改线上环境配置，打开trace端口" class="headerlink" title="1. 修改线上环境配置，打开trace端口"></a>1. 修改线上环境配置，打开trace端口</h3><p>在调试分析问题之前，熟悉go的同学都知道 Golang 提供了非常方便的性能诊断工具 <code>go tool trace</code>;  <code>go tool trace</code> 是 Golang 中的性能大杀器， 能揭露运行中的所有的运行时事件和内存占用等。 它是 Go 生态系统中用于诊断性能问题时（如延迟，并行化和竞争异常）最有用的工具之一。 更多 go tool 工具可查看<a href="http://team.jiunile.com/blog/2020/09/go-pprof.html">如何使用 go pprof 定位内存泄漏</a>。</p>
+<p>由于都是采用公司的基础库，基础库专门对 <code>go trace</code> 做了封装。只需要在线上机器修改config 文件，将 trace 信息发送到配置文件中的指定端口就可以使用 <code>go tool</code> 进行分析了。</p>
+<p>然后我在本地进行使用 <code>go tool</code> 工具发现网络不通，排查了一下发现 trace 端口没有绑定到0.0.0.0上。随即用 proxy 工具将 9900 端口反向代理到 9999 端口，然后使用 <code>go tool</code> 对正常状态的内存占用做了一个内存火焰图。如下图:</p>
+<p><img src="/images/go/flame-graph.jpg" alt="go 火焰图"></p>
+<h3 id="2-问题复现"><a href="#2-问题复现" class="headerlink" title="2. 问题复现"></a>2. 问题复现</h3><p>过了几天后又收到了服务器警报，由于 qps 上升，这次比前几次来的都早一些。接到警报后立即对内存做了一个 top<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">go tool pprof -alloc_space http://&#123;addr&#125;/debug/pprof/heap</span><br><span class="line"></span><br><span class="line">Showing top 20 nodes out of 55</span><br><span class="line">      flat  flat%   sum%        cum   cum%</span><br><span class="line">    2.76GB 59.76% 59.76%     2.76GB 59.76%  compress/flate.NewReader</span><br><span class="line">    0.45GB  9.73% 69.49%      0.45GB  9.73%  net/http.newBufioWriterSize</span><br><span class="line">    0.29GB  6.33% 75.82%     3.05GB 66.09%  compress/gzip.(*Reader).Reset</span><br><span class="line">    0.25GB  5.35% 81.17%     0.25GB  5.35%  net/http.newBufioReader</span><br><span class="line">    0.13GB  2.85% 84.01%     0.13GB  2.85%  runtime.rawstringtmp</span><br><span class="line">    0.11GB  2.31% 86.32%     0.11GB  2.31%  bytes.makeSlice</span><br><span class="line">    0.10GB  2.26% 88.58%     0.10GB  2.26%  runtime.hashGrow</span><br></pre></td></tr></table></figure></p>
+<p>每一行表示一个函数的信息。前两列表示函数使用内存以及百分比；第三列是当前所有函数累加使用 Memory 的比例；第四列和第五列代表这个函数以及子函数运行所占用的 Memory 和比例（也被称为累加值 cumulative），应该大于等于前两列的值；最后一列就是函数的名字。如果应用程序有性能问题，上面这些信息应该能告诉我们内存都花费在哪些函数的执行上了，另外 pprof 的 CPU 时间分析也类似。</p>
+<p>pprof 不仅能打印出最耗内存的的地方(top)，还能列出函数代码以及对应的取样数据(list)、汇编代码以及对应的取样数据(disasm)，而且能以各种样式进行输出，比如 svg、gv、callgrind、png、gif 等等。</p>
+<p>可以看到的是大部分内存都被这些 Reader 占用了.</p>
+<h3 id="3-带着问题重新阅读代码"><a href="#3-带着问题重新阅读代码" class="headerlink" title="3.带着问题重新阅读代码"></a>3.带着问题重新阅读代码</h3><p>前面我们进行了占用的初步分析，找到了内存占用多的 Fcuntion 是 <code>flate.NewReader</code>, <code>Package flate</code> 实现了 <code>RFC 1951</code> 中描述的 <code>DEFLATE</code> 压缩数据格式, gzip 包实现了对基于 <code>DEFLATE</code> 的文件格式的访问。所以我们带着问题我们再次定位到相关源码实现，下面是一些关键定义:<br><figure class="highlight golang"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> Gzip GzipPool</span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">GetReader</span><span class="params">(src io.Reader)</span> <span class="params">(*gzip.Reader, error)</span></span> &#123;</span><br><span class="line">    <span class="keyword">return</span> Gzip.GetReader(src)</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">PutReader</span><span class="params">(reader *gzip.Reader)</span></span> &#123;</span><br><span class="line">    Gzip.PutReader(reader)</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// GzipPool manages a pool of gzip.Writer.</span></span><br><span class="line"><span class="comment">// The pool uses sync.Pool internally.</span></span><br><span class="line"><span class="keyword">type</span> GzipPool <span class="keyword">struct</span> &#123;</span><br><span class="line">    readers sync.Pool</span><br><span class="line">    writers sync.Pool</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>这里用到了 <code>sync.Pool</code> 来优化 GC, 为了验证内存都在 pool 上，我们又使用 <code>go tool</code> 提供的 web 工具对查看了一下 pool 的内存占用，果然大部分占用都在 pool 上。</p>
+<h3 id="什么是-sync-Pool"><a href="#什么是-sync-Pool" class="headerlink" title="什么是 sync.Pool?"></a>什么是 sync.Pool?</h3><p>sync包提供了基础的golang并发编程工具。根据官方文档的描述:</p>
+<blockquote>
+<p>Pool’s purpose is to cache allocated but unused items for later reuse, relieving pressure on the garbage collector. That is, it makes it easy to build efficient, thread-safe free lists. However, it is not suitable for all free lists.</p>
+</blockquote>
+<p>我们通常用 golang 来构建高并发场景下的应用，但是由于 golang 内建的 GC 机制会影响应用的性能，为了减少 GC，golang 提供了对象重用的机制，也就是 <code>sync.Pool</code> 对象池。 <code>sync.Pool</code> 是可伸缩的，并发安全的。其大小仅受限于内存的大小，可以被看作是一个存放可重用对象的值的容器。 设计的目的是存放已经分配的但是暂时不用的对象，在需要用到的时候直接从 pool 中取。看到这里相信许多熟悉 GC 的同学心里已经有答案的猜测了:  或许和 GC 有关。</p>
+<h3 id="So，Golang-的-GC-触发时机是什么？"><a href="#So，Golang-的-GC-触发时机是什么？" class="headerlink" title="So，Golang 的 GC 触发时机是什么？"></a>So，Golang 的 GC 触发时机是什么？</h3><p>Golang GC1.13 版本的 GC 实现是三色标记并配合写屏障和辅助 GC。触发条件主要有两个:</p>
+<ol>
+<li>超过内存大小阈值</li>
+<li>达到定时时间</li>
+</ol>
+<blockquote>
+<p>阈值是由一个 <code>gcpercent</code> 的变量控制的,当新分配的内存占已在使用中的内存的比例超过 <code>gcprecent</code> 时就会触发。比如一次回收完毕后，内存的使用量为 5M，那么下次回收的时机则是内存分配达到 10M 的时候。也就是说，并不是内存分配越多，垃圾回收频率越高。如果一直达不到内存大小的阈值呢？这个时候 GC 就会被定时时间触发，比如一直达不到10M，那就定时（默认2min触发一次）触发一次 GC 保证资源的回收。</p>
+</blockquote>
+<p>所以我们当内存占用慢慢升高的时候，gc 触发次数会减少并且趋近于 2min，没有 gc 就不会对 pool 中对象进行回收，导致内存占用率逐渐升高。</p>
+<h3 id="主动触发GC进行验证"><a href="#主动触发GC进行验证" class="headerlink" title="主动触发GC进行验证"></a>主动触发GC进行验证</h3><p>修改代码，限制 rlimit，并使用一个 goroutine 每 30s 主动调用 gc，然后进行测试后上线。观测线上接口耗时并未发生明显变化，系统运行正常，内存占用报警再也没有被触发过。</p>
+<h2 id="问题总结"><a href="#问题总结" class="headerlink" title="问题总结"></a>问题总结</h2><p>刚开始对偶尔触发的内存报警并没有过多的在意，有许多侥幸心理，但问题总归是客观存在的，及时发现问题，定时总结才能不断进步成长，尽量避免一有问题就重启，防止成为SRB(Service ReBoot Boy😁).</p>
+<p>本文作者：保护我方李元芳</p>
+<p><img src="/images/wx_dyh.png" alt="微信订阅号"></p>
+]]></content>
+    </entry>
+    
+    <entry>
       <title><![CDATA[带你认识Kubernetes 网络插件Flannel与Calico]]></title>
       <url>http://team.jiunile.com/blog/2020/10/k8s-cni.html</url>
       <content type="html"><![CDATA[<h2 id="概述"><a href="#概述" class="headerlink" title="概述"></a>概述</h2><p>容器的网络解决方案有很多种，每支持一种网络实现就进行一次适配显然是不现实的，而 CNI 就是为了兼容多种网络方案而发明的。CNI 是 Container Network Interface 的缩写，是一个标准的通用的接口，用于连接容器管理系统和网络插件。</p>
