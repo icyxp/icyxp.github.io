@@ -5,7 +5,7 @@
   <link href="/atom.xml" rel="self"/>
   
   <link href="http://team.jiunile.com/"/>
-  <updated>2020-10-12T02:25:52.000Z</updated>
+  <updated>2020-10-13T05:42:12.000Z</updated>
   <id>http://team.jiunile.com/</id>
   
   <author>
@@ -14,6 +14,106 @@
   </author>
   
   <generator uri="http://hexo.io/">Hexo</generator>
+  
+  <entry>
+    <title>Kubernetes CPUThrottlingHigh 告警解析</title>
+    <link href="http://team.jiunile.com//blog/2020/10/k8s-cpu-alert.html"/>
+    <id>http://team.jiunile.com//blog/2020/10/k8s-cpu-alert.html</id>
+    <published>2020-10-13T12:00:00.000Z</published>
+    <updated>2020-10-13T05:42:12.000Z</updated>
+    
+    <content type="html">&lt;h2 id=&quot;前言&quot;&gt;&lt;a href=&quot;#前言&quot; class=&quot;headerlink&quot; title=&quot;前言&quot;&gt;&lt;/a&gt;前言&lt;/h2&gt;&lt;p&gt;在使用Kubernetes的过程中，我们看到过这样一个告警信息：&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;[K8S]告警主题: CPUThrottlingHigh&lt;br&gt;告警级别: warning&lt;br&gt;告警类型: CPUThrottlingHigh&lt;br&gt;故障实例: xxxx&lt;br&gt;告警详情: 27% throttling of CPU in namespace kube-system for container kube-proxy in pod kube-proxy-9pj9j.&lt;br&gt;触发时间: 2020-05-08 17:34:17&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;这个告警信息说明 &lt;code&gt;kube-proxy&lt;/code&gt; 容器被 &lt;code&gt;throttling&lt;/code&gt; 了，然而查看该容器的资源使用历史信息，发现该容器以及容器所在的节点的 CPU 资源使用率都不高：&lt;/p&gt;
+&lt;p&gt;&lt;img src=&quot;/images/k8s/m-1.png&quot; alt=&quot;告警期间容器所在节点CPU使用率&quot;&gt;&lt;br&gt;&lt;img src=&quot;/images/k8s/m-2.png&quot; alt=&quot;告警期间kube-proxy的资源使用率&quot;&gt;&lt;/p&gt;
+&lt;p&gt;经过我们的分析，发现该告警实际上是和 Kubernetes 对于 CPU 资源的限制和管控机制有关。Kubernetes 依赖于容器的 &lt;code&gt;runtime&lt;/code&gt; 进行 CPU 资源的调度，而容器 &lt;code&gt;runtime&lt;/code&gt; 以 Docker 为例，是借助于 &lt;code&gt;cgroup&lt;/code&gt; 和 &lt;code&gt;CFS&lt;/code&gt; 调度机制进行资源管控。本文基于这个告警案例，首先分析了 &lt;code&gt;CFS&lt;/code&gt; 的基本原理，然后对于 Kubernetes 借助 &lt;code&gt;CFS&lt;/code&gt; 进行 CPU 资源的调度和管控方法进行了介绍，最后使用一个例子来分析 &lt;code&gt;CFS&lt;/code&gt; 的一些调度特性来解释这个告警的 &lt;code&gt;root cause&lt;/code&gt; 和解决方案。&lt;/p&gt;
+&lt;a id=&quot;more&quot;&gt;&lt;/a&gt;
+&lt;h2 id=&quot;CFS-基本原理&quot;&gt;&lt;a href=&quot;#CFS-基本原理&quot; class=&quot;headerlink&quot; title=&quot;CFS 基本原理&quot;&gt;&lt;/a&gt;CFS 基本原理&lt;/h2&gt;&lt;h3 id=&quot;基本原理&quot;&gt;&lt;a href=&quot;#基本原理&quot; class=&quot;headerlink&quot; title=&quot;基本原理&quot;&gt;&lt;/a&gt;基本原理&lt;/h3&gt;&lt;p&gt;Linux 在 2.6.23 之后开始引入 CFS 逐步替代O1调度器作为新的进程调度器，正如它名字所描述的，&lt;a href=&quot;https://www.kernel.org/doc/Documentation/scheduler/sched-design-CFS.txt&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;CFS(Completely Fair Scheduler) 调度器&lt;/a&gt;追求的是对所有进程的全面公平，实际上它的做法就是在一个特定的调度周期内，保证所有待调度的进程都能被执行一遍，主要和当前已经占用的 CPU 时间经权重除权之后的值(vruntime，见下面公式)来决定本轮调度周期内所能占用的 CPU 时间，vruntime 越少，本轮能占用的 CPU时间越多；总体而言，CFS 就是通过保证各个进程 vruntime 的大小尽量一致来达到公平调度的效果：&lt;br&gt;&lt;figure class=&quot;highlight bash&quot;&gt;&lt;table&gt;&lt;tr&gt;&lt;td class=&quot;gutter&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;1&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;2&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;3&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;4&lt;/span&gt;&lt;br&gt;&lt;/pre&gt;&lt;/td&gt;&lt;td class=&quot;code&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;进程的运行时间计算公式为:&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;进程运行时间 = 调度周期 * 进程权重 / 所有进程权重之和&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;vruntime = 进程运行时间 * NICE_0_LOAD / 进程权重 = (调度周期 * 进程权重 / 所有进程总权重) * NICE_0_LOAD / 进程权重 = 调度周期 * NICE_0_LOAD / 所有进程总权重&lt;/span&gt;&lt;br&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/figure&gt;&lt;/p&gt;
+&lt;p&gt;通过上面两个公式，可以看到 vruntime 不是进程实际占用 CPU 的时间，而是剔除权重影响之后的 CPU 时间，这样所有进程在被调度决策的时候的依据是一致的，而实际占用 CPU 时间是经进程优先级权重放大的。这种方式使得系统的调度粒度更小来，更加适合高负载和多交互的场景。&lt;/p&gt;
+&lt;h3 id=&quot;Kernel-配置&quot;&gt;&lt;a href=&quot;#Kernel-配置&quot; class=&quot;headerlink&quot; title=&quot;Kernel 配置&quot;&gt;&lt;/a&gt;Kernel 配置&lt;/h3&gt;&lt;p&gt;在kernel文件系统中，可以通过调整如下几个参数来改变CFS的一些行为：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;code&gt;/proc/sys/kernel/sched_min_granularity_ns&lt;/code&gt;，表示进程最少运行时间，防止频繁的切换，对于交互系统&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;/proc/sys/kernel/sched_nr_migrate&lt;/code&gt;，在多 CPU 情况下进行负载均衡时，一次最多移动多少个进程到另一个 CPU 上&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;/proc/sys/kernel/sched_wakeup_granularity_ns&lt;/code&gt;，表示进程被唤醒后至少应该运行的时间，这个数值越小，那么发生抢占的概率也就越高&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;/proc/sys/kernel/sched_latency_ns&lt;/code&gt;，表示一个运行队列所有进程运行一次的时间长度(&lt;strong&gt;正常情况下的队列调度周期，P&lt;/strong&gt;)&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;sched_nr_latency&lt;/code&gt;，这个参数是内核内部参数，无法直接设置，是通过&lt;code&gt;sched_latency_ns/sched_min_granularity_ns&lt;/code&gt; 这个公式计算出来的；在实际运行中，如果队列排队进程数 &lt;code&gt;nr_running &amp;gt; sched_nr_latency&lt;/code&gt;，则调度周期就不是&lt;code&gt;sched_latency_ns&lt;/code&gt;，而是 &lt;code&gt;P = sched_min_granularity_ns * nr_running&lt;/code&gt;，如果 &lt;code&gt;nr_running &amp;lt;= sched_nr_latency&lt;/code&gt;，则 &lt;code&gt;P = sched_latency_ns&lt;/code&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;在阿里云的Kubernetes节点上，这些参数配置如下：&lt;br&gt;&lt;figure class=&quot;highlight bash&quot;&gt;&lt;table&gt;&lt;tr&gt;&lt;td class=&quot;gutter&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;1&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;2&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;3&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;4&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;5&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;6&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;7&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;8&lt;/span&gt;&lt;br&gt;&lt;/pre&gt;&lt;/td&gt;&lt;td class=&quot;code&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;[root@iZxxxxxxxxxxxxxxxxxxxxZ ~]&lt;span class=&quot;comment&quot;&gt;# cat /proc/sys/kernel/sched_min_granularity_ns&lt;/span&gt;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;10000000&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;[root@iZxxxxxxxxxxxxxxxxxxxxZ ~]&lt;span class=&quot;comment&quot;&gt;# cat /proc/sys/kernel/sched_nr_migrate&lt;/span&gt;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;32&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;[root@iZxxxxxxxxxxxxxxxxxxxxZ ~]&lt;span class=&quot;comment&quot;&gt;# cat /proc/sys/kernel/sched_wakeup_granularity_ns&lt;/span&gt;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;15000000&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;[root@iZxxxxxxxxxxxxxxxxxxxxZ ~]&lt;span class=&quot;comment&quot;&gt;# cat /proc/sys/kernel/sched_latency_ns&lt;/span&gt;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;24000000&lt;/span&gt;&lt;br&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/figure&gt;&lt;/p&gt;
+&lt;p&gt;可以算出来 &lt;code&gt;sched_nr_latency = sched_latency_ns / sched_min_granularity_ns = 24000000 / 10000000 = 2.4&lt;/code&gt;&lt;/p&gt;
+&lt;p&gt;在阿里云普通的虚拟机上的参数如下：&lt;br&gt;&lt;figure class=&quot;highlight bash&quot;&gt;&lt;table&gt;&lt;tr&gt;&lt;td class=&quot;gutter&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;1&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;2&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;3&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;4&lt;/span&gt;&lt;br&gt;&lt;/pre&gt;&lt;/td&gt;&lt;td class=&quot;code&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;[root@prod-tomcat-01 ~]&lt;span class=&quot;comment&quot;&gt;# cat /proc/sys/kernel/sched_min_granularity_ns&lt;/span&gt;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;3000000&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;[root@prod-tomcat-01 ~]&lt;span class=&quot;comment&quot;&gt;# cat /proc/sys/kernel/sched_latency_ns&lt;/span&gt;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;15000000&lt;/span&gt;&lt;br&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/figure&gt;&lt;/p&gt;
+&lt;p&gt;可以算出来 &lt;code&gt;sched_nr_latency = sched_latency_ns / sched_min_granularity_ns = 15000000 / 3000000 = 5&lt;/code&gt;&lt;/p&gt;
+&lt;p&gt;而在普通的CentOS Linux release 7.5.1804 (Core) 上的参数如下：&lt;br&gt;&lt;figure class=&quot;highlight bash&quot;&gt;&lt;table&gt;&lt;tr&gt;&lt;td class=&quot;gutter&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;1&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;2&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;3&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;4&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;5&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;6&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;7&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;8&lt;/span&gt;&lt;br&gt;&lt;/pre&gt;&lt;/td&gt;&lt;td class=&quot;code&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;[root@k8s-node-01 ~]&lt;span class=&quot;comment&quot;&gt;# cat /proc/sys/kernel/sched_min_granularity_ns&lt;/span&gt;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;3000000&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;[root@k8s-node-01 ~]&lt;span class=&quot;comment&quot;&gt;# cat /proc/sys/kernel/sched_nr_migrate&lt;/span&gt;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;32&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;[root@k8s-node-01 ~]&lt;span class=&quot;comment&quot;&gt;# cat /proc/sys/kernel/sched_wakeup_granularity_ns&lt;/span&gt;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;4000000&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;[root@k8s-node-01 ~]&lt;span class=&quot;comment&quot;&gt;# cat /proc/sys/kernel/sched_latency_ns&lt;/span&gt;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;24000000&lt;/span&gt;&lt;br&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/figure&gt;&lt;/p&gt;
+&lt;p&gt;可以算出来 &lt;code&gt;sched_nr_latency = sched_latency_ns / sched_min_granularity_ns = 24000000 / 3000000 = 8&lt;/code&gt;&lt;/p&gt;
+&lt;p&gt;可以看到，阿里云的 Kubernetes 节点设置了更长的最小执行时间，在进程队列稍有等待(2.4) 的时候就开始保证每个进程的最小运行时间不少于 10 毫秒。&lt;/p&gt;
+&lt;h3 id=&quot;运行和观察&quot;&gt;&lt;a href=&quot;#运行和观察&quot; class=&quot;headerlink&quot; title=&quot;运行和观察&quot;&gt;&lt;/a&gt;运行和观察&lt;/h3&gt;&lt;p&gt;部署这样一个 yaml POD：&lt;br&gt;&lt;figure class=&quot;highlight yaml&quot;&gt;&lt;table&gt;&lt;tr&gt;&lt;td class=&quot;gutter&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;1&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;2&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;3&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;4&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;5&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;6&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;7&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;8&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;9&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;10&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;11&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;12&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;13&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;14&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;15&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;16&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;17&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;18&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;19&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;20&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;21&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;22&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;23&lt;/span&gt;&lt;br&gt;&lt;/pre&gt;&lt;/td&gt;&lt;td class=&quot;code&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;&lt;span class=&quot;attr&quot;&gt;apiVersion:&lt;/span&gt; v1&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;&lt;span class=&quot;attr&quot;&gt;kind:&lt;/span&gt; Pod&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;&lt;span class=&quot;attr&quot;&gt;metadata:&lt;/span&gt;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;&lt;span class=&quot;attr&quot;&gt;  name:&lt;/span&gt; busybox&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;&lt;span class=&quot;attr&quot;&gt;  labels:&lt;/span&gt;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;&lt;span class=&quot;attr&quot;&gt;    app:&lt;/span&gt; busybox&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;&lt;span class=&quot;attr&quot;&gt;spec:&lt;/span&gt;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;&lt;span class=&quot;attr&quot;&gt;  containers:&lt;/span&gt;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;&lt;span class=&quot;attr&quot;&gt;  - image:&lt;/span&gt; busybox&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;&lt;span class=&quot;attr&quot;&gt;    resources:&lt;/span&gt;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;&lt;span class=&quot;attr&quot;&gt;      requests:&lt;/span&gt;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;&lt;span class=&quot;attr&quot;&gt;        memory:&lt;/span&gt; &lt;span class=&quot;string&quot;&gt;&quot;64Mi&quot;&lt;/span&gt;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;&lt;span class=&quot;attr&quot;&gt;        cpu:&lt;/span&gt; &lt;span class=&quot;string&quot;&gt;&quot;250m&quot;&lt;/span&gt;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;&lt;span class=&quot;attr&quot;&gt;      limits:&lt;/span&gt;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;&lt;span class=&quot;attr&quot;&gt;        memory:&lt;/span&gt; &lt;span class=&quot;string&quot;&gt;&quot;128Mi&quot;&lt;/span&gt;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;&lt;span class=&quot;attr&quot;&gt;        cpu:&lt;/span&gt; &lt;span class=&quot;string&quot;&gt;&quot;500m&quot;&lt;/span&gt;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;&lt;span class=&quot;attr&quot;&gt;    command:&lt;/span&gt;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;&lt;span class=&quot;bullet&quot;&gt;      -&lt;/span&gt; &lt;span class=&quot;string&quot;&gt;&quot;/bin/sh&quot;&lt;/span&gt;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;&lt;span class=&quot;bullet&quot;&gt;      -&lt;/span&gt; &lt;span class=&quot;string&quot;&gt;&quot;-c&quot;&lt;/span&gt;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;&lt;span class=&quot;bullet&quot;&gt;      -&lt;/span&gt; &lt;span class=&quot;string&quot;&gt;&quot;while true; do sleep 10; done&quot;&lt;/span&gt; &lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;&lt;span class=&quot;attr&quot;&gt;    imagePullPolicy:&lt;/span&gt; IfNotPresent&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;&lt;span class=&quot;attr&quot;&gt;    name:&lt;/span&gt; busybox&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;&lt;span class=&quot;attr&quot;&gt;  restartPolicy:&lt;/span&gt; Always&lt;/span&gt;&lt;br&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/figure&gt;&lt;/p&gt;
+&lt;p&gt;可以看到该容器内部的进程对应的CPU调度信息变化如下：&lt;br&gt;&lt;figure class=&quot;highlight bash&quot;&gt;&lt;table&gt;&lt;tr&gt;&lt;td class=&quot;gutter&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;1&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;2&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;3&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;4&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;5&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;6&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;7&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;8&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;9&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;10&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;11&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;12&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;13&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;14&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;15&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;16&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;17&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;18&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;19&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;20&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;21&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;22&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;23&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;24&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;25&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;26&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;27&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;28&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;29&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;30&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;31&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;32&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;33&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;34&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;35&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;36&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;37&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;38&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;39&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;40&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;41&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;42&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;43&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;44&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;45&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;46&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;47&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;48&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;49&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;50&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;51&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;52&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;53&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;54&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;55&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;56&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;57&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;58&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;59&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;60&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;61&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;62&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;63&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;64&lt;/span&gt;&lt;br&gt;&lt;/pre&gt;&lt;/td&gt;&lt;td class=&quot;code&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;[root@k8s-node-04 ~]&lt;span class=&quot;comment&quot;&gt;# cat /proc/121133/sched&lt;/span&gt;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;sh (121133, &lt;span class=&quot;comment&quot;&gt;#threads: 1)&lt;/span&gt;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;-------------------------------------------------------------------&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;se.exec_start                                :   20229360324.308323&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;se.vruntime                                  :             0.179610&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;se.sum_&lt;span class=&quot;built_in&quot;&gt;exec&lt;/span&gt;_runtime                          :            31.190620&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;se.nr_migrations                             :                   12&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;nr_switches                                  :                   79&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;nr_voluntary_switches                        :                   78&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;nr_involuntary_switches                      :                    1&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;se.load.weight                               :                 1024&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;policy                                       :                    0&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;prio                                         :                  120&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;clock-delta                                  :                   26&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;mm-&amp;gt;numa_scan_seq                            :                    0&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;numa_migrations, 0&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;numa_faults_memory, 0, 0, 0, 0, -1&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;numa_faults_memory, 1, 0, 0, 0, -1&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;numa_faults_memory, 0, 1, 1, 0, -1&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;numa_faults_memory, 1, 1, 0, 0, -1&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt; &lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt; &lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;[root@k8s-node-04 ~]&lt;span class=&quot;comment&quot;&gt;# cat /proc/121133/sched&lt;/span&gt;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;sh (121133, &lt;span class=&quot;comment&quot;&gt;#threads: 1)&lt;/span&gt;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;-------------------------------------------------------------------&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;se.exec_start                                :   20229480327.896307&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;se.vruntime                                  :             0.149504&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;se.sum_&lt;span class=&quot;built_in&quot;&gt;exec&lt;/span&gt;_runtime                          :            33.325310&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;se.nr_migrations                             :                   17&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;nr_switches                                  :                   91&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;nr_voluntary_switches                        :                   90&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;nr_involuntary_switches                      :                    1&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;se.load.weight                               :                 1024&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;policy                                       :                    0&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;prio                                         :                  120&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;clock-delta                                  :                   31&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;mm-&amp;gt;numa_scan_seq                            :                    0&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;numa_migrations, 0&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;numa_faults_memory, 0, 0, 1, 0, -1&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;numa_faults_memory, 1, 0, 0, 0, -1&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;numa_faults_memory, 0, 1, 0, 0, -1&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;numa_faults_memory, 1, 1, 0, 0, -1&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt; &lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt; &lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;[root@k8s-node-04 ~]&lt;span class=&quot;comment&quot;&gt;# cat /proc/121133/sched&lt;/span&gt;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;sh (121133, &lt;span class=&quot;comment&quot;&gt;#threads: 1)&lt;/span&gt;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;-------------------------------------------------------------------&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;se.exec_start                                :   20229520328.862396&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;se.vruntime                                  :             1.531536&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;se.sum_&lt;span class=&quot;built_in&quot;&gt;exec&lt;/span&gt;_runtime                          :            34.053116&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;se.nr_migrations                             :                   18&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;nr_switches                                  :                   95&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;nr_voluntary_switches                        :                   94&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;nr_involuntary_switches                      :                    1&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;se.load.weight                               :                 1024&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;policy                                       :                    0&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;prio                                         :                  120&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;clock-delta                                  :                   34&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;mm-&amp;gt;numa_scan_seq                            :                    0&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;numa_migrations, 0&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;numa_faults_memory, 0, 0, 0, 0, -1&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;numa_faults_memory, 1, 0, 0, 0, -1&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;numa_faults_memory, 0, 1, 1, 0, -1&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;numa_faults_memory, 1, 1, 0, 0, -1&lt;/span&gt;&lt;br&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/figure&gt;&lt;/p&gt;
+&lt;p&gt;其中 sum_exec_runtime 表示实际运行的物理时间。&lt;/p&gt;
+&lt;h2 id=&quot;Kubernetes-借助-CFS-进行-CPU-管理&quot;&gt;&lt;a href=&quot;#Kubernetes-借助-CFS-进行-CPU-管理&quot; class=&quot;headerlink&quot; title=&quot;Kubernetes 借助 CFS 进行 CPU 管理&quot;&gt;&lt;/a&gt;Kubernetes 借助 CFS 进行 CPU 管理&lt;/h2&gt;&lt;h3 id=&quot;CFS-进行-CPU-资源限流-throtting-的原理&quot;&gt;&lt;a href=&quot;#CFS-进行-CPU-资源限流-throtting-的原理&quot; class=&quot;headerlink&quot; title=&quot;CFS 进行 CPU 资源限流(throtting) 的原理&quot;&gt;&lt;/a&gt;CFS 进行 CPU 资源限流(throtting) 的原理&lt;/h3&gt;&lt;p&gt;Kubernetes 的资源定义：&lt;br&gt;&lt;figure class=&quot;highlight yaml&quot;&gt;&lt;table&gt;&lt;tr&gt;&lt;td class=&quot;gutter&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;1&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;2&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;3&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;4&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;5&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;6&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;7&lt;/span&gt;&lt;br&gt;&lt;/pre&gt;&lt;/td&gt;&lt;td class=&quot;code&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;&lt;span class=&quot;attr&quot;&gt;resources:&lt;/span&gt;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;&lt;span class=&quot;attr&quot;&gt;  requests:&lt;/span&gt;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;&lt;span class=&quot;attr&quot;&gt;    memory:&lt;/span&gt; &lt;span class=&quot;string&quot;&gt;&quot;64Mi&quot;&lt;/span&gt;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;&lt;span class=&quot;attr&quot;&gt;    cpu:&lt;/span&gt; &lt;span class=&quot;string&quot;&gt;&quot;250m&quot;&lt;/span&gt;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;&lt;span class=&quot;attr&quot;&gt;  limits:&lt;/span&gt;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;&lt;span class=&quot;attr&quot;&gt;    memory:&lt;/span&gt; &lt;span class=&quot;string&quot;&gt;&quot;128Mi&quot;&lt;/span&gt;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;&lt;span class=&quot;attr&quot;&gt;    cpu:&lt;/span&gt; &lt;span class=&quot;string&quot;&gt;&quot;500m&quot;&lt;/span&gt;&lt;/span&gt;&lt;br&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/figure&gt;&lt;/p&gt;
+&lt;p&gt;比如里面的 CPU 需求，会被翻译成容器 runtime 的运行时参数，并最终变成 cgroups 和CFS 的参数配置：&lt;br&gt;&lt;figure class=&quot;highlight bash&quot;&gt;&lt;table&gt;&lt;tr&gt;&lt;td class=&quot;gutter&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;1&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;2&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;3&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;4&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;5&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;6&lt;/span&gt;&lt;br&gt;&lt;/pre&gt;&lt;/td&gt;&lt;td class=&quot;code&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;cat cpu.shares&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;256&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;cat cpu.cfs_quota_us&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;50000&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;cat cpu.cfs_period_us&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;100000&lt;/span&gt;&lt;br&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/figure&gt;&lt;/p&gt;
+&lt;p&gt;这里有一个默认的参数：&lt;br&gt;&lt;figure class=&quot;highlight bash&quot;&gt;&lt;table&gt;&lt;tr&gt;&lt;td class=&quot;gutter&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;1&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;2&lt;/span&gt;&lt;br&gt;&lt;/pre&gt;&lt;/td&gt;&lt;td class=&quot;code&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;cat /proc/sys/kernel/&lt;span class=&quot;built_in&quot;&gt;sched&lt;/span&gt;_latency_ns&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;24000000&lt;/span&gt;&lt;br&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/figure&gt;&lt;/p&gt;
+&lt;p&gt;所以在这个节点上，正常压力下，系统的 CFS 调度周期是 24ms，CFS 重分配周期是 100ms，而该 POD 在一个重分配周期最多占用 50ms 的时间，在有压力的情况下，POD 可以占据的 CPU share 比例是 256。&lt;/p&gt;
+&lt;p&gt;下面一个例子可以说明不同资源需求的 POD 容器是如何在 CFS 的调度下占用 CPU 资源的：&lt;br&gt;&lt;img src=&quot;/images/k8s/m-3.png&quot; alt=&quot;CPU资源配置和CFS调度&quot;&gt;&lt;/p&gt;
+&lt;p&gt;在这个例子中，有如下系统配置情况：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;CFS 调度周期为 10ms，正常负载情况下，进程 ready 队列里面的进程在每 10ms 的间隔内都会保证被执行一次&lt;/li&gt;
+&lt;li&gt;CFS 重分配周期为 100ms，用于保证一个进程的 limits 设置会被反映在每 100ms 的重分配周期内可以占用的 CPU 时间数，在多核系统中，limit 最大值可以是 CFS重分配周期*CPU核数&lt;/li&gt;
+&lt;li&gt;该执行进程队列只有进程A和进程B两个进程&lt;/li&gt;
+&lt;li&gt;进程A和B定义的 CPU share 占用都一样，所以在系统资源紧张的时候可以保证A和B进程都可以占用可用 CPU 资源的一半&lt;/li&gt;
+&lt;li&gt;定义的 CFS 重分配周期都是 100ms&lt;/li&gt;
+&lt;li&gt;进程A在 100ms 内最多占用 50ms，进程B在 100ms 内最多占用 20ms&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;所以在一个 CFS 重分配周期(相当于10个 CFS 调度周期)内，进程队列的执行情况如下：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;在前面的4个 CFS 调度周期内，进程A和B由于 share 值是一样的，所以每个 CFS 调度内(10ms)，进程A和B都会占用 5ms&lt;/li&gt;
+&lt;li&gt;在第4个 CFS 调度周期结束的时候，在本 CFS 重分配周期内，进程B已经占用了 20ms，在剩下的8个 CFS 调度周期即 80ms 内，进程B都会被限流，一直到下一个 CFS 重分配周期内，进程B才可以继续占用 CPU&lt;/li&gt;
+&lt;li&gt;在第5-7这3个 CFS 调度周期内，由于进程B被限流，所以进程A可以完全拥有这3个 CFS 调度的 CPU 资源，占用 30ms 的执行时间，这样在本 CFS 重分配周期内，进程A已经占用了50ms 的 CPU 时间，在后面剩下的3个 CFS 调度周期即后面的 30ms 内，进程A也会被限流，一直到下一个 CFS 重分配周期内，进程A才可以继续占用 CPU&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;如果进程被限流了，可以在如下的路径看到：&lt;br&gt;&lt;figure class=&quot;highlight bash&quot;&gt;&lt;table&gt;&lt;tr&gt;&lt;td class=&quot;gutter&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;1&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;2&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;3&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;4&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;5&lt;/span&gt;&lt;br&gt;&lt;/pre&gt;&lt;/td&gt;&lt;td class=&quot;code&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;cat /sys/fs/cgroup/cpu/kubepods/pod5326d6f4-789d-11ea-b093-fa163e23cb69/69336c973f9f414c3f9fdfbd90200b7083b35f4d54ce302a4f5&lt;span class=&quot;built_in&quot;&gt;fc&lt;/span&gt;330f2889846/cpu.stat &lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;nr_periods 14001693&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;nr_throttled 2160435&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;throttled_time 570069950532853&lt;/span&gt;&lt;br&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/figure&gt;&lt;/p&gt;
+&lt;h3 id=&quot;本文开头问题的原因分析&quot;&gt;&lt;a href=&quot;#本文开头问题的原因分析&quot; class=&quot;headerlink&quot; title=&quot;本文开头问题的原因分析&quot;&gt;&lt;/a&gt;本文开头问题的原因分析&lt;/h3&gt;&lt;p&gt;根据 3.1 描述的原理，很容易理解本文开通的告警信息的出现，是由于在某些特定的 CFS 重分配周期内，&lt;code&gt;kube-proxy&lt;/code&gt; 的 CPU 占用率超过了给它分配的 limits ，而参看 &lt;code&gt;kube-proxy daemonset&lt;/code&gt; 的配置，确实它的 limits 配置只有 200ms，这就意味着在默认的100ms 的 CFS 重调度周期内，它只能占用 20ms，所以在特定繁忙场景会有问题&lt;br&gt;&lt;img src=&quot;/images/k8s/m-4.png&quot; alt=&quot;resource limit&quot;&gt;&lt;/p&gt;
+&lt;figure class=&quot;highlight bash&quot;&gt;&lt;table&gt;&lt;tr&gt;&lt;td class=&quot;gutter&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;1&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;2&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;3&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;4&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;5&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;6&lt;/span&gt;&lt;br&gt;&lt;/pre&gt;&lt;/td&gt;&lt;td class=&quot;code&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;cat cpu.shares &lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;204&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;cat cpu.cfs_period_us &lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;100000&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;cat cpu.cfs_quota_us &lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;20000&lt;/span&gt;&lt;br&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/figure&gt;
+&lt;p&gt;注：这里 cpu.shares 的计算方法如下：200x1024/1000~=204&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;而这个问题的解决方案就是将 CPU limits 提高&lt;/strong&gt;。&lt;/p&gt;
+&lt;p&gt;Zalando 公司有一个分享《&lt;a href=&quot;https://www.youtube.com/watch?v=eBChCFD9hfs&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;Optimizing Kubernetes Resource Requests/Limits for Cost-Efficiency and Latency / Henning Jacobs&lt;/a&gt;》很好的讲述了 CPU 资源管理的问题，可以参考，这个演讲的PPT在这里可以找到。&lt;/p&gt;
+&lt;p&gt;更具体问题分析和讨论还可以参考如下文章：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href=&quot;https://github.com/kubernetes-monitoring/kubernetes-mixin/issues/108&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;CPUThrottlingHigh false positives #108&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;https://github.com/kubernetes/kubernetes/issues/67577&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;CFS quotas can lead to unnecessary throttling #67577&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;https://www.kernel.org/doc/Documentation/scheduler/sched-bwc.txt&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;CFS Bandwidth Control&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;https://gist.github.com/bobrik/2030ff040fad360327a5fab7a09c4ff1&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;Overly aggressive CFS&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;其中《&lt;a href=&quot;https://gist.github.com/bobrik/2030ff040fad360327a5fab7a09c4ff1&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;Overly aggressive CFS&lt;/a&gt;》里面还有几个小实验可以帮助大家更好的认识到CFS 进行 CPU m资源管控的特点：&lt;br&gt;&lt;img src=&quot;/images/k8s/m-5.png&quot; alt=&quot;cfs demo&quot;&gt;&lt;/p&gt;
+&lt;p&gt;本文作者：cloudvtech&lt;/p&gt;
+&lt;p&gt;&lt;img src=&quot;/images/wx_dyh.png&quot; alt=&quot;微信订阅号&quot;&gt;&lt;/p&gt;
+</content>
+    
+    <summary type="html">
+    
+      &lt;h2 id=&quot;前言&quot;&gt;&lt;a href=&quot;#前言&quot; class=&quot;headerlink&quot; title=&quot;前言&quot;&gt;&lt;/a&gt;前言&lt;/h2&gt;&lt;p&gt;在使用Kubernetes的过程中，我们看到过这样一个告警信息：&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;[K8S]告警主题: CPUThrottlingHigh&lt;br&gt;告警级别: warning&lt;br&gt;告警类型: CPUThrottlingHigh&lt;br&gt;故障实例: xxxx&lt;br&gt;告警详情: 27% throttling of CPU in namespace kube-system for container kube-proxy in pod kube-proxy-9pj9j.&lt;br&gt;触发时间: 2020-05-08 17:34:17&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;这个告警信息说明 &lt;code&gt;kube-proxy&lt;/code&gt; 容器被 &lt;code&gt;throttling&lt;/code&gt; 了，然而查看该容器的资源使用历史信息，发现该容器以及容器所在的节点的 CPU 资源使用率都不高：&lt;/p&gt;
+&lt;p&gt;&lt;img src=&quot;/images/k8s/m-1.png&quot; alt=&quot;告警期间容器所在节点CPU使用率&quot;&gt;&lt;br&gt;&lt;img src=&quot;/images/k8s/m-2.png&quot; alt=&quot;告警期间kube-proxy的资源使用率&quot;&gt;&lt;/p&gt;
+&lt;p&gt;经过我们的分析，发现该告警实际上是和 Kubernetes 对于 CPU 资源的限制和管控机制有关。Kubernetes 依赖于容器的 &lt;code&gt;runtime&lt;/code&gt; 进行 CPU 资源的调度，而容器 &lt;code&gt;runtime&lt;/code&gt; 以 Docker 为例，是借助于 &lt;code&gt;cgroup&lt;/code&gt; 和 &lt;code&gt;CFS&lt;/code&gt; 调度机制进行资源管控。本文基于这个告警案例，首先分析了 &lt;code&gt;CFS&lt;/code&gt; 的基本原理，然后对于 Kubernetes 借助 &lt;code&gt;CFS&lt;/code&gt; 进行 CPU 资源的调度和管控方法进行了介绍，最后使用一个例子来分析 &lt;code&gt;CFS&lt;/code&gt; 的一些调度特性来解释这个告警的 &lt;code&gt;root cause&lt;/code&gt; 和解决方案。&lt;/p&gt;
+    
+    </summary>
+    
+      <category term="kubernetes" scheme="http://team.jiunile.com/categories/kubernetes/"/>
+    
+      <category term="告警" scheme="http://team.jiunile.com/categories/kubernetes/%E5%91%8A%E8%AD%A6/"/>
+    
+    
+      <category term="k8s" scheme="http://team.jiunile.com/tags/k8s/"/>
+    
+      <category term="告警" scheme="http://team.jiunile.com/tags/%E5%91%8A%E8%AD%A6/"/>
+    
+      <category term="cpu throttling" scheme="http://team.jiunile.com/tags/cpu-throttling/"/>
+    
+      <category term="cfs" scheme="http://team.jiunile.com/tags/cfs/"/>
+    
+  </entry>
   
   <entry>
     <title>记一次线上Go服务内存占用率过高问题排查</title>
@@ -2204,128 +2304,6 @@
       <category term="迁移" scheme="http://team.jiunile.com/tags/%E8%BF%81%E7%A7%BB/"/>
     
       <category term="延迟" scheme="http://team.jiunile.com/tags/%E5%BB%B6%E8%BF%9F/"/>
-    
-  </entry>
-  
-  <entry>
-    <title>LPR是什么，央行给有放贷的人带来什么新年礼物</title>
-    <link href="http://team.jiunile.com//blog/2020/01/lpr.html"/>
-    <id>http://team.jiunile.com//blog/2020/01/lpr.html</id>
-    <published>2020-01-06T12:00:00.000Z</published>
-    <updated>2020-01-06T02:29:37.000Z</updated>
-    
-    <content type="html">&lt;h2 id=&quot;part-1&quot;&gt;&lt;a href=&quot;#part-1&quot; class=&quot;headerlink&quot; title=&quot;part 1&quot;&gt;&lt;/a&gt;part 1&lt;/h2&gt;&lt;p&gt;&lt;code&gt;每一个背负了房贷的人，绝对想不到，进入2020年头的时候，央行会送来一份大礼。&lt;/code&gt;&lt;/p&gt;
-&lt;p&gt;2019年12月28日，中国人民银行（央行）发布年内第30号公告。公告中的文字非常专业、晦涩，不是金融专业出身的人，会觉得云里雾里，也体会不到这则公告的史诗级作用。&lt;/p&gt;
-&lt;p&gt;第一：&lt;strong&gt;从2020年1月1日开始，商业银行不得和买房人，签订参考贷款基准利率的浮动利率贷款合同。&lt;/strong&gt;&lt;/p&gt;
-&lt;p&gt;第二：&lt;strong&gt;从2020年3月1日开始，商业银行必须和存量房贷的借款人，废除原有房贷合同，让借款人重新二选一，要么：固定利率；要么：「LPR利率+基点加成」模式。&lt;/strong&gt;&lt;/p&gt;
-&lt;a id=&quot;more&quot;&gt;&lt;/a&gt;
-&lt;p&gt;也就是说，从今年的3月1日开始至8月份的5个月时间里，当初和买房人签订了房贷合同的银行，会联系买房人，协商废除原有的「基准利率+浮动比例」利率合同，再二选一。&lt;/p&gt;
-&lt;p&gt;一定要记住，无论银行怎么巧舌如簧，口吐莲花：&lt;/p&gt;
-&lt;p&gt;&lt;code&gt;不要选择固定利率模式，选择「LPR利率+基点加成」模式！&lt;/code&gt;&lt;/p&gt;
-&lt;p&gt;央行公告中说得很清楚，这种变更，一辈子只有一次机会，选错了的话，是无法更改的。&lt;/p&gt;
-&lt;p&gt;不要小看两种利率模式的差别，我们可以大致估算下，在某些年份，利率差距可能达到1-5个百分点。如果房贷余额有300万元的话，每年还款差异可能达到3-15万元。&lt;/p&gt;
-&lt;p&gt;在过去几年，数百万的年轻人夫妻，掏空了父母辈的钱包，背负了房贷，不敢辞职和跳槽，过上了不敢消费的佛系生活。&lt;/p&gt;
-&lt;p&gt;翻阅了央行的定期报告，截止2019年8月份，个人贷款余额总量在29万亿元。你的房贷，就在其中。&lt;/p&gt;
-&lt;p&gt;现在，央行要给你松绑了，卸下重担了，就看你3个月之后，要不要接收这份大礼，改变一家子的命运了。&lt;/p&gt;
-&lt;h2 id=&quot;part-2&quot;&gt;&lt;a href=&quot;#part-2&quot; class=&quot;headerlink&quot; title=&quot;part 2&quot;&gt;&lt;/a&gt;part 2&lt;/h2&gt;&lt;p&gt;央行在2019年8月份，进行房贷变革的细节。&lt;/p&gt;
-&lt;p&gt;&lt;strong&gt;变革前，房贷利率=央行基准利率+浮动比例。&lt;/strong&gt;&lt;/p&gt;
-&lt;p&gt;基准利率由央行统一公布，商业银行无权控制，只能被动跟随。如果央行加息了，或者降息了，那么在来年的固定日期1月1日，购房者的基准利率就统一改变。当前的基准利率是4.90%。&lt;/p&gt;
-&lt;p&gt;商业银行能够改变的就是“浮动比例”。有些城市的银行货币宽松，鼓励首套房置业，地方政府财源依赖于土地出让金，那么可能在基准利率的基础上打折扣，但是大多数城市，是没有浮动比例，或者上浮的。&lt;/p&gt;
-&lt;p&gt;对购房者而言，和银行签订的“浮动比例”一旦确认，是无法变更的。&lt;/p&gt;
-&lt;p&gt;&lt;strong&gt;变革后，房贷利率=贷款市场报价（LPR）利率+基点加成。&lt;/strong&gt;&lt;/p&gt;
-&lt;p&gt;LPR利率，专业说法是“全国银行间同业拆借中心”，统计18家银行报出的各自的1年期和5年期以上贷款利率，剔除最低价、最高价后，计算算术平均价。&lt;/p&gt;
-&lt;p&gt;说得更加直白一点&lt;/p&gt;
-&lt;p&gt;&lt;code&gt;LPR利率更加市场化，在反映全社会无风险利率的程度上，更加逼真。&lt;/code&gt;&lt;/p&gt;
-&lt;p&gt;当经济过热时，通胀时，利率高；&lt;/p&gt;
-&lt;p&gt;当经济过冷时，通缩时，利率低。&lt;/p&gt;
-&lt;p&gt;这种市场化的利率，将贷款人和借款人之间的利益、风险，均衡了下。&lt;/p&gt;
-&lt;p&gt;央行高屋建瓴，将1年期LPR利率，用于实体经济；将5年期LPR利率，用于了房地产市场。&lt;br&gt;&lt;img src=&quot;/images/other/1.jpg&quot; alt=&quot;1&quot;&gt;&lt;/p&gt;
-&lt;p&gt;当需要给实体经济降息时，就调低1年期LPR利率，不让漫灌的大水进入房地产行业。&lt;/p&gt;
-&lt;p&gt;当需要单独对房地产调控时，只需要提高5年期LPR的利率，就不会对实体经济产生成本压力。&lt;/p&gt;
-&lt;p&gt;但是从长期来看，&lt;strong&gt;5年期LPR利率，一定会向1年期LPR利率进行回归和靠拢的。&lt;/strong&gt;&lt;/p&gt;
-&lt;p&gt;2019年11月20日，央行授权全国银行间同业拆借中心公布了最新一期贷款市场报价利率（LPR）。1年期LPR利率为4.15%，5年期以上LPR利率为4.80%。同10月21日公布的上期数值相比，均下调了5个基点。&lt;/p&gt;
-&lt;p&gt;特别地，5年期LPR利率4.80%，比原有的贷款基准利率4.90%，低了10个基点，也就是0.1个百分点。&lt;/p&gt;
-&lt;p&gt;如果2020年1月以后买房子，签订的是变革后的房贷利率模式，未来LPR利率长期下行，那么买房人和贷款机构的房贷利率，也必然下行，这样的话，买房人承担的利率成本，和全社会的利率成本大致相当。&lt;/p&gt;
-&lt;p&gt;如果是2019年8月份之前买的房子，买房人和贷款机构签订的是基准利率，或者固定利率，那么未来社会无风险利率下行后，买房人承担的压力，将前所未有的大。这批买房人，完全将自己的人生上贡给了银行帝国，和后来轻装上阵的买房者，泾渭分明，社会的不公平性就拉大了。&lt;/p&gt;
-&lt;p&gt;有些人可能会说，变革前后，二种利率的差异，就在10个基点，0.1个百分点，差异不大。&lt;/p&gt;
-&lt;p&gt;你要这么说，只能证明，&lt;code&gt;对我们国家未来利率下行趋势的力量，一无所知！&lt;/code&gt;&lt;/p&gt;
-&lt;h2 id=&quot;part-3&quot;&gt;&lt;a href=&quot;#part-3&quot; class=&quot;headerlink&quot; title=&quot;part 3&quot;&gt;&lt;/a&gt;part 3&lt;/h2&gt;&lt;p&gt;你也许会问：&lt;/p&gt;
-&lt;p&gt;&lt;strong&gt;央行和放贷银行，居然给我们买房者这么好的福利，会把吃进肚子里的肉，吐了出来，它们图什么呢？&lt;/strong&gt;&lt;/p&gt;
-&lt;p&gt;呵呵。先让明哥笑几声。&lt;/p&gt;
-&lt;p&gt;如果你能这么想，说明你真的太天真了。&lt;/p&gt;
-&lt;p&gt;央行和放贷银行，给借款人松绑，绝对不是为了把吃进肚子里的肉吐出来，而是担心未来进入低利率时代以后，借款人弃房而去，那样会引发全社会系统性的大风险。&lt;/p&gt;
-&lt;p&gt;因为，它们是极其专业和前瞻的机构，已经提前预测到了：&lt;/p&gt;
-&lt;p&gt;&lt;code&gt;在未来5-20年的时间长度内，中国一定会步发达国家的后尘，进入低利率，甚至是负利率时代。&lt;/code&gt;&lt;/p&gt;
-&lt;p&gt;这是坏事吗？绝对不是，这是任何经济体发展到一定水平后，必然要进入的常态。&lt;/p&gt;
-&lt;p&gt;当经济体的生产力已经充分发达，人口不再继续增长，物质充分丰富以后，一个市场的消费能力是有限的。也就是说，企业生产出来的实体商品、提供的服务和虚拟商品，终将超过该国或者全球所有人口的消费潜力。&lt;/p&gt;
-&lt;p&gt;假如没有突破性的科技进展，那么企业家没有多余利润可图，将不再扩大生产，不将利润再投资，不向银行间接贷款融资，不向股票市场直接股权融资，社会的GDP原地踏步，年轻人薪资20年不上涨。&lt;/p&gt;
-&lt;p&gt;这样将导致，社会上的存款资金和可投资资金，将无处可去。商业银行收储了海量的居民存款，找不到适格的企业去发放贷款，自然也赚取不了息差。&lt;/p&gt;
-&lt;p&gt;整体社会的利率，将显著下行。&lt;/p&gt;
-&lt;p&gt;统计过，2020年初，全球26个国家或经济体当中，有20个国家或经济体利率处于下降趋势。&lt;/p&gt;
-&lt;p&gt;欧盟央行：-0.5%；&lt;/p&gt;
-&lt;p&gt;日本央行：-0.1%；&lt;/p&gt;
-&lt;p&gt;德国10年期国债：-0.675%。&lt;/p&gt;
-&lt;p&gt;2019年8月5号，丹麦的第三大银行日德兰银行，推出了人类历史上首笔负利率按揭贷款业务，房贷利率为-0.5%。什么意思呢？&lt;/p&gt;
-&lt;p&gt;如果你借丹麦这家银行100万元去买房，一年后你只需还99.5万元就可以了。&lt;/p&gt;
-&lt;p&gt;这家银行向买房人发放贷款，贷款买房人，最终还的钱，比当初银行借出的钱，还要少！&lt;/p&gt;
-&lt;p&gt;听起来，像不像天方夜谭？绝对不是，这在西方发达经济体之中，已经成为了常识。&lt;/p&gt;
-&lt;p&gt;2019年8月6号，瑞士银行宣布对50万欧元以下的存款账户收取年费，并且不支付利息。&lt;/p&gt;
-&lt;p&gt;同样地，由于欧盟组织金融体系的利率是-0.5%，这意味着，一个人在欧盟所属的银行存款1万欧元，一年后，只能取回9950欧元。&lt;br&gt;&lt;img src=&quot;/images/other/2.jpg&quot; alt=&quot;2&quot;&gt;&lt;/p&gt;
-&lt;p&gt;2019年11月21日，已经卸任了中国人民银行行长职位的周小川，在创新经济论坛上表示：&lt;/p&gt;
-&lt;p&gt;&lt;strong&gt;中国可以尽量避免快速地进入到负利率时代。&lt;/strong&gt;&lt;/p&gt;
-&lt;p&gt;言下之意，我们社会可以推迟进入到负利率时代的时间长度，延迟它的到来，但是改变不了历史归途。&lt;/p&gt;
-&lt;p&gt;在2017年之前的20年时间里，我们已经习惯了房价的上涨、物价的上涨，人民币购买力的贬值。其根本原因在于，我们国家依然处于发展阶段，各行各业的商品和服务，还有着巨大的空白市场去等着发掘。&lt;/p&gt;
-&lt;p&gt;房贷利率5.53%、民间借贷利率10-30%、P2P网贷利率20-50%。银行理财产品收益率低于6%，都没有大妈大爷看得上。&lt;/p&gt;
-&lt;p&gt;从2017年开始，高收益的幻象，逐一破灭了。房价下跌、P2P平台爆雷、上市公司多元化扩张一地鸡毛。那些追逐高收益的人，不仅没有得到高利率，连自己的本金都损失掉了。&lt;/p&gt;
-&lt;p&gt;股市收益率预期降低、年轻人就业心态放平、中年人只求保住饭碗，这才是未来我国经济的「新常态」。&lt;/p&gt;
-&lt;p&gt;进入低利率时代后，我们去银行存钱，不仅没有利息，还要倒付费用给银行来负责保管我们的资产数据。&lt;/p&gt;
-&lt;p&gt;为什么呢？&lt;/p&gt;
-&lt;p&gt;因为银行收储之后，将居民资产保管在银行内部，它放贷不出去，没有人来借款，自然赚取不了利息差带来的利润。&lt;/p&gt;
-&lt;p&gt;所以，负利率时代到来以后，谁放钱在银行，谁就要支付给银行一定的费用。&lt;/p&gt;
-&lt;p&gt;如果借款人发现，自己的存款没有利息，全社会的无风险利率都接近于零，企业不愿意去投资，社会GDP增速原地踏步，自己反而要承担4.9%的利率，那这种负担，绝对是压力山大，不可承受的。&lt;/p&gt;
-&lt;p&gt;等到那个时候，别说奢望房价上涨成为了白日梦，每年下跌2-10%，都是很有可能的，结果还要凭空承担-4.9%的利率亏损，傻子都知道，应该抛弃房子，直接断供。&lt;/p&gt;
-&lt;p&gt;如果大批量的买房人，集体断供，最终会引发什么后果呢？那就是2008年美国次贷危机的翻版，银行将倒闭，经济继续萧条，年轻人失业。那种后果不是每个社会都能承受的。&lt;/p&gt;
-&lt;p&gt;对于那些在2020年，就选择了「LPR利率+基点加成」模式的买房人而言，会张灯结彩、敲锣打鼓地迎接低利率时代、甚至是负利率时代的到来。&lt;/p&gt;
-&lt;p&gt;理想情况下，假如5年期LPR利率降低到了零，那么当初的买房人承担的利率就只是当初的「基点加成」，无论是上浮还是下浮，都可以认为轻如鸿毛。&lt;/p&gt;
-&lt;p&gt;这个时候，原有传统模式买房人，承担的利率是4.90%，接受了新模式的买房人，几乎没有房贷利率！&lt;/p&gt;
-&lt;p&gt;年化4.90%利率的差别，如果房贷余额还剩下200万，那就是年化9.8万元的差距。&lt;/p&gt;
-&lt;p&gt;这钱不香吗？为什么要凭空贡献给银行呢？&lt;/p&gt;
-&lt;h2 id=&quot;part-4&quot;&gt;&lt;a href=&quot;#part-4&quot; class=&quot;headerlink&quot; title=&quot;part 4&quot;&gt;&lt;/a&gt;part 4&lt;/h2&gt;&lt;p&gt;站在2020年的门槛上，央行一眼洞穿了未来20年的经济轨迹，参考了西方发达国家的成熟经验，引导各大商业银行贷款人，和借款人，重新签订锚定于LPR利率的贷款合同。&lt;/p&gt;
-&lt;p&gt;这不仅是给予借款人的大红包，也是站在全社会的角度，未雨绸缪，将收益和风险，在借款人和贷款机构之间分摊，促进整个社会的稳定运行。&lt;/p&gt;
-&lt;p&gt;但是，央行出台的房贷改革新政，让贷款人和借款人重新签订利率合同，充满着大量的金融术语和晦涩的概念。&lt;/p&gt;
-&lt;p&gt;商业银行的目的是为了逐利。它们作为贷款人，赚取利息差，让借款人承担的利率越高，银行的利润就越高。&lt;br&gt;&lt;img src=&quot;/images/other/3.jpg&quot; alt=&quot;3&quot;&gt;&lt;/p&gt;
-&lt;p&gt;收取智商税的最佳方式是，制造信息不对称，利用自己的信息优势，来收割对方。&lt;/p&gt;
-&lt;p&gt;商业银行一定会巧舌如簧、口吐莲花一般，故意将两种利率模式，说得借款人如云山雾里，眼冒金星。&lt;/p&gt;
-&lt;p&gt;站在银行的角度来说，它们希望借款人像无头苍蝇一样，跟着他们的节奏走，不知不觉就躺在砧板上，摆好了待宰的体位。&lt;/p&gt;
-&lt;p&gt;只有明哥，惦记着你的钱包。&lt;/p&gt;
-&lt;p&gt;千言万语，汇成一句话！&lt;/p&gt;
-&lt;p&gt;&lt;code&gt;从2020年3月1日开始的5个月时间里，当银行联系你重新协商房贷利率时，一定要坚持「LPR利率+基点加成」模式，并且利率一年自动更新一次。&lt;/code&gt;&lt;/p&gt;
-&lt;p&gt;这个机会，涉及到你家庭数十万，甚至上百万的资金，是用于自己，还是贡献给银行。&lt;/p&gt;
-&lt;p&gt;可千万别选错了，因为央行只给了一次机会，没有后悔药可吃！&lt;/p&gt;
-&lt;p&gt;来源：明哥在路上&lt;/p&gt;
-</content>
-    
-    <summary type="html">
-    
-      &lt;h2 id=&quot;part-1&quot;&gt;&lt;a href=&quot;#part-1&quot; class=&quot;headerlink&quot; title=&quot;part 1&quot;&gt;&lt;/a&gt;part 1&lt;/h2&gt;&lt;p&gt;&lt;code&gt;每一个背负了房贷的人，绝对想不到，进入2020年头的时候，央行会送来一份大礼。&lt;/code&gt;&lt;/p&gt;
-&lt;p&gt;2019年12月28日，中国人民银行（央行）发布年内第30号公告。公告中的文字非常专业、晦涩，不是金融专业出身的人，会觉得云里雾里，也体会不到这则公告的史诗级作用。&lt;/p&gt;
-&lt;p&gt;第一：&lt;strong&gt;从2020年1月1日开始，商业银行不得和买房人，签订参考贷款基准利率的浮动利率贷款合同。&lt;/strong&gt;&lt;/p&gt;
-&lt;p&gt;第二：&lt;strong&gt;从2020年3月1日开始，商业银行必须和存量房贷的借款人，废除原有房贷合同，让借款人重新二选一，要么：固定利率；要么：「LPR利率+基点加成」模式。&lt;/strong&gt;&lt;/p&gt;
-    
-    </summary>
-    
-      <category term="LPR" scheme="http://team.jiunile.com/categories/LPR/"/>
-    
-      <category term="房贷" scheme="http://team.jiunile.com/categories/LPR/%E6%88%BF%E8%B4%B7/"/>
-    
-    
-      <category term="lpr" scheme="http://team.jiunile.com/tags/lpr/"/>
-    
-      <category term="房贷" scheme="http://team.jiunile.com/tags/%E6%88%BF%E8%B4%B7/"/>
-    
-      <category term="杂谈" scheme="http://team.jiunile.com/tags/%E6%9D%82%E8%B0%88/"/>
-    
-      <category term="市场经济" scheme="http://team.jiunile.com/tags/%E5%B8%82%E5%9C%BA%E7%BB%8F%E6%B5%8E/"/>
     
   </entry>
   
