@@ -2,6 +2,13 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   
   <url>
+    <loc>http://team.jiunile.com/blog/2020/10/k8s-node-proxy.html</loc>
+    
+    <lastmod>2020-10-19T02:55:06.000Z</lastmod>
+    
+  </url>
+  
+  <url>
     <loc>http://team.jiunile.com/blog/2020/10/k8s-cpu-alert.html</loc>
     
     <lastmod>2020-10-13T05:42:12.000Z</lastmod>
