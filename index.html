@@ -388,7 +388,7 @@
         
           <h2 class="post-title" itemprop="name headline">
                 
-                <a class="post-title-link" href="/blog/2020/10/k8s-node-proxy.html" itemprop="url">(译)深入理解 Kubernetes 网络模型 - 自己实现 kube-proxy 的功能</a></h2>
+                <a class="post-title-link" href="/blog/2020/10/k8s-node-proxy.html" itemprop="url">（译）深入理解 Kubernetes 网络模型 - 自己实现 kube-proxy 的功能</a></h2>
         
 
         <div class="post-meta">
@@ -472,7 +472,7 @@
 
           
           
-             <span id="/blog/2020/10/k8s-node-proxy.html" class="leancloud_visitors" data-flag-title="(译)深入理解 Kubernetes 网络模型 - 自己实现 kube-proxy 的功能">
+             <span id="/blog/2020/10/k8s-node-proxy.html" class="leancloud_visitors" data-flag-title="（译）深入理解 Kubernetes 网络模型 - 自己实现 kube-proxy 的功能">
                <span class="post-meta-divider">|</span>
                <span class="post-meta-item-icon">
                  <i class="fa fa-eye"></i>
@@ -498,7 +498,7 @@
                   <span class="post-meta-item-text">字数统计&#58;</span>
                 
                 <span title="字数统计">
-                  8,194 字
+                  8,189 字
                 </span>
               
 
@@ -540,17 +540,17 @@
 <li>背景知识</li>
 <li>节点代理模型</li>
 <li>测试环境</li>
-<li>实现: 通过 userspace socket 实现 proxy</li>
-<li>实现: 通过 iptables 实现 proxy</li>
-<li>实现: 通过 ipvs/ipset 实现 proxy</li>
-<li>实现: 通过 bpf 实现 proxy</li>
+<li>实现：通过 userspace socket 实现 proxy</li>
+<li>实现：通过 iptables 实现 proxy</li>
+<li>实现：通过 ipvs/ipset 实现 proxy</li>
+<li>实现：通过 bpf 实现 proxy</li>
 <li>总结</li>
 <li>参考文献</li>
 <li>附录</li>
 </ol>
 <p>Kubernetes 中有几种类型的代理。其中有 <strong>node proxier</strong> 或 <code>kube-proxy</code>，它在每个节点上反映 Kubernetes API 中定义的服务，可以跨一组后端执行简单的 TCP/UDP/SCTP 流转发 [1]。</p>
-<p>为了更好地理解节点代理模型，在这篇文章中，我们将用不同的方法设计和实现我们自己版本的<code>kube-proxy</code>; 尽管这些只是玩具程序，但从<strong>透明流量拦截、转发、负载均衡</strong>等方面来说，它们的工作方式与 K8S 集群中运行的普通 <code>kube-proxy</code> 基本相同。</p>
-<p>通过我们的玩具代理程序，非 K8S 节点(不在K8S集群中)上的应用程序(无论是宿主本地应用程序，还是在VM/容器中运行的应用程序)也可以通过 <strong>ClusterIP</strong> 访问 K8S 服务 – <strong>注意，在 kubernetes 的设计中，ClusterIP 只能在 K8S 集群节点中访问。(在某种意义上，我们的玩具代理程序将非K8S节点变成了K8S节点。)</strong><br>
+<p>为了更好地理解节点代理模型，在这篇文章中，我们将用不同的方法设计和实现我们自己版本的 <code>kube-proxy</code>; 尽管这些只是 <code>toy-proxy</code>，但从<strong>透明流量拦截、转发、负载均衡</strong>等方面来说，它们的工作方式与 K8S 集群中运行的普通 <code>kube-proxy</code> 基本相同。</p>
+<p>通过我们的 <code>toy-proxy</code> 程序，非 K8S 节点（不在 K8S 集群中）上的应用程序（无论是宿主本地应用程序，还是在 VM/容器中运行的应用程序）也可以通过 <strong>ClusterIP</strong> 访问 K8S 服务 – <strong>注意，在 kubernetes 的设计中，ClusterIP 只能在 K8S 集群节点中访问。（在某种意义上，我们的 <code>toy-proxy</code> 程序将非 K8S 节点变成了 K8S 节点。)</strong><br>
           <!--noindex-->
           <div class="post-button text-center">
             <a class="btn" href="/blog/2020/10/k8s-node-proxy.html#more" rel="contents">
