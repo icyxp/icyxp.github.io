@@ -1,0 +1,1557 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next mist use-motion" lang="zh-Hans">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+<script src="//cdn.bootcss.com/pace/1.0.2/pace.min.js"></script>
+<link href="//cdn.bootcss.com/pace/1.0.2/themes/pink/pace-theme-flash.css" rel="stylesheet">
+<script>
+    (function () {
+        if ('') {
+            if (prompt('请输入文章密码') !== '') {
+                alert('密码错误！');
+                if (history.length === 1) {
+                    location.replace("http://team.jiunile.com"); // 这里替换成你的首页
+                } else {
+                    history.back();
+                }
+            }
+        }
+    })();
+</script>
+<meta name="theme-color" content="#222">
+<style>
+    .pace .pace-progress {
+        background: #1E92FB; /*进度条颜色*/
+        height: 2px;
+    }
+    .pace .pace-progress-inner {
+         box-shadow: 0 0 10px #1E92FB, 0 0 5px     #1E92FB; /*阴影颜色*/
+    }
+    .pace .pace-activity {
+        border-top-color: #1E92FB;    /*上边框颜色*/
+        border-left-color: #1E92FB;    /*左边框颜色*/
+    }
+</style>
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+<!--
+  <script>
+  (function(i,s,o,g,r,a,m){i["DaoVoiceObject"]=r;i[r]=i[r]||function(){(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;a.charset="utf-8";m.parentNode.insertBefore(a,m)})(window,document,"script",('https:' == document.location.protocol ? 'https:' : 'http:') + "//widget.daovoice.io/widget/0f81ff2f.js","daovoice")
+  daovoice('init', {
+      app_id: "2a2a668f"
+    });
+  daovoice('update');
+  </script>
+-->
+<!--
+<script type='text/javascript'>
+  (function (window, a, b) {
+    window[a] = window[a] || function () {
+        (window[a].a = window[a].a || []).push(arguments)
+    };
+    window[b] = window[b] || function () {
+        (window[b].a = window[b].a || []).push(arguments)
+    };
+    var s = document.createElement("script");
+    s.src = "https://jsapi.weiliaokefu.com/Public/dist/js/jsapi.js?v=" + Math.round(Math.random() * 1000);
+    s.async = true;
+    s.charset = "UTF-8";
+    document.getElementsByTagName("head")[0].appendChild(s);
+  })(window, '_FENBOT', "_FENBOT_API");
+  _FENBOT({cid: '36159', type: '0'});
+</script>
+-->
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/favicon.ico?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon.ico?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon.ico?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/favicon.ico?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="go,debug,ebpf," />
+
+
+
+
+
+  <link rel="alternate" href="/atom.xml" title="CloudNative 架构" type="application/atom+xml" />
+
+
+
+
+
+
+<meta name="description" content="不用重新编译/部署线上程序而是借助 eBPF 即可实现对程序进行调试，接下来我们会用一个系列文章介绍我们是怎么做的，这是开篇。本篇描述了如何使用 gobpf 和 uprobe 来构建一个跟踪 Go 程序函数入口参数变化的应用。这里介绍的技术可以扩展到其它编译型语言，如 C++, Rust 等等。本系列文章后续将会讨论如何使用 eBPF 来跟踪 HTTP/gRPC 数据和 SSL 等等。
+介绍当调试">
+<meta property="og:type" content="article">
+<meta property="og:title" content="使用 eBPF 调试生产环境的 Go 程序">
+<meta property="og:url" content="http://team.jiunile.com/blog/2020/10/go-debug-with-bpf.html">
+<meta property="og:site_name" content="CloudNative 架构">
+<meta property="og:description" content="不用重新编译/部署线上程序而是借助 eBPF 即可实现对程序进行调试，接下来我们会用一个系列文章介绍我们是怎么做的，这是开篇。本篇描述了如何使用 gobpf 和 uprobe 来构建一个跟踪 Go 程序函数入口参数变化的应用。这里介绍的技术可以扩展到其它编译型语言，如 C++, Rust 等等。本系列文章后续将会讨论如何使用 eBPF 来跟踪 HTTP/gRPC 数据和 SSL 等等。
+介绍当调试">
+<meta property="og:image" content="http://team.jiunile.com/images/go/bpf-tracing.jpg">
+<meta property="og:image" content="http://team.jiunile.com/images/go/app-tracer.png">
+<meta property="og:image" content="http://team.jiunile.com/images/go/app-trace.png">
+<meta property="og:image" content="http://team.jiunile.com/images/go/e2e-demo.gif">
+<meta property="og:image" content="http://team.jiunile.com/images/wx_dyh.png">
+<meta property="og:updated_time" content="2020-10-21T07:26:26.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="使用 eBPF 调试生产环境的 Go 程序">
+<meta name="twitter:description" content="不用重新编译/部署线上程序而是借助 eBPF 即可实现对程序进行调试，接下来我们会用一个系列文章介绍我们是怎么做的，这是开篇。本篇描述了如何使用 gobpf 和 uprobe 来构建一个跟踪 Go 程序函数入口参数变化的应用。这里介绍的技术可以扩展到其它编译型语言，如 C++, Rust 等等。本系列文章后续将会讨论如何使用 eBPF 来跟踪 HTTP/gRPC 数据和 SSL 等等。
+介绍当调试">
+<meta name="twitter:image" content="http://team.jiunile.com/images/go/bpf-tracing.jpg">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Mist',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://team.jiunile.com/blog/2020/10/go-debug-with-bpf.html"/>
+
+
+
+
+
+  <title>使用 eBPF 调试生产环境的 Go 程序 | CloudNative 架构</title>
+  
+
+
+
+
+
+  <script type="text/javascript">
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "https://hm.baidu.com/hm.js?126663bc923877f90024929ac5555b0f";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+
+
+
+  <!-- 页面点击小红心 -->
+  <script type="text/javascript" src="/js/src/love.js"></script>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+    <a href="https://github.com/icyxp"><a href="https://github.com/icyxp" class="github-corner" aria-label="View source on GitHub"><svg width="80" height="80" viewBox="0 0 250 250" style="fill:#151513; color:#fff; position: absolute; top: 0; border: 0; right: 0;" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path></svg></a><style>.github-corner:hover .octo-arm{animation:octocat-wave 560ms ease-in-out}@keyframes octocat-wave{0%,100%{transform:rotate(0)}20%,60%{transform:rotate(-25deg)}40%,80%{transform:rotate(10deg)}}@media (max-width:500px){.github-corner:hover .octo-arm{animation:none}.github-corner .octo-arm{animation:octocat-wave 560ms ease-in-out}}</style></a>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">CloudNative 架构</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <h1 class="site-subtitle" itemprop="description">CloudNative|云原生应用架构|云原生架构|容器化架构|微服务架构|平台架构|基础架构</h1>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br />
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-k8s">
+          <a href="/pro/k8s/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-heartbeat"></i> <br />
+            
+            k8s离线安装包
+          </a>
+        </li>
+      
+
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="popup-trigger">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br />
+            
+            搜索
+          </a>
+        </li>
+      
+    </ul>
+  
+
+  
+    <div class="site-search">
+      
+  <div class="popup search-popup local-search-popup">
+  <div class="local-search-header clearfix">
+    <span class="search-icon">
+      <i class="fa fa-search"></i>
+    </span>
+    <span class="popup-btn-close">
+      <i class="fa fa-times-circle"></i>
+    </span>
+    <div class="local-search-input-wrapper">
+      <input autocomplete="off"
+             placeholder="搜索..." spellcheck="false"
+             type="text" id="local-search-input">
+    </div>
+  </div>
+  <div id="local-search-result"></div>
+</div>
+
+
+
+    </div>
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://team.jiunile.com/blog/2020/10/go-debug-with-bpf.html">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="icyboy">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="CloudNative 架构">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h2 class="post-title" itemprop="name headline">使用 eBPF 调试生产环境的 Go 程序</h2>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2020-10-21T20:00:00+08:00">
+                2020-10-21
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/golang/" itemprop="url" rel="index">
+                    <span itemprop="name">golang</span>
+                  </a>
+                </span>
+
+                
+                
+                  ， 
+                
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/golang/debug/" itemprop="url" rel="index">
+                    <span itemprop="name">debug</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+                <a href="/blog/2020/10/go-debug-with-bpf.html#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count valine-comment-count" data-xid="/blog/2020/10/go-debug-with-bpf.html" itemprop="commentCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+          
+             <span id="/blog/2020/10/go-debug-with-bpf.html" class="leancloud_visitors" data-flag-title="使用 eBPF 调试生产环境的 Go 程序">
+               <span class="post-meta-divider">|</span>
+               <span class="post-meta-item-icon">
+                 <i class="fa fa-eye"></i>
+               </span>
+               
+                 <span class="post-meta-item-text">热度&#58;</span>
+               
+                 <span class="leancloud-visitors-count"></span>
+		 <span>℃</span>
+             </span>
+          
+
+          
+
+          
+            <div class="post-wordcount">
+              
+                
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-file-word-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">字数统计&#58;</span>
+                
+                <span title="字数统计">
+                  3,103 字
+                </span>
+              
+
+              
+                <span class="post-meta-divider">|</span>
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-clock-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">阅读时长 &asymp;</span>
+                
+                <span title="阅读时长">
+                  12 分钟
+                </span>
+              
+            </div>
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>不用重新编译/部署线上程序而是借助 eBPF 即可实现对程序进行调试，接下来我们会用一个系列文章介绍我们是怎么做的，这是开篇。本篇描述了如何使用 <a href="https://github.com/iovisor/gobpf" target="_blank" rel="external">gobpf</a> 和 uprobe 来构建一个跟踪 Go 程序函数入口参数变化的应用。这里介绍的技术可以扩展到其它编译型语言，如 C++, Rust 等等。本系列文章后续将会讨论如何使用 eBPF 来跟踪 HTTP/gRPC 数据和 SSL 等等。</p>
+<h2 id="介绍"><a href="#介绍" class="headerlink" title="介绍"></a>介绍</h2><p>当调试程序时，我们一般对捕获程序的运行时状态非常感兴趣。因为这可以让我们检查程序在干什么，并能让我们确定 bug 出现在程序的哪一块。观察运行时状态的一个简单方式是使用调试器。比如针对 Go 程序，我们可以使用 Delve 和 gdb。</p>
+<p>Delve 和 gdb 在开发环境中做调试表现没得说，但是我们一般不会在线上使用此类工具。它们的长处同时也是它们的短处，因为调试器会导致线上程序中断，甚至如果在调试过程中不小心改错某个变量的值而导致线上程序出现异常。</p>
+<p>为了让线上调试过程的侵入和影响更小，我们将会探索使用增强版的 BPF (<a href="https://ebpf.io/" target="_blank" rel="external">eBPF</a>, Linux 4.x+ 内核可用）和更高级的 Go 库 <a href="https://github.com/iovisor/gobpf" target="_blank" rel="external">gobpf</a> 来达成目标。<br><a id="more"></a></p>
+<h2 id="什么是-eBPF"><a href="#什么是-eBPF" class="headerlink" title="什么是 eBPF"></a>什么是 eBPF</h2><p>扩展型 BPF(eBPF) 是一项在 Linux 4.x+ 内核可用的技术。你可以把它看作一个轻量级的沙箱 VM, 它运行在 Linux 内核中并且提供了针对内核内存的可信访问。</p>
+<p>就像下面要说的，eBPF 允许内核运行 BPF 字节码。虽然可用的前端（这里指的是编译器前端）语言多样，但通常都是 C 语言的真子集。通常 C 代码先通过 Clang 被编译为 BPF 字节码，然后字节被验证以确保可以安全执行。这些严格的验证保证了机器码不会有意或无意地危及 Linux 内核，同时也确保了 BPF 探针在每次被触发时将会执行有限数目的指令。这些保证确保了 eBPF 可以被用于性能敏感的应用中，比如包过滤，网络监控等等。</p>
+<p>从功能上说，eBPF 允许你针对某些事件（如定时器事件，网络事件或是函数调用事件）运行受限的 C 代码。当因为一个函数调用事件被触发时，我们把这些 eBPF 代码叫做探针。这些探针既可以针对内核函数调用事件被触发（这时叫 kprobe, k 即 kernelspace), 也可以针对用户空间的函数调用事件被触发（这时叫 uprobe, u 即 userspace). 本篇文章讲解如何通过 uprobe 实现函数参数的动态追踪。</p>
+<h2 id="Uprobes"><a href="#Uprobes" class="headerlink" title="Uprobes"></a>Uprobes</h2><p>Uprobes 允许我们通过插入一个 debug trap 指令（在 x86 上就是 <code>int3</code>) 触发一个软中断从而实现对运行在用户空间的程序进行拦截。这也是调试器的工作原理。uprobe 运行过程本质上与其它 BPF 程序一样，可以总结为下面图示：<br><img src="/images/go/bpf-tracing.jpg" alt="用于跟踪的 BPF（来自 Brendan Gregg)"></p>
+<p>编译和验证过的 BPF 程序作为 uprobe 的一部分被执行，同时执行结果写入到一个 buffer 中。</p>
+<p>下面让我们研究下 uprobes 如何起作用的。为了演示部署 uprobes 并捕获函数参数，我们会用到这个简单的 demo 应用。该 demo 相关部分下面介绍。</p>
+<p><code>main()</code> 方法是一个简单的 HTTP server, 它暴露了一个监听 /e 端点的 GET 接口，该接口通过迭代逼近计算自然常数 <code>e</code>（也叫欧拉数）. <code>computeE</code> 方法有一个参数 iters, 它指定了逼近时的迭代次数。迭代次数越多，结果越精确，当然耗费 CPU 也越多。迭代逼近算法不是我们本次关注重点，感兴趣的可以自己研究下。我们仅对追踪调用 <code>computeE</code> 方法时的参数感兴趣。<br><figure class="highlight golang"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">computeE</span><span class="params">(iterations <span class="keyword">int64</span>)</span> <span class="title">float64</span></span> &#123;</span><br><span class="line">  res := <span class="number">2.0</span></span><br><span class="line">  fact := <span class="number">1.0</span></span><br><span class="line"></span><br><span class="line">  <span class="keyword">for</span> i := <span class="keyword">int64</span>(<span class="number">2</span>); i &lt; iterations; i++ &#123;</span><br><span class="line">    fact *= <span class="keyword">float64</span>(i)</span><br><span class="line">    res += <span class="number">1</span> / fact</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">return</span> res</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> &#123;</span><br><span class="line">  http.HandleFunc(<span class="string">"/e"</span>, <span class="function"><span class="keyword">func</span><span class="params">(w http.ResponseWriter, r *http.Request)</span></span> &#123;</span><br><span class="line">    <span class="comment">// ... 省略代码用于从 get 请求中解析 iters 参数，若为空则使用默认值</span></span><br><span class="line">    w.Write([]<span class="keyword">byte</span>(fmt.Sprintf(<span class="string">"e = %0.4f\n"</span>, computeE(iters))))</span><br><span class="line">  &#125;)</span><br><span class="line">  <span class="comment">// 启动 server...</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>为了进行后面的实验以及为最后采用 gdb 验证修改生效，我们采用如下指令编译该代码：<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ go build  -gcflags <span class="string">"-N -l"</span> app.go</span><br></pre></td></tr></table></figure></p>
+<p>为了理解 uprobe 如何工作的，我们看看可执行文件中要追踪的符号。既然 uprobes 通过插入一个 debug trap 指令到可执行文件来实现，我们先要确定要追踪的函数地址是什么。Go 程序在 Linux 上的二进制采用 ELF 格式存储 debug 信息，该信息甚至在优化过的二进制中也是存在的，除非 debug 数据被裁剪掉了。我们可以使用命令 <code>objdump</code> 来检查二进制文件中的符号：<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 执行下面命令之前需要你先将上面 go 程序编译为名为 app 的二进制文件。</span></span><br><span class="line"><span class="comment"># objdump --syms 可以从可执行程序中导出全部符号，然后通过 grep 查找 computeE.</span></span><br><span class="line"><span class="comment"># 具体输出可能与你机器上不同，这没什么问题。</span></span><br><span class="line">$ objdump --syms app | grep computeE</span><br><span class="line">00000000000x6600e0 g     F .text  000000000000004b             main.computeE</span><br></pre></td></tr></table></figure></p>
+<p>从上述输出可以看到，<code>computeE</code> 方法的入口地址为 <code>0x0x6600e0</code>. 为了看一下这个地址附近的指令，我们可以通过 <code>objdump</code> 来反汇编该二进制文件（通过命令行选项 <code>-d</code>). 反汇编代码如下：<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">$ objdump <span class="_">-d</span> app | grep -A 1 0x6600e0</span><br><span class="line">00000000000x6600e0 &lt;main.computeE&gt;:</span><br><span class="line">  0x6600e0:       48 8b 44 24 08          mov    0x8(%rsp),%rax</span><br></pre></td></tr></table></figure></p>
+<p>从上面汇编代码可以看到当 <code>computeE</code> 方法被调用时会执行哪些指令。第一条指令是 <code>mov 0x8(%rsp),%rax</code>, 该指令将寄存器 <code>rsp</code> 保存的地址（栈指针寄存器保存的是 <code>computeE</code> 方法的入口地址）相对偏移量为 <code>0x8</code> 处的内容移动到寄存器 <code>rax</code> 中。这个被移动的值即为 <code>computeE</code> 方法的入参 <code>iterations</code> 的值。Go 程序的参数通过栈来传递。</p>
+<p>好了，记住上面提到的信息，我们来看看如何实现针对 <code>computeE</code> 方法的参数追踪。</p>
+<h2 id="构建追踪程序"><a href="#构建追踪程序" class="headerlink" title="构建追踪程序"></a>构建追踪程序</h2><p>我们给这个追踪程序起个名叫 Tracer. 为了捕获前面提到的事件，我们需要注册一个 uprobe 函数，并且还得有个用户态函数负责去读 uprobe 的输出，具体如下图所示：<br><img src="/images/go/app-tracer.png" alt="app-tracer"></p>
+<p>我们编写一个叫做 <code>tracer</code> 的应用，由它负责注册 BPF 代码，同时读取这些 BPF 代码的输出。如上图所示，uprobe 将会简单地输出到一个 <code>perf-buffer</code> 中，该结构体是用于 perf 事件的 linux 内核数据结构。</p>
+<p>万事俱备，我们来看看当我们增加一个 uprobe 时会发生哪些事情。下面的图显示了 Linux 内核如何使用一个 uprobe 来修改一个已有的二进制程序。前文提到的软中断 <code>int3</code> 作为第一条指令被插入到 <code>main.computeE</code> 方法中。这条指令将会在执行时触发一个软中断，从而允许 Linux 内核来执行 BPF 代码。然后我们把 <code>computeE</code> 每次被调用时的参数输出到 perf-buffer 中，这些值会被我们编写的 <code>tracer</code> 应用异步地读取。<br><img src="/images/go/app-trace.png" alt="app-trace"></p>
+<p>就我们这个需求来说，相应的 BPF 代码很简单，C 代码如下：<br><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;uapi/linux/ptrace.h&gt;</span></span></span><br><span class="line">BPF_PERF_OUTPUT(trace);</span><br><span class="line"><span class="comment">// 该函数将会被注册，以便每次 main.computeE 被调用时该函数也会被调用</span></span><br><span class="line"><span class="function"><span class="keyword">inline</span> <span class="keyword">int</span> <span class="title">computeECalled</span><span class="params">(<span class="keyword">struct</span> pt_regs *ctx)</span> </span>&#123;</span><br><span class="line">  <span class="comment">// main.computeE 的入参保存在了 ax 寄存器里。</span></span><br><span class="line">  <span class="keyword">long</span> val = ctx-&gt;ax;</span><br><span class="line">  trace.perf_submit(ctx, &amp;val, <span class="keyword">sizeof</span>(val));</span><br><span class="line">  <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>我们注册上面代码以便 <code>main.computeE</code> 方法被调用它们也会被执行。这些代码被执行时，我们仅仅读取函数参数然后写到 perf-buffer 中。实现这个功能需要很多样板代码，为了方便示意这里都省掉了，完整的例子见 <a href="https://github.com/pixie-labs/pixie/blob/main/demos/simple-gotracing/trace_example/trace.go" target="_blank" rel="external">这里</a>.</p>
+<p>好了，我们现在有个针对 <code>main.computeE</code> 的功能齐全的端到端参数追踪器了！执行结果见下面动图：<br><img src="/images/go/e2e-demo.gif" alt="End-to-End demo"></p>
+<p>上述动图执行步骤如下：</p>
+<ol>
+<li>在 localhost:9090 启动待追踪程序 <code>./app</code>, 此时我们可以用 curl 访问该应用了，具体命令为 <code>curl http://localhost:9090/e?iters=10</code></li>
+<li>启动 trace 应用，注意指定参数 <code>sudo ./trace --binary ../app/app</code>, 参数是第一步中待追踪程序对应的二进制文件的路径。</li>
+<li>不停的执行 curl 命令，使其 iters 参数取值不同，则会看到 trace 应用输出你指定的 iters 值。</li>
+</ol>
+<p>还有个有意思的事情，我们真的可以通过 GDB 看到针对二进制文件的修改。下面我们 dump 出 <code>0x0x6600e0</code> 处的指令，在我们运行 <code>trace</code> 之前是这样的：<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">$ gdb ./app</span><br><span class="line">(gdb) display /4i 0x6600e0</span><br><span class="line">1: x/4i 0x6600e0</span><br><span class="line">   0x6600e0 &lt;main.computeE&gt;:    sub    <span class="variable">$0x20</span>,%rsp</span><br><span class="line">   0x6600e4 &lt;main.computeE+4&gt;:  mov    %rbp,0x18(%rsp)</span><br><span class="line">   0x6600e9 &lt;main.computeE+9&gt;:  lea    0x18(%rsp),%rbp</span><br><span class="line">   0x6600ee &lt;main.computeE+14&gt;: xorps  %xmm0,%xmm0</span><br></pre></td></tr></table></figure></p>
+<p>在我们运行 <code>trace</code> 之后，再次查看：<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">$ gdb ./app</span><br><span class="line">(gdb) display /4i 0x65fecf</span><br><span class="line">2: x/4i 0x6600e0</span><br><span class="line">   0x6600e0 &lt;main.computeE&gt;:    int3   </span><br><span class="line">   0x6600e1 &lt;main.computeE+1&gt;:  sub    <span class="variable">$0x20</span>,%esp</span><br><span class="line">   0x6600e4 &lt;main.computeE+4&gt;:  mov    %rbp,0x18(%rsp)</span><br><span class="line">   0x6600e9 &lt;main.computeE+9&gt;:  lea    0x18(%rsp),%rbp</span><br></pre></td></tr></table></figure></p>
+<p>看到了吗？<code>0x6600e0</code> 插入了 <code>int3</code> 指令。</p>
+<p>尽管我们为这个特定的示例硬编码了跟踪程序，但是可以使这个过程通用化。Go 的许多特性，比如嵌套的指针、接口、通道等，使得这个过程具有挑战性，但解决这些问题可实现现有系统中无法使用的另一种检测模式。而且，由于这个过程是在二进制层面工作的，所以它可以用于其他语言编译的二进制文件 (c++、Rust 等）。我们只需要考虑他们各自 ABI 的差异。</p>
+<h2 id="接下来？"><a href="#接下来？" class="headerlink" title="接下来？"></a>接下来？</h2><p>使用 uprobes 进行 BPF 跟踪具有其自身的优点和缺点。当我们需要对二进制状态进行观察时，使用 BPF 是有益的，即使在附加调试器将会有问题或有害的环境中运行（例如，生产二进制文件）。最大的缺点是，即使是很小的应用程序状态的跟踪也需要去编写代码。虽然 BPF 代码是相对容易的，但它的编写和维护是复杂的。如果没有实际的高级工具，就不太可能将其用于通用调试。</p>
+<h2 id="番外"><a href="#番外" class="headerlink" title="番外"></a>番外</h2><h3 id="安装-BCC"><a href="#安装-BCC" class="headerlink" title="安装 BCC"></a>安装 BCC</h3><p>编译前文提到的 <code>trace</code> 应用之前需要安装 bcc. 以 Ubuntu 16.04 为例（其它系统请参考 <a href="https://github.com/iovisor/bcc/blob/master/INSTALL.md" target="_blank" rel="external">这里</a>):<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 4052245BD4284CDD</span><br><span class="line"><span class="built_in">echo</span> <span class="string">"deb https://repo.iovisor.org/apt/<span class="variable">$(lsb_release -cs)</span> <span class="variable">$(lsb_release -cs)</span> main"</span> | sudo tee /etc/apt/sources.list.d/iovisor.list</span><br><span class="line">sudo apt-get update</span><br><span class="line">sudo apt-get install bcc-tools libbcc-examples linux-headers-$(uname -r)</span><br></pre></td></tr></table></figure></p>
+<p>如果安装速度慢，而且你设置了 <code>http_proxy/https_proxy</code>, 请编辑 <code>/etc/sudoers</code> 新增一行 <code>Defaults env_keep = &quot;http_proxy https_proxy&quot;</code>, 这样速度至少会有百倍提升。</p>
+<h3 id="too-many-arguments-编译错误"><a href="#too-many-arguments-编译错误" class="headerlink" title="too many arguments 编译错误"></a>too many arguments 编译错误</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># github.com/iovisor/gobpf/bcc</span></span><br><span class="line">../../../../go/pkg/mod/github.com/iovisor/gobpf@v0.0.0-20200614202714<span class="_">-e</span>6b321d32103/bcc/module.go:98:40: too many arguments <span class="keyword">in</span> call to _Cfunc_bpf_module_create_c_from_string</span><br><span class="line">        have (*_C<span class="built_in">type</span>_char, number, **_C<span class="built_in">type</span>_char, _C<span class="built_in">type</span>_int, _C<span class="built_in">type</span>__Bool, nil)</span><br><span class="line">        want (*_C<span class="built_in">type</span>_char, _C<span class="built_in">type</span>_uint, **_C<span class="built_in">type</span>_char, _C<span class="built_in">type</span>_int, _C<span class="built_in">type</span>__Bool)</span><br><span class="line">../../../../go/pkg/mod/github.com/iovisor/gobpf@v0.0.0-20200614202714<span class="_">-e</span>6b321d32103/bcc/module.go:230:28: too many arguments <span class="keyword">in</span> call to _C2func_bcc_func_load</span><br><span class="line">        have (unsafe.Pointer, _C<span class="built_in">type</span>_int, *_C<span class="built_in">type</span>_char, *_C<span class="built_in">type</span>_struct_bpf_insn, _C<span class="built_in">type</span>_int, *_C<span class="built_in">type</span>_char, _C<span class="built_in">type</span>_uint, _C<span class="built_in">type</span>_int, *_C<span class="built_in">type</span>_char, _C<span class="built_in">type</span>_uint, nil)</span><br><span class="line">        want (unsafe.Pointer, _C<span class="built_in">type</span>_int, *_C<span class="built_in">type</span>_char, *_C<span class="built_in">type</span>_struct_bpf_insn, _C<span class="built_in">type</span>_int, *_C<span class="built_in">type</span>_char, _C<span class="built_in">type</span>_uint, _C<span class="built_in">type</span>_int, *_C<span class="built_in">type</span>_char, _C<span class="built_in">type</span>_uint)</span><br></pre></td></tr></table></figure>
+<p>原因为 <a href="https://github.com/iovisor/gobpf/commit/3ecafd366e4b239946d03c17f5a4beb5aef4935e#diff-f11d8f44bec322f0ba3a2ee148c82966" target="_blank" rel="external">这一行</a> 增加的特性 Update bcc_func_load to libbcc 0.11 with hardware offload support, 以及 <a href="https://github.com/iovisor/gobpf/commit/cda73bdde3bf14fc898d07b8936073e1aa197708" target="_blank" rel="external">这一行</a> 增加的特性 bcc: update bpf_module_create_c_from_string for bcc 0.11.0 (fixes #202).</p>
+<p>我没有深究具体是什么导致的（初步怀疑是系统版本）, 如果你急着看结果，可以根据上面报错地址知道到 <code>module.go</code> 文件，把涉及的两个函数的最后一个 <code>nil</code> 参数去掉就可以顺利编译了。</p>
+<p>本文翻译自：Debugging Go in prod using eBPF 作者：Zain Asgar</p>
+<p><img src="/images/wx_dyh.png" alt="微信订阅号"></p>
+
+      
+    </div>
+    
+    
+    
+
+    <div>
+    
+        <div>
+    
+        <div style="text-align:center;color: #ccc;font-size:14px;">-------------本文结束<i class="fa fa-paw"></i>感谢您的阅读-------------</div>
+    
+</div>
+
+    
+    </div>
+
+    <div>
+      
+        
+<div class="my_post_copyright">
+  <script src="//cdn.bootcss.com/clipboard.js/1.5.10/clipboard.min.js"></script>
+  
+  <!-- JS库 sweetalert 可修改路径 -->
+  <script src="https://cdn.bootcss.com/jquery/2.0.0/jquery.min.js"></script>
+  <script src="https://unpkg.com/sweetalert/dist/sweetalert.min.js"></script>
+  <p><span>本文标题:</span><a href="/blog/2020/10/go-debug-with-bpf.html">使用 eBPF 调试生产环境的 Go 程序</a></p>
+  <p><span>文章作者:</span><a href="/" title="访问 icyboy 的个人博客">icyboy</a></p>
+  <p><span>发布时间:</span>2020年10月21日 - 20:00</p>
+  <p><span>最后更新:</span>2020年10月21日 - 15:26</p>
+  <p><span>原始链接:</span><a href="/blog/2020/10/go-debug-with-bpf.html" title="使用 eBPF 调试生产环境的 Go 程序">http://team.jiunile.com/blog/2020/10/go-debug-with-bpf.html</a>
+    <span class="copy-path"  title="点击复制文章链接"><i class="fa fa-clipboard" data-clipboard-text="http://team.jiunile.com/blog/2020/10/go-debug-with-bpf.html"  aria-label="复制成功！"></i></span>
+  </p>
+  <p><span>许可协议:</span><i class="fa fa-creative-commons"></i> <a rel="license" href="https://creativecommons.org/licenses/by-nc-nd/4.0/" target="_blank" title="Attribution-NonCommercial-NoDerivatives 4.0 International (CC BY-NC-ND 4.0)">署名-非商业性使用-禁止演绎 4.0 国际</a> 转载请保留原文链接及作者。</p>  
+</div>
+<script> 
+    var clipboard = new Clipboard('.fa-clipboard');
+    $(".fa-clipboard").click(function(){
+      clipboard.on('success', function(){
+        swal({   
+          title: "",   
+          text: '复制成功',
+          icon: "success", 
+          showConfirmButton: true
+          });
+    });
+    });  
+</script>
+
+
+      
+    </div>
+
+    
+
+    
+      <div>
+        <div style="padding: 10px 0; margin: 20px auto; width: 90%; text-align: center;">
+  <div></div>
+  <button id="rewardButton" disable="enable" onclick="var qr = document.getElementById('QR'); if (qr.style.display === 'none') {qr.style.display='block';} else {qr.style.display='none'}">
+    <span>打赏</span>
+  </button>
+  <div id="QR" style="display: none;">
+
+    
+      <div id="wechat" style="display: inline-block">
+        <img id="wechat_qr" src="/images/wechatpay.jpg" alt="icyboy 微信支付"/>
+        <p>微信支付</p>
+      </div>
+    
+
+    
+      <div id="alipay" style="display: inline-block">
+        <img id="alipay_qr" src="/images/alipay.jpg" alt="icyboy 支付宝"/>
+        <p>支付宝</p>
+      </div>
+    
+
+    
+
+  </div>
+</div>
+
+      </div>
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/go/" rel="tag"># go</a>
+          
+            <a href="/tags/debug/" rel="tag"># debug</a>
+          
+            <a href="/tags/ebpf/" rel="tag"># ebpf</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/blog/2020/10/k8s-node-proxy.html" rel="next" title="（译）深入理解 Kubernetes 网络模型 - 自己实现 kube-proxy 的功能">
+                <i class="fa fa-chevron-left"></i> （译）深入理解 Kubernetes 网络模型 - 自己实现 kube-proxy 的功能
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+    <div class="comments" id="comments">
+    </div>
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image"
+                src="/images/avatar.jpg"
+                alt="icyboy" />
+            
+              <p class="site-author-name" itemprop="name">icyboy</p>
+              <p class="site-description motion-element" itemprop="description"></p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">80</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-categories">
+                <a href="/categories/index.html">
+                  <span class="site-state-item-count">65</span>
+                  <span class="site-state-item-name">分类</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                <a href="/tags/index.html">
+                  <span class="site-state-item-count">146</span>
+                  <span class="site-state-item-name">标签</span>
+                </a>
+              </div>
+            
+
+          </nav>
+
+          
+            <div class="feed-link motion-element">
+              <a href="/atom.xml" rel="alternate">
+                <i class="fa fa-rss"></i>
+                RSS
+              </a>
+            </div>
+          
+
+          
+            <div class="links-of-author motion-element">
+                
+                  <span class="links-of-author-item">
+                    <a href="https://github.com/icyxp" target="_blank" title="GitHub">
+                      
+                        <i class="fa fa-fw fa-github"></i>GitHub</a>
+                  </span>
+                
+                  <span class="links-of-author-item">
+                    <a href="http://weibo.com/joysteam" target="_blank" title="微博">
+                      
+                        <i class="fa fa-fw fa-weibo"></i>微博</a>
+                  </span>
+                
+                  <span class="links-of-author-item">
+                    <a href="http://www.zhihu.com/people/xupeng" target="_blank" title="知乎">
+                      
+                        <i class="fa fa-fw fa-zhihu"></i>知乎</a>
+                  </span>
+                
+            </div>
+          
+
+          
+          
+
+          
+          
+            <div class="links-of-blogroll motion-element links-of-blogroll-inline">
+              <div class="links-of-blogroll-title">
+                <i class="fa  fa-fw fa-link"></i>
+                友情链接
+              </div>
+              <ul class="links-of-blogroll-list">
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="http://www.zjgsmt.com" title="张家港水蜜桃" target="_blank">张家港水蜜桃</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="http://blog.jiunile.com" title="运维开发" target="_blank">运维开发</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="http://devops.jiunile.com" title="DevOps" target="_blank">DevOps</a>
+                  </li>
+                
+              </ul>
+            </div>
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#介绍"><span class="nav-number">1.</span> <span class="nav-text">介绍</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#什么是-eBPF"><span class="nav-number">2.</span> <span class="nav-text">什么是 eBPF</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Uprobes"><span class="nav-number">3.</span> <span class="nav-text">Uprobes</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#构建追踪程序"><span class="nav-number">4.</span> <span class="nav-text">构建追踪程序</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#接下来？"><span class="nav-number">5.</span> <span class="nav-text">接下来？</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#番外"><span class="nav-number">6.</span> <span class="nav-text">番外</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#安装-BCC"><span class="nav-number">6.1.</span> <span class="nav-text">安装 BCC</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#too-many-arguments-编译错误"><span class="nav-number">6.2.</span> <span class="nav-text">too many arguments 编译错误</span></a></li></ol></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+<div class="copyright">&copy; 2016 &mdash; <span itemprop="copyrightYear">2020</span>
+  <span class="with-love" id="heart">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">icyboy</span>
+
+  
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-area-chart"></i>
+    </span>
+    
+      <span class="post-meta-item-text">Site words total count&#58;</span>
+    
+    <span title="Site words total count">232.3k</span>
+  
+</div>
+
+<div class="powered-by">
+<i class="fa fa-user-md"></i><span id="busuanzi_container_site_uv">
+  本站访客数:<span id="busuanzi_value_site_uv"></span>
+</span>
+</div>
+
+<div class="theme-info">
+  <div class="powered-by"></div>
+  <span class="post-count">博客全站共232.3k字</span>
+</div>
+
+
+
+
+
+
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/canvas-nest/canvas-nest.min.js"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+  <script src="//cdn1.lncld.net/static/js/3.0.4/av-min.js"></script>
+  <script src="//unpkg.com/valine/dist/Valine.min.js"></script>
+  
+  <script type="text/javascript">
+    var GUEST = ['nick','mail','link'];
+    var guest = 'nick,mail,link';
+    guest = guest.split(',').filter(item=>{
+      return GUEST.indexOf(item)>-1;
+    });
+    new Valine({
+        el: '#comments' ,
+        verify: false,
+        notify: false,
+        appId: 'B6yqSmGPw5uBIAfWEqm7Xyws-gzGzoHsz',
+        appKey: '2soiHGUrbGw33caCmkT47236',
+        placeholder: 'Just do it!',
+        avatar:'mm',
+        guest_info:guest,
+        pageSize:'10' || 10,
+    });
+  </script>
+
+
+
+  
+
+  <script type="text/javascript">
+    // Popup Window;
+    var isfetched = false;
+    var isXml = true;
+    // Search DB path;
+    var search_path = "search.xml";
+    if (search_path.length === 0) {
+      search_path = "search.xml";
+    } else if (/json$/i.test(search_path)) {
+      isXml = false;
+    }
+    var path = "/" + search_path;
+    // monitor main search box;
+
+    var onPopupClose = function (e) {
+      $('.popup').hide();
+      $('#local-search-input').val('');
+      $('.search-result-list').remove();
+      $('#no-result').remove();
+      $(".local-search-pop-overlay").remove();
+      $('body').css('overflow', '');
+    }
+
+    function proceedsearch() {
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay"></div>')
+        .css('overflow', 'hidden');
+      $('.search-popup-overlay').click(onPopupClose);
+      $('.popup').toggle();
+      var $localSearchInput = $('#local-search-input');
+      $localSearchInput.attr("autocapitalize", "none");
+      $localSearchInput.attr("autocorrect", "off");
+      $localSearchInput.focus();
+    }
+
+    // search function;
+    var searchFunc = function(path, search_id, content_id) {
+      'use strict';
+
+      // start loading animation
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay">' +
+          '<div id="search-loading-icon">' +
+          '<i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>' +
+          '</div>' +
+          '</div>')
+        .css('overflow', 'hidden');
+      $("#search-loading-icon").css('margin', '20% auto 0 auto').css('text-align', 'center');
+
+      $.ajax({
+        url: path,
+        dataType: isXml ? "xml" : "json",
+        async: true,
+        success: function(res) {
+          // get the contents from search data
+          isfetched = true;
+          $('.popup').detach().appendTo('.header-inner');
+          var datas = isXml ? $("entry", res).map(function() {
+            return {
+              title: $("title", this).text(),
+              content: $("content",this).text(),
+              url: $("url" , this).text()
+            };
+          }).get() : res;
+          var input = document.getElementById(search_id);
+          var resultContent = document.getElementById(content_id);
+          var inputEventFunction = function() {
+            var searchText = input.value.trim().toLowerCase();
+            var keywords = searchText.split(/[\s\-]+/);
+            if (keywords.length > 1) {
+              keywords.push(searchText);
+            }
+            var resultItems = [];
+            if (searchText.length > 0) {
+              // perform local searching
+              datas.forEach(function(data) {
+                var isMatch = false;
+                var hitCount = 0;
+                var searchTextCount = 0;
+                var title = data.title.trim();
+                var titleInLowerCase = title.toLowerCase();
+                var content = data.content.trim().replace(/<[^>]+>/g,"");
+                var contentInLowerCase = content.toLowerCase();
+                var articleUrl = decodeURIComponent(data.url);
+                var indexOfTitle = [];
+                var indexOfContent = [];
+                // only match articles with not empty titles
+                if(title != '') {
+                  keywords.forEach(function(keyword) {
+                    function getIndexByWord(word, text, caseSensitive) {
+                      var wordLen = word.length;
+                      if (wordLen === 0) {
+                        return [];
+                      }
+                      var startPosition = 0, position = [], index = [];
+                      if (!caseSensitive) {
+                        text = text.toLowerCase();
+                        word = word.toLowerCase();
+                      }
+                      while ((position = text.indexOf(word, startPosition)) > -1) {
+                        index.push({position: position, word: word});
+                        startPosition = position + wordLen;
+                      }
+                      return index;
+                    }
+
+                    indexOfTitle = indexOfTitle.concat(getIndexByWord(keyword, titleInLowerCase, false));
+                    indexOfContent = indexOfContent.concat(getIndexByWord(keyword, contentInLowerCase, false));
+                  });
+                  if (indexOfTitle.length > 0 || indexOfContent.length > 0) {
+                    isMatch = true;
+                    hitCount = indexOfTitle.length + indexOfContent.length;
+                  }
+                }
+
+                // show search results
+
+                if (isMatch) {
+                  // sort index by position of keyword
+
+                  [indexOfTitle, indexOfContent].forEach(function (index) {
+                    index.sort(function (itemLeft, itemRight) {
+                      if (itemRight.position !== itemLeft.position) {
+                        return itemRight.position - itemLeft.position;
+                      } else {
+                        return itemLeft.word.length - itemRight.word.length;
+                      }
+                    });
+                  });
+
+                  // merge hits into slices
+
+                  function mergeIntoSlice(text, start, end, index) {
+                    var item = index[index.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    var hits = [];
+                    var searchTextCountInSlice = 0;
+                    while (position + word.length <= end && index.length != 0) {
+                      if (word === searchText) {
+                        searchTextCountInSlice++;
+                      }
+                      hits.push({position: position, length: word.length});
+                      var wordEnd = position + word.length;
+
+                      // move to next position of hit
+
+                      index.pop();
+                      while (index.length != 0) {
+                        item = index[index.length - 1];
+                        position = item.position;
+                        word = item.word;
+                        if (wordEnd > position) {
+                          index.pop();
+                        } else {
+                          break;
+                        }
+                      }
+                    }
+                    searchTextCount += searchTextCountInSlice;
+                    return {
+                      hits: hits,
+                      start: start,
+                      end: end,
+                      searchTextCount: searchTextCountInSlice
+                    };
+                  }
+
+                  var slicesOfTitle = [];
+                  if (indexOfTitle.length != 0) {
+                    slicesOfTitle.push(mergeIntoSlice(title, 0, title.length, indexOfTitle));
+                  }
+
+                  var slicesOfContent = [];
+                  while (indexOfContent.length != 0) {
+                    var item = indexOfContent[indexOfContent.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    // cut out 100 characters
+                    var start = position - 20;
+                    var end = position + 80;
+                    if(start < 0){
+                      start = 0;
+                    }
+                    if (end < position + word.length) {
+                      end = position + word.length;
+                    }
+                    if(end > content.length){
+                      end = content.length;
+                    }
+                    slicesOfContent.push(mergeIntoSlice(content, start, end, indexOfContent));
+                  }
+
+                  // sort slices in content by search text's count and hits' count
+
+                  slicesOfContent.sort(function (sliceLeft, sliceRight) {
+                    if (sliceLeft.searchTextCount !== sliceRight.searchTextCount) {
+                      return sliceRight.searchTextCount - sliceLeft.searchTextCount;
+                    } else if (sliceLeft.hits.length !== sliceRight.hits.length) {
+                      return sliceRight.hits.length - sliceLeft.hits.length;
+                    } else {
+                      return sliceLeft.start - sliceRight.start;
+                    }
+                  });
+
+                  // select top N slices in content
+
+                  var upperBound = parseInt('1');
+                  if (upperBound >= 0) {
+                    slicesOfContent = slicesOfContent.slice(0, upperBound);
+                  }
+
+                  // highlight title and content
+
+                  function highlightKeyword(text, slice) {
+                    var result = '';
+                    var prevEnd = slice.start;
+                    slice.hits.forEach(function (hit) {
+                      result += text.substring(prevEnd, hit.position);
+                      var end = hit.position + hit.length;
+                      result += '<b class="search-keyword">' + text.substring(hit.position, end) + '</b>';
+                      prevEnd = end;
+                    });
+                    result += text.substring(prevEnd, slice.end);
+                    return result;
+                  }
+
+                  var resultItem = '';
+
+                  if (slicesOfTitle.length != 0) {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + highlightKeyword(title, slicesOfTitle[0]) + "</a>";
+                  } else {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + title + "</a>";
+                  }
+
+                  slicesOfContent.forEach(function (slice) {
+                    resultItem += "<a href='" + articleUrl + "'>" +
+                      "<p class=\"search-result\">" + highlightKeyword(content, slice) +
+                      "...</p>" + "</a>";
+                  });
+
+                  resultItem += "</li>";
+                  resultItems.push({
+                    item: resultItem,
+                    searchTextCount: searchTextCount,
+                    hitCount: hitCount,
+                    id: resultItems.length
+                  });
+                }
+              })
+            };
+            if (keywords.length === 1 && keywords[0] === "") {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-search fa-5x" /></div>'
+            } else if (resultItems.length === 0) {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-frown-o fa-5x" /></div>'
+            } else {
+              resultItems.sort(function (resultLeft, resultRight) {
+                if (resultLeft.searchTextCount !== resultRight.searchTextCount) {
+                  return resultRight.searchTextCount - resultLeft.searchTextCount;
+                } else if (resultLeft.hitCount !== resultRight.hitCount) {
+                  return resultRight.hitCount - resultLeft.hitCount;
+                } else {
+                  return resultRight.id - resultLeft.id;
+                }
+              });
+              var searchResultList = '<ul class=\"search-result-list\">';
+              resultItems.forEach(function (result) {
+                searchResultList += result.item;
+              })
+              searchResultList += "</ul>";
+              resultContent.innerHTML = searchResultList;
+            }
+          }
+
+          if ('auto' === 'auto') {
+            input.addEventListener('input', inputEventFunction);
+          } else {
+            $('.search-icon').click(inputEventFunction);
+            input.addEventListener('keypress', function (event) {
+              if (event.keyCode === 13) {
+                inputEventFunction();
+              }
+            });
+          }
+
+          // remove loading animation
+          $(".local-search-pop-overlay").remove();
+          $('body').css('overflow', '');
+
+          proceedsearch();
+        }
+      });
+    }
+
+    // handle and trigger popup window;
+    $('.popup-trigger').click(function(e) {
+      e.stopPropagation();
+      if (isfetched === false) {
+        searchFunc(path, 'local-search-input', 'local-search-result');
+      } else {
+        proceedsearch();
+      };
+    });
+
+    $('.popup-btn-close').click(onPopupClose);
+    $('.popup').click(function(e){
+      e.stopPropagation();
+    });
+    $(document).on('keyup', function (event) {
+      var shouldDismissSearchPopup = event.which === 27 &&
+        $('.search-popup').is(':visible');
+      if (shouldDismissSearchPopup) {
+        onPopupClose();
+      }
+    });
+  </script>
+
+
+
+
+
+  
+
+  
+  <script src="https://cdn1.lncld.net/static/js/av-core-mini-0.6.4.js"></script>
+  <script>AV.initialize("B6yqSmGPw5uBIAfWEqm7Xyws-gzGzoHsz", "2soiHGUrbGw33caCmkT47236");</script>
+  <script>
+    function showTime(Counter) {
+      var query = new AV.Query(Counter);
+      var entries = [];
+      var $visitors = $(".leancloud_visitors");
+
+      $visitors.each(function () {
+        entries.push( $(this).attr("id").trim() );
+      });
+
+      query.containedIn('url', entries);
+      query.find()
+        .done(function (results) {
+          var COUNT_CONTAINER_REF = '.leancloud-visitors-count';
+
+          if (results.length === 0) {
+            $visitors.find(COUNT_CONTAINER_REF).text(0);
+            return;
+          }
+
+          for (var i = 0; i < results.length; i++) {
+            var item = results[i];
+            var url = item.get('url');
+            var time = item.get('time');
+            var element = document.getElementById(url);
+
+            $(element).find(COUNT_CONTAINER_REF).text(time);
+          }
+          for(var i = 0; i < entries.length; i++) {
+            var url = entries[i];
+            var element = document.getElementById(url);
+            var countSpan = $(element).find(COUNT_CONTAINER_REF);
+            if( countSpan.text() == '') {
+              countSpan.text(0);
+            }
+          }
+        })
+        .fail(function (object, error) {
+          console.log("Error: " + error.code + " " + error.message);
+        });
+    }
+
+    function addCount(Counter) {
+      var $visitors = $(".leancloud_visitors");
+      var url = $visitors.attr('id').trim();
+      var title = $visitors.attr('data-flag-title').trim();
+      var query = new AV.Query(Counter);
+
+      query.equalTo("url", url);
+      query.find({
+        success: function(results) {
+          if (results.length > 0) {
+            var counter = results[0];
+            counter.fetchWhenSave(true);
+            counter.increment("time");
+            counter.save(null, {
+              success: function(counter) {
+                var $element = $(document.getElementById(url));
+                $element.find('.leancloud-visitors-count').text(counter.get('time'));
+              },
+              error: function(counter, error) {
+                console.log('Failed to save Visitor num, with error message: ' + error.message);
+              }
+            });
+          } else {
+            var newcounter = new Counter();
+            /* Set ACL */
+            var acl = new AV.ACL();
+            acl.setPublicReadAccess(true);
+            acl.setPublicWriteAccess(true);
+            newcounter.setACL(acl);
+            /* End Set ACL */
+            newcounter.set("title", title);
+            newcounter.set("url", url);
+            newcounter.set("time", 1);
+            newcounter.save(null, {
+              success: function(newcounter) {
+                var $element = $(document.getElementById(url));
+                $element.find('.leancloud-visitors-count').text(newcounter.get('time'));
+              },
+              error: function(newcounter, error) {
+                console.log('Failed to create');
+              }
+            });
+          }
+        },
+        error: function(error) {
+          console.log('Error:' + error.code + " " + error.message);
+        }
+      });
+    }
+
+    $(function() {
+      var Counter = AV.Object.extend("Counter");
+      if ($('.leancloud_visitors').length == 1) {
+        addCount(Counter);
+      } else if ($('.post-title-link').length > 1) {
+        showTime(Counter);
+      }
+    });
+  </script>
+
+
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>
