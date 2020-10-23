@@ -1,0 +1,1528 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next mist use-motion" lang="zh-Hans">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+<script src="//cdn.bootcss.com/pace/1.0.2/pace.min.js"></script>
+<link href="//cdn.bootcss.com/pace/1.0.2/themes/pink/pace-theme-flash.css" rel="stylesheet">
+<script>
+    (function () {
+        if ('') {
+            if (prompt('请输入文章密码') !== '') {
+                alert('密码错误！');
+                if (history.length === 1) {
+                    location.replace("http://team.jiunile.com"); // 这里替换成你的首页
+                } else {
+                    history.back();
+                }
+            }
+        }
+    })();
+</script>
+<meta name="theme-color" content="#222">
+<style>
+    .pace .pace-progress {
+        background: #1E92FB; /*进度条颜色*/
+        height: 2px;
+    }
+    .pace .pace-progress-inner {
+         box-shadow: 0 0 10px #1E92FB, 0 0 5px     #1E92FB; /*阴影颜色*/
+    }
+    .pace .pace-activity {
+        border-top-color: #1E92FB;    /*上边框颜色*/
+        border-left-color: #1E92FB;    /*左边框颜色*/
+    }
+</style>
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+<!--
+  <script>
+  (function(i,s,o,g,r,a,m){i["DaoVoiceObject"]=r;i[r]=i[r]||function(){(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;a.charset="utf-8";m.parentNode.insertBefore(a,m)})(window,document,"script",('https:' == document.location.protocol ? 'https:' : 'http:') + "//widget.daovoice.io/widget/0f81ff2f.js","daovoice")
+  daovoice('init', {
+      app_id: "2a2a668f"
+    });
+  daovoice('update');
+  </script>
+-->
+<!--
+<script type='text/javascript'>
+  (function (window, a, b) {
+    window[a] = window[a] || function () {
+        (window[a].a = window[a].a || []).push(arguments)
+    };
+    window[b] = window[b] || function () {
+        (window[b].a = window[b].a || []).push(arguments)
+    };
+    var s = document.createElement("script");
+    s.src = "https://jsapi.weiliaokefu.com/Public/dist/js/jsapi.js?v=" + Math.round(Math.random() * 1000);
+    s.async = true;
+    s.charset = "UTF-8";
+    document.getElementsByTagName("head")[0].appendChild(s);
+  })(window, '_FENBOT', "_FENBOT_API");
+  _FENBOT({cid: '36159', type: '0'});
+</script>
+-->
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/favicon.ico?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon.ico?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon.ico?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/favicon.ico?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="docker,storage-driver,overlay2," />
+
+
+
+
+
+  <link rel="alternate" href="/atom.xml" title="CloudNative 架构" type="application/atom+xml" />
+
+
+
+
+
+
+<meta name="description" content="简介目前 docker 中常见的 Storage-driver 主要有 AUFS、Devicemapper 以及 Overlay2，这三种文件存储驱动这里简单介绍下。同时着重介绍 Overlay2 的使用事项。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Docker 中 Storage-driver 启用 Overlay2 并限制单个容器的磁盘空间">
+<meta property="og:url" content="http://team.jiunile.com/blog/2020/10/docker-storage-driver.html">
+<meta property="og:site_name" content="CloudNative 架构">
+<meta property="og:description" content="简介目前 docker 中常见的 Storage-driver 主要有 AUFS、Devicemapper 以及 Overlay2，这三种文件存储驱动这里简单介绍下。同时着重介绍 Overlay2 的使用事项。">
+<meta property="og:image" content="http://team.jiunile.com/images/sd-dm.jpg">
+<meta property="og:image" content="http://team.jiunile.com/images/sd-dm-read.jpg">
+<meta property="og:image" content="http://team.jiunile.com/images/sd-ol2.jpg">
+<meta property="og:image" content="http://team.jiunile.com/images/wx_dyh.png">
+<meta property="og:updated_time" content="2020-10-23T06:19:04.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Docker 中 Storage-driver 启用 Overlay2 并限制单个容器的磁盘空间">
+<meta name="twitter:description" content="简介目前 docker 中常见的 Storage-driver 主要有 AUFS、Devicemapper 以及 Overlay2，这三种文件存储驱动这里简单介绍下。同时着重介绍 Overlay2 的使用事项。">
+<meta name="twitter:image" content="http://team.jiunile.com/images/sd-dm.jpg">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Mist',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://team.jiunile.com/blog/2020/10/docker-storage-driver.html"/>
+
+
+
+
+
+  <title>Docker 中 Storage-driver 启用 Overlay2 并限制单个容器的磁盘空间 | CloudNative 架构</title>
+  
+
+
+
+
+
+  <script type="text/javascript">
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "https://hm.baidu.com/hm.js?126663bc923877f90024929ac5555b0f";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+
+
+
+  <!-- 页面点击小红心 -->
+  <script type="text/javascript" src="/js/src/love.js"></script>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+    <a href="https://github.com/icyxp"><a href="https://github.com/icyxp" class="github-corner" aria-label="View source on GitHub"><svg width="80" height="80" viewBox="0 0 250 250" style="fill:#151513; color:#fff; position: absolute; top: 0; border: 0; right: 0;" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path></svg></a><style>.github-corner:hover .octo-arm{animation:octocat-wave 560ms ease-in-out}@keyframes octocat-wave{0%,100%{transform:rotate(0)}20%,60%{transform:rotate(-25deg)}40%,80%{transform:rotate(10deg)}}@media (max-width:500px){.github-corner:hover .octo-arm{animation:none}.github-corner .octo-arm{animation:octocat-wave 560ms ease-in-out}}</style></a>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">CloudNative 架构</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <h1 class="site-subtitle" itemprop="description">CloudNative|云原生应用架构|云原生架构|容器化架构|微服务架构|平台架构|基础架构</h1>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br />
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-k8s">
+          <a href="/pro/k8s/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-heartbeat"></i> <br />
+            
+            k8s离线安装包
+          </a>
+        </li>
+      
+
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="popup-trigger">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br />
+            
+            搜索
+          </a>
+        </li>
+      
+    </ul>
+  
+
+  
+    <div class="site-search">
+      
+  <div class="popup search-popup local-search-popup">
+  <div class="local-search-header clearfix">
+    <span class="search-icon">
+      <i class="fa fa-search"></i>
+    </span>
+    <span class="popup-btn-close">
+      <i class="fa fa-times-circle"></i>
+    </span>
+    <div class="local-search-input-wrapper">
+      <input autocomplete="off"
+             placeholder="搜索..." spellcheck="false"
+             type="text" id="local-search-input">
+    </div>
+  </div>
+  <div id="local-search-result"></div>
+</div>
+
+
+
+    </div>
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://team.jiunile.com/blog/2020/10/docker-storage-driver.html">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="icyboy">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="CloudNative 架构">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h2 class="post-title" itemprop="name headline">Docker 中 Storage-driver 启用 Overlay2 并限制单个容器的磁盘空间</h2>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2020-10-23T20:00:00+08:00">
+                2020-10-23
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/docker/" itemprop="url" rel="index">
+                    <span itemprop="name">docker</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+                <a href="/blog/2020/10/docker-storage-driver.html#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count valine-comment-count" data-xid="/blog/2020/10/docker-storage-driver.html" itemprop="commentCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+          
+             <span id="/blog/2020/10/docker-storage-driver.html" class="leancloud_visitors" data-flag-title="Docker 中 Storage-driver 启用 Overlay2 并限制单个容器的磁盘空间">
+               <span class="post-meta-divider">|</span>
+               <span class="post-meta-item-icon">
+                 <i class="fa fa-eye"></i>
+               </span>
+               
+                 <span class="post-meta-item-text">热度&#58;</span>
+               
+                 <span class="leancloud-visitors-count"></span>
+		 <span>℃</span>
+             </span>
+          
+
+          
+
+          
+            <div class="post-wordcount">
+              
+                
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-file-word-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">字数统计&#58;</span>
+                
+                <span title="字数统计">
+                  2,006 字
+                </span>
+              
+
+              
+                <span class="post-meta-divider">|</span>
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-clock-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">阅读时长 &asymp;</span>
+                
+                <span title="阅读时长">
+                  8 分钟
+                </span>
+              
+            </div>
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h2 id="简介"><a href="#简介" class="headerlink" title="简介"></a>简介</h2><p>目前 docker 中常见的 Storage-driver 主要有 AUFS、Devicemapper 以及 Overlay2，这三种文件存储驱动这里简单介绍下。同时着重介绍 Overlay2 的使用事项。<br><a id="more"></a></p>
+<h2 id="AUFS"><a href="#AUFS" class="headerlink" title="AUFS"></a>AUFS</h2><h3 id="如何存储文件？"><a href="#如何存储文件？" class="headerlink" title="如何存储文件？"></a>如何存储文件？</h3><p>AUFS 使用多层目录存储，每一次目录在 Docker 中称之为层（layer），最终呈现给用户的则是一个普通的单层文件系统，我们把多层以单一层的方式呈现出来的过程叫做联合挂载。<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">/var/lib/docker/aufs/mnt       联合挂载点</span><br><span class="line">      ↓     ↓     ↓</span><br><span class="line">/var/lib/docker/aufs/diff      容器层（可读写）</span><br><span class="line">      ↓     ↓     ↓</span><br><span class="line">/var/lib/docker/aufs/diff</span><br><span class="line">/var/lib/docker/aufs/diff      镜像层（只读）</span><br><span class="line">/var/lib/docker/aufs/diff</span><br></pre></td></tr></table></figure></p>
+<ul>
+<li><code>diff 文件夹</code>：存储镜像内容，每一层都存储在以镜像层 ID 命名的子文件夹中</li>
+<li><code>layers 文件夹</code>：存储镜像层关系的元数据，在 diff 文件夹下的每个镜像层在这里都会有一个文件，文件的内容为该层镜像的父及镜像的 ID。</li>
+<li><code>mnt 文件夹</code>：联合挂载点目录，未生成容器时，改目录未空。</li>
+</ul>
+<h3 id="读写文件"><a href="#读写文件" class="headerlink" title="读写文件"></a>读写文件</h3><h4 id="读文件"><a href="#读文件" class="headerlink" title="读文件"></a>读文件</h4><p>当读取的文件在容器层时，直接从容器层读取，当文件不存在容器层时，则从镜像层中读取，当文件既在镜像层又在容器层时，则从容器层读取</p>
+<h4 id="修改或删除文件"><a href="#修改或删除文件" class="headerlink" title="修改或删除文件"></a>修改或删除文件</h4><p>当第一次修改文件时，AUFS 会触发写时复制，先从镜像层复制文件到容器层，然后在执行修改操作。当修改文件或目录时，AUFS 并不会真正从镜像中删除，而是创建一个特殊的文件或文件夹（whiteout），这种特殊的文件或文件夹会组织容器访问。</p>
+<h3 id="优缺点"><a href="#优缺点" class="headerlink" title="优缺点"></a>优缺点</h3><p>在容器密度比较高的场景下，AUFS 是非常好的选择，因为 AUFS 的容器间共享镜像层的特性使其磁盘利用率很高，容器的启动时间很短。</p>
+<p>AUFS 的写时复制策略会带来很高的性能开销，因为 AUFS 对文件的第一次更改需要将整个文件复制到读写层，当容器层数很多或文件所在目录很深时尤其明显。其次 AUFS 未能进入 Linux 内核主线。</p>
+<h2 id="Devicemapper"><a href="#Devicemapper" class="headerlink" title="Devicemapper"></a>Devicemapper</h2><h3 id="如何存储文件？-1"><a href="#如何存储文件？-1" class="headerlink" title="如何存储文件？"></a>如何存储文件？</h3><p>Devicemapper 使用专门的块设备来实现镜像的存储，并且像 AUFS 一样使用了写时复制的技术来保障最大程度节省存储空间，Devicemapper 的镜像分层使用快照的方式实现。</p>
+<p>Devicemapper 创建镜像的过程如下：</p>
+<ul>
+<li>创建一个精简配置池，精简配置池由块设备或稀疏文件创建。</li>
+<li>接下来创建一个基础设备。</li>
+<li>每个镜像和镜像层都是基础设备的快照；在写快照支持写时复制策略，这意味着它们起始都是空的，当有数据写入时才耗费空间。</li>
+</ul>
+<p><img src="/images/sd-dm.jpg" alt="device mapper"></p>
+<h3 id="读写文件-1"><a href="#读写文件-1" class="headerlink" title="读写文件"></a>读写文件</h3><h4 id="读文件-1"><a href="#读文件-1" class="headerlink" title="读文件"></a>读文件</h4><p><img src="/images/sd-dm-read.jpg" alt="device mapper read"></p>
+<ul>
+<li>某个进程发出读取文件的请求；由于容器只是镜像的精简快照 (thin snapshot)，它并没有这个文件。但它有指向这个文件在下面层中存储位置的指针。</li>
+<li>Devicemapper 由指针找到在镜像层号为 a005e 中的块号为 0xf33 的数据；</li>
+<li>Devicemapper 将这个位置的文件复制到容器的存储区内；</li>
+<li>Devicemapper 将数据返回给应用进程；</li>
+</ul>
+<h4 id="写文件"><a href="#写文件" class="headerlink" title="写文件"></a>写文件</h4><p>在 Devicemapper 中，对容器的写操作由“需要时分配”策略完成。更新已有数据由“写时复制”策略完成，这些操作都在块的层次上完成。当我们需要写数据时，则向瘦供给池（thinpool）动态申请存储空间生成读写层，然后把数据复制到读写层进行修改。Devicemapper 默认每次申请的大小是 64KB 或者 64KB 的倍数，因此每次新生成的读写层的大小都是 64KB 或者 64KB 的倍数。</p>
+<h3 id="优缺点-1"><a href="#优缺点-1" class="headerlink" title="优缺点"></a>优缺点</h3><p>Devicemapper 的写时复制策略以 64KB 作为粒度，意味着无论是对 32KB 的文件还是对 1GB 大小的文件的修改都仅复制 64KB 大小的文件。这相对于在文件层面进行的读操作具有很明显的性能优势。</p>
+<p>但是，如果容器频繁对小于 64KB 的文件进行改写，Devicemapper 的性能是低于 AUFS 的。同时 Devicemapper 不是最有效使用存储空间的 storage driver，启动 n 个相同的容器就复制了 n 份文件在内存中，这对内存的影响很大。所以 Devicemapper 并不适合容器密度高的场景。</p>
+<h2 id="Overlay2"><a href="#Overlay2" class="headerlink" title="Overlay2"></a>Overlay2</h2><h3 id="如何存储文件？-2"><a href="#如何存储文件？-2" class="headerlink" title="如何存储文件？"></a>如何存储文件？</h3><p>Overlay2 将一个 Linux 主机中的两个目录组合起来，一个在上，一个在下，对外提供统一的视图。这两个目录就是层 layer，将两个层组合在一起的技术被成为联合挂载（union mount）。在 Overlay2 中，上层的目录被称作 <code>upperdir</code>，下层的，目录被称作 <code>lowerdir</code>，对外提供的统一视图被称作 <code>merged</code>。<br><img src="/images/sd-ol2.jpg" alt="overlay2"></p>
+<p>注意到，镜像层和容器层可以有相同的文件，这中情况下，<code>upperdir</code> 中的文件覆盖 <code>lowerdir</code> 中的文件。</p>
+<blockquote>
+<p>Overlay2 文件系统最多支持 128 个层数叠加，也就是说你的 Dockerfile 最多只能写 128 行。</p>
+</blockquote>
+<h3 id="读写文件-2"><a href="#读写文件-2" class="headerlink" title="读写文件"></a>读写文件</h3><h4 id="读文件-2"><a href="#读文件-2" class="headerlink" title="读文件"></a>读文件</h4><p>要读的文件不在 container layer 中，那就从 <code>lowerdir</code> 中读，会耗费一点性能；要读的文件之存在于 container layer 中，直接从 <code>upperdir</code> 中读；要读的文件在container layer 和 image layer 中都存在, 从 <code>upperdir</code> 中读文件</p>
+<h4 id="写文件-1"><a href="#写文件-1" class="headerlink" title="写文件"></a>写文件</h4><p>在第一次修改时，文件不在 container layer(upperdir) 中，overlay driver 调用写时复制将文件从 <code>lowerdir</code> 读到 <code>upperdir</code> 中，然后对文件的副本做出修改。文件被删除时，和 AUFS 一样，相应的 whiteout 文件被创建在 <code>upperdir</code>。并不删除容器层(lowerdir) 中的文件，<code>whiteout</code> 文件屏蔽了它的存在。</p>
+<h3 id="优缺点-2"><a href="#优缺点-2" class="headerlink" title="优缺点"></a>优缺点</h3><p>Overlay2 的拷贝操作工作在文件层面上，也就是对文件的第一次修改需要复制整个文件，会带来一些性能开销，在修改大文件时尤其明显。但 Overlay2 的拷贝操作比 AUFS 还是快一点，因为 AUFS 有很多层，而 Overlay2 只有两层，所以 Overlay2 在文件的搜索方面相对于 AUFS 具有优势。Overlay2 支持页缓存的共享，这意味着多个使用同一文件的容器可以共享同一页缓存，这使得 Overlay2 具有很高的内存使用效率。</p>
+<h2 id="如何使用-Overlay2"><a href="#如何使用-Overlay2" class="headerlink" title="如何使用 Overlay2"></a>如何使用 Overlay2</h2><h3 id="先决条件"><a href="#先决条件" class="headerlink" title="先决条件"></a>先决条件</h3><ol>
+<li>Docker 版本必须高于 17.06.02</li>
+<li>如果操作系统是 RHEL 或 CentOS，内核版本必须高于 3.10.0-514，其他 Linux 内核版本必须高于 4.0</li>
+<li><p>Overlay2 最好搭配 xfs 文件系统使用，并且使用 xfs 作为底层文件系统时，d_type 必须开启</p>
+<p>验证 d_type 是否开启：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">xfs_info /var/lib/docker | grep ftype</span><br></pre></td></tr></table></figure>
+<p>当输出结果中有 <code>ftype=1</code> 时，表示 d_type 已经开启。如果为 0 时，则需要重新格式化磁盘。命令如下：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">mkfs.xfs <span class="_">-f</span> -n ftype=1 /path/to/disk</span><br></pre></td></tr></table></figure>
+</li>
+</ol>
+<h3 id="限制单个容器可占用磁盘空间"><a href="#限制单个容器可占用磁盘空间" class="headerlink" title="限制单个容器可占用磁盘空间"></a>限制单个容器可占用磁盘空间</h3><h4 id="开启-xfs-的-quota-特性"><a href="#开启-xfs-的-quota-特性" class="headerlink" title="开启 xfs 的 quota 特性"></a>开启 xfs 的 quota 特性</h4><p>在 <code>/etc/fstab</code> 中设置<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">UUID=4cbf4a19-1fba-4027-bf92-9aa969683fa9     /var/lib/docker   xfs    defaults,pquota  0   0</span><br></pre></td></tr></table></figure></p>
+<p>将 <code>/var/lib/docker</code> 卸载后重新挂载即可。</p>
+<h4 id="配置-docker-daemon"><a href="#配置-docker-daemon" class="headerlink" title="配置 docker daemon"></a>配置 docker daemon</h4><p><code>/etc/docker/daemon.json</code> 配置文件如下，这里将每个容器可以使用的磁盘空间设置为1G：<br><figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">    <span class="attr">"storage-driver"</span>: <span class="string">"overlay2"</span>,</span><br><span class="line">    <span class="attr">"storage-opts"</span>: [</span><br><span class="line">      <span class="string">"overlay2.override_kernel_check=true"</span>,</span><br><span class="line">      <span class="string">"overlay2.size=1G"</span></span><br><span class="line">    ]</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<h4 id="写入文件测试"><a href="#写入文件测试" class="headerlink" title="写入文件测试"></a>写入文件测试</h4><p>重启docker后，启动一个容器，在容器中创建文件。</p>
+<p>先创建一个1000M的文件：<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">/ <span class="comment"># dd if=/dev/zero of=/a bs=100M count=10</span></span><br><span class="line">10+0 records <span class="keyword">in</span></span><br><span class="line">10+0 records out</span><br></pre></td></tr></table></figure></p>
+<p>然后创建第二个1000M的文件：<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">/ <span class="comment"># dd if=/dev/zero of=/b bs=100M count=10</span></span><br><span class="line">dd: writing <span class="string">'/b'</span>: No space left on device</span><br><span class="line">2+0 records <span class="keyword">in</span></span><br><span class="line">0+1 records out</span><br></pre></td></tr></table></figure></p>
+<p>可以看到第二个 1000M 文件因为空间不足创建失败。</p>
+<p><img src="/images/wx_dyh.png" alt="微信订阅号"></p>
+
+      
+    </div>
+    
+    
+    
+
+    <div>
+    
+        <div>
+    
+        <div style="text-align:center;color: #ccc;font-size:14px;">-------------本文结束<i class="fa fa-paw"></i>感谢您的阅读-------------</div>
+    
+</div>
+
+    
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    
+
+    
+      <div>
+        <div style="padding: 10px 0; margin: 20px auto; width: 90%; text-align: center;">
+  <div></div>
+  <button id="rewardButton" disable="enable" onclick="var qr = document.getElementById('QR'); if (qr.style.display === 'none') {qr.style.display='block';} else {qr.style.display='none'}">
+    <span>打赏</span>
+  </button>
+  <div id="QR" style="display: none;">
+
+    
+      <div id="wechat" style="display: inline-block">
+        <img id="wechat_qr" src="/images/wechatpay.jpg" alt="icyboy 微信支付"/>
+        <p>微信支付</p>
+      </div>
+    
+
+    
+      <div id="alipay" style="display: inline-block">
+        <img id="alipay_qr" src="/images/alipay.jpg" alt="icyboy 支付宝"/>
+        <p>支付宝</p>
+      </div>
+    
+
+    
+
+  </div>
+</div>
+
+      </div>
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/docker/" rel="tag"># docker</a>
+          
+            <a href="/tags/storage-driver/" rel="tag"># storage-driver</a>
+          
+            <a href="/tags/overlay2/" rel="tag"># overlay2</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/blog/2020/10/k8s-kube-proxy.html" rel="next" title="带你了解 Kube-proxy 工作原理">
+                <i class="fa fa-chevron-left"></i> 带你了解 Kube-proxy 工作原理
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+    <div class="comments" id="comments">
+    </div>
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image"
+                src="/images/avatar.jpg"
+                alt="icyboy" />
+            
+              <p class="site-author-name" itemprop="name">icyboy</p>
+              <p class="site-description motion-element" itemprop="description"></p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">82</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-categories">
+                <a href="/categories/index.html">
+                  <span class="site-state-item-count">66</span>
+                  <span class="site-state-item-name">分类</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                <a href="/tags/index.html">
+                  <span class="site-state-item-count">148</span>
+                  <span class="site-state-item-name">标签</span>
+                </a>
+              </div>
+            
+
+          </nav>
+
+          
+            <div class="feed-link motion-element">
+              <a href="/atom.xml" rel="alternate">
+                <i class="fa fa-rss"></i>
+                RSS
+              </a>
+            </div>
+          
+
+          
+            <div class="links-of-author motion-element">
+                
+                  <span class="links-of-author-item">
+                    <a href="https://github.com/icyxp" target="_blank" title="GitHub">
+                      
+                        <i class="fa fa-fw fa-github"></i>GitHub</a>
+                  </span>
+                
+                  <span class="links-of-author-item">
+                    <a href="http://weibo.com/joysteam" target="_blank" title="微博">
+                      
+                        <i class="fa fa-fw fa-weibo"></i>微博</a>
+                  </span>
+                
+                  <span class="links-of-author-item">
+                    <a href="http://www.zhihu.com/people/xupeng" target="_blank" title="知乎">
+                      
+                        <i class="fa fa-fw fa-zhihu"></i>知乎</a>
+                  </span>
+                
+            </div>
+          
+
+          
+          
+
+          
+          
+            <div class="links-of-blogroll motion-element links-of-blogroll-inline">
+              <div class="links-of-blogroll-title">
+                <i class="fa  fa-fw fa-link"></i>
+                友情链接
+              </div>
+              <ul class="links-of-blogroll-list">
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="http://www.zjgsmt.com" title="张家港水蜜桃" target="_blank">张家港水蜜桃</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="http://blog.jiunile.com" title="运维开发" target="_blank">运维开发</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="http://devops.jiunile.com" title="DevOps" target="_blank">DevOps</a>
+                  </li>
+                
+              </ul>
+            </div>
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#简介"><span class="nav-number">1.</span> <span class="nav-text">简介</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#AUFS"><span class="nav-number">2.</span> <span class="nav-text">AUFS</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#如何存储文件？"><span class="nav-number">2.1.</span> <span class="nav-text">如何存储文件？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#读写文件"><span class="nav-number">2.2.</span> <span class="nav-text">读写文件</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#读文件"><span class="nav-number">2.2.1.</span> <span class="nav-text">读文件</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#修改或删除文件"><span class="nav-number">2.2.2.</span> <span class="nav-text">修改或删除文件</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#优缺点"><span class="nav-number">2.3.</span> <span class="nav-text">优缺点</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Devicemapper"><span class="nav-number">3.</span> <span class="nav-text">Devicemapper</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#如何存储文件？-1"><span class="nav-number">3.1.</span> <span class="nav-text">如何存储文件？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#读写文件-1"><span class="nav-number">3.2.</span> <span class="nav-text">读写文件</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#读文件-1"><span class="nav-number">3.2.1.</span> <span class="nav-text">读文件</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#写文件"><span class="nav-number">3.2.2.</span> <span class="nav-text">写文件</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#优缺点-1"><span class="nav-number">3.3.</span> <span class="nav-text">优缺点</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Overlay2"><span class="nav-number">4.</span> <span class="nav-text">Overlay2</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#如何存储文件？-2"><span class="nav-number">4.1.</span> <span class="nav-text">如何存储文件？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#读写文件-2"><span class="nav-number">4.2.</span> <span class="nav-text">读写文件</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#读文件-2"><span class="nav-number">4.2.1.</span> <span class="nav-text">读文件</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#写文件-1"><span class="nav-number">4.2.2.</span> <span class="nav-text">写文件</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#优缺点-2"><span class="nav-number">4.3.</span> <span class="nav-text">优缺点</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#如何使用-Overlay2"><span class="nav-number">5.</span> <span class="nav-text">如何使用 Overlay2</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#先决条件"><span class="nav-number">5.1.</span> <span class="nav-text">先决条件</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#限制单个容器可占用磁盘空间"><span class="nav-number">5.2.</span> <span class="nav-text">限制单个容器可占用磁盘空间</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#开启-xfs-的-quota-特性"><span class="nav-number">5.2.1.</span> <span class="nav-text">开启 xfs 的 quota 特性</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#配置-docker-daemon"><span class="nav-number">5.2.2.</span> <span class="nav-text">配置 docker daemon</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#写入文件测试"><span class="nav-number">5.2.3.</span> <span class="nav-text">写入文件测试</span></a></li></ol></li></ol></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+<div class="copyright">&copy; 2016 &mdash; <span itemprop="copyrightYear">2020</span>
+  <span class="with-love" id="heart">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">icyboy</span>
+
+  
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-area-chart"></i>
+    </span>
+    
+      <span class="post-meta-item-text">Site words total count&#58;</span>
+    
+    <span title="Site words total count">242.8k</span>
+  
+</div>
+
+<div class="powered-by">
+<i class="fa fa-user-md"></i><span id="busuanzi_container_site_uv">
+  本站访客数:<span id="busuanzi_value_site_uv"></span>
+</span>
+</div>
+
+<div class="theme-info">
+  <div class="powered-by"></div>
+  <span class="post-count">博客全站共242.8k字</span>
+</div>
+
+
+
+
+
+
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/canvas-nest/canvas-nest.min.js"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+  <script src="//cdn1.lncld.net/static/js/3.0.4/av-min.js"></script>
+  <script src="//unpkg.com/valine/dist/Valine.min.js"></script>
+  
+  <script type="text/javascript">
+    var GUEST = ['nick','mail','link'];
+    var guest = 'nick,mail,link';
+    guest = guest.split(',').filter(item=>{
+      return GUEST.indexOf(item)>-1;
+    });
+    new Valine({
+        el: '#comments' ,
+        verify: false,
+        notify: false,
+        appId: 'B6yqSmGPw5uBIAfWEqm7Xyws-gzGzoHsz',
+        appKey: '2soiHGUrbGw33caCmkT47236',
+        placeholder: 'Just do it!',
+        avatar:'mm',
+        guest_info:guest,
+        pageSize:'10' || 10,
+    });
+  </script>
+
+
+
+  
+
+  <script type="text/javascript">
+    // Popup Window;
+    var isfetched = false;
+    var isXml = true;
+    // Search DB path;
+    var search_path = "search.xml";
+    if (search_path.length === 0) {
+      search_path = "search.xml";
+    } else if (/json$/i.test(search_path)) {
+      isXml = false;
+    }
+    var path = "/" + search_path;
+    // monitor main search box;
+
+    var onPopupClose = function (e) {
+      $('.popup').hide();
+      $('#local-search-input').val('');
+      $('.search-result-list').remove();
+      $('#no-result').remove();
+      $(".local-search-pop-overlay").remove();
+      $('body').css('overflow', '');
+    }
+
+    function proceedsearch() {
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay"></div>')
+        .css('overflow', 'hidden');
+      $('.search-popup-overlay').click(onPopupClose);
+      $('.popup').toggle();
+      var $localSearchInput = $('#local-search-input');
+      $localSearchInput.attr("autocapitalize", "none");
+      $localSearchInput.attr("autocorrect", "off");
+      $localSearchInput.focus();
+    }
+
+    // search function;
+    var searchFunc = function(path, search_id, content_id) {
+      'use strict';
+
+      // start loading animation
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay">' +
+          '<div id="search-loading-icon">' +
+          '<i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>' +
+          '</div>' +
+          '</div>')
+        .css('overflow', 'hidden');
+      $("#search-loading-icon").css('margin', '20% auto 0 auto').css('text-align', 'center');
+
+      $.ajax({
+        url: path,
+        dataType: isXml ? "xml" : "json",
+        async: true,
+        success: function(res) {
+          // get the contents from search data
+          isfetched = true;
+          $('.popup').detach().appendTo('.header-inner');
+          var datas = isXml ? $("entry", res).map(function() {
+            return {
+              title: $("title", this).text(),
+              content: $("content",this).text(),
+              url: $("url" , this).text()
+            };
+          }).get() : res;
+          var input = document.getElementById(search_id);
+          var resultContent = document.getElementById(content_id);
+          var inputEventFunction = function() {
+            var searchText = input.value.trim().toLowerCase();
+            var keywords = searchText.split(/[\s\-]+/);
+            if (keywords.length > 1) {
+              keywords.push(searchText);
+            }
+            var resultItems = [];
+            if (searchText.length > 0) {
+              // perform local searching
+              datas.forEach(function(data) {
+                var isMatch = false;
+                var hitCount = 0;
+                var searchTextCount = 0;
+                var title = data.title.trim();
+                var titleInLowerCase = title.toLowerCase();
+                var content = data.content.trim().replace(/<[^>]+>/g,"");
+                var contentInLowerCase = content.toLowerCase();
+                var articleUrl = decodeURIComponent(data.url);
+                var indexOfTitle = [];
+                var indexOfContent = [];
+                // only match articles with not empty titles
+                if(title != '') {
+                  keywords.forEach(function(keyword) {
+                    function getIndexByWord(word, text, caseSensitive) {
+                      var wordLen = word.length;
+                      if (wordLen === 0) {
+                        return [];
+                      }
+                      var startPosition = 0, position = [], index = [];
+                      if (!caseSensitive) {
+                        text = text.toLowerCase();
+                        word = word.toLowerCase();
+                      }
+                      while ((position = text.indexOf(word, startPosition)) > -1) {
+                        index.push({position: position, word: word});
+                        startPosition = position + wordLen;
+                      }
+                      return index;
+                    }
+
+                    indexOfTitle = indexOfTitle.concat(getIndexByWord(keyword, titleInLowerCase, false));
+                    indexOfContent = indexOfContent.concat(getIndexByWord(keyword, contentInLowerCase, false));
+                  });
+                  if (indexOfTitle.length > 0 || indexOfContent.length > 0) {
+                    isMatch = true;
+                    hitCount = indexOfTitle.length + indexOfContent.length;
+                  }
+                }
+
+                // show search results
+
+                if (isMatch) {
+                  // sort index by position of keyword
+
+                  [indexOfTitle, indexOfContent].forEach(function (index) {
+                    index.sort(function (itemLeft, itemRight) {
+                      if (itemRight.position !== itemLeft.position) {
+                        return itemRight.position - itemLeft.position;
+                      } else {
+                        return itemLeft.word.length - itemRight.word.length;
+                      }
+                    });
+                  });
+
+                  // merge hits into slices
+
+                  function mergeIntoSlice(text, start, end, index) {
+                    var item = index[index.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    var hits = [];
+                    var searchTextCountInSlice = 0;
+                    while (position + word.length <= end && index.length != 0) {
+                      if (word === searchText) {
+                        searchTextCountInSlice++;
+                      }
+                      hits.push({position: position, length: word.length});
+                      var wordEnd = position + word.length;
+
+                      // move to next position of hit
+
+                      index.pop();
+                      while (index.length != 0) {
+                        item = index[index.length - 1];
+                        position = item.position;
+                        word = item.word;
+                        if (wordEnd > position) {
+                          index.pop();
+                        } else {
+                          break;
+                        }
+                      }
+                    }
+                    searchTextCount += searchTextCountInSlice;
+                    return {
+                      hits: hits,
+                      start: start,
+                      end: end,
+                      searchTextCount: searchTextCountInSlice
+                    };
+                  }
+
+                  var slicesOfTitle = [];
+                  if (indexOfTitle.length != 0) {
+                    slicesOfTitle.push(mergeIntoSlice(title, 0, title.length, indexOfTitle));
+                  }
+
+                  var slicesOfContent = [];
+                  while (indexOfContent.length != 0) {
+                    var item = indexOfContent[indexOfContent.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    // cut out 100 characters
+                    var start = position - 20;
+                    var end = position + 80;
+                    if(start < 0){
+                      start = 0;
+                    }
+                    if (end < position + word.length) {
+                      end = position + word.length;
+                    }
+                    if(end > content.length){
+                      end = content.length;
+                    }
+                    slicesOfContent.push(mergeIntoSlice(content, start, end, indexOfContent));
+                  }
+
+                  // sort slices in content by search text's count and hits' count
+
+                  slicesOfContent.sort(function (sliceLeft, sliceRight) {
+                    if (sliceLeft.searchTextCount !== sliceRight.searchTextCount) {
+                      return sliceRight.searchTextCount - sliceLeft.searchTextCount;
+                    } else if (sliceLeft.hits.length !== sliceRight.hits.length) {
+                      return sliceRight.hits.length - sliceLeft.hits.length;
+                    } else {
+                      return sliceLeft.start - sliceRight.start;
+                    }
+                  });
+
+                  // select top N slices in content
+
+                  var upperBound = parseInt('1');
+                  if (upperBound >= 0) {
+                    slicesOfContent = slicesOfContent.slice(0, upperBound);
+                  }
+
+                  // highlight title and content
+
+                  function highlightKeyword(text, slice) {
+                    var result = '';
+                    var prevEnd = slice.start;
+                    slice.hits.forEach(function (hit) {
+                      result += text.substring(prevEnd, hit.position);
+                      var end = hit.position + hit.length;
+                      result += '<b class="search-keyword">' + text.substring(hit.position, end) + '</b>';
+                      prevEnd = end;
+                    });
+                    result += text.substring(prevEnd, slice.end);
+                    return result;
+                  }
+
+                  var resultItem = '';
+
+                  if (slicesOfTitle.length != 0) {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + highlightKeyword(title, slicesOfTitle[0]) + "</a>";
+                  } else {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + title + "</a>";
+                  }
+
+                  slicesOfContent.forEach(function (slice) {
+                    resultItem += "<a href='" + articleUrl + "'>" +
+                      "<p class=\"search-result\">" + highlightKeyword(content, slice) +
+                      "...</p>" + "</a>";
+                  });
+
+                  resultItem += "</li>";
+                  resultItems.push({
+                    item: resultItem,
+                    searchTextCount: searchTextCount,
+                    hitCount: hitCount,
+                    id: resultItems.length
+                  });
+                }
+              })
+            };
+            if (keywords.length === 1 && keywords[0] === "") {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-search fa-5x" /></div>'
+            } else if (resultItems.length === 0) {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-frown-o fa-5x" /></div>'
+            } else {
+              resultItems.sort(function (resultLeft, resultRight) {
+                if (resultLeft.searchTextCount !== resultRight.searchTextCount) {
+                  return resultRight.searchTextCount - resultLeft.searchTextCount;
+                } else if (resultLeft.hitCount !== resultRight.hitCount) {
+                  return resultRight.hitCount - resultLeft.hitCount;
+                } else {
+                  return resultRight.id - resultLeft.id;
+                }
+              });
+              var searchResultList = '<ul class=\"search-result-list\">';
+              resultItems.forEach(function (result) {
+                searchResultList += result.item;
+              })
+              searchResultList += "</ul>";
+              resultContent.innerHTML = searchResultList;
+            }
+          }
+
+          if ('auto' === 'auto') {
+            input.addEventListener('input', inputEventFunction);
+          } else {
+            $('.search-icon').click(inputEventFunction);
+            input.addEventListener('keypress', function (event) {
+              if (event.keyCode === 13) {
+                inputEventFunction();
+              }
+            });
+          }
+
+          // remove loading animation
+          $(".local-search-pop-overlay").remove();
+          $('body').css('overflow', '');
+
+          proceedsearch();
+        }
+      });
+    }
+
+    // handle and trigger popup window;
+    $('.popup-trigger').click(function(e) {
+      e.stopPropagation();
+      if (isfetched === false) {
+        searchFunc(path, 'local-search-input', 'local-search-result');
+      } else {
+        proceedsearch();
+      };
+    });
+
+    $('.popup-btn-close').click(onPopupClose);
+    $('.popup').click(function(e){
+      e.stopPropagation();
+    });
+    $(document).on('keyup', function (event) {
+      var shouldDismissSearchPopup = event.which === 27 &&
+        $('.search-popup').is(':visible');
+      if (shouldDismissSearchPopup) {
+        onPopupClose();
+      }
+    });
+  </script>
+
+
+
+
+
+  
+
+  
+  <script src="https://cdn1.lncld.net/static/js/av-core-mini-0.6.4.js"></script>
+  <script>AV.initialize("B6yqSmGPw5uBIAfWEqm7Xyws-gzGzoHsz", "2soiHGUrbGw33caCmkT47236");</script>
+  <script>
+    function showTime(Counter) {
+      var query = new AV.Query(Counter);
+      var entries = [];
+      var $visitors = $(".leancloud_visitors");
+
+      $visitors.each(function () {
+        entries.push( $(this).attr("id").trim() );
+      });
+
+      query.containedIn('url', entries);
+      query.find()
+        .done(function (results) {
+          var COUNT_CONTAINER_REF = '.leancloud-visitors-count';
+
+          if (results.length === 0) {
+            $visitors.find(COUNT_CONTAINER_REF).text(0);
+            return;
+          }
+
+          for (var i = 0; i < results.length; i++) {
+            var item = results[i];
+            var url = item.get('url');
+            var time = item.get('time');
+            var element = document.getElementById(url);
+
+            $(element).find(COUNT_CONTAINER_REF).text(time);
+          }
+          for(var i = 0; i < entries.length; i++) {
+            var url = entries[i];
+            var element = document.getElementById(url);
+            var countSpan = $(element).find(COUNT_CONTAINER_REF);
+            if( countSpan.text() == '') {
+              countSpan.text(0);
+            }
+          }
+        })
+        .fail(function (object, error) {
+          console.log("Error: " + error.code + " " + error.message);
+        });
+    }
+
+    function addCount(Counter) {
+      var $visitors = $(".leancloud_visitors");
+      var url = $visitors.attr('id').trim();
+      var title = $visitors.attr('data-flag-title').trim();
+      var query = new AV.Query(Counter);
+
+      query.equalTo("url", url);
+      query.find({
+        success: function(results) {
+          if (results.length > 0) {
+            var counter = results[0];
+            counter.fetchWhenSave(true);
+            counter.increment("time");
+            counter.save(null, {
+              success: function(counter) {
+                var $element = $(document.getElementById(url));
+                $element.find('.leancloud-visitors-count').text(counter.get('time'));
+              },
+              error: function(counter, error) {
+                console.log('Failed to save Visitor num, with error message: ' + error.message);
+              }
+            });
+          } else {
+            var newcounter = new Counter();
+            /* Set ACL */
+            var acl = new AV.ACL();
+            acl.setPublicReadAccess(true);
+            acl.setPublicWriteAccess(true);
+            newcounter.setACL(acl);
+            /* End Set ACL */
+            newcounter.set("title", title);
+            newcounter.set("url", url);
+            newcounter.set("time", 1);
+            newcounter.save(null, {
+              success: function(newcounter) {
+                var $element = $(document.getElementById(url));
+                $element.find('.leancloud-visitors-count').text(newcounter.get('time'));
+              },
+              error: function(newcounter, error) {
+                console.log('Failed to create');
+              }
+            });
+          }
+        },
+        error: function(error) {
+          console.log('Error:' + error.code + " " + error.message);
+        }
+      });
+    }
+
+    $(function() {
+      var Counter = AV.Object.extend("Counter");
+      if ($('.leancloud_visitors').length == 1) {
+        addCount(Counter);
+      } else if ($('.post-title-link').length > 1) {
+        showTime(Counter);
+      }
+    });
+  </script>
+
+
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

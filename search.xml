@@ -4,6 +4,67 @@
   
     
     <entry>
+      <title><![CDATA[Docker 中 Storage-driver 启用 Overlay2 并限制单个容器的磁盘空间]]></title>
+      <url>http://team.jiunile.com/blog/2020/10/docker-storage-driver.html</url>
+      <content type="html"><![CDATA[<h2 id="简介"><a href="#简介" class="headerlink" title="简介"></a>简介</h2><p>目前 docker 中常见的 Storage-driver 主要有 AUFS、Devicemapper 以及 Overlay2，这三种文件存储驱动这里简单介绍下。同时着重介绍 Overlay2 的使用事项。<br><a id="more"></a></p>
+<h2 id="AUFS"><a href="#AUFS" class="headerlink" title="AUFS"></a>AUFS</h2><h3 id="如何存储文件？"><a href="#如何存储文件？" class="headerlink" title="如何存储文件？"></a>如何存储文件？</h3><p>AUFS 使用多层目录存储，每一次目录在 Docker 中称之为层（layer），最终呈现给用户的则是一个普通的单层文件系统，我们把多层以单一层的方式呈现出来的过程叫做联合挂载。<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">/var/lib/docker/aufs/mnt       联合挂载点</span><br><span class="line">      ↓     ↓     ↓</span><br><span class="line">/var/lib/docker/aufs/diff      容器层（可读写）</span><br><span class="line">      ↓     ↓     ↓</span><br><span class="line">/var/lib/docker/aufs/diff</span><br><span class="line">/var/lib/docker/aufs/diff      镜像层（只读）</span><br><span class="line">/var/lib/docker/aufs/diff</span><br></pre></td></tr></table></figure></p>
+<ul>
+<li><code>diff 文件夹</code>：存储镜像内容，每一层都存储在以镜像层 ID 命名的子文件夹中</li>
+<li><code>layers 文件夹</code>：存储镜像层关系的元数据，在 diff 文件夹下的每个镜像层在这里都会有一个文件，文件的内容为该层镜像的父及镜像的 ID。</li>
+<li><code>mnt 文件夹</code>：联合挂载点目录，未生成容器时，改目录未空。</li>
+</ul>
+<h3 id="读写文件"><a href="#读写文件" class="headerlink" title="读写文件"></a>读写文件</h3><h4 id="读文件"><a href="#读文件" class="headerlink" title="读文件"></a>读文件</h4><p>当读取的文件在容器层时，直接从容器层读取，当文件不存在容器层时，则从镜像层中读取，当文件既在镜像层又在容器层时，则从容器层读取</p>
+<h4 id="修改或删除文件"><a href="#修改或删除文件" class="headerlink" title="修改或删除文件"></a>修改或删除文件</h4><p>当第一次修改文件时，AUFS 会触发写时复制，先从镜像层复制文件到容器层，然后在执行修改操作。当修改文件或目录时，AUFS 并不会真正从镜像中删除，而是创建一个特殊的文件或文件夹（whiteout），这种特殊的文件或文件夹会组织容器访问。</p>
+<h3 id="优缺点"><a href="#优缺点" class="headerlink" title="优缺点"></a>优缺点</h3><p>在容器密度比较高的场景下，AUFS 是非常好的选择，因为 AUFS 的容器间共享镜像层的特性使其磁盘利用率很高，容器的启动时间很短。</p>
+<p>AUFS 的写时复制策略会带来很高的性能开销，因为 AUFS 对文件的第一次更改需要将整个文件复制到读写层，当容器层数很多或文件所在目录很深时尤其明显。其次 AUFS 未能进入 Linux 内核主线。</p>
+<h2 id="Devicemapper"><a href="#Devicemapper" class="headerlink" title="Devicemapper"></a>Devicemapper</h2><h3 id="如何存储文件？-1"><a href="#如何存储文件？-1" class="headerlink" title="如何存储文件？"></a>如何存储文件？</h3><p>Devicemapper 使用专门的块设备来实现镜像的存储，并且像 AUFS 一样使用了写时复制的技术来保障最大程度节省存储空间，Devicemapper 的镜像分层使用快照的方式实现。</p>
+<p>Devicemapper 创建镜像的过程如下：</p>
+<ul>
+<li>创建一个精简配置池，精简配置池由块设备或稀疏文件创建。</li>
+<li>接下来创建一个基础设备。</li>
+<li>每个镜像和镜像层都是基础设备的快照；在写快照支持写时复制策略，这意味着它们起始都是空的，当有数据写入时才耗费空间。</li>
+</ul>
+<p><img src="/images/sd-dm.jpg" alt="device mapper"></p>
+<h3 id="读写文件-1"><a href="#读写文件-1" class="headerlink" title="读写文件"></a>读写文件</h3><h4 id="读文件-1"><a href="#读文件-1" class="headerlink" title="读文件"></a>读文件</h4><p><img src="/images/sd-dm-read.jpg" alt="device mapper read"></p>
+<ul>
+<li>某个进程发出读取文件的请求；由于容器只是镜像的精简快照 (thin snapshot)，它并没有这个文件。但它有指向这个文件在下面层中存储位置的指针。</li>
+<li>Devicemapper 由指针找到在镜像层号为 a005e 中的块号为 0xf33 的数据；</li>
+<li>Devicemapper 将这个位置的文件复制到容器的存储区内；</li>
+<li>Devicemapper 将数据返回给应用进程；</li>
+</ul>
+<h4 id="写文件"><a href="#写文件" class="headerlink" title="写文件"></a>写文件</h4><p>在 Devicemapper 中，对容器的写操作由“需要时分配”策略完成。更新已有数据由“写时复制”策略完成，这些操作都在块的层次上完成。当我们需要写数据时，则向瘦供给池（thinpool）动态申请存储空间生成读写层，然后把数据复制到读写层进行修改。Devicemapper 默认每次申请的大小是 64KB 或者 64KB 的倍数，因此每次新生成的读写层的大小都是 64KB 或者 64KB 的倍数。</p>
+<h3 id="优缺点-1"><a href="#优缺点-1" class="headerlink" title="优缺点"></a>优缺点</h3><p>Devicemapper 的写时复制策略以 64KB 作为粒度，意味着无论是对 32KB 的文件还是对 1GB 大小的文件的修改都仅复制 64KB 大小的文件。这相对于在文件层面进行的读操作具有很明显的性能优势。</p>
+<p>但是，如果容器频繁对小于 64KB 的文件进行改写，Devicemapper 的性能是低于 AUFS 的。同时 Devicemapper 不是最有效使用存储空间的 storage driver，启动 n 个相同的容器就复制了 n 份文件在内存中，这对内存的影响很大。所以 Devicemapper 并不适合容器密度高的场景。</p>
+<h2 id="Overlay2"><a href="#Overlay2" class="headerlink" title="Overlay2"></a>Overlay2</h2><h3 id="如何存储文件？-2"><a href="#如何存储文件？-2" class="headerlink" title="如何存储文件？"></a>如何存储文件？</h3><p>Overlay2 将一个 Linux 主机中的两个目录组合起来，一个在上，一个在下，对外提供统一的视图。这两个目录就是层 layer，将两个层组合在一起的技术被成为联合挂载（union mount）。在 Overlay2 中，上层的目录被称作 <code>upperdir</code>，下层的，目录被称作 <code>lowerdir</code>，对外提供的统一视图被称作 <code>merged</code>。<br><img src="/images/sd-ol2.jpg" alt="overlay2"></p>
+<p>注意到，镜像层和容器层可以有相同的文件，这中情况下，<code>upperdir</code> 中的文件覆盖 <code>lowerdir</code> 中的文件。</p>
+<blockquote>
+<p>Overlay2 文件系统最多支持 128 个层数叠加，也就是说你的 Dockerfile 最多只能写 128 行。</p>
+</blockquote>
+<h3 id="读写文件-2"><a href="#读写文件-2" class="headerlink" title="读写文件"></a>读写文件</h3><h4 id="读文件-2"><a href="#读文件-2" class="headerlink" title="读文件"></a>读文件</h4><p>要读的文件不在 container layer 中，那就从 <code>lowerdir</code> 中读，会耗费一点性能；要读的文件之存在于 container layer 中，直接从 <code>upperdir</code> 中读；要读的文件在container layer 和 image layer 中都存在, 从 <code>upperdir</code> 中读文件</p>
+<h4 id="写文件-1"><a href="#写文件-1" class="headerlink" title="写文件"></a>写文件</h4><p>在第一次修改时，文件不在 container layer(upperdir) 中，overlay driver 调用写时复制将文件从 <code>lowerdir</code> 读到 <code>upperdir</code> 中，然后对文件的副本做出修改。文件被删除时，和 AUFS 一样，相应的 whiteout 文件被创建在 <code>upperdir</code>。并不删除容器层(lowerdir) 中的文件，<code>whiteout</code> 文件屏蔽了它的存在。</p>
+<h3 id="优缺点-2"><a href="#优缺点-2" class="headerlink" title="优缺点"></a>优缺点</h3><p>Overlay2 的拷贝操作工作在文件层面上，也就是对文件的第一次修改需要复制整个文件，会带来一些性能开销，在修改大文件时尤其明显。但 Overlay2 的拷贝操作比 AUFS 还是快一点，因为 AUFS 有很多层，而 Overlay2 只有两层，所以 Overlay2 在文件的搜索方面相对于 AUFS 具有优势。Overlay2 支持页缓存的共享，这意味着多个使用同一文件的容器可以共享同一页缓存，这使得 Overlay2 具有很高的内存使用效率。</p>
+<h2 id="如何使用-Overlay2"><a href="#如何使用-Overlay2" class="headerlink" title="如何使用 Overlay2"></a>如何使用 Overlay2</h2><h3 id="先决条件"><a href="#先决条件" class="headerlink" title="先决条件"></a>先决条件</h3><ol>
+<li>Docker 版本必须高于 17.06.02</li>
+<li>如果操作系统是 RHEL 或 CentOS，内核版本必须高于 3.10.0-514，其他 Linux 内核版本必须高于 4.0</li>
+<li><p>Overlay2 最好搭配 xfs 文件系统使用，并且使用 xfs 作为底层文件系统时，d_type 必须开启</p>
+<p>验证 d_type 是否开启：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">xfs_info /var/lib/docker | grep ftype</span><br></pre></td></tr></table></figure>
+<p>当输出结果中有 <code>ftype=1</code> 时，表示 d_type 已经开启。如果为 0 时，则需要重新格式化磁盘。命令如下：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">mkfs.xfs <span class="_">-f</span> -n ftype=1 /path/to/disk</span><br></pre></td></tr></table></figure>
+</li>
+</ol>
+<h3 id="限制单个容器可占用磁盘空间"><a href="#限制单个容器可占用磁盘空间" class="headerlink" title="限制单个容器可占用磁盘空间"></a>限制单个容器可占用磁盘空间</h3><h4 id="开启-xfs-的-quota-特性"><a href="#开启-xfs-的-quota-特性" class="headerlink" title="开启 xfs 的 quota 特性"></a>开启 xfs 的 quota 特性</h4><p>在 <code>/etc/fstab</code> 中设置<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">UUID=4cbf4a19-1fba-4027-bf92-9aa969683fa9     /var/lib/docker   xfs    defaults,pquota  0   0</span><br></pre></td></tr></table></figure></p>
+<p>将 <code>/var/lib/docker</code> 卸载后重新挂载即可。</p>
+<h4 id="配置-docker-daemon"><a href="#配置-docker-daemon" class="headerlink" title="配置 docker daemon"></a>配置 docker daemon</h4><p><code>/etc/docker/daemon.json</code> 配置文件如下，这里将每个容器可以使用的磁盘空间设置为1G：<br><figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">    <span class="attr">"storage-driver"</span>: <span class="string">"overlay2"</span>,</span><br><span class="line">    <span class="attr">"storage-opts"</span>: [</span><br><span class="line">      <span class="string">"overlay2.override_kernel_check=true"</span>,</span><br><span class="line">      <span class="string">"overlay2.size=1G"</span></span><br><span class="line">    ]</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<h4 id="写入文件测试"><a href="#写入文件测试" class="headerlink" title="写入文件测试"></a>写入文件测试</h4><p>重启docker后，启动一个容器，在容器中创建文件。</p>
+<p>先创建一个1000M的文件：<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">/ <span class="comment"># dd if=/dev/zero of=/a bs=100M count=10</span></span><br><span class="line">10+0 records <span class="keyword">in</span></span><br><span class="line">10+0 records out</span><br></pre></td></tr></table></figure></p>
+<p>然后创建第二个1000M的文件：<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">/ <span class="comment"># dd if=/dev/zero of=/b bs=100M count=10</span></span><br><span class="line">dd: writing <span class="string">'/b'</span>: No space left on device</span><br><span class="line">2+0 records <span class="keyword">in</span></span><br><span class="line">0+1 records out</span><br></pre></td></tr></table></figure></p>
+<p>可以看到第二个 1000M 文件因为空间不足创建失败。</p>
+<p><img src="/images/wx_dyh.png" alt="微信订阅号"></p>
+]]></content>
+    </entry>
+    
+    <entry>
       <title><![CDATA[带你了解 Kube-proxy 工作原理]]></title>
       <url>http://team.jiunile.com/blog/2020/10/k8s-kube-proxy.html</url>
       <content type="html"><![CDATA[<h2 id="kube-proxy介绍"><a href="#kube-proxy介绍" class="headerlink" title="kube-proxy介绍"></a>kube-proxy介绍</h2><h3 id="为什么需要kube-proxy"><a href="#为什么需要kube-proxy" class="headerlink" title="为什么需要kube-proxy"></a>为什么需要kube-proxy</h3><p>我们知道容器的特点是快速创建、快速销毁，Kubernetes Pod 和容器一样只具有临时的生命周期，一个 Pod 随时有可能被终止或者漂移，随着集群的状态变化而变化，一旦Pod 变化，则该 Pod 提供的服务也就无法访问，如果直接访问 Pod 则无法实现服务的连续性和高可用性，因此显然不能使用 Pod 地址作为服务暴露端口。</p>
