@@ -369,6 +369,234 @@
   
   
   <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://team.jiunile.com/blog/2020/10/docker-hang.html">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="icyboy">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="CloudNative 架构">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h2 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/blog/2020/10/docker-hang.html" itemprop="url">docker 卡死引起的 container runtime is down</a></h2>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2020-10-26T20:00:00+08:00">
+                2020-10-26
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/docker/" itemprop="url" rel="index">
+                    <span itemprop="name">docker</span>
+                  </a>
+                </span>
+
+                
+                
+                  ， 
+                
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/docker/error/" itemprop="url" rel="index">
+                    <span itemprop="name">error</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+                <a href="/blog/2020/10/docker-hang.html#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count valine-comment-count" data-xid="/blog/2020/10/docker-hang.html" itemprop="commentCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+          
+             <span id="/blog/2020/10/docker-hang.html" class="leancloud_visitors" data-flag-title="docker 卡死引起的 container runtime is down">
+               <span class="post-meta-divider">|</span>
+               <span class="post-meta-item-icon">
+                 <i class="fa fa-eye"></i>
+               </span>
+               
+                 <span class="post-meta-item-text">热度&#58;</span>
+               
+                 <span class="leancloud-visitors-count"></span>
+		 <span>℃</span>
+             </span>
+          
+
+          
+
+          
+            <div class="post-wordcount">
+              
+                
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-file-word-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">字数统计&#58;</span>
+                
+                <span title="字数统计">
+                  9,328 字
+                </span>
+              
+
+              
+                <span class="post-meta-divider">|</span>
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-clock-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">阅读时长 &asymp;</span>
+                
+                <span title="阅读时长">
+                  49 分钟
+                </span>
+              
+            </div>
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          <h2 id="1-背景"><a href="#1-背景" class="headerlink" title="1 背景"></a>1 背景</h2><p>最近升级了一版 kubelet，修复因 kubelet 删除 Pod 慢导致平台删除集群超时的问题。在灰度 redis 隔离集群的时候，发现升级 kubelet 并重启服务后，少量宿主状态变成了 NotReady，并且回滚 kubelet 至之前版本，宿主状态仍然是 NotReady。查看宿主状态时提示 ‘container runtime is down’ ，根据经验，此时一般就是容器运行时出了问题。弹性云使用的容器运行时是 docker，我们就去检查 docker 的状态，检测结果如下：</p>
+<ul>
+<li><code>docker ps</code> 查看所有容器状态，执行正常</li>
+<li><code>docker inspect</code> 查看某一容器详细状态，执行阻塞</li>
+</ul>
+<p>典型的 <code>docker hang</code> 死行为。因为我们最近在升级 docker 版本，存量宿主 docker 的版本为 1.13.1，并且在逐步升级至 18.06.3，新宿主的 docker 版本都是 18.06.3。<code>docker hang</code> 死问题在 1.13.1 版本上表现得更彻底，在执行 <code>docker ps</code> 的时候就已经 hang 死了，一旦某个容器出了问题，docker 就处于无响应状态；而 docker 18.06.3 做了一点小小的优化，在执行 docker ps 时去掉了针对容器级别的加锁操作，但是 <code>docker inspect</code> 依然会加容器锁，因此某一个容器出现问题，并不会造成 docker 服务不可响应，受影响的也仅仅是该容器，无法执行任何操作。</p>
+<p>至于为什么以 <code>docker ps</code> 与 <code>docker inspect</code> 为指标检查 docker 状态，因为 kubelet 就是依赖这两个 docker API 获取容器状态。</p>
+<p>所以，现在问题有二：</p>
+<ol>
+<li><code>docker hang</code> 死的根因是什么？</li>
+<li><code>docker hang</code> 死时，为什么重启 kubelet，会导致宿主状态变为 NotReady？
+          <!--noindex-->
+          <div class="post-button text-center">
+            <a class="btn" href="/blog/2020/10/docker-hang.html#more" rel="contents">
+              阅读全文 &raquo;
+            </a>
+          </div>
+          <!--/noindex-->
+        
+      
+    </div>
+    
+    
+    
+
+    <div>
+    
+    </div>
+
+    <div>
+      
+    </div>
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
     <link itemprop="mainEntityOfPage" href="http://team.jiunile.com/blog/2020/10/trace-packet-with-perf-ebpf.html">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -1225,249 +1453,6 @@
 
 
     
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://team.jiunile.com/blog/2020/10/k8s-node-proxy.html">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="icyboy">
-      <meta itemprop="description" content="">
-      <meta itemprop="image" content="/images/avatar.jpg">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="CloudNative 架构">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h2 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/blog/2020/10/k8s-node-proxy.html" itemprop="url">（译）深入理解 Kubernetes 网络模型 - 自己实现 kube-proxy 的功能</a></h2>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2020-10-19T20:00:00+08:00">
-                2020-10-19
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
-            <span class="post-category" >
-            
-              <span class="post-meta-divider">|</span>
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">分类于</span>
-              
-              
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/kubernetes/" itemprop="url" rel="index">
-                    <span itemprop="name">kubernetes</span>
-                  </a>
-                </span>
-
-                
-                
-                  ， 
-                
-              
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/kubernetes/kube-proxy/" itemprop="url" rel="index">
-                    <span itemprop="name">kube-proxy</span>
-                  </a>
-                </span>
-
-                
-                
-                  ， 
-                
-              
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/kubernetes/kube-proxy/网络/" itemprop="url" rel="index">
-                    <span itemprop="name">网络</span>
-                  </a>
-                </span>
-
-                
-                
-              
-            </span>
-          
-
-          
-            
-              <span class="post-comments-count">
-                <span class="post-meta-divider">|</span>
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-comment-o"></i>
-                </span>
-                <a href="/blog/2020/10/k8s-node-proxy.html#comments" itemprop="discussionUrl">
-                  <span class="post-comments-count valine-comment-count" data-xid="/blog/2020/10/k8s-node-proxy.html" itemprop="commentCount"></span>
-                </a>
-              </span>
-            
-          
-
-          
-          
-             <span id="/blog/2020/10/k8s-node-proxy.html" class="leancloud_visitors" data-flag-title="（译）深入理解 Kubernetes 网络模型 - 自己实现 kube-proxy 的功能">
-               <span class="post-meta-divider">|</span>
-               <span class="post-meta-item-icon">
-                 <i class="fa fa-eye"></i>
-               </span>
-               
-                 <span class="post-meta-item-text">热度&#58;</span>
-               
-                 <span class="leancloud-visitors-count"></span>
-		 <span>℃</span>
-             </span>
-          
-
-          
-
-          
-            <div class="post-wordcount">
-              
-                
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-file-word-o"></i>
-                </span>
-                
-                  <span class="post-meta-item-text">字数统计&#58;</span>
-                
-                <span title="字数统计">
-                  8,189 字
-                </span>
-              
-
-              
-                <span class="post-meta-divider">|</span>
-              
-
-              
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-clock-o"></i>
-                </span>
-                
-                  <span class="post-meta-item-text">阅读时长 &asymp;</span>
-                
-                <span title="阅读时长">
-                  38 分钟
-                </span>
-              
-            </div>
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          <h2 id="索引"><a href="#索引" class="headerlink" title="索引"></a>索引</h2><ol>
-<li>背景知识</li>
-<li>节点代理模型</li>
-<li>测试环境</li>
-<li>实现：通过 userspace socket 实现 proxy</li>
-<li>实现：通过 iptables 实现 proxy</li>
-<li>实现：通过 ipvs/ipset 实现 proxy</li>
-<li>实现：通过 bpf 实现 proxy</li>
-<li>总结</li>
-<li>参考文献</li>
-<li>附录</li>
-</ol>
-<p>Kubernetes 中有几种类型的代理。其中有 <strong>node proxier</strong> 或 <code>kube-proxy</code>，它在每个节点上反映 Kubernetes API 中定义的服务，可以跨一组后端执行简单的 TCP/UDP/SCTP 流转发 [1]。</p>
-<p>为了更好地理解节点代理模型，在这篇文章中，我们将用不同的方法设计和实现我们自己版本的 <code>kube-proxy</code>; 尽管这些只是 <code>toy-proxy</code>，但从<strong>透明流量拦截、转发、负载均衡</strong>等方面来说，它们的工作方式与 K8S 集群中运行的普通 <code>kube-proxy</code> 基本相同。</p>
-<p>通过我们的 <code>toy-proxy</code> 程序，非 K8S 节点（不在 K8S 集群中）上的应用程序（无论是宿主本地应用程序，还是在 VM/容器中运行的应用程序）也可以通过 <strong>ClusterIP</strong> 访问 K8S 服务 – <strong>注意，在 kubernetes 的设计中，ClusterIP 只能在 K8S 集群节点中访问。（在某种意义上，我们的 <code>toy-proxy</code> 程序将非 K8S 节点变成了 K8S 节点。)</strong><br>
-          <!--noindex-->
-          <div class="post-button text-center">
-            <a class="btn" href="/blog/2020/10/k8s-node-proxy.html#more" rel="contents">
-              阅读全文 &raquo;
-            </a>
-          </div>
-          <!--/noindex-->
-        
-      
-    </div>
-    
-    
-    
-
-    <div>
-    
-    </div>
-
-    <div>
-      
-    </div>
-
-    
-
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
   </section>
 
   
@@ -1522,7 +1507,7 @@
               
                 <a href="/archives/">
               
-                  <span class="site-state-item-count">83</span>
+                  <span class="site-state-item-count">84</span>
                   <span class="site-state-item-name">日志</span>
                 </a>
               </div>
@@ -1533,7 +1518,7 @@
               
               <div class="site-state-item site-state-categories">
                 <a href="/categories/index.html">
-                  <span class="site-state-item-count">68</span>
+                  <span class="site-state-item-count">69</span>
                   <span class="site-state-item-name">分类</span>
                 </a>
               </div>
@@ -1647,7 +1632,7 @@
     
       <span class="post-meta-item-text">Site words total count&#58;</span>
     
-    <span title="Site words total count">248.4k</span>
+    <span title="Site words total count">257.7k</span>
   
 </div>
 
@@ -1659,7 +1644,7 @@
 
 <div class="theme-info">
   <div class="powered-by"></div>
-  <span class="post-count">博客全站共248.4k字</span>
+  <span class="post-count">博客全站共257.7k字</span>
 </div>
 
 
