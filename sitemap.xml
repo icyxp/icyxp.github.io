@@ -2,6 +2,13 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   
   <url>
+    <loc>http://team.jiunile.com/blog/2020/10/k8s-pod-update-local.html</loc>
+    
+    <lastmod>2020-10-29T06:01:53.000Z</lastmod>
+    
+  </url>
+  
+  <url>
     <loc>http://team.jiunile.com/blog/2020/10/docker-hang.html</loc>
     
     <lastmod>2020-10-27T06:03:03.000Z</lastmod>

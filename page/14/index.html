@@ -369,6 +369,222 @@
   
   
   <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://team.jiunile.com/blog/2018/07/go-升级go1-10-x问题.html">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="icyboy">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="CloudNative 架构">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h2 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/blog/2018/07/go-升级go1-10-x问题.html" itemprop="url">Centos 6.x 上升级go 1.10.3</a></h2>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-07-18T20:30:00+08:00">
+                2018-07-18
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/golang/" itemprop="url" rel="index">
+                    <span itemprop="name">golang</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+                <a href="/blog/2018/07/go-升级go1-10-x问题.html#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count valine-comment-count" data-xid="/blog/2018/07/go-升级go1-10-x问题.html" itemprop="commentCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+          
+             <span id="/blog/2018/07/go-升级go1-10-x问题.html" class="leancloud_visitors" data-flag-title="Centos 6.x 上升级go 1.10.3">
+               <span class="post-meta-divider">|</span>
+               <span class="post-meta-item-icon">
+                 <i class="fa fa-eye"></i>
+               </span>
+               
+                 <span class="post-meta-item-text">热度&#58;</span>
+               
+                 <span class="leancloud-visitors-count"></span>
+		 <span>℃</span>
+             </span>
+          
+
+          
+
+          
+            <div class="post-wordcount">
+              
+                
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-file-word-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">字数统计&#58;</span>
+                
+                <span title="字数统计">
+                  661 字
+                </span>
+              
+
+              
+                <span class="post-meta-divider">|</span>
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-clock-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">阅读时长 &asymp;</span>
+                
+                <span title="阅读时长">
+                  3 分钟
+                </span>
+              
+            </div>
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          <h2 id="前提"><a href="#前提" class="headerlink" title="前提"></a>前提</h2><blockquote>
+<p>目前本地Linux (Centos 6.x) 编译环境还滞留在1.8.x上，为了提升go性能，想将go升级到最新版，但在升级过程中遇到如下问题，故此记录下！忘后续的go友能跳过此坑！</p>
+</blockquote>
+<h2 id="问题描述"><a href="#问题描述" class="headerlink" title="问题描述"></a>问题描述</h2><p>在Centos 6.x 升级go 1.10.x过程中遇到如下问题：</p>
+<ul>
+<li>step1.  下载go 1.10.x 源码</li>
+<li>step2.  解压，进入go/src</li>
+<li>step3.  执行./all.bash</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br></pre></td><td class="code"><pre><span class="line">Building Go cmd/dist using /root/go1.4.</span><br><span class="line">Building Go toolchain1 using /root/go1.4.</span><br><span class="line">Building Go bootstrap cmd/go (go_bootstrap) using Go toolchain1.</span><br><span class="line">Building Go toolchain2 using go_bootstrap and Go toolchain1.</span><br><span class="line">Building Go toolchain3 using go_bootstrap and Go toolchain2.</span><br><span class="line">Building packages and commands <span class="keyword">for</span> linux/amd64.</span><br><span class="line"></span><br><span class="line"><span class="comment">##### Testing packages.</span></span><br><span class="line">.... 过程略长，特此省略</span><br><span class="line">ok      cmd/internal/src    0.001s</span><br><span class="line">ok      cmd/internal/<span class="built_in">test</span>2json    0.097s</span><br><span class="line">ok      cmd/link    1.988s</span><br><span class="line">ok      cmd/link/internal/ld    43.529s</span><br><span class="line">ok      cmd/nm    3.417s</span><br><span class="line">ok      cmd/objdump    1.588s</span><br><span class="line">ok      cmd/pack    1.217s</span><br><span class="line">ok      cmd/trace    0.007s</span><br><span class="line">--- FAIL: TestObjFile (0.01s)</span><br><span class="line">    binutils_test.go:231: SourceLine: unexpected error write |1: broken pipe</span><br><span class="line">FAIL</span><br><span class="line">FAIL    cmd/vendor/github.com/google/pprof/internal/binutils    0.018s</span><br><span class="line">ok      cmd/vendor/github.com/google/pprof/internal/driver    12.194s</span><br><span class="line">ok      cmd/vendor/github.com/google/pprof/internal/elfexec    0.002s</span><br><span class="line">ok      cmd/vendor/github.com/google/pprof/internal/graph    0.002s</span><br><span class="line">ok      cmd/vendor/github.com/google/pprof/internal/measurement    0.002s</span><br><span class="line">ok      cmd/vendor/github.com/google/pprof/internal/report    0.048s</span><br><span class="line">ok      cmd/vendor/github.com/google/pprof/internal/symbolizer    0.004s</span><br><span class="line">ok      cmd/vendor/github.com/google/pprof/internal/symbolz    0.004s</span><br><span class="line">ok      cmd/vendor/github.com/google/pprof/profile    0.045s</span><br><span class="line">ok      cmd/vendor/github.com/ianlancetaylor/demangle    0.012s</span><br><span class="line">ok      cmd/vendor/golang.org/x/arch/arm/armasm    0.007s</span><br><span class="line">ok      cmd/vendor/golang.org/x/arch/arm64/arm64asm    0.043s</span><br><span class="line">ok      cmd/vendor/golang.org/x/arch/ppc64/ppc64asm    0.003s</span><br><span class="line">ok      cmd/vendor/golang.org/x/arch/x86/x86asm    0.064s</span><br><span class="line">ok      cmd/vet    1.205s</span><br><span class="line">ok      cmd/vet/internal/cfg    0.002s</span><br><span class="line">2018/07/18 17:59:22 Failed: <span class="built_in">exit</span> status 1</span><br></pre></td></tr></table></figure>
+          <!--noindex-->
+          <div class="post-button text-center">
+            <a class="btn" href="/blog/2018/07/go-升级go1-10-x问题.html#more" rel="contents">
+              阅读全文 &raquo;
+            </a>
+          </div>
+          <!--/noindex-->
+        
+      
+    </div>
+    
+    
+    
+
+    <div>
+    
+    </div>
+
+    <div>
+      
+    </div>
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
     <link itemprop="mainEntityOfPage" href="http://team.jiunile.com/blog/2017/08/log-logstash-filter.html">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -1229,214 +1445,6 @@
 
 
     
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://team.jiunile.com/blog/2017/07/mysql-mysql-performance-monitoring.html">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="icyboy">
-      <meta itemprop="description" content="">
-      <meta itemprop="image" content="/images/avatar.jpg">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="CloudNative 架构">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h2 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/blog/2017/07/mysql-mysql-performance-monitoring.html" itemprop="url">MySQL性能监控慢日志分析利器</a></h2>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2017-07-26T20:30:00+08:00">
-                2017-07-26
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
-            <span class="post-category" >
-            
-              <span class="post-meta-divider">|</span>
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">分类于</span>
-              
-              
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/mysql/" itemprop="url" rel="index">
-                    <span itemprop="name">mysql</span>
-                  </a>
-                </span>
-
-                
-                
-              
-            </span>
-          
-
-          
-            
-              <span class="post-comments-count">
-                <span class="post-meta-divider">|</span>
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-comment-o"></i>
-                </span>
-                <a href="/blog/2017/07/mysql-mysql-performance-monitoring.html#comments" itemprop="discussionUrl">
-                  <span class="post-comments-count valine-comment-count" data-xid="/blog/2017/07/mysql-mysql-performance-monitoring.html" itemprop="commentCount"></span>
-                </a>
-              </span>
-            
-          
-
-          
-          
-             <span id="/blog/2017/07/mysql-mysql-performance-monitoring.html" class="leancloud_visitors" data-flag-title="MySQL性能监控慢日志分析利器">
-               <span class="post-meta-divider">|</span>
-               <span class="post-meta-item-icon">
-                 <i class="fa fa-eye"></i>
-               </span>
-               
-                 <span class="post-meta-item-text">热度&#58;</span>
-               
-                 <span class="leancloud-visitors-count"></span>
-		 <span>℃</span>
-             </span>
-          
-
-          
-
-          
-            <div class="post-wordcount">
-              
-                
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-file-word-o"></i>
-                </span>
-                
-                  <span class="post-meta-item-text">字数统计&#58;</span>
-                
-                <span title="字数统计">
-                  788 字
-                </span>
-              
-
-              
-                <span class="post-meta-divider">|</span>
-              
-
-              
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-clock-o"></i>
-                </span>
-                
-                  <span class="post-meta-item-text">阅读时长 &asymp;</span>
-                
-                <span title="阅读时长">
-                  3 分钟
-                </span>
-              
-            </div>
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          <h2 id="简介"><a href="#简介" class="headerlink" title="简介"></a>简介</h2><p>入题之前先讲讲为什么写这篇文章，这就不得不提起MySQL与percona，阿里基于mysql开发了AliSQL，写这篇文章的时候阿里已经将其开源，percona是一家领先的MySQL咨询公司，该公司基于mysql开发了Percona Server，Percona Server是一款独立的数据库产品，为用户提供了换出其MySQL安装并换入Percona Server产品的能力。percona除了开发了多款数据库产品，还开发了数据库监控程序：pmm（Percona Monitoring and Management）服务器，我们都知道mysql自身缺乏实时的监控功能，而此时pmm-server就恰好解决了我们这一难题，好了废话不多说，先看一张pmm server的监控图。<br><img src="/images/mysql_pmm_1.png" alt="PMM"></p>
-<p>常规的监测项目都有了，最吸引我的一点在于它的慢日志分析功能，如下图所示：<br><img src="/images/mysql_pmm_2.png" alt="PMM"></p>
-          <!--noindex-->
-          <div class="post-button text-center">
-            <a class="btn" href="/blog/2017/07/mysql-mysql-performance-monitoring.html#more" rel="contents">
-              阅读全文 &raquo;
-            </a>
-          </div>
-          <!--/noindex-->
-        
-      
-    </div>
-    
-    
-    
-
-    <div>
-    
-    </div>
-
-    <div>
-      
-    </div>
-
-    
-
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
   </section>
 
   
@@ -1491,7 +1499,7 @@
               
                 <a href="/archives/">
               
-                  <span class="site-state-item-count">84</span>
+                  <span class="site-state-item-count">85</span>
                   <span class="site-state-item-name">日志</span>
                 </a>
               </div>
@@ -1502,7 +1510,7 @@
               
               <div class="site-state-item site-state-categories">
                 <a href="/categories/index.html">
-                  <span class="site-state-item-count">69</span>
+                  <span class="site-state-item-count">70</span>
                   <span class="site-state-item-name">分类</span>
                 </a>
               </div>
@@ -1513,7 +1521,7 @@
               
               <div class="site-state-item site-state-tags">
                 <a href="/tags/index.html">
-                  <span class="site-state-item-count">150</span>
+                  <span class="site-state-item-count">152</span>
                   <span class="site-state-item-name">标签</span>
                 </a>
               </div>
@@ -1616,7 +1624,7 @@
     
       <span class="post-meta-item-text">Site words total count&#58;</span>
     
-    <span title="Site words total count">257.7k</span>
+    <span title="Site words total count">260.8k</span>
   
 </div>
 
@@ -1628,7 +1636,7 @@
 
 <div class="theme-info">
   <div class="powered-by"></div>
-  <span class="post-count">博客全站共257.7k字</span>
+  <span class="post-count">博客全站共260.8k字</span>
 </div>
 
 

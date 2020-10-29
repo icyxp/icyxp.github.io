@@ -1,0 +1,1566 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next mist use-motion" lang="zh-Hans">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+<script src="//cdn.bootcss.com/pace/1.0.2/pace.min.js"></script>
+<link href="//cdn.bootcss.com/pace/1.0.2/themes/pink/pace-theme-flash.css" rel="stylesheet">
+<script>
+    (function () {
+        if ('') {
+            if (prompt('请输入文章密码') !== '') {
+                alert('密码错误！');
+                if (history.length === 1) {
+                    location.replace("http://team.jiunile.com"); // 这里替换成你的首页
+                } else {
+                    history.back();
+                }
+            }
+        }
+    })();
+</script>
+<meta name="theme-color" content="#222">
+<style>
+    .pace .pace-progress {
+        background: #1E92FB; /*进度条颜色*/
+        height: 2px;
+    }
+    .pace .pace-progress-inner {
+         box-shadow: 0 0 10px #1E92FB, 0 0 5px     #1E92FB; /*阴影颜色*/
+    }
+    .pace .pace-activity {
+        border-top-color: #1E92FB;    /*上边框颜色*/
+        border-left-color: #1E92FB;    /*左边框颜色*/
+    }
+</style>
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+<!--
+  <script>
+  (function(i,s,o,g,r,a,m){i["DaoVoiceObject"]=r;i[r]=i[r]||function(){(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;a.charset="utf-8";m.parentNode.insertBefore(a,m)})(window,document,"script",('https:' == document.location.protocol ? 'https:' : 'http:') + "//widget.daovoice.io/widget/0f81ff2f.js","daovoice")
+  daovoice('init', {
+      app_id: "2a2a668f"
+    });
+  daovoice('update');
+  </script>
+-->
+<!--
+<script type='text/javascript'>
+  (function (window, a, b) {
+    window[a] = window[a] || function () {
+        (window[a].a = window[a].a || []).push(arguments)
+    };
+    window[b] = window[b] || function () {
+        (window[b].a = window[b].a || []).push(arguments)
+    };
+    var s = document.createElement("script");
+    s.src = "https://jsapi.weiliaokefu.com/Public/dist/js/jsapi.js?v=" + Math.round(Math.random() * 1000);
+    s.async = true;
+    s.charset = "UTF-8";
+    document.getElementsByTagName("head")[0].appendChild(s);
+  })(window, '_FENBOT', "_FENBOT_API");
+  _FENBOT({cid: '36159', type: '0'});
+</script>
+-->
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/favicon.ico?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon.ico?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon.ico?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/favicon.ico?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="k8s,升级策略,原地升级," />
+
+
+
+
+
+  <link rel="alternate" href="/atom.xml" title="CloudNative 架构" type="application/atom+xml" />
+
+
+
+
+
+
+<meta name="description" content="概念介绍原地升级一词中，“升级”不难理解，是将应用实例的版本由旧版替换为新版。那么如何结合 Kubernetes 环境来理解“原地”呢？
+我们先来看看 K8s 原生 workload 的发布方式。这里假设我们需要部署一个应用，包括 foo、bar 两个容器在 Pod 中。其中，foo 容器第一次部署时用的镜像版本是 v1，我们需要将其升级为 v2 版本镜像，该怎么做呢？">
+<meta property="og:type" content="article">
+<meta property="og:title" content="如何为 Kubernetes 实现原地升级">
+<meta property="og:url" content="http://team.jiunile.com/blog/2020/10/k8s-pod-update-local.html">
+<meta property="og:site_name" content="CloudNative 架构">
+<meta property="og:description" content="概念介绍原地升级一词中，“升级”不难理解，是将应用实例的版本由旧版替换为新版。那么如何结合 Kubernetes 环境来理解“原地”呢？
+我们先来看看 K8s 原生 workload 的发布方式。这里假设我们需要部署一个应用，包括 foo、bar 两个容器在 Pod 中。其中，foo 容器第一次部署时用的镜像版本是 v1，我们需要将其升级为 v2 版本镜像，该怎么做呢？">
+<meta property="og:image" content="http://team.jiunile.com/images/k8s/update-1.png">
+<meta property="og:image" content="http://team.jiunile.com/images/k8s/update-2.png">
+<meta property="og:image" content="http://team.jiunile.com/images/k8s/update-3.png">
+<meta property="og:image" content="http://team.jiunile.com/images/wx_dyh.png">
+<meta property="og:updated_time" content="2020-10-29T06:01:53.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="如何为 Kubernetes 实现原地升级">
+<meta name="twitter:description" content="概念介绍原地升级一词中，“升级”不难理解，是将应用实例的版本由旧版替换为新版。那么如何结合 Kubernetes 环境来理解“原地”呢？
+我们先来看看 K8s 原生 workload 的发布方式。这里假设我们需要部署一个应用，包括 foo、bar 两个容器在 Pod 中。其中，foo 容器第一次部署时用的镜像版本是 v1，我们需要将其升级为 v2 版本镜像，该怎么做呢？">
+<meta name="twitter:image" content="http://team.jiunile.com/images/k8s/update-1.png">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Mist',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://team.jiunile.com/blog/2020/10/k8s-pod-update-local.html"/>
+
+
+
+
+
+  <title>如何为 Kubernetes 实现原地升级 | CloudNative 架构</title>
+  
+
+
+
+
+
+  <script type="text/javascript">
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "https://hm.baidu.com/hm.js?126663bc923877f90024929ac5555b0f";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+
+
+
+  <!-- 页面点击小红心 -->
+  <script type="text/javascript" src="/js/src/love.js"></script>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+    <a href="https://github.com/icyxp"><a href="https://github.com/icyxp" class="github-corner" aria-label="View source on GitHub"><svg width="80" height="80" viewBox="0 0 250 250" style="fill:#151513; color:#fff; position: absolute; top: 0; border: 0; right: 0;" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path></svg></a><style>.github-corner:hover .octo-arm{animation:octocat-wave 560ms ease-in-out}@keyframes octocat-wave{0%,100%{transform:rotate(0)}20%,60%{transform:rotate(-25deg)}40%,80%{transform:rotate(10deg)}}@media (max-width:500px){.github-corner:hover .octo-arm{animation:none}.github-corner .octo-arm{animation:octocat-wave 560ms ease-in-out}}</style></a>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">CloudNative 架构</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <h1 class="site-subtitle" itemprop="description">CloudNative|云原生应用架构|云原生架构|容器化架构|微服务架构|平台架构|基础架构</h1>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br />
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-k8s">
+          <a href="/pro/k8s/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-heartbeat"></i> <br />
+            
+            k8s离线安装包
+          </a>
+        </li>
+      
+
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="popup-trigger">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br />
+            
+            搜索
+          </a>
+        </li>
+      
+    </ul>
+  
+
+  
+    <div class="site-search">
+      
+  <div class="popup search-popup local-search-popup">
+  <div class="local-search-header clearfix">
+    <span class="search-icon">
+      <i class="fa fa-search"></i>
+    </span>
+    <span class="popup-btn-close">
+      <i class="fa fa-times-circle"></i>
+    </span>
+    <div class="local-search-input-wrapper">
+      <input autocomplete="off"
+             placeholder="搜索..." spellcheck="false"
+             type="text" id="local-search-input">
+    </div>
+  </div>
+  <div id="local-search-result"></div>
+</div>
+
+
+
+    </div>
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://team.jiunile.com/blog/2020/10/k8s-pod-update-local.html">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="icyboy">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="CloudNative 架构">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h2 class="post-title" itemprop="name headline">如何为 Kubernetes 实现原地升级</h2>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2020-10-28T20:00:00+08:00">
+                2020-10-28
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/kubernetes/" itemprop="url" rel="index">
+                    <span itemprop="name">kubernetes</span>
+                  </a>
+                </span>
+
+                
+                
+                  ， 
+                
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/kubernetes/升级策略/" itemprop="url" rel="index">
+                    <span itemprop="name">升级策略</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+                <a href="/blog/2020/10/k8s-pod-update-local.html#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count valine-comment-count" data-xid="/blog/2020/10/k8s-pod-update-local.html" itemprop="commentCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+          
+             <span id="/blog/2020/10/k8s-pod-update-local.html" class="leancloud_visitors" data-flag-title="如何为 Kubernetes 实现原地升级">
+               <span class="post-meta-divider">|</span>
+               <span class="post-meta-item-icon">
+                 <i class="fa fa-eye"></i>
+               </span>
+               
+                 <span class="post-meta-item-text">热度&#58;</span>
+               
+                 <span class="leancloud-visitors-count"></span>
+		 <span>℃</span>
+             </span>
+          
+
+          
+
+          
+            <div class="post-wordcount">
+              
+                
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-file-word-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">字数统计&#58;</span>
+                
+                <span title="字数统计">
+                  3,098 字
+                </span>
+              
+
+              
+                <span class="post-meta-divider">|</span>
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-clock-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">阅读时长 &asymp;</span>
+                
+                <span title="阅读时长">
+                  12 分钟
+                </span>
+              
+            </div>
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h2 id="概念介绍"><a href="#概念介绍" class="headerlink" title="概念介绍"></a>概念介绍</h2><p><strong>原地升级</strong>一词中，“升级”不难理解，是将应用实例的版本由旧版替换为新版。那么如何结合 Kubernetes 环境来理解“原地”呢？</p>
+<p>我们先来看看 K8s 原生 workload 的发布方式。这里假设我们需要部署一个应用，包括 foo、bar 两个容器在 Pod 中。其中，foo 容器第一次部署时用的镜像版本是 v1，我们需要将其升级为 v2 版本镜像，该怎么做呢？<br><a id="more"></a></p>
+<ul>
+<li>如果这个应用使用 Deployment 部署，那么升级过程中 Deployment 会触发新版本 ReplicaSet 创建 Pod，并删除旧版本 Pod。如下图所示：</li>
+</ul>
+<p><img src="/images/k8s/update-1.png" alt="1.png"></p>
+<p>在本次升级过程中，原 Pod 对象被删除，一个新 Pod 对象被创建。新 Pod 被调度到另一个 Node 上，分配到一个新的 IP，并把 foo、bar 两个容器在这个 Node 上重新拉取镜像、启动容器。</p>
+<ul>
+<li>如果这个应该使用 StatefulSet 部署，那么升级过程中 StatefulSet 会先删除旧 Pod 对象，等删除完成后用同样的名字在创建一个新的 Pod 对象。如下图所示：</li>
+</ul>
+<p><img src="/images/k8s/update-2.png" alt="2.png"></p>
+<p>值得注意的是，尽管新旧两个 Pod 名字都叫 pod-0，但其实是两个完全不同的 Pod 对象（uid也变了）。StatefulSet 等到原先的 pod-0 对象完全从 Kubernetes 集群中被删除后，才会提交创建一个新的 pod-0 对象。而这个新的 Pod 也会被重新调度、分配IP、拉镜像、启动容器。</p>
+<ul>
+<li>而所谓原地升级模式，就是在应用升级过程中避免将整个 Pod 对象删除、新建，而是基于原有的 Pod 对象升级其中某一个或多个容器的镜像版本：</li>
+</ul>
+<p><img src="/images/k8s/update-3.png" alt="3.png"></p>
+<p>在原地升级的过程中，我们仅仅更新了原 Pod 对象中 foo 容器的 image 字段来触发 foo 容器升级到新版本。而不管是 Pod 对象，还是 Node、IP 都没有发生变化，甚至 foo 容器升级的过程中 bar 容器还一直处于运行状态。</p>
+<p><strong>总结：这种只更新 Pod 中某一个或多个容器版本、而不影响整个 Pod 对象、其余容器的升级方式，被我们称为 Kubernetes 中的原地升级</strong>。</p>
+<h2 id="收益分析"><a href="#收益分析" class="headerlink" title="收益分析"></a>收益分析</h2><p>那么，我们为什么要在 Kubernetes 中引入这种原地升级的理念和设计呢？</p>
+<p>首先，这种原地升级的模式极大地提升了应用发布的效率，根据非完全统计数据，在阿里环境下原地升级至少比完全重建升级提升了 80% 以上的发布速度。这其实很容易理解，原地升级为发布效率带来了以下优化点：</p>
+<ol>
+<li>节省了调度的耗时，Pod 的位置、资源都不发生变化；</li>
+<li>节省了分配网络的耗时，Pod 还使用原有的 IP；</li>
+<li>节省了分配、挂载远程盘的耗时，Pod 还使用原有的 PV（且都是已经在 Node 上挂载好的）；</li>
+<li>节省了大部分拉取镜像的耗时，因为 Node 上已经存在了应用的旧镜像，当拉取新版本镜像时只需要下载很少的几层 layer。</li>
+</ol>
+<p>其次，当我们升级 Pod 中一些 sidecar 容器（如采集日志、监控等）时，其实并不希望干扰到业务容器的运行。但面对这种场景，Deployment 或 StatefulSet 的升级都会将整个 Pod 重建，势必会对业务造成一定的影响。而容器级别的原地升级变动的范围非常可控，只会将需要升级的容器做重建，其余容器包括网络、挂载盘都不会受到影响。</p>
+<p>最后，原地升级也为我们带来了集群的稳定性和确定性。当一个 Kubernetes 集群中大量应用触发重建 Pod 升级时，可能造成大规模的 Pod 飘移，以及对 Node 上一些低优先级的任务 Pod 造成反复的抢占迁移。这些大规模的 Pod 重建，本身会对 apiserver、scheduler、网络/磁盘分配等中心组件造成较大的压力，而这些组件的延迟也会给 Pod 重建带来恶性循环。而采用原地升级后，整个升级过程只会涉及到 controller 对 Pod 对象的更新操作和 kubelet 重建对应的容器。</p>
+<h2 id="技术背景"><a href="#技术背景" class="headerlink" title="技术背景"></a>技术背景</h2><p>支持原地升级的控制器就位于 <a href="https://github.com/openkruise/kruise?spm=a2c6h.12873639.0.0.4bc314b5SPKTQY" target="_blank" rel="external">OpenKruise</a> 开源项目中。</p>
+<p>也就是说，云原生应用都是统一使用 <code>OpenKruise</code> 中的扩展 workload 做部署管理的，而并没有采用原生 <code>Deployment/StatefulSet</code> 等。</p>
+<p>那么 <code>OpenKruise</code> 是如何实现原地升级能力的呢？在介绍原地升级实现原理之前，我们先来看一些原地升级功能所依赖的原生 Kubernetes 功能：</p>
+<h3 id="背景-1：Kubelet-针对-Pod-容器的版本管理"><a href="#背景-1：Kubelet-针对-Pod-容器的版本管理" class="headerlink" title="背景 1：Kubelet 针对 Pod 容器的版本管理"></a>背景 1：Kubelet 针对 Pod 容器的版本管理</h3><p>每个 Node 上的 Kubelet，会针对本机上所有 Pod.spec.containers 中的每个 container 计算一个 hash 值，并记录到实际创建的容器中。</p>
+<p>如果我们修改了 Pod 中某个 container 的 image 字段，kubelet 会发现 container 的 hash 发生了变化、与机器上过去创建的容器 hash 不一致，而后 kubelet 就会把旧容器停掉，然后根据最新 Pod spec 中的 container 来创建新的容器。</p>
+<p><strong>这个功能，其实就是针对单个 Pod 的原地升级的核心原理</strong>。</p>
+<h3 id="背景-2：Pod-更新限制"><a href="#背景-2：Pod-更新限制" class="headerlink" title="背景 2：Pod 更新限制"></a>背景 2：Pod 更新限制</h3><p>在原生 kube-apiserver 中，对 Pod 对象的更新请求有严格的 <a href="https://github.com/kubernetes/kubernetes/blob/master/pkg/apis/core/validation/validation.go?spm=a2c6h.12873639.0.0.4bc314b5SPKTQY#L3729" target="_blank" rel="external">validation 校验逻辑</a>：<br><figure class="highlight golang"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// validate updateable fields:</span></span><br><span class="line"><span class="comment">// 1.  spec.containers[*].image</span></span><br><span class="line"><span class="comment">// 2.  spec.initContainers[*].image</span></span><br><span class="line"><span class="comment">// 3.  spec.activeDeadlineSeconds</span></span><br></pre></td></tr></table></figure></p>
+<p>简单来说，对于一个已经创建出来的 Pod，在 Pod Spec 中只允许修改 containers/initContainers 中的 image 字段，以及 activeDeadlineSeconds 字段。对 Pod Spec 中所有其他字段的更新，都会被 kube-apiserver 拒绝。</p>
+<h3 id="背景-3：containerStatuses-上报"><a href="#背景-3：containerStatuses-上报" class="headerlink" title="背景 3：containerStatuses 上报"></a>背景 3：containerStatuses 上报</h3><p>kubelet 会在 pod.status 中上报 containerStatuses，对应 Pod 中所有容器的实际运行状态：<br><figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">apiVersion:</span> v1</span><br><span class="line"><span class="attr">kind:</span> Pod</span><br><span class="line"><span class="attr">spec:</span></span><br><span class="line"><span class="attr">  containers:</span></span><br><span class="line"><span class="attr">  - name:</span> nginx</span><br><span class="line"><span class="attr">    image:</span> nginx:latest</span><br><span class="line"><span class="attr">status:</span></span><br><span class="line"><span class="attr">  containerStatuses:</span></span><br><span class="line"><span class="attr">  - name:</span> nginx</span><br><span class="line"><span class="attr">    image:</span> nginx:mainline</span><br><span class="line"><span class="attr">    imageID:</span> docker-pullable://nginx@sha256:<span class="number">2</span>f68b99bc0d6d25d0c56876b924ec20418544ff28e1fb89a4c27679a40da811b</span><br></pre></td></tr></table></figure></p>
+<p>绝大多数情况下，spec.containers[x].image 与 status.containerStatuses[x].image 两个镜像是一致的。</p>
+<p>但是也有上述这种情况，kubelet 上报的与 spec 中的 image 不一致（spec 中是 nginx:latest，但 status 中上报的是 nginx:mainline）。</p>
+<p>这是因为，kubelet 所上报的 image 其实是从 CRI 接口中拿到的容器对应的镜像名。而如果 Node 机器上存在多个镜像对应了一个 imageID，那么上报的可能是其中任意一个：<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">$ docker images | grep nginx</span><br><span class="line">nginx            latest              2622e6cca7eb        2 days ago          132MB</span><br><span class="line">nginx            mainline            2622e6cca7eb        2 days ago</span><br></pre></td></tr></table></figure></p>
+<p>因此，一个 Pod 中 spec 和 status 的 image 字段不一致，并不意味着宿主机上这个容器运行的镜像版本和期望的不一致。</p>
+<h3 id="背景-4：ReadinessGate-控制-Pod-是否-Ready"><a href="#背景-4：ReadinessGate-控制-Pod-是否-Ready" class="headerlink" title="背景 4：ReadinessGate 控制 Pod 是否 Ready"></a>背景 4：ReadinessGate 控制 Pod 是否 Ready</h3><p>在 Kubernetes 1.12 版本之前，一个 Pod 是否处于 Ready 状态只是由 kubelet 根据容器状态来判定：如果 Pod 中容器全部 ready，那么 Pod 就处于 Ready 状态。</p>
+<p>但事实上，很多时候上层 operator 或用户都需要能控制 Pod 是否 Ready 的能力。因此，Kubernetes 1.12 版本之后提供了一个 readinessGates 功能来满足这个场景。如下：<br><figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">apiVersion:</span> v1</span><br><span class="line"><span class="attr">kind:</span> Pod</span><br><span class="line"><span class="attr">spec:</span></span><br><span class="line"><span class="attr">  readinessGates:</span></span><br><span class="line"><span class="attr">  - conditionType:</span> MyDemo</span><br><span class="line"><span class="attr">status:</span></span><br><span class="line"><span class="attr">  conditions:</span></span><br><span class="line"><span class="attr">  - type:</span> MyDemo</span><br><span class="line"><span class="attr">    status:</span> <span class="string">"True"</span></span><br><span class="line"><span class="attr">  - type:</span> ContainersReady</span><br><span class="line"><span class="attr">    status:</span> <span class="string">"True"</span></span><br><span class="line"><span class="attr">  - type:</span> Ready</span><br><span class="line"><span class="attr">    status:</span> <span class="string">"True"</span></span><br></pre></td></tr></table></figure></p>
+<p>目前 kubelet 判定一个 Pod 是否 Ready 的两个前提条件：</p>
+<ol>
+<li>Pod 中容器全部 Ready（其实对应了 ContainersReady condition 为 True）；</li>
+<li>如果 pod.spec.readinessGates 中定义了一个或多个 conditionType，那么需要这些 conditionType 在 pod.status.conditions 中都有对应的 status: “true” 的状态。</li>
+</ol>
+<p>只有满足上述两个前提，kubelet 才会上报 Ready condition 为 True</p>
+<h2 id="实现原理"><a href="#实现原理" class="headerlink" title="实现原理"></a>实现原理</h2><p>了解了上面的四个背景之后，接下来分析一下 OpenKruise 是如何在 Kubernetes 中实现原地升级的原理。</p>
+<h3 id="1-单个-Pod-如何原地升级？"><a href="#1-单个-Pod-如何原地升级？" class="headerlink" title="1. 单个 Pod 如何原地升级？"></a>1. 单个 Pod 如何原地升级？</h3><p>由“背景 1”可知，其实我们对一个存量 Pod 的 spec.containers[x] 中字段做修改，kubelet 会感知到这个 container 的 hash 发生了变化，随即就会停掉对应的旧容器，并用新的 container 来拉镜像、创建和启动新容器。</p>
+<p>由“背景 2”可知，当前我们对一个存量 Pod 的 spec.containers[x] 中的修改，仅限于 image 字段。</p>
+<p>因此，得出第一个实现原理：**对于一个现有的 Pod 对象，我们能且只能修改其中的 spec.containers[x].image 字段，来触发 Pod 中对应容器升级到一个新的 image。</p>
+<h3 id="2-如何判断-Pod-原地升级成功？"><a href="#2-如何判断-Pod-原地升级成功？" class="headerlink" title="2. 如何判断 Pod 原地升级成功？"></a>2. 如何判断 Pod 原地升级成功？</h3><p>接下来的问题是，当我们修改了 Pod 中的 spec.containers[x].image 字段后，如何判断 kubelet 已经将容器重建成功了呢？</p>
+<p>由“背景 3”可知，比较 spec 和 status 中的 image 字段是不靠谱的，因为很有可能 status 中上报的是 Node 上存在的另一个镜像名（相同 imageID）。</p>
+<p>因此，得出第二个实现原理：<strong>判断 Pod 原地升级是否成功，相对来说比较靠谱的办法，是在原地升级前先将 status.containerStatuses[x].imageID 记录下来。在更新了 spec 镜像之后，如果观察到 Pod 的 status.containerStatuses[x].imageID 变化了，我们就认为原地升级已经重建了容器</strong>。</p>
+<p>但这样一来，我们对原地升级的 image 也有了一个要求：<strong>不能用 image 名字（tag）不同、但实际对应同一个 imageID 的镜像来做原地升级，否则可能一直都被判断为没有升级成功（因为 status 中 imageID 不会变化）</strong>。</p>
+<p>当然，后续我们还可以继续优化。OpenKruise 即将开源镜像预热的能力，会通过 DaemonSet 在每个 Node 上部署一个 NodeImage Pod。通过 NodeImage 上报我们可以得知 pod spec 中的 image 所对应的 imageID，然后和 pod status 中的 imageID 比较即可准确判断原地升级是否成功。</p>
+<h3 id="3-如何确保原地升级过程中流量无损？"><a href="#3-如何确保原地升级过程中流量无损？" class="headerlink" title="3. 如何确保原地升级过程中流量无损？"></a>3. 如何确保原地升级过程中流量无损？</h3><p>在 Kubernetes 中，一个 Pod 是否 Ready 就代表了它是否可以提供服务。因此，像 Service 这类的流量入口都会通过判断 Pod Ready 来选择是否能将这个 Pod 加入 endpoints 端点中。</p>
+<p>由“背景 4”可知，从 Kubernetes 1.12+ 之后，operator/controller 这些组件也可以通过设置 readinessGates 和更新 pod.status.conditions 中的自定义 type 状态，来控制 Pod 是否可用。</p>
+<p>因此，得出第三个实现原理：<strong>可以在 <code>pod.spec.readinessGates</code> 中定义一个叫 <code>InPlaceUpdateReady</code> 的 conditionType</strong>。</p>
+<p>在原地升级时：</p>
+<ol>
+<li><strong>先将 pod.status.conditions 中的 InPlaceUpdateReady condition 设为 “False”，这样就会触发 kubelet 将 Pod 上报为 NotReady，从而使流量组件（如 endpoint controller）将这个 Pod 从服务端点摘除</strong>；</li>
+<li><strong>再更新 pod spec 中的 image 触发原地升级</strong>。</li>
+</ol>
+<p>原地升级结束后，再将 InPlaceUpdateReady condition 设为 “True”，使 Pod 重新回到 Ready 状态。</p>
+<p>另外在原地升级的两个步骤中，第一步将 Pod 改为 NotReady 后，流量组件异步 watch 到变化并摘除端点可能是需要一定时间的。因此我们也提供优雅原地升级的能力，即通过 gracePeriodSeconds 配置在修改 NotReady 状态和真正更新 image 触发原地升级两个步骤之间的静默期时间。</p>
+<h3 id="4-组合发布策略"><a href="#4-组合发布策略" class="headerlink" title="4. 组合发布策略"></a>4. 组合发布策略</h3><p>原地升级和 Pod 重建升级一样，可以配合各种发布策略来执行：</p>
+<ul>
+<li><strong>partition</strong>：如果配置 partition 做灰度，那么只会将 replicas-partition 数量的 Pod 做原地升级；</li>
+<li><strong>maxUnavailable</strong>：如果配置 maxUnavailable，那么只会将满足 unavailable 数量的 Pod 做原地升级；</li>
+<li><strong>maxSurge</strong>：如果配置 maxSurge 做弹性，那么当先扩出来 maxSurge 数量的 Pod 之后，存量的 Pod 仍然使用原地升级；</li>
+<li><strong>priority/scatter</strong>：如果配置了发布优先级/打散策略，会按照策略顺序对 Pod 做原地升级。</li>
+</ul>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>如上文所述，<a href="https://github.com/openkruise/kruise?spm=a2c6h.12873639.0.0.4bc314b5SPKTQY" target="_blank" rel="external">OpenKruise</a> 结合 Kubernetes 原生提供的 kubelet 容器版本管理、readinessGates 等功能，实现了针对 Pod 的原地升级能力。</p>
+<p>而原地升级也为应用发布带来大幅的效率、稳定性提升。值得关注的是，随着集群、应用规模的增大，这种提升的收益越加明显。</p>
+<p>来源：阿里云开发者社区 作者：王思宇</p>
+<p><img src="/images/wx_dyh.png" alt="微信订阅号"></p>
+
+      
+    </div>
+    
+    
+    
+
+    <div>
+    
+        <div>
+    
+        <div style="text-align:center;color: #ccc;font-size:14px;">-------------本文结束<i class="fa fa-paw"></i>感谢您的阅读-------------</div>
+    
+</div>
+
+    
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    
+
+    
+      <div>
+        <div style="padding: 10px 0; margin: 20px auto; width: 90%; text-align: center;">
+  <div></div>
+  <button id="rewardButton" disable="enable" onclick="var qr = document.getElementById('QR'); if (qr.style.display === 'none') {qr.style.display='block';} else {qr.style.display='none'}">
+    <span>打赏</span>
+  </button>
+  <div id="QR" style="display: none;">
+
+    
+      <div id="wechat" style="display: inline-block">
+        <img id="wechat_qr" src="/images/wechatpay.jpg" alt="icyboy 微信支付"/>
+        <p>微信支付</p>
+      </div>
+    
+
+    
+      <div id="alipay" style="display: inline-block">
+        <img id="alipay_qr" src="/images/alipay.jpg" alt="icyboy 支付宝"/>
+        <p>支付宝</p>
+      </div>
+    
+
+    
+
+  </div>
+</div>
+
+      </div>
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/k8s/" rel="tag"># k8s</a>
+          
+            <a href="/tags/升级策略/" rel="tag"># 升级策略</a>
+          
+            <a href="/tags/原地升级/" rel="tag"># 原地升级</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/blog/2020/10/docker-hang.html" rel="next" title="docker 卡死引起的 container runtime is down">
+                <i class="fa fa-chevron-left"></i> docker 卡死引起的 container runtime is down
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+    <div class="comments" id="comments">
+    </div>
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image"
+                src="/images/avatar.jpg"
+                alt="icyboy" />
+            
+              <p class="site-author-name" itemprop="name">icyboy</p>
+              <p class="site-description motion-element" itemprop="description"></p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">85</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-categories">
+                <a href="/categories/index.html">
+                  <span class="site-state-item-count">70</span>
+                  <span class="site-state-item-name">分类</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                <a href="/tags/index.html">
+                  <span class="site-state-item-count">152</span>
+                  <span class="site-state-item-name">标签</span>
+                </a>
+              </div>
+            
+
+          </nav>
+
+          
+            <div class="feed-link motion-element">
+              <a href="/atom.xml" rel="alternate">
+                <i class="fa fa-rss"></i>
+                RSS
+              </a>
+            </div>
+          
+
+          
+            <div class="links-of-author motion-element">
+                
+                  <span class="links-of-author-item">
+                    <a href="https://github.com/icyxp" target="_blank" title="GitHub">
+                      
+                        <i class="fa fa-fw fa-github"></i>GitHub</a>
+                  </span>
+                
+                  <span class="links-of-author-item">
+                    <a href="http://weibo.com/joysteam" target="_blank" title="微博">
+                      
+                        <i class="fa fa-fw fa-weibo"></i>微博</a>
+                  </span>
+                
+                  <span class="links-of-author-item">
+                    <a href="http://www.zhihu.com/people/xupeng" target="_blank" title="知乎">
+                      
+                        <i class="fa fa-fw fa-zhihu"></i>知乎</a>
+                  </span>
+                
+            </div>
+          
+
+          
+          
+
+          
+          
+            <div class="links-of-blogroll motion-element links-of-blogroll-inline">
+              <div class="links-of-blogroll-title">
+                <i class="fa  fa-fw fa-link"></i>
+                友情链接
+              </div>
+              <ul class="links-of-blogroll-list">
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="http://www.zjgsmt.com" title="张家港水蜜桃" target="_blank">张家港水蜜桃</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="http://blog.jiunile.com" title="运维开发" target="_blank">运维开发</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="http://devops.jiunile.com" title="DevOps" target="_blank">DevOps</a>
+                  </li>
+                
+              </ul>
+            </div>
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#概念介绍"><span class="nav-number">1.</span> <span class="nav-text">概念介绍</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#收益分析"><span class="nav-number">2.</span> <span class="nav-text">收益分析</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#技术背景"><span class="nav-number">3.</span> <span class="nav-text">技术背景</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#背景-1：Kubelet-针对-Pod-容器的版本管理"><span class="nav-number">3.1.</span> <span class="nav-text">背景 1：Kubelet 针对 Pod 容器的版本管理</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#背景-2：Pod-更新限制"><span class="nav-number">3.2.</span> <span class="nav-text">背景 2：Pod 更新限制</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#背景-3：containerStatuses-上报"><span class="nav-number">3.3.</span> <span class="nav-text">背景 3：containerStatuses 上报</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#背景-4：ReadinessGate-控制-Pod-是否-Ready"><span class="nav-number">3.4.</span> <span class="nav-text">背景 4：ReadinessGate 控制 Pod 是否 Ready</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#实现原理"><span class="nav-number">4.</span> <span class="nav-text">实现原理</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#1-单个-Pod-如何原地升级？"><span class="nav-number">4.1.</span> <span class="nav-text">1. 单个 Pod 如何原地升级？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-如何判断-Pod-原地升级成功？"><span class="nav-number">4.2.</span> <span class="nav-text">2. 如何判断 Pod 原地升级成功？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-如何确保原地升级过程中流量无损？"><span class="nav-number">4.3.</span> <span class="nav-text">3. 如何确保原地升级过程中流量无损？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4-组合发布策略"><span class="nav-number">4.4.</span> <span class="nav-text">4. 组合发布策略</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#总结"><span class="nav-number">5.</span> <span class="nav-text">总结</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+<div class="copyright">&copy; 2016 &mdash; <span itemprop="copyrightYear">2020</span>
+  <span class="with-love" id="heart">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">icyboy</span>
+
+  
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-area-chart"></i>
+    </span>
+    
+      <span class="post-meta-item-text">Site words total count&#58;</span>
+    
+    <span title="Site words total count">260.8k</span>
+  
+</div>
+
+<div class="powered-by">
+<i class="fa fa-user-md"></i><span id="busuanzi_container_site_uv">
+  本站访客数:<span id="busuanzi_value_site_uv"></span>
+</span>
+</div>
+
+<div class="theme-info">
+  <div class="powered-by"></div>
+  <span class="post-count">博客全站共260.8k字</span>
+</div>
+
+
+
+
+
+
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/canvas-nest/canvas-nest.min.js"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+  <script src="//cdn1.lncld.net/static/js/3.0.4/av-min.js"></script>
+  <script src="//unpkg.com/valine/dist/Valine.min.js"></script>
+  
+  <script type="text/javascript">
+    var GUEST = ['nick','mail','link'];
+    var guest = 'nick,mail,link';
+    guest = guest.split(',').filter(item=>{
+      return GUEST.indexOf(item)>-1;
+    });
+    new Valine({
+        el: '#comments' ,
+        verify: false,
+        notify: false,
+        appId: 'B6yqSmGPw5uBIAfWEqm7Xyws-gzGzoHsz',
+        appKey: '2soiHGUrbGw33caCmkT47236',
+        placeholder: 'Just do it!',
+        avatar:'mm',
+        guest_info:guest,
+        pageSize:'10' || 10,
+    });
+  </script>
+
+
+
+  
+
+  <script type="text/javascript">
+    // Popup Window;
+    var isfetched = false;
+    var isXml = true;
+    // Search DB path;
+    var search_path = "search.xml";
+    if (search_path.length === 0) {
+      search_path = "search.xml";
+    } else if (/json$/i.test(search_path)) {
+      isXml = false;
+    }
+    var path = "/" + search_path;
+    // monitor main search box;
+
+    var onPopupClose = function (e) {
+      $('.popup').hide();
+      $('#local-search-input').val('');
+      $('.search-result-list').remove();
+      $('#no-result').remove();
+      $(".local-search-pop-overlay").remove();
+      $('body').css('overflow', '');
+    }
+
+    function proceedsearch() {
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay"></div>')
+        .css('overflow', 'hidden');
+      $('.search-popup-overlay').click(onPopupClose);
+      $('.popup').toggle();
+      var $localSearchInput = $('#local-search-input');
+      $localSearchInput.attr("autocapitalize", "none");
+      $localSearchInput.attr("autocorrect", "off");
+      $localSearchInput.focus();
+    }
+
+    // search function;
+    var searchFunc = function(path, search_id, content_id) {
+      'use strict';
+
+      // start loading animation
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay">' +
+          '<div id="search-loading-icon">' +
+          '<i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>' +
+          '</div>' +
+          '</div>')
+        .css('overflow', 'hidden');
+      $("#search-loading-icon").css('margin', '20% auto 0 auto').css('text-align', 'center');
+
+      $.ajax({
+        url: path,
+        dataType: isXml ? "xml" : "json",
+        async: true,
+        success: function(res) {
+          // get the contents from search data
+          isfetched = true;
+          $('.popup').detach().appendTo('.header-inner');
+          var datas = isXml ? $("entry", res).map(function() {
+            return {
+              title: $("title", this).text(),
+              content: $("content",this).text(),
+              url: $("url" , this).text()
+            };
+          }).get() : res;
+          var input = document.getElementById(search_id);
+          var resultContent = document.getElementById(content_id);
+          var inputEventFunction = function() {
+            var searchText = input.value.trim().toLowerCase();
+            var keywords = searchText.split(/[\s\-]+/);
+            if (keywords.length > 1) {
+              keywords.push(searchText);
+            }
+            var resultItems = [];
+            if (searchText.length > 0) {
+              // perform local searching
+              datas.forEach(function(data) {
+                var isMatch = false;
+                var hitCount = 0;
+                var searchTextCount = 0;
+                var title = data.title.trim();
+                var titleInLowerCase = title.toLowerCase();
+                var content = data.content.trim().replace(/<[^>]+>/g,"");
+                var contentInLowerCase = content.toLowerCase();
+                var articleUrl = decodeURIComponent(data.url);
+                var indexOfTitle = [];
+                var indexOfContent = [];
+                // only match articles with not empty titles
+                if(title != '') {
+                  keywords.forEach(function(keyword) {
+                    function getIndexByWord(word, text, caseSensitive) {
+                      var wordLen = word.length;
+                      if (wordLen === 0) {
+                        return [];
+                      }
+                      var startPosition = 0, position = [], index = [];
+                      if (!caseSensitive) {
+                        text = text.toLowerCase();
+                        word = word.toLowerCase();
+                      }
+                      while ((position = text.indexOf(word, startPosition)) > -1) {
+                        index.push({position: position, word: word});
+                        startPosition = position + wordLen;
+                      }
+                      return index;
+                    }
+
+                    indexOfTitle = indexOfTitle.concat(getIndexByWord(keyword, titleInLowerCase, false));
+                    indexOfContent = indexOfContent.concat(getIndexByWord(keyword, contentInLowerCase, false));
+                  });
+                  if (indexOfTitle.length > 0 || indexOfContent.length > 0) {
+                    isMatch = true;
+                    hitCount = indexOfTitle.length + indexOfContent.length;
+                  }
+                }
+
+                // show search results
+
+                if (isMatch) {
+                  // sort index by position of keyword
+
+                  [indexOfTitle, indexOfContent].forEach(function (index) {
+                    index.sort(function (itemLeft, itemRight) {
+                      if (itemRight.position !== itemLeft.position) {
+                        return itemRight.position - itemLeft.position;
+                      } else {
+                        return itemLeft.word.length - itemRight.word.length;
+                      }
+                    });
+                  });
+
+                  // merge hits into slices
+
+                  function mergeIntoSlice(text, start, end, index) {
+                    var item = index[index.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    var hits = [];
+                    var searchTextCountInSlice = 0;
+                    while (position + word.length <= end && index.length != 0) {
+                      if (word === searchText) {
+                        searchTextCountInSlice++;
+                      }
+                      hits.push({position: position, length: word.length});
+                      var wordEnd = position + word.length;
+
+                      // move to next position of hit
+
+                      index.pop();
+                      while (index.length != 0) {
+                        item = index[index.length - 1];
+                        position = item.position;
+                        word = item.word;
+                        if (wordEnd > position) {
+                          index.pop();
+                        } else {
+                          break;
+                        }
+                      }
+                    }
+                    searchTextCount += searchTextCountInSlice;
+                    return {
+                      hits: hits,
+                      start: start,
+                      end: end,
+                      searchTextCount: searchTextCountInSlice
+                    };
+                  }
+
+                  var slicesOfTitle = [];
+                  if (indexOfTitle.length != 0) {
+                    slicesOfTitle.push(mergeIntoSlice(title, 0, title.length, indexOfTitle));
+                  }
+
+                  var slicesOfContent = [];
+                  while (indexOfContent.length != 0) {
+                    var item = indexOfContent[indexOfContent.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    // cut out 100 characters
+                    var start = position - 20;
+                    var end = position + 80;
+                    if(start < 0){
+                      start = 0;
+                    }
+                    if (end < position + word.length) {
+                      end = position + word.length;
+                    }
+                    if(end > content.length){
+                      end = content.length;
+                    }
+                    slicesOfContent.push(mergeIntoSlice(content, start, end, indexOfContent));
+                  }
+
+                  // sort slices in content by search text's count and hits' count
+
+                  slicesOfContent.sort(function (sliceLeft, sliceRight) {
+                    if (sliceLeft.searchTextCount !== sliceRight.searchTextCount) {
+                      return sliceRight.searchTextCount - sliceLeft.searchTextCount;
+                    } else if (sliceLeft.hits.length !== sliceRight.hits.length) {
+                      return sliceRight.hits.length - sliceLeft.hits.length;
+                    } else {
+                      return sliceLeft.start - sliceRight.start;
+                    }
+                  });
+
+                  // select top N slices in content
+
+                  var upperBound = parseInt('1');
+                  if (upperBound >= 0) {
+                    slicesOfContent = slicesOfContent.slice(0, upperBound);
+                  }
+
+                  // highlight title and content
+
+                  function highlightKeyword(text, slice) {
+                    var result = '';
+                    var prevEnd = slice.start;
+                    slice.hits.forEach(function (hit) {
+                      result += text.substring(prevEnd, hit.position);
+                      var end = hit.position + hit.length;
+                      result += '<b class="search-keyword">' + text.substring(hit.position, end) + '</b>';
+                      prevEnd = end;
+                    });
+                    result += text.substring(prevEnd, slice.end);
+                    return result;
+                  }
+
+                  var resultItem = '';
+
+                  if (slicesOfTitle.length != 0) {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + highlightKeyword(title, slicesOfTitle[0]) + "</a>";
+                  } else {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + title + "</a>";
+                  }
+
+                  slicesOfContent.forEach(function (slice) {
+                    resultItem += "<a href='" + articleUrl + "'>" +
+                      "<p class=\"search-result\">" + highlightKeyword(content, slice) +
+                      "...</p>" + "</a>";
+                  });
+
+                  resultItem += "</li>";
+                  resultItems.push({
+                    item: resultItem,
+                    searchTextCount: searchTextCount,
+                    hitCount: hitCount,
+                    id: resultItems.length
+                  });
+                }
+              })
+            };
+            if (keywords.length === 1 && keywords[0] === "") {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-search fa-5x" /></div>'
+            } else if (resultItems.length === 0) {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-frown-o fa-5x" /></div>'
+            } else {
+              resultItems.sort(function (resultLeft, resultRight) {
+                if (resultLeft.searchTextCount !== resultRight.searchTextCount) {
+                  return resultRight.searchTextCount - resultLeft.searchTextCount;
+                } else if (resultLeft.hitCount !== resultRight.hitCount) {
+                  return resultRight.hitCount - resultLeft.hitCount;
+                } else {
+                  return resultRight.id - resultLeft.id;
+                }
+              });
+              var searchResultList = '<ul class=\"search-result-list\">';
+              resultItems.forEach(function (result) {
+                searchResultList += result.item;
+              })
+              searchResultList += "</ul>";
+              resultContent.innerHTML = searchResultList;
+            }
+          }
+
+          if ('auto' === 'auto') {
+            input.addEventListener('input', inputEventFunction);
+          } else {
+            $('.search-icon').click(inputEventFunction);
+            input.addEventListener('keypress', function (event) {
+              if (event.keyCode === 13) {
+                inputEventFunction();
+              }
+            });
+          }
+
+          // remove loading animation
+          $(".local-search-pop-overlay").remove();
+          $('body').css('overflow', '');
+
+          proceedsearch();
+        }
+      });
+    }
+
+    // handle and trigger popup window;
+    $('.popup-trigger').click(function(e) {
+      e.stopPropagation();
+      if (isfetched === false) {
+        searchFunc(path, 'local-search-input', 'local-search-result');
+      } else {
+        proceedsearch();
+      };
+    });
+
+    $('.popup-btn-close').click(onPopupClose);
+    $('.popup').click(function(e){
+      e.stopPropagation();
+    });
+    $(document).on('keyup', function (event) {
+      var shouldDismissSearchPopup = event.which === 27 &&
+        $('.search-popup').is(':visible');
+      if (shouldDismissSearchPopup) {
+        onPopupClose();
+      }
+    });
+  </script>
+
+
+
+
+
+  
+
+  
+  <script src="https://cdn1.lncld.net/static/js/av-core-mini-0.6.4.js"></script>
+  <script>AV.initialize("B6yqSmGPw5uBIAfWEqm7Xyws-gzGzoHsz", "2soiHGUrbGw33caCmkT47236");</script>
+  <script>
+    function showTime(Counter) {
+      var query = new AV.Query(Counter);
+      var entries = [];
+      var $visitors = $(".leancloud_visitors");
+
+      $visitors.each(function () {
+        entries.push( $(this).attr("id").trim() );
+      });
+
+      query.containedIn('url', entries);
+      query.find()
+        .done(function (results) {
+          var COUNT_CONTAINER_REF = '.leancloud-visitors-count';
+
+          if (results.length === 0) {
+            $visitors.find(COUNT_CONTAINER_REF).text(0);
+            return;
+          }
+
+          for (var i = 0; i < results.length; i++) {
+            var item = results[i];
+            var url = item.get('url');
+            var time = item.get('time');
+            var element = document.getElementById(url);
+
+            $(element).find(COUNT_CONTAINER_REF).text(time);
+          }
+          for(var i = 0; i < entries.length; i++) {
+            var url = entries[i];
+            var element = document.getElementById(url);
+            var countSpan = $(element).find(COUNT_CONTAINER_REF);
+            if( countSpan.text() == '') {
+              countSpan.text(0);
+            }
+          }
+        })
+        .fail(function (object, error) {
+          console.log("Error: " + error.code + " " + error.message);
+        });
+    }
+
+    function addCount(Counter) {
+      var $visitors = $(".leancloud_visitors");
+      var url = $visitors.attr('id').trim();
+      var title = $visitors.attr('data-flag-title').trim();
+      var query = new AV.Query(Counter);
+
+      query.equalTo("url", url);
+      query.find({
+        success: function(results) {
+          if (results.length > 0) {
+            var counter = results[0];
+            counter.fetchWhenSave(true);
+            counter.increment("time");
+            counter.save(null, {
+              success: function(counter) {
+                var $element = $(document.getElementById(url));
+                $element.find('.leancloud-visitors-count').text(counter.get('time'));
+              },
+              error: function(counter, error) {
+                console.log('Failed to save Visitor num, with error message: ' + error.message);
+              }
+            });
+          } else {
+            var newcounter = new Counter();
+            /* Set ACL */
+            var acl = new AV.ACL();
+            acl.setPublicReadAccess(true);
+            acl.setPublicWriteAccess(true);
+            newcounter.setACL(acl);
+            /* End Set ACL */
+            newcounter.set("title", title);
+            newcounter.set("url", url);
+            newcounter.set("time", 1);
+            newcounter.save(null, {
+              success: function(newcounter) {
+                var $element = $(document.getElementById(url));
+                $element.find('.leancloud-visitors-count').text(newcounter.get('time'));
+              },
+              error: function(newcounter, error) {
+                console.log('Failed to create');
+              }
+            });
+          }
+        },
+        error: function(error) {
+          console.log('Error:' + error.code + " " + error.message);
+        }
+      });
+    }
+
+    $(function() {
+      var Counter = AV.Object.extend("Counter");
+      if ($('.leancloud_visitors').length == 1) {
+        addCount(Counter);
+      } else if ($('.post-title-link').length > 1) {
+        showTime(Counter);
+      }
+    });
+  </script>
+
+
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

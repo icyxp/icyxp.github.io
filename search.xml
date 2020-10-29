@@ -4,6 +4,91 @@
   
     
     <entry>
+      <title><![CDATA[如何为 Kubernetes 实现原地升级]]></title>
+      <url>http://team.jiunile.com/blog/2020/10/k8s-pod-update-local.html</url>
+      <content type="html"><![CDATA[<h2 id="概念介绍"><a href="#概念介绍" class="headerlink" title="概念介绍"></a>概念介绍</h2><p><strong>原地升级</strong>一词中，“升级”不难理解，是将应用实例的版本由旧版替换为新版。那么如何结合 Kubernetes 环境来理解“原地”呢？</p>
+<p>我们先来看看 K8s 原生 workload 的发布方式。这里假设我们需要部署一个应用，包括 foo、bar 两个容器在 Pod 中。其中，foo 容器第一次部署时用的镜像版本是 v1，我们需要将其升级为 v2 版本镜像，该怎么做呢？<br><a id="more"></a></p>
+<ul>
+<li>如果这个应用使用 Deployment 部署，那么升级过程中 Deployment 会触发新版本 ReplicaSet 创建 Pod，并删除旧版本 Pod。如下图所示：</li>
+</ul>
+<p><img src="/images/k8s/update-1.png" alt="1.png"></p>
+<p>在本次升级过程中，原 Pod 对象被删除，一个新 Pod 对象被创建。新 Pod 被调度到另一个 Node 上，分配到一个新的 IP，并把 foo、bar 两个容器在这个 Node 上重新拉取镜像、启动容器。</p>
+<ul>
+<li>如果这个应该使用 StatefulSet 部署，那么升级过程中 StatefulSet 会先删除旧 Pod 对象，等删除完成后用同样的名字在创建一个新的 Pod 对象。如下图所示：</li>
+</ul>
+<p><img src="/images/k8s/update-2.png" alt="2.png"></p>
+<p>值得注意的是，尽管新旧两个 Pod 名字都叫 pod-0，但其实是两个完全不同的 Pod 对象（uid也变了）。StatefulSet 等到原先的 pod-0 对象完全从 Kubernetes 集群中被删除后，才会提交创建一个新的 pod-0 对象。而这个新的 Pod 也会被重新调度、分配IP、拉镜像、启动容器。</p>
+<ul>
+<li>而所谓原地升级模式，就是在应用升级过程中避免将整个 Pod 对象删除、新建，而是基于原有的 Pod 对象升级其中某一个或多个容器的镜像版本：</li>
+</ul>
+<p><img src="/images/k8s/update-3.png" alt="3.png"></p>
+<p>在原地升级的过程中，我们仅仅更新了原 Pod 对象中 foo 容器的 image 字段来触发 foo 容器升级到新版本。而不管是 Pod 对象，还是 Node、IP 都没有发生变化，甚至 foo 容器升级的过程中 bar 容器还一直处于运行状态。</p>
+<p><strong>总结：这种只更新 Pod 中某一个或多个容器版本、而不影响整个 Pod 对象、其余容器的升级方式，被我们称为 Kubernetes 中的原地升级</strong>。</p>
+<h2 id="收益分析"><a href="#收益分析" class="headerlink" title="收益分析"></a>收益分析</h2><p>那么，我们为什么要在 Kubernetes 中引入这种原地升级的理念和设计呢？</p>
+<p>首先，这种原地升级的模式极大地提升了应用发布的效率，根据非完全统计数据，在阿里环境下原地升级至少比完全重建升级提升了 80% 以上的发布速度。这其实很容易理解，原地升级为发布效率带来了以下优化点：</p>
+<ol>
+<li>节省了调度的耗时，Pod 的位置、资源都不发生变化；</li>
+<li>节省了分配网络的耗时，Pod 还使用原有的 IP；</li>
+<li>节省了分配、挂载远程盘的耗时，Pod 还使用原有的 PV（且都是已经在 Node 上挂载好的）；</li>
+<li>节省了大部分拉取镜像的耗时，因为 Node 上已经存在了应用的旧镜像，当拉取新版本镜像时只需要下载很少的几层 layer。</li>
+</ol>
+<p>其次，当我们升级 Pod 中一些 sidecar 容器（如采集日志、监控等）时，其实并不希望干扰到业务容器的运行。但面对这种场景，Deployment 或 StatefulSet 的升级都会将整个 Pod 重建，势必会对业务造成一定的影响。而容器级别的原地升级变动的范围非常可控，只会将需要升级的容器做重建，其余容器包括网络、挂载盘都不会受到影响。</p>
+<p>最后，原地升级也为我们带来了集群的稳定性和确定性。当一个 Kubernetes 集群中大量应用触发重建 Pod 升级时，可能造成大规模的 Pod 飘移，以及对 Node 上一些低优先级的任务 Pod 造成反复的抢占迁移。这些大规模的 Pod 重建，本身会对 apiserver、scheduler、网络/磁盘分配等中心组件造成较大的压力，而这些组件的延迟也会给 Pod 重建带来恶性循环。而采用原地升级后，整个升级过程只会涉及到 controller 对 Pod 对象的更新操作和 kubelet 重建对应的容器。</p>
+<h2 id="技术背景"><a href="#技术背景" class="headerlink" title="技术背景"></a>技术背景</h2><p>支持原地升级的控制器就位于 <a href="https://github.com/openkruise/kruise?spm=a2c6h.12873639.0.0.4bc314b5SPKTQY" target="_blank" rel="external">OpenKruise</a> 开源项目中。</p>
+<p>也就是说，云原生应用都是统一使用 <code>OpenKruise</code> 中的扩展 workload 做部署管理的，而并没有采用原生 <code>Deployment/StatefulSet</code> 等。</p>
+<p>那么 <code>OpenKruise</code> 是如何实现原地升级能力的呢？在介绍原地升级实现原理之前，我们先来看一些原地升级功能所依赖的原生 Kubernetes 功能：</p>
+<h3 id="背景-1：Kubelet-针对-Pod-容器的版本管理"><a href="#背景-1：Kubelet-针对-Pod-容器的版本管理" class="headerlink" title="背景 1：Kubelet 针对 Pod 容器的版本管理"></a>背景 1：Kubelet 针对 Pod 容器的版本管理</h3><p>每个 Node 上的 Kubelet，会针对本机上所有 Pod.spec.containers 中的每个 container 计算一个 hash 值，并记录到实际创建的容器中。</p>
+<p>如果我们修改了 Pod 中某个 container 的 image 字段，kubelet 会发现 container 的 hash 发生了变化、与机器上过去创建的容器 hash 不一致，而后 kubelet 就会把旧容器停掉，然后根据最新 Pod spec 中的 container 来创建新的容器。</p>
+<p><strong>这个功能，其实就是针对单个 Pod 的原地升级的核心原理</strong>。</p>
+<h3 id="背景-2：Pod-更新限制"><a href="#背景-2：Pod-更新限制" class="headerlink" title="背景 2：Pod 更新限制"></a>背景 2：Pod 更新限制</h3><p>在原生 kube-apiserver 中，对 Pod 对象的更新请求有严格的 <a href="https://github.com/kubernetes/kubernetes/blob/master/pkg/apis/core/validation/validation.go?spm=a2c6h.12873639.0.0.4bc314b5SPKTQY#L3729" target="_blank" rel="external">validation 校验逻辑</a>：<br><figure class="highlight golang"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// validate updateable fields:</span></span><br><span class="line"><span class="comment">// 1.  spec.containers[*].image</span></span><br><span class="line"><span class="comment">// 2.  spec.initContainers[*].image</span></span><br><span class="line"><span class="comment">// 3.  spec.activeDeadlineSeconds</span></span><br></pre></td></tr></table></figure></p>
+<p>简单来说，对于一个已经创建出来的 Pod，在 Pod Spec 中只允许修改 containers/initContainers 中的 image 字段，以及 activeDeadlineSeconds 字段。对 Pod Spec 中所有其他字段的更新，都会被 kube-apiserver 拒绝。</p>
+<h3 id="背景-3：containerStatuses-上报"><a href="#背景-3：containerStatuses-上报" class="headerlink" title="背景 3：containerStatuses 上报"></a>背景 3：containerStatuses 上报</h3><p>kubelet 会在 pod.status 中上报 containerStatuses，对应 Pod 中所有容器的实际运行状态：<br><figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">apiVersion:</span> v1</span><br><span class="line"><span class="attr">kind:</span> Pod</span><br><span class="line"><span class="attr">spec:</span></span><br><span class="line"><span class="attr">  containers:</span></span><br><span class="line"><span class="attr">  - name:</span> nginx</span><br><span class="line"><span class="attr">    image:</span> nginx:latest</span><br><span class="line"><span class="attr">status:</span></span><br><span class="line"><span class="attr">  containerStatuses:</span></span><br><span class="line"><span class="attr">  - name:</span> nginx</span><br><span class="line"><span class="attr">    image:</span> nginx:mainline</span><br><span class="line"><span class="attr">    imageID:</span> docker-pullable://nginx@sha256:<span class="number">2</span>f68b99bc0d6d25d0c56876b924ec20418544ff28e1fb89a4c27679a40da811b</span><br></pre></td></tr></table></figure></p>
+<p>绝大多数情况下，spec.containers[x].image 与 status.containerStatuses[x].image 两个镜像是一致的。</p>
+<p>但是也有上述这种情况，kubelet 上报的与 spec 中的 image 不一致（spec 中是 nginx:latest，但 status 中上报的是 nginx:mainline）。</p>
+<p>这是因为，kubelet 所上报的 image 其实是从 CRI 接口中拿到的容器对应的镜像名。而如果 Node 机器上存在多个镜像对应了一个 imageID，那么上报的可能是其中任意一个：<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">$ docker images | grep nginx</span><br><span class="line">nginx            latest              2622e6cca7eb        2 days ago          132MB</span><br><span class="line">nginx            mainline            2622e6cca7eb        2 days ago</span><br></pre></td></tr></table></figure></p>
+<p>因此，一个 Pod 中 spec 和 status 的 image 字段不一致，并不意味着宿主机上这个容器运行的镜像版本和期望的不一致。</p>
+<h3 id="背景-4：ReadinessGate-控制-Pod-是否-Ready"><a href="#背景-4：ReadinessGate-控制-Pod-是否-Ready" class="headerlink" title="背景 4：ReadinessGate 控制 Pod 是否 Ready"></a>背景 4：ReadinessGate 控制 Pod 是否 Ready</h3><p>在 Kubernetes 1.12 版本之前，一个 Pod 是否处于 Ready 状态只是由 kubelet 根据容器状态来判定：如果 Pod 中容器全部 ready，那么 Pod 就处于 Ready 状态。</p>
+<p>但事实上，很多时候上层 operator 或用户都需要能控制 Pod 是否 Ready 的能力。因此，Kubernetes 1.12 版本之后提供了一个 readinessGates 功能来满足这个场景。如下：<br><figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">apiVersion:</span> v1</span><br><span class="line"><span class="attr">kind:</span> Pod</span><br><span class="line"><span class="attr">spec:</span></span><br><span class="line"><span class="attr">  readinessGates:</span></span><br><span class="line"><span class="attr">  - conditionType:</span> MyDemo</span><br><span class="line"><span class="attr">status:</span></span><br><span class="line"><span class="attr">  conditions:</span></span><br><span class="line"><span class="attr">  - type:</span> MyDemo</span><br><span class="line"><span class="attr">    status:</span> <span class="string">"True"</span></span><br><span class="line"><span class="attr">  - type:</span> ContainersReady</span><br><span class="line"><span class="attr">    status:</span> <span class="string">"True"</span></span><br><span class="line"><span class="attr">  - type:</span> Ready</span><br><span class="line"><span class="attr">    status:</span> <span class="string">"True"</span></span><br></pre></td></tr></table></figure></p>
+<p>目前 kubelet 判定一个 Pod 是否 Ready 的两个前提条件：</p>
+<ol>
+<li>Pod 中容器全部 Ready（其实对应了 ContainersReady condition 为 True）；</li>
+<li>如果 pod.spec.readinessGates 中定义了一个或多个 conditionType，那么需要这些 conditionType 在 pod.status.conditions 中都有对应的 status: “true” 的状态。</li>
+</ol>
+<p>只有满足上述两个前提，kubelet 才会上报 Ready condition 为 True</p>
+<h2 id="实现原理"><a href="#实现原理" class="headerlink" title="实现原理"></a>实现原理</h2><p>了解了上面的四个背景之后，接下来分析一下 OpenKruise 是如何在 Kubernetes 中实现原地升级的原理。</p>
+<h3 id="1-单个-Pod-如何原地升级？"><a href="#1-单个-Pod-如何原地升级？" class="headerlink" title="1. 单个 Pod 如何原地升级？"></a>1. 单个 Pod 如何原地升级？</h3><p>由“背景 1”可知，其实我们对一个存量 Pod 的 spec.containers[x] 中字段做修改，kubelet 会感知到这个 container 的 hash 发生了变化，随即就会停掉对应的旧容器，并用新的 container 来拉镜像、创建和启动新容器。</p>
+<p>由“背景 2”可知，当前我们对一个存量 Pod 的 spec.containers[x] 中的修改，仅限于 image 字段。</p>
+<p>因此，得出第一个实现原理：**对于一个现有的 Pod 对象，我们能且只能修改其中的 spec.containers[x].image 字段，来触发 Pod 中对应容器升级到一个新的 image。</p>
+<h3 id="2-如何判断-Pod-原地升级成功？"><a href="#2-如何判断-Pod-原地升级成功？" class="headerlink" title="2. 如何判断 Pod 原地升级成功？"></a>2. 如何判断 Pod 原地升级成功？</h3><p>接下来的问题是，当我们修改了 Pod 中的 spec.containers[x].image 字段后，如何判断 kubelet 已经将容器重建成功了呢？</p>
+<p>由“背景 3”可知，比较 spec 和 status 中的 image 字段是不靠谱的，因为很有可能 status 中上报的是 Node 上存在的另一个镜像名（相同 imageID）。</p>
+<p>因此，得出第二个实现原理：<strong>判断 Pod 原地升级是否成功，相对来说比较靠谱的办法，是在原地升级前先将 status.containerStatuses[x].imageID 记录下来。在更新了 spec 镜像之后，如果观察到 Pod 的 status.containerStatuses[x].imageID 变化了，我们就认为原地升级已经重建了容器</strong>。</p>
+<p>但这样一来，我们对原地升级的 image 也有了一个要求：<strong>不能用 image 名字（tag）不同、但实际对应同一个 imageID 的镜像来做原地升级，否则可能一直都被判断为没有升级成功（因为 status 中 imageID 不会变化）</strong>。</p>
+<p>当然，后续我们还可以继续优化。OpenKruise 即将开源镜像预热的能力，会通过 DaemonSet 在每个 Node 上部署一个 NodeImage Pod。通过 NodeImage 上报我们可以得知 pod spec 中的 image 所对应的 imageID，然后和 pod status 中的 imageID 比较即可准确判断原地升级是否成功。</p>
+<h3 id="3-如何确保原地升级过程中流量无损？"><a href="#3-如何确保原地升级过程中流量无损？" class="headerlink" title="3. 如何确保原地升级过程中流量无损？"></a>3. 如何确保原地升级过程中流量无损？</h3><p>在 Kubernetes 中，一个 Pod 是否 Ready 就代表了它是否可以提供服务。因此，像 Service 这类的流量入口都会通过判断 Pod Ready 来选择是否能将这个 Pod 加入 endpoints 端点中。</p>
+<p>由“背景 4”可知，从 Kubernetes 1.12+ 之后，operator/controller 这些组件也可以通过设置 readinessGates 和更新 pod.status.conditions 中的自定义 type 状态，来控制 Pod 是否可用。</p>
+<p>因此，得出第三个实现原理：<strong>可以在 <code>pod.spec.readinessGates</code> 中定义一个叫 <code>InPlaceUpdateReady</code> 的 conditionType</strong>。</p>
+<p>在原地升级时：</p>
+<ol>
+<li><strong>先将 pod.status.conditions 中的 InPlaceUpdateReady condition 设为 “False”，这样就会触发 kubelet 将 Pod 上报为 NotReady，从而使流量组件（如 endpoint controller）将这个 Pod 从服务端点摘除</strong>；</li>
+<li><strong>再更新 pod spec 中的 image 触发原地升级</strong>。</li>
+</ol>
+<p>原地升级结束后，再将 InPlaceUpdateReady condition 设为 “True”，使 Pod 重新回到 Ready 状态。</p>
+<p>另外在原地升级的两个步骤中，第一步将 Pod 改为 NotReady 后，流量组件异步 watch 到变化并摘除端点可能是需要一定时间的。因此我们也提供优雅原地升级的能力，即通过 gracePeriodSeconds 配置在修改 NotReady 状态和真正更新 image 触发原地升级两个步骤之间的静默期时间。</p>
+<h3 id="4-组合发布策略"><a href="#4-组合发布策略" class="headerlink" title="4. 组合发布策略"></a>4. 组合发布策略</h3><p>原地升级和 Pod 重建升级一样，可以配合各种发布策略来执行：</p>
+<ul>
+<li><strong>partition</strong>：如果配置 partition 做灰度，那么只会将 replicas-partition 数量的 Pod 做原地升级；</li>
+<li><strong>maxUnavailable</strong>：如果配置 maxUnavailable，那么只会将满足 unavailable 数量的 Pod 做原地升级；</li>
+<li><strong>maxSurge</strong>：如果配置 maxSurge 做弹性，那么当先扩出来 maxSurge 数量的 Pod 之后，存量的 Pod 仍然使用原地升级；</li>
+<li><strong>priority/scatter</strong>：如果配置了发布优先级/打散策略，会按照策略顺序对 Pod 做原地升级。</li>
+</ul>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>如上文所述，<a href="https://github.com/openkruise/kruise?spm=a2c6h.12873639.0.0.4bc314b5SPKTQY" target="_blank" rel="external">OpenKruise</a> 结合 Kubernetes 原生提供的 kubelet 容器版本管理、readinessGates 等功能，实现了针对 Pod 的原地升级能力。</p>
+<p>而原地升级也为应用发布带来大幅的效率、稳定性提升。值得关注的是，随着集群、应用规模的增大，这种提升的收益越加明显。</p>
+<p>来源：阿里云开发者社区 作者：王思宇</p>
+<p><img src="/images/wx_dyh.png" alt="微信订阅号"></p>
+]]></content>
+    </entry>
+    
+    <entry>
       <title><![CDATA[docker 卡死引起的 container runtime is down]]></title>
       <url>http://team.jiunile.com/blog/2020/10/docker-hang.html</url>
       <content type="html"><![CDATA[<h2 id="1-背景"><a href="#1-背景" class="headerlink" title="1 背景"></a>1 背景</h2><p>最近升级了一版 kubelet，修复因 kubelet 删除 Pod 慢导致平台删除集群超时的问题。在灰度 redis 隔离集群的时候，发现升级 kubelet 并重启服务后，少量宿主状态变成了 NotReady，并且回滚 kubelet 至之前版本，宿主状态仍然是 NotReady。查看宿主状态时提示 ‘container runtime is down’ ，根据经验，此时一般就是容器运行时出了问题。弹性云使用的容器运行时是 docker，我们就去检查 docker 的状态，检测结果如下：</p>
