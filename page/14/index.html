@@ -369,6 +369,224 @@
   
   
   <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://team.jiunile.com/blog/2018/07/docker-java与docker的那点事.html">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="icyboy">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="CloudNative 架构">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h2 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/blog/2018/07/docker-java与docker的那点事.html" itemprop="url">Java和Docker限制的那些事儿</a></h2>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-07-18T21:30:00+08:00">
+                2018-07-18
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/docker/" itemprop="url" rel="index">
+                    <span itemprop="name">docker</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+                <a href="/blog/2018/07/docker-java与docker的那点事.html#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count valine-comment-count" data-xid="/blog/2018/07/docker-java与docker的那点事.html" itemprop="commentCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+          
+             <span id="/blog/2018/07/docker-java与docker的那点事.html" class="leancloud_visitors" data-flag-title="Java和Docker限制的那些事儿">
+               <span class="post-meta-divider">|</span>
+               <span class="post-meta-item-icon">
+                 <i class="fa fa-eye"></i>
+               </span>
+               
+                 <span class="post-meta-item-text">热度&#58;</span>
+               
+                 <span class="leancloud-visitors-count"></span>
+		 <span>℃</span>
+             </span>
+          
+
+          
+
+          
+            <div class="post-wordcount">
+              
+                
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-file-word-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">字数统计&#58;</span>
+                
+                <span title="字数统计">
+                  3,090 字
+                </span>
+              
+
+              
+                <span class="post-meta-divider">|</span>
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-clock-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">阅读时长 &asymp;</span>
+                
+                <span title="阅读时长">
+                  13 分钟
+                </span>
+              
+            </div>
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          <h2 id="揭秘"><a href="#揭秘" class="headerlink" title="揭秘"></a>揭秘</h2><p>Java和Docker不是天然的朋友。 Docker可以设置内存和CPU限制，而Java不能自动检测到。使用Java的Xmx标识（繁琐/重复）或新的实验性JVM标识，我们可以解决这个问题。</p>
+<h2 id="虚拟化中的不匹配"><a href="#虚拟化中的不匹配" class="headerlink" title="虚拟化中的不匹配"></a>虚拟化中的不匹配</h2><p>Java和Docker的结合并不是完美匹配的，最初的时候离完美匹配有相当大的距离。对于初学者来说，JVM的全部设想就是，虚拟机可以让程序与底层硬件无关。</p>
+<p>那么，把我们的Java应用打包到JVM中，然后整个再塞进Docker容器中，能给我们带来什么好处呢？大多数情况下，你只是在复制JVMs和Linux容器，除了浪费更多的内存，没任何好处。感觉这样子挺傻的。</p>
+<p>不过，Docker可以把你的程序，设置，特定的JDK，Linux设置和应用服务器，还有其他工具打包在一起，当做一个东西。站在DevOps/Cloud的角度来看，这样一个完整的容器有着更高层次的封装。</p>
+<h3 id="问题一：内存"><a href="#问题一：内存" class="headerlink" title="问题一：内存"></a>问题一：内存</h3><p>时至今日，绝大多数产品级应用仍然在使用Java 8（或者更旧的版本），而这可能会带来问题。Java 8（update 131之前的版本）跟Docker无法很好地一起工作。问题是在你的机器上，JVM的可用内存和CPU数量并不是Docker允许你使用的可用内存和CPU数量。</p>
+<p>比如，如果你限制了你的Docker容器只能使用100MB内存，但是呢，旧版本的Java并不能识别这个限制。Java看不到这个限制。JVM会要求更多内存，而且远超这个限制。如果使用太多内存，Docker将采取行动并杀死容器内的进程！JAVA进程被干掉了，很明显，这并不是我们想要的。</p>
+<p>为了解决这个问题，你需要给Java指定一个最大内存限制。在旧版本的Java（8u131之前），你需要在容器中通过设置-Xmx来限制堆大小。这感觉不太对，你可不想定义这些限制两次，也不太想在你的容器中来定义。</p>
+<p>幸运的是我们现在有了更好的方式来解决这个问题。从Java 9之后（8u131+），JVM增加了如下标志：<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">-XX:+UnlockExperimentalVMOptions -XX:+UseCGroupMemoryLimitForHeap</span><br></pre></td></tr></table></figure></p>
+<p>这些标志强制JVM检查Linux的cgroup配置，Docker是通过cgroup来实现最大内存设置的。现在，如果你的应用到达了Docker设置的限制（比如500MB），JVM是可以看到这个限制的。JVM将会尝试GC操作。如果仍然超过内存限制，JVM就会做它该做的事情，抛出OutOfMemoryException。也就是说，JVM能够看到Docker的这些设置。</p>
+<p>从Java 10之后（参考下面的测试），这些体验标志位是默认开启的，也可以使用-XX:+UseContainerSupport来使能（你可以通过设置-XX:-UseContainerSupport来禁止这些行为）。</p>
+<h3 id="问题二：CPU"><a href="#问题二：CPU" class="headerlink" title="问题二：CPU"></a>问题二：CPU</h3><p>第二个问题是类似的，但它与CPU有关。简而言之，JVM将查看硬件并检测CPU的数量。它会优化你的runtime以使用这些CPUs。但是同样的情况，这里还有另一个不匹配，Docker可能不允许你使用所有这些CPUs。可惜的是，这在Java 8或Java 9中并没有修复，但是在Java 10中得到了解决。</p>
+<p>从Java 10开始，可用的CPUs的计算将采用以不同的方式（默认情况下）解决此问题（同样是通过UseContainerSupport）。<br>
+          <!--noindex-->
+          <div class="post-button text-center">
+            <a class="btn" href="/blog/2018/07/docker-java与docker的那点事.html#more" rel="contents">
+              阅读全文 &raquo;
+            </a>
+          </div>
+          <!--/noindex-->
+        
+      
+    </div>
+    
+    
+    
+
+    <div>
+    
+    </div>
+
+    <div>
+      
+    </div>
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
     <link itemprop="mainEntityOfPage" href="http://team.jiunile.com/blog/2018/07/go-升级go1-10-x问题.html">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -1232,224 +1450,11 @@
 
 
     
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://team.jiunile.com/blog/2017/07/microservice-微服务够了.html">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="icyboy">
-      <meta itemprop="description" content="">
-      <meta itemprop="image" content="/images/avatar.jpg">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="CloudNative 架构">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h2 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/blog/2017/07/microservice-微服务够了.html" itemprop="url">微服务，够了</a></h2>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2017-07-26T21:00:00+08:00">
-                2017-07-26
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
-            <span class="post-category" >
-            
-              <span class="post-meta-divider">|</span>
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">分类于</span>
-              
-              
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/微服务/" itemprop="url" rel="index">
-                    <span itemprop="name">微服务</span>
-                  </a>
-                </span>
-
-                
-                
-              
-            </span>
-          
-
-          
-            
-              <span class="post-comments-count">
-                <span class="post-meta-divider">|</span>
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-comment-o"></i>
-                </span>
-                <a href="/blog/2017/07/microservice-微服务够了.html#comments" itemprop="discussionUrl">
-                  <span class="post-comments-count valine-comment-count" data-xid="/blog/2017/07/microservice-微服务够了.html" itemprop="commentCount"></span>
-                </a>
-              </span>
-            
-          
-
-          
-          
-             <span id="/blog/2017/07/microservice-微服务够了.html" class="leancloud_visitors" data-flag-title="微服务，够了">
-               <span class="post-meta-divider">|</span>
-               <span class="post-meta-item-icon">
-                 <i class="fa fa-eye"></i>
-               </span>
-               
-                 <span class="post-meta-item-text">热度&#58;</span>
-               
-                 <span class="leancloud-visitors-count"></span>
-		 <span>℃</span>
-             </span>
-          
-
-          
-
-          
-            <div class="post-wordcount">
-              
-                
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-file-word-o"></i>
-                </span>
-                
-                  <span class="post-meta-item-text">字数统计&#58;</span>
-                
-                <span title="字数统计">
-                  4,797 字
-                </span>
-              
-
-              
-                <span class="post-meta-divider">|</span>
-              
-
-              
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-clock-o"></i>
-                </span>
-                
-                  <span class="post-meta-item-text">阅读时长 &asymp;</span>
-                
-                <span title="阅读时长">
-                  16 分钟
-                </span>
-              
-            </div>
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          <p><img src="/images/ms/01/cover.png" alt="01"></p>
-<h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>  资深架构师<a href="https://twitter.com/aadrake">Adam Drake</a>在他的博客上分享了他对微服务的看法,他 从自己的经验出发,结合Martin Fowler对微服务的见解,帮助想要采用 微服务的公司重新审视微服务。以下内容已获得作者翻译授权,查看英文 原文 <a href="https://aadrake.com/posts/2017-05-20-enough-with-the-microservices.html">Enough with the microservices</a>。</p>
-<h2 id="简介"><a href="#简介" class="headerlink" title="简介"></a>简介</h2><p>  关于微服务的优势和劣势已经有过太多的讨论,不过我仍然看到很多 成长型初创公司对它进行着盲目崇拜。冒着“重复发明轮子”的风险(Martin Fowler已经写过“Microservice Premium”的文章),我想把我的一些 想法写下来,在必要的时候可以发给客户,也希望能够帮助人们避免犯下我之前见过的那些错误。在进行架构或技术选型时,将网络上找到的一些所谓的最佳实践文章作为指南,一旦做出了错误的决定,就要付出惨重的代价。如果能够帮助哪怕一个公司避免犯下这种错误,那么写这篇文章都是值得的。</p>
-<p>  如今微服务是个热门技术,微服务架构一直以来都存在(面向服务架构也算是吧?),但对于我所见过的大部分公司来说,微服务不仅浪费了他们的时间,分散了他们的注意力,而且让事情变得更糟糕。</p>
-<p>  这听起来似乎很奇怪,因为大部分关于微服务的文章都会肯定微服务 的各种好处,比如解耦系统、更好的伸缩性、消除开发团队之间的依赖, 等等。如果你的公司有 Uber、Airbnb、Facebook 或 Twitter 那样的规模, 那么就没有什么问题。我曾经帮助一些大型组织转型到微服务架构,包括 搭建消息系统和采用一些能够提升伸缩性的技术。不过,对于成长型初创 公司来说,很少需要这些技术和服务。</p>
-<p>  Russ Miles在他的《<a href="http://www.russmiles.com/essais/8-ways-to-lose-at-microservices-adoption">让微服务失效的八种方式</a>》这篇文章中表达了 他的首要观点,而在我看来,这些场景却到处可见。成长型初创公司总是 想模仿那些大公司的最佳实践,用它们来弥补自身的不足。但是,最佳实 践是要视情况而定的。有些东西对于 Facebook 来说是最佳实践,但对于 只有不到百人的初创公司来说,它们就不一定也是最佳实践。</p>
-<p>  如果你的公司比那些大公司小一些,在一定程度上你仍然能够从微服务架构中获益。但是,对于成长型初创公司来说,大规模地迁移到微服务是一种过错,而且对技术人来说是不公平的。</p>
-          <!--noindex-->
-          <div class="post-button text-center">
-            <a class="btn" href="/blog/2017/07/microservice-微服务够了.html#more" rel="contents">
-              阅读全文 &raquo;
-            </a>
-          </div>
-          <!--/noindex-->
-        
-      
-    </div>
-    
-    
-    
-
-    <div>
-    
-    </div>
-
-    <div>
-      
-    </div>
-
-    
-
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
   </section>
 
   
   <nav class="pagination">
-    <a class="extend prev" rel="prev" href="/page/13/"><i class="fa fa-angle-left"></i></a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/13/">13</a><span class="page-number current">14</span><a class="page-number" href="/page/15/">15</a><span class="space">&hellip;</span><a class="page-number" href="/page/17/">17</a><a class="extend next" rel="next" href="/page/15/"><i class="fa fa-angle-right"></i></a>
+    <a class="extend prev" rel="prev" href="/page/13/"><i class="fa fa-angle-left"></i></a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/13/">13</a><span class="page-number current">14</span><a class="page-number" href="/page/15/">15</a><span class="space">&hellip;</span><a class="page-number" href="/page/18/">18</a><a class="extend next" rel="next" href="/page/15/"><i class="fa fa-angle-right"></i></a>
   </nav>
 
 
@@ -1499,7 +1504,7 @@
               
                 <a href="/archives/">
               
-                  <span class="site-state-item-count">85</span>
+                  <span class="site-state-item-count">86</span>
                   <span class="site-state-item-name">日志</span>
                 </a>
               </div>
@@ -1510,7 +1515,7 @@
               
               <div class="site-state-item site-state-categories">
                 <a href="/categories/index.html">
-                  <span class="site-state-item-count">70</span>
+                  <span class="site-state-item-count">72</span>
                   <span class="site-state-item-name">分类</span>
                 </a>
               </div>
@@ -1521,7 +1526,7 @@
               
               <div class="site-state-item site-state-tags">
                 <a href="/tags/index.html">
-                  <span class="site-state-item-count">152</span>
+                  <span class="site-state-item-count">155</span>
                   <span class="site-state-item-name">标签</span>
                 </a>
               </div>
@@ -1624,7 +1629,7 @@
     
       <span class="post-meta-item-text">Site words total count&#58;</span>
     
-    <span title="Site words total count">260.8k</span>
+    <span title="Site words total count">262.7k</span>
   
 </div>
 
@@ -1636,7 +1641,7 @@
 
 <div class="theme-info">
   <div class="powered-by"></div>
-  <span class="post-count">博客全站共260.8k字</span>
+  <span class="post-count">博客全站共262.7k字</span>
 </div>
 
 

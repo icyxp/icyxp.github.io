@@ -369,6 +369,272 @@
   
   
   <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://team.jiunile.com/blog/2016/08/ha-load-balance-mysql-master-slave-architecture.html">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="icyboy">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="CloudNative 架构">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h2 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/blog/2016/08/ha-load-balance-mysql-master-slave-architecture.html" itemprop="url">双机高可用-负载均衡-MySQL(读写分离、主从自动切换)架构设计</a></h2>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2016-08-09T10:00:00+08:00">
+                2016-08-09
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/高可用/" itemprop="url" rel="index">
+                    <span itemprop="name">高可用</span>
+                  </a>
+                </span>
+
+                
+                
+                  ， 
+                
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/高可用/负载均衡/" itemprop="url" rel="index">
+                    <span itemprop="name">负载均衡</span>
+                  </a>
+                </span>
+
+                
+                
+                  ， 
+                
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/高可用/负载均衡/读写分离/" itemprop="url" rel="index">
+                    <span itemprop="name">读写分离</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+                <a href="/blog/2016/08/ha-load-balance-mysql-master-slave-architecture.html#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count valine-comment-count" data-xid="/blog/2016/08/ha-load-balance-mysql-master-slave-architecture.html" itemprop="commentCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+          
+             <span id="/blog/2016/08/ha-load-balance-mysql-master-slave-architecture.html" class="leancloud_visitors" data-flag-title="双机高可用-负载均衡-MySQL(读写分离、主从自动切换)架构设计">
+               <span class="post-meta-divider">|</span>
+               <span class="post-meta-item-icon">
+                 <i class="fa fa-eye"></i>
+               </span>
+               
+                 <span class="post-meta-item-text">热度&#58;</span>
+               
+                 <span class="leancloud-visitors-count"></span>
+		 <span>℃</span>
+             </span>
+          
+
+          
+
+          
+            <div class="post-wordcount">
+              
+                
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-file-word-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">字数统计&#58;</span>
+                
+                <span title="字数统计">
+                  3,539 字
+                </span>
+              
+
+              
+                <span class="post-meta-divider">|</span>
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-clock-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">阅读时长 &asymp;</span>
+                
+                <span title="阅读时长">
+                  18 分钟
+                </span>
+              
+            </div>
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          <h2 id="架构简介"><a href="#架构简介" class="headerlink" title="架构简介"></a>架构简介</h2><p>只有两台机器，需要实现其中一台死机之后另一台能接管这台机器的服务，并且在两台机器正常服务时，两台机器都能用上。如何设计这样的架构场景。<br><img src="/images/high_availability.png" alt="High Availability"></p>
+<p>此架构主要是由keepalived实现双机高可用，维护了一个外网VIP，一个内网VIP。正常情况时，外网VIP和内网VIP都绑定在server1服务器，web请求发送到server1的nginx，nginx对于静态资源请求就直接在本机检索并返回，对于php的动态请求，则负载均衡到server1和server2。对于SQL请求，会将此类请求发送到Atlas MySQL中间件，Atlas接收到请求之后，把涉及写操作的请求发送到内网VIP，读请求操作发送到mysql从，这样就实现了读写分离。</p>
+<p>当主服务器server1宕机时，keepalived检测到后，立即把外网VIP和内网VIP绑定到server2，并把server2的mysql切换成主库。此时由于外网VIP已经转移到了server2，web请求将发送给server2的nginx。nginx检测到server1宕机，不再把请求转发到server1的php-fpm。之后的sql请求照常发送给本地的atlas，atlas把写操作发送给内网VIP，读操作发送给mysql从，由于内网VIP已经绑定到server2了，server2的mysql同时接受写操作和读操作。</p>
+<p>当主服务器server1恢复后，server1的mysql自动设置为从，与server2的mysql主同步。keepalived不抢占server2的VIP，继续正常服务。</p>
+<h2 id="架构要求"><a href="#架构要求" class="headerlink" title="架构要求"></a>架构要求</h2><p>要实现此架构，需要三个条件：</p>
+<ol>
+<li>服务器可以设置内网IP，并且设置的内网IP互通。</li>
+<li>服务器可以随意绑定IDC分配给我们使用的外网IP，即外网IP没有绑定MAC地址。</li>
+<li>MySQL服务器支持GTID，即MySQL-5.6.5以上版本。</li>
+</ol>
+<h2 id="环境说明"><a href="#环境说明" class="headerlink" title="环境说明"></a>环境说明</h2><blockquote>
+<p><strong>对外VIP</strong>：10.96.153.239<br><strong>对内VIP</strong>：192.168.1.150</p>
+</blockquote>
+<table>
+<thead>
+<tr>
+<th style="text-align:left">描述</th>
+<th style="text-align:left">网卡1：eth0(公网IP)</th>
+<th style="text-align:left">网卡2：eth1(内网IP)</th>
+<th style="text-align:left">操作系统</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left">server1</td>
+<td style="text-align:left">10.96.153.110</td>
+<td style="text-align:left">192.168.1.100</td>
+<td style="text-align:left">Centos 6.X</td>
+</tr>
+<tr>
+<td style="text-align:left">server2</td>
+<td style="text-align:left">10.96.153.114</td>
+<td style="text-align:left">192.168.1.101</td>
+<td style="text-align:left">Centos 6.X</td>
+</tr>
+</tbody>
+</table>
+<h2 id="架构配置"><a href="#架构配置" class="headerlink" title="架构配置"></a>架构配置</h2>
+          <!--noindex-->
+          <div class="post-button text-center">
+            <a class="btn" href="/blog/2016/08/ha-load-balance-mysql-master-slave-architecture.html#more" rel="contents">
+              阅读全文 &raquo;
+            </a>
+          </div>
+          <!--/noindex-->
+        
+      
+    </div>
+    
+    
+    
+
+    <div>
+    
+    </div>
+
+    <div>
+      
+    </div>
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
     <link itemprop="mainEntityOfPage" href="http://team.jiunile.com/blog/2016/07/lsyncd.html">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -1213,234 +1479,11 @@
 
 
     
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://team.jiunile.com/blog/2016/07/mysql-mysql-transaction-level.html">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="icyboy">
-      <meta itemprop="description" content="">
-      <meta itemprop="image" content="/images/avatar.jpg">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="CloudNative 架构">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h2 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/blog/2016/07/mysql-mysql-transaction-level.html" itemprop="url">MySQL事务隔离级别</a></h2>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2016-07-11T17:21:00+08:00">
-                2016-07-11
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
-            <span class="post-category" >
-            
-              <span class="post-meta-divider">|</span>
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">分类于</span>
-              
-              
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/mysql/" itemprop="url" rel="index">
-                    <span itemprop="name">mysql</span>
-                  </a>
-                </span>
-
-                
-                
-              
-            </span>
-          
-
-          
-            
-              <span class="post-comments-count">
-                <span class="post-meta-divider">|</span>
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-comment-o"></i>
-                </span>
-                <a href="/blog/2016/07/mysql-mysql-transaction-level.html#comments" itemprop="discussionUrl">
-                  <span class="post-comments-count valine-comment-count" data-xid="/blog/2016/07/mysql-mysql-transaction-level.html" itemprop="commentCount"></span>
-                </a>
-              </span>
-            
-          
-
-          
-          
-             <span id="/blog/2016/07/mysql-mysql-transaction-level.html" class="leancloud_visitors" data-flag-title="MySQL事务隔离级别">
-               <span class="post-meta-divider">|</span>
-               <span class="post-meta-item-icon">
-                 <i class="fa fa-eye"></i>
-               </span>
-               
-                 <span class="post-meta-item-text">热度&#58;</span>
-               
-                 <span class="leancloud-visitors-count"></span>
-		 <span>℃</span>
-             </span>
-          
-
-          
-
-          
-            <div class="post-wordcount">
-              
-                
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-file-word-o"></i>
-                </span>
-                
-                  <span class="post-meta-item-text">字数统计&#58;</span>
-                
-                <span title="字数统计">
-                  1,040 字
-                </span>
-              
-
-              
-                <span class="post-meta-divider">|</span>
-              
-
-              
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-clock-o"></i>
-                </span>
-                
-                  <span class="post-meta-item-text">阅读时长 &asymp;</span>
-                
-                <span title="阅读时长">
-                  4 分钟
-                </span>
-              
-            </div>
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          <h2 id="四类隔离级别"><a href="#四类隔离级别" class="headerlink" title="四类隔离级别"></a>四类隔离级别</h2><p>SQL标准定义了4类隔离级别，包括了一些具体规则，用来限定事务内外的哪些改变是可见的，哪些是不可见的。低级别的隔离级一般支持更高的并发处理，并拥有更低的系统开销。</p>
-<ul>
-<li>Read Uncommitted（读取未提交内容）</li>
-</ul>
-<p>在该隔离级别，所有事务都可以看到其他未提交事务的执行结果。本隔离级别很少用于实际应用，因为它的性能也不比其他级别好多少。读取未提交的数据，也被称之为脏读（Dirty Read）。 </p>
-<ul>
-<li>Read Committed（读取提交内容）</li>
-</ul>
-<p>这是大多数数据库系统的默认隔离级别（但不是MySQL默认的）。它满足了隔离的简单定义：一个事务只能看见已经提交事务所做的改变。这种隔离级别 也支持所谓的不可重复读（Nonrepeatable Read），因为同一事务的其他实例在该实例处理其间可能会有新的commit，所以同一select可能返回不同结果。</p>
-<ul>
-<li>Repeatable Read（可重读）</li>
-</ul>
-<p>这是MySQL的默认事务隔离级别，它确保同一事务的多个实例在并发读取数据时，会看到同样的数据行。不过理论上，这会导致另一个棘手的问题：幻读 （Phantom Read）。简单的说，幻读指当用户读取某一范围的数据行时，另一个事务又在该范围内插入了新行，当用户再读取该范围的数据行时，会发现有新的“幻影” 行。InnoDB和Falcon存储引擎通过多版本并发控制（MVCC，Multiversion Concurrency Control）机制解决了该问题。</p>
-<ul>
-<li>Serializable（可串行化）</li>
-</ul>
-<p>这是最高的隔离级别，它通过强制事务排序，使之不可能相互冲突，从而解决幻读问题。简言之，它是在每个读的数据行上加上共享锁。在这个级别，可能导致大量的超时现象和锁竞争。<br>
-          <!--noindex-->
-          <div class="post-button text-center">
-            <a class="btn" href="/blog/2016/07/mysql-mysql-transaction-level.html#more" rel="contents">
-              阅读全文 &raquo;
-            </a>
-          </div>
-          <!--/noindex-->
-        
-      
-    </div>
-    
-    
-    
-
-    <div>
-    
-    </div>
-
-    <div>
-      
-    </div>
-
-    
-
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
   </section>
 
   
   <nav class="pagination">
-    <a class="extend prev" rel="prev" href="/page/15/"><i class="fa fa-angle-left"></i></a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/15/">15</a><span class="page-number current">16</span><a class="page-number" href="/page/17/">17</a><a class="extend next" rel="next" href="/page/17/"><i class="fa fa-angle-right"></i></a>
+    <a class="extend prev" rel="prev" href="/page/15/"><i class="fa fa-angle-left"></i></a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/15/">15</a><span class="page-number current">16</span><a class="page-number" href="/page/17/">17</a><a class="page-number" href="/page/18/">18</a><a class="extend next" rel="next" href="/page/17/"><i class="fa fa-angle-right"></i></a>
   </nav>
 
 
@@ -1490,7 +1533,7 @@
               
                 <a href="/archives/">
               
-                  <span class="site-state-item-count">85</span>
+                  <span class="site-state-item-count">86</span>
                   <span class="site-state-item-name">日志</span>
                 </a>
               </div>
@@ -1501,7 +1544,7 @@
               
               <div class="site-state-item site-state-categories">
                 <a href="/categories/index.html">
-                  <span class="site-state-item-count">70</span>
+                  <span class="site-state-item-count">72</span>
                   <span class="site-state-item-name">分类</span>
                 </a>
               </div>
@@ -1512,7 +1555,7 @@
               
               <div class="site-state-item site-state-tags">
                 <a href="/tags/index.html">
-                  <span class="site-state-item-count">152</span>
+                  <span class="site-state-item-count">155</span>
                   <span class="site-state-item-name">标签</span>
                 </a>
               </div>
@@ -1615,7 +1658,7 @@
     
       <span class="post-meta-item-text">Site words total count&#58;</span>
     
-    <span title="Site words total count">260.8k</span>
+    <span title="Site words total count">262.7k</span>
   
 </div>
 
@@ -1627,7 +1670,7 @@
 
 <div class="theme-info">
   <div class="powered-by"></div>
-  <span class="post-count">博客全站共260.8k字</span>
+  <span class="post-count">博客全站共262.7k字</span>
 </div>
 
 
