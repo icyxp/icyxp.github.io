@@ -2,6 +2,13 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   
   <url>
+    <loc>http://team.jiunile.com/blog/2020/11/nginx-proxy-pass-domain.html</loc>
+    
+    <lastmod>2020-11-09T08:10:10.000Z</lastmod>
+    
+  </url>
+  
+  <url>
     <loc>http://team.jiunile.com/blog/2020/11/k8s-istio-intro.html</loc>
     
     <lastmod>2020-11-09T04:59:03.000Z</lastmod>
