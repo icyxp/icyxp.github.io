@@ -4,6 +4,54 @@
   
     
     <entry>
+      <title><![CDATA[简单直观的阐述 Kubernetes Istio]]></title>
+      <url>http://team.jiunile.com/blog/2020/11/k8s-istio-intro.html</url>
+      <content type="html"><![CDATA[<h2 id="什么是-Istio？"><a href="#什么是-Istio？" class="headerlink" title="什么是 Istio？"></a>什么是 Istio？</h2><p>Istio 是一个服务网格，它允许在集群中的 pods 和服务之间进行更详细、复杂和可观察的通信。</p>
+<p>它通过使用 CRD 扩展 Kubernetes API 来进行管理。它将代理容器注入到所有 pods 中，然后由这些 pods 控制集群中的流量。<br><a id="more"></a></p>
+<h2 id="Kubernetes-Services"><a href="#Kubernetes-Services" class="headerlink" title="Kubernetes Services"></a>Kubernetes Services</h2><p>从这里开始，您应该已经了解了 Kubernetes Services，可以阅读<a href="https://medium.com/swlh/kubernetes-services-simply-visually-explained-2d84e58d70e5" target="_blank" rel="external">本系列的第 1 部分</a>。我们现在将简短地探讨如何实现 Kubernetes Services。我认为这有助于理解 Istio 如何做相同和不同的事情。<br><img src="/images/k8s/istio_1.png" alt="Kubernetes native service request"></p>
+<p>图 1 显示了一个 Kubernetes 集群，该集群有两个节点和 4 个 pod，每个 pod 都有一个容器。服务 <code>service-nginx</code> 指向 nginx pods，服务 <code>service-python</code> 指向python pods。红线显示了从 <code>pod1-nginx</code> 中的 nginx 容器向 <code>service-python</code> 服务发出的请求，该服务将请求重定向到 <code>pod2-python</code>。</p>
+<p>默认情况下，ClusterIP 服务执行简单的随机或循环分发。Kubernetes 中的 Services 并不存在于特定的节点上，而是存在于整个集群中。我们可以在图 2 中看到更多细节:<br><img src="/images/k8s/istio_2.png" alt="Kubernetes native service request with kube-proxy"></p>
+<p>图 2 显示了与图 1 相同的示例，只是更详细一些。Kubernetes 中的服务是由运行在每个节点上的 <code>kube-proxy</code> 组件实现的。该组件创建 iptables 规则，并将请求重定向到 Pod。因此，服务就是 iptables 规则。(还有其他不使用 iptables 的代理模式，但过程是相同的。)</p>
+<p>在图 2 中，我们看到 Kubernetes API 对每个 <code>kube-proxy</code> 进行编程。每当服务配置或服务的pods 发生更改时，就会发生这种情况。通过这种方式，Kubernetes API (以及整个主节点或控制平面)可以下降，但服务仍然可以工作。</p>
+<h2 id="Kubernetes-Istio"><a href="#Kubernetes-Istio" class="headerlink" title="Kubernetes Istio"></a>Kubernetes Istio</h2><p>现在我们来看一个配置了 Istio 的相同示例:<br><img src="/images/k8s/istio_3.png" alt="Istio Control Plane programs istio-proxy"></p>
+<p>图 3 显示安装了 Istio，它随 Istio 控制平面一起提供。还常见的是，每个 pod 都有第二个称为 <code>istio-proxy</code> 的容器，该容器在创建期间自动将其注入到 pods 中。</p>
+<p>Istio 最常见的代理是具有惊人能力的 <a href="https://www.envoyproxy.io/" target="_blank" rel="external">Envoy</a>。虽然可以使用其他代理（<a href="https://www.nginx.com/blog/nginmesh-nginx-as-a-proxy-in-an-istio-service-mesh/" target="_blank" rel="external">如 Nginx</a>），这就是为什么我们从现在开始只将代理称为<code>istio-proxy</code>。</p>
+<p>我们可以看到不再显示 <code>kube-proxy</code> 组件，这样做是为了保持图像的整洁。这些组件仍然存在，但是拥有 <code>istio-proxy</code> 的 pods 将不再使用 <code>kube-proxy</code> 组件。</p>
+<p>每当配置或服务发生变化时，Istio 控制平面就会对所有 <code>istio-proxy</code> sidecars 进行编程。类似于图 2 中 Kubernetes API 程序所有 <code>kube-proxy</code> 组件的方式。Istio 控制平面使用现有的 Kubernetes 服务来接收每个服务点所指向的所有 pods 。通过使用 pod IP 地址，Istio 实现了自己的路由。</p>
+<p>在 Istio 控制平面对所有 <code>istio-proxy</code> sidecars 编程之后，它看起来是这样的:<br><img src="/images/k8s/istio_4.png" alt="Istio Control Plane programmed all istio-proxys"></p>
+<p>在图 4 中，我们看到 Istio 控制平面如何将当前配置应用到集群中的所有 <code>istio-proxy</code> 容器。为了简单起见，还包括 “ClusterIP” 声明。虽然 ClusterIP 是 Kubernetes 的内部服务类型。Istio 将把 Kubernetes 服务声明转换成它自己的路由声明。但是想象一下图像中显示的情况会很有帮助。</p>
+<p>让我们看看如何使用 Istio 发出请求:<br><img src="/images/k8s/istio_5.png" alt="Request made with Istio"></p>
+<p>在图 5 中，所有的 <code>istio-proxy</code> 容器已经被 Istio 控制平面编程，并包含所有必要的路由信息，如图 3/4 所示。来自 <code>pod1-nginx</code> 的 nginx 容器向 <code>service-python</code> 发出请求。</p>
+<p>请求被 <code>pod1-nginx</code> 的 <code>istio-proxy</code> 容器拦截，并被重定向到一个 python pod 的 <code>istio-proxy</code> 容器，该容器随后将请求重定向到 python 容器。</p>
+<h2 id="这里发生了什么"><a href="#这里发生了什么" class="headerlink" title="这里发生了什么?"></a>这里发生了什么?</h2><p>图 1-5 显示了使用 nginx 和 python pod 的 Kubernetes 应用程序的相同示例。我们已经看到了使用默认的 Kubernetes 服务和使用 Istio 是如何发生请求的。</p>
+<p><strong>重要的是</strong>：无论使用什么方法，结果都是相同的，并且不需要更改应用程序本身，只需要更改基础结构代码。</p>
+<h2 id="为什么要这样，为什么要使用-Istio？"><a href="#为什么要这样，为什么要使用-Istio？" class="headerlink" title="为什么要这样，为什么要使用 Istio？"></a>为什么要这样，为什么要使用 Istio？</h2><p>如果在使用 Istio 的时候没有什么变化(nginx pod 仍然可以像以前一样连接到 python pod)，为什么要首先使用 Istio 呢？</p>
+<p><strong>其惊人的优势是</strong>，现在所有流量都通过每个 Pod 中的 <code>istio-proxy</code> 容器进行路由。每当 <code>istio-proxy</code> 接收并重定向一个请求时，它还会将有关该请求的信息提交给 Istio 控制平面。</p>
+<p>因此 Istio 控制平面可以准确地知道该请求来自哪个 pod、存在哪些 HTTP 头、从一个<code>istio-proxy</code> 到另一个 <code>istio-proxy</code> 的请求需要多长时间等等。在具有许多彼此通信的服务的群集中，这可以提高可观察性并更好地控制所有流量。</p>
+<h3 id="先进的路由"><a href="#先进的路由" class="headerlink" title="先进的路由"></a>先进的路由</h3><p>Kubernetes 内部 Services 只能对 pods 执行轮询或随机分发请求。使用 Istio 可以实现更复杂的方式。比如，如果发生错误，根据请求头进行重定向，或者重定向到最少使用的服务。</p>
+<h3 id="部署"><a href="#部署" class="headerlink" title="部署"></a>部署</h3><p>它允许将一定比例的流量路由到特定的服务版本，因此允许绿色/蓝色和金丝雀部署。</p>
+<h3 id="加密"><a href="#加密" class="headerlink" title="加密"></a>加密</h3><p>可以对 pods 之间从 <code>istio-proxy</code> 到 <code>istio-proxy</code> 的集群内部通信进行加密。</p>
+<h3 id="监控-图形生成"><a href="#监控-图形生成" class="headerlink" title="监控/图形生成"></a>监控/图形生成</h3><p>Istio 连接到 Prometheus 等监控工具。它也可以与 Kiali 一起很好的显示所有的服务和他们的流量。<br><img src="/images/k8s/istio_6.png" alt="kiali"></p>
+<h3 id="追踪"><a href="#追踪" class="headerlink" title="追踪"></a>追踪</h3><p>因为 Istio 控制平面拥有大量关于请求的数据，所以可以使用 Jaeger 等工具跟踪和检查这些数据。<br><img src="/images/k8s/istio_7.png" alt="jaeger"></p>
+<h3 id="多集群-mesh"><a href="#多集群-mesh" class="headerlink" title="多集群 mesh"></a>多集群 mesh</h3><p>Istio 有一个内部服务注册中心，它可以使用现有的 Kubernetes i服务。但是也可以从集群外部添加资源，甚至将不同的集群连接到一个网格中。<br><img src="/images/k8s/istio_8.png" alt="multiple-clusters"></p>
+<h2 id="Sidecar-注入"><a href="#Sidecar-注入" class="headerlink" title="Sidecar 注入"></a>Sidecar 注入</h2><p>为了使 Istio 工作，每一个作为网状结构一部分的 pod 都需要注入 <code>istio-proxy</code> sidecar。这可以在 pod 创建期间为整个名称空间自动完成(通过 <a href="https://kubernetes.io/docs/reference/access-authn-authz/admission-controllers/" target="_blank" rel="external">Admission Controller 钩子</a>，也可以手动完成。</p>
+<h2 id="Istio-会取代-Kubernetes-的服务吗"><a href="#Istio-会取代-Kubernetes-的服务吗" class="headerlink" title="Istio 会取代 Kubernetes 的服务吗?"></a>Istio 会取代 Kubernetes 的服务吗?</h2><p>不。当我开始使用 Istio 时，我问自己的一个问题是它是否会取代现有的 Kubernetes 服务。答案是否定的。Istio 使用现有的 Kubernetes 服务获取它们的所有 endpoints/pod IP 地址。</p>
+<h2 id="Istio-取代了-Kubernetes-的-Ingress-吗"><a href="#Istio-取代了-Kubernetes-的-Ingress-吗" class="headerlink" title="Istio 取代了 Kubernetes 的 Ingress 吗?"></a>Istio 取代了 Kubernetes 的 Ingress 吗?</h2><p>是的。Istio 提供了新的资源，比如网关和虚拟服务，甚至还附带了 ingress 转换器<code>istioctl convert-ingress</code>。一个很好的来源是 <a href="https://istio.io/docs/concepts/traffic-management" target="_blank" rel="external">https://istio.io/docs/concepts/traffic-management</a></p>
+<p>图 6 显示了 Istio 网关如何处理进入流量。网关本身也是一个 <code>istio-proxy</code> 组件。<br><img src="/images/k8s/istio_9.png" alt="Istio Gateway"></p>
+<h2 id="控制平面组件"><a href="#控制平面组件" class="headerlink" title="控制平面组件"></a>控制平面组件</h2><p>Istio 控制平面由几个较小的部件组成，如 <code>Pilot</code>、<code>Mixer</code>、<code>Citadel</code> 和 <code>Galley</code>。如果您想深入研究，我建议您访问 <a href="https://istio.io/docs/ops/deployment/architecture" target="_blank" rel="external">https://istio.io/docs/ops/deployment/architecture</a></p>
+<h2 id="如果-Istio-控制平面关闭会发生什么？"><a href="#如果-Istio-控制平面关闭会发生什么？" class="headerlink" title="如果 Istio 控制平面关闭会发生什么？"></a>如果 Istio 控制平面关闭会发生什么？</h2><p>因为所有的 <code>istio-proxy</code>  sidecar 都已经编程好了，所以 istio 的控制平面可以关闭，流量也会像以前一样工作。但是配置更新或新创建的 pods 不会被应用。</p>
+<p>但对于高级路由，如将流量发送到使用最少的 pod 或策略(<a href="https://istio.io/docs/tasks/policy-enforcement" target="_blank" rel="external">https://istio.io/docs/tasks/policy-enforcement</a>)，所有 <code>istio-proxys</code> 之间需要通过 istio 控制平面进行通信。然后，在允许请求之前，每个 <code>istio-proxy</code> 都需要检查 istio 控制平面。</p>
+<p>为了使这些配置正常工作，我认为控制平面必须始终可用。如果您有与此相关的链接，请随时添加评论。</p>
+<h2 id="下一步你能做什么？"><a href="#下一步你能做什么？" class="headerlink" title="下一步你能做什么？"></a>下一步你能做什么？</h2><p>我写了一篇关于 <a href="https://medium.com/@wuestkamp/kubernetes-istio-canary-deployment-5ecfd7920e1c?source=friends_link&amp;sk=2be48393ac175a2199bf5d486cb91acf" target="_blank" rel="external">Istio Canray</a> 部署的示例文章。</p>
+<p>Istio 提供了一个很好的示例应用程序和一些微服务。如果你喜欢进入 Istio，这是一个很好的开始方法：<a href="https://istio.io/docs/setup/getting-started/" target="_blank" rel="external">https://istio.io/docs/setup/getting-started</a></p>
+<p>如果你想更深入地研究，<a href="https://www.youtube.com/watch?v=cB611FtjHcQ" target="_blank" rel="external">这段视频</a>也是很棒的。</p>
+<h2 id="回顾"><a href="#回顾" class="headerlink" title="回顾"></a>回顾</h2><p>这是一个简单的介绍和广泛的概述，我希望对人们有所帮助。Istio 无疑在 Kubernetes 之上又增加了另一层次的复杂性。尽管对于现代微服务架构来说，它实际上提供了一种比必须在应用程序代码本身中实现跟踪或可观察性更简单的方法。</p>
+<p>作者：Kim Wuestkamp 来源：medium.com</p>
+<p><img src="/images/wx_dyh.png" alt="微信订阅号"></p>
+]]></content>
+    </entry>
+    
+    <entry>
       <title><![CDATA[k8s ingress 在删除资源时 hang 住无法删除]]></title>
       <url>http://team.jiunile.com/blog/2020/10/k8s-finalizers.html</url>
       <content type="html"><![CDATA[<h2 id="背景"><a href="#背景" class="headerlink" title="背景"></a>背景</h2><p>最近将 aws <a href="https://github.com/kubernetes-sigs/aws-load-balancer-controller" target="_blank" rel="external">ALBIgressController</a> 升级到 2.0 后发现在中国区有点问题，随后就将 <code>alb-ingress-controller</code> 回退到 1.x。具体 2.0 的问题已经解决，原因是中国区 aws 没有对应的 <code>waf</code> ，解决方法是将 <code>waf</code> 相关的配置关闭即可。当然，这不是重点，重点是当我回退到 1.x 后遇到了几个问题：</p>

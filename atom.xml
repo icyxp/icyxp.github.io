@@ -5,7 +5,7 @@
   <link href="/atom.xml" rel="self"/>
   
   <link href="http://team.jiunile.com/"/>
-  <updated>2020-10-30T09:24:15.000Z</updated>
+  <updated>2020-11-09T04:59:03.000Z</updated>
   <id>http://team.jiunile.com/</id>
   
   <author>
@@ -14,6 +14,75 @@
   </author>
   
   <generator uri="http://hexo.io/">Hexo</generator>
+  
+  <entry>
+    <title>简单直观的阐述 Kubernetes Istio</title>
+    <link href="http://team.jiunile.com//blog/2020/11/k8s-istio-intro.html"/>
+    <id>http://team.jiunile.com//blog/2020/11/k8s-istio-intro.html</id>
+    <published>2020-11-09T12:00:00.000Z</published>
+    <updated>2020-11-09T04:59:03.000Z</updated>
+    
+    <content type="html">&lt;h2 id=&quot;什么是-Istio？&quot;&gt;&lt;a href=&quot;#什么是-Istio？&quot; class=&quot;headerlink&quot; title=&quot;什么是 Istio？&quot;&gt;&lt;/a&gt;什么是 Istio？&lt;/h2&gt;&lt;p&gt;Istio 是一个服务网格，它允许在集群中的 pods 和服务之间进行更详细、复杂和可观察的通信。&lt;/p&gt;
+&lt;p&gt;它通过使用 CRD 扩展 Kubernetes API 来进行管理。它将代理容器注入到所有 pods 中，然后由这些 pods 控制集群中的流量。&lt;br&gt;&lt;a id=&quot;more&quot;&gt;&lt;/a&gt;&lt;/p&gt;
+&lt;h2 id=&quot;Kubernetes-Services&quot;&gt;&lt;a href=&quot;#Kubernetes-Services&quot; class=&quot;headerlink&quot; title=&quot;Kubernetes Services&quot;&gt;&lt;/a&gt;Kubernetes Services&lt;/h2&gt;&lt;p&gt;从这里开始，您应该已经了解了 Kubernetes Services，可以阅读&lt;a href=&quot;https://medium.com/swlh/kubernetes-services-simply-visually-explained-2d84e58d70e5&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;本系列的第 1 部分&lt;/a&gt;。我们现在将简短地探讨如何实现 Kubernetes Services。我认为这有助于理解 Istio 如何做相同和不同的事情。&lt;br&gt;&lt;img src=&quot;/images/k8s/istio_1.png&quot; alt=&quot;Kubernetes native service request&quot;&gt;&lt;/p&gt;
+&lt;p&gt;图 1 显示了一个 Kubernetes 集群，该集群有两个节点和 4 个 pod，每个 pod 都有一个容器。服务 &lt;code&gt;service-nginx&lt;/code&gt; 指向 nginx pods，服务 &lt;code&gt;service-python&lt;/code&gt; 指向python pods。红线显示了从 &lt;code&gt;pod1-nginx&lt;/code&gt; 中的 nginx 容器向 &lt;code&gt;service-python&lt;/code&gt; 服务发出的请求，该服务将请求重定向到 &lt;code&gt;pod2-python&lt;/code&gt;。&lt;/p&gt;
+&lt;p&gt;默认情况下，ClusterIP 服务执行简单的随机或循环分发。Kubernetes 中的 Services 并不存在于特定的节点上，而是存在于整个集群中。我们可以在图 2 中看到更多细节:&lt;br&gt;&lt;img src=&quot;/images/k8s/istio_2.png&quot; alt=&quot;Kubernetes native service request with kube-proxy&quot;&gt;&lt;/p&gt;
+&lt;p&gt;图 2 显示了与图 1 相同的示例，只是更详细一些。Kubernetes 中的服务是由运行在每个节点上的 &lt;code&gt;kube-proxy&lt;/code&gt; 组件实现的。该组件创建 iptables 规则，并将请求重定向到 Pod。因此，服务就是 iptables 规则。(还有其他不使用 iptables 的代理模式，但过程是相同的。)&lt;/p&gt;
+&lt;p&gt;在图 2 中，我们看到 Kubernetes API 对每个 &lt;code&gt;kube-proxy&lt;/code&gt; 进行编程。每当服务配置或服务的pods 发生更改时，就会发生这种情况。通过这种方式，Kubernetes API (以及整个主节点或控制平面)可以下降，但服务仍然可以工作。&lt;/p&gt;
+&lt;h2 id=&quot;Kubernetes-Istio&quot;&gt;&lt;a href=&quot;#Kubernetes-Istio&quot; class=&quot;headerlink&quot; title=&quot;Kubernetes Istio&quot;&gt;&lt;/a&gt;Kubernetes Istio&lt;/h2&gt;&lt;p&gt;现在我们来看一个配置了 Istio 的相同示例:&lt;br&gt;&lt;img src=&quot;/images/k8s/istio_3.png&quot; alt=&quot;Istio Control Plane programs istio-proxy&quot;&gt;&lt;/p&gt;
+&lt;p&gt;图 3 显示安装了 Istio，它随 Istio 控制平面一起提供。还常见的是，每个 pod 都有第二个称为 &lt;code&gt;istio-proxy&lt;/code&gt; 的容器，该容器在创建期间自动将其注入到 pods 中。&lt;/p&gt;
+&lt;p&gt;Istio 最常见的代理是具有惊人能力的 &lt;a href=&quot;https://www.envoyproxy.io/&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;Envoy&lt;/a&gt;。虽然可以使用其他代理（&lt;a href=&quot;https://www.nginx.com/blog/nginmesh-nginx-as-a-proxy-in-an-istio-service-mesh/&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;如 Nginx&lt;/a&gt;），这就是为什么我们从现在开始只将代理称为&lt;code&gt;istio-proxy&lt;/code&gt;。&lt;/p&gt;
+&lt;p&gt;我们可以看到不再显示 &lt;code&gt;kube-proxy&lt;/code&gt; 组件，这样做是为了保持图像的整洁。这些组件仍然存在，但是拥有 &lt;code&gt;istio-proxy&lt;/code&gt; 的 pods 将不再使用 &lt;code&gt;kube-proxy&lt;/code&gt; 组件。&lt;/p&gt;
+&lt;p&gt;每当配置或服务发生变化时，Istio 控制平面就会对所有 &lt;code&gt;istio-proxy&lt;/code&gt; sidecars 进行编程。类似于图 2 中 Kubernetes API 程序所有 &lt;code&gt;kube-proxy&lt;/code&gt; 组件的方式。Istio 控制平面使用现有的 Kubernetes 服务来接收每个服务点所指向的所有 pods 。通过使用 pod IP 地址，Istio 实现了自己的路由。&lt;/p&gt;
+&lt;p&gt;在 Istio 控制平面对所有 &lt;code&gt;istio-proxy&lt;/code&gt; sidecars 编程之后，它看起来是这样的:&lt;br&gt;&lt;img src=&quot;/images/k8s/istio_4.png&quot; alt=&quot;Istio Control Plane programmed all istio-proxys&quot;&gt;&lt;/p&gt;
+&lt;p&gt;在图 4 中，我们看到 Istio 控制平面如何将当前配置应用到集群中的所有 &lt;code&gt;istio-proxy&lt;/code&gt; 容器。为了简单起见，还包括 “ClusterIP” 声明。虽然 ClusterIP 是 Kubernetes 的内部服务类型。Istio 将把 Kubernetes 服务声明转换成它自己的路由声明。但是想象一下图像中显示的情况会很有帮助。&lt;/p&gt;
+&lt;p&gt;让我们看看如何使用 Istio 发出请求:&lt;br&gt;&lt;img src=&quot;/images/k8s/istio_5.png&quot; alt=&quot;Request made with Istio&quot;&gt;&lt;/p&gt;
+&lt;p&gt;在图 5 中，所有的 &lt;code&gt;istio-proxy&lt;/code&gt; 容器已经被 Istio 控制平面编程，并包含所有必要的路由信息，如图 3/4 所示。来自 &lt;code&gt;pod1-nginx&lt;/code&gt; 的 nginx 容器向 &lt;code&gt;service-python&lt;/code&gt; 发出请求。&lt;/p&gt;
+&lt;p&gt;请求被 &lt;code&gt;pod1-nginx&lt;/code&gt; 的 &lt;code&gt;istio-proxy&lt;/code&gt; 容器拦截，并被重定向到一个 python pod 的 &lt;code&gt;istio-proxy&lt;/code&gt; 容器，该容器随后将请求重定向到 python 容器。&lt;/p&gt;
+&lt;h2 id=&quot;这里发生了什么&quot;&gt;&lt;a href=&quot;#这里发生了什么&quot; class=&quot;headerlink&quot; title=&quot;这里发生了什么?&quot;&gt;&lt;/a&gt;这里发生了什么?&lt;/h2&gt;&lt;p&gt;图 1-5 显示了使用 nginx 和 python pod 的 Kubernetes 应用程序的相同示例。我们已经看到了使用默认的 Kubernetes 服务和使用 Istio 是如何发生请求的。&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;重要的是&lt;/strong&gt;：无论使用什么方法，结果都是相同的，并且不需要更改应用程序本身，只需要更改基础结构代码。&lt;/p&gt;
+&lt;h2 id=&quot;为什么要这样，为什么要使用-Istio？&quot;&gt;&lt;a href=&quot;#为什么要这样，为什么要使用-Istio？&quot; class=&quot;headerlink&quot; title=&quot;为什么要这样，为什么要使用 Istio？&quot;&gt;&lt;/a&gt;为什么要这样，为什么要使用 Istio？&lt;/h2&gt;&lt;p&gt;如果在使用 Istio 的时候没有什么变化(nginx pod 仍然可以像以前一样连接到 python pod)，为什么要首先使用 Istio 呢？&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;其惊人的优势是&lt;/strong&gt;，现在所有流量都通过每个 Pod 中的 &lt;code&gt;istio-proxy&lt;/code&gt; 容器进行路由。每当 &lt;code&gt;istio-proxy&lt;/code&gt; 接收并重定向一个请求时，它还会将有关该请求的信息提交给 Istio 控制平面。&lt;/p&gt;
+&lt;p&gt;因此 Istio 控制平面可以准确地知道该请求来自哪个 pod、存在哪些 HTTP 头、从一个&lt;code&gt;istio-proxy&lt;/code&gt; 到另一个 &lt;code&gt;istio-proxy&lt;/code&gt; 的请求需要多长时间等等。在具有许多彼此通信的服务的群集中，这可以提高可观察性并更好地控制所有流量。&lt;/p&gt;
+&lt;h3 id=&quot;先进的路由&quot;&gt;&lt;a href=&quot;#先进的路由&quot; class=&quot;headerlink&quot; title=&quot;先进的路由&quot;&gt;&lt;/a&gt;先进的路由&lt;/h3&gt;&lt;p&gt;Kubernetes 内部 Services 只能对 pods 执行轮询或随机分发请求。使用 Istio 可以实现更复杂的方式。比如，如果发生错误，根据请求头进行重定向，或者重定向到最少使用的服务。&lt;/p&gt;
+&lt;h3 id=&quot;部署&quot;&gt;&lt;a href=&quot;#部署&quot; class=&quot;headerlink&quot; title=&quot;部署&quot;&gt;&lt;/a&gt;部署&lt;/h3&gt;&lt;p&gt;它允许将一定比例的流量路由到特定的服务版本，因此允许绿色/蓝色和金丝雀部署。&lt;/p&gt;
+&lt;h3 id=&quot;加密&quot;&gt;&lt;a href=&quot;#加密&quot; class=&quot;headerlink&quot; title=&quot;加密&quot;&gt;&lt;/a&gt;加密&lt;/h3&gt;&lt;p&gt;可以对 pods 之间从 &lt;code&gt;istio-proxy&lt;/code&gt; 到 &lt;code&gt;istio-proxy&lt;/code&gt; 的集群内部通信进行加密。&lt;/p&gt;
+&lt;h3 id=&quot;监控-图形生成&quot;&gt;&lt;a href=&quot;#监控-图形生成&quot; class=&quot;headerlink&quot; title=&quot;监控/图形生成&quot;&gt;&lt;/a&gt;监控/图形生成&lt;/h3&gt;&lt;p&gt;Istio 连接到 Prometheus 等监控工具。它也可以与 Kiali 一起很好的显示所有的服务和他们的流量。&lt;br&gt;&lt;img src=&quot;/images/k8s/istio_6.png&quot; alt=&quot;kiali&quot;&gt;&lt;/p&gt;
+&lt;h3 id=&quot;追踪&quot;&gt;&lt;a href=&quot;#追踪&quot; class=&quot;headerlink&quot; title=&quot;追踪&quot;&gt;&lt;/a&gt;追踪&lt;/h3&gt;&lt;p&gt;因为 Istio 控制平面拥有大量关于请求的数据，所以可以使用 Jaeger 等工具跟踪和检查这些数据。&lt;br&gt;&lt;img src=&quot;/images/k8s/istio_7.png&quot; alt=&quot;jaeger&quot;&gt;&lt;/p&gt;
+&lt;h3 id=&quot;多集群-mesh&quot;&gt;&lt;a href=&quot;#多集群-mesh&quot; class=&quot;headerlink&quot; title=&quot;多集群 mesh&quot;&gt;&lt;/a&gt;多集群 mesh&lt;/h3&gt;&lt;p&gt;Istio 有一个内部服务注册中心，它可以使用现有的 Kubernetes i服务。但是也可以从集群外部添加资源，甚至将不同的集群连接到一个网格中。&lt;br&gt;&lt;img src=&quot;/images/k8s/istio_8.png&quot; alt=&quot;multiple-clusters&quot;&gt;&lt;/p&gt;
+&lt;h2 id=&quot;Sidecar-注入&quot;&gt;&lt;a href=&quot;#Sidecar-注入&quot; class=&quot;headerlink&quot; title=&quot;Sidecar 注入&quot;&gt;&lt;/a&gt;Sidecar 注入&lt;/h2&gt;&lt;p&gt;为了使 Istio 工作，每一个作为网状结构一部分的 pod 都需要注入 &lt;code&gt;istio-proxy&lt;/code&gt; sidecar。这可以在 pod 创建期间为整个名称空间自动完成(通过 &lt;a href=&quot;https://kubernetes.io/docs/reference/access-authn-authz/admission-controllers/&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;Admission Controller 钩子&lt;/a&gt;，也可以手动完成。&lt;/p&gt;
+&lt;h2 id=&quot;Istio-会取代-Kubernetes-的服务吗&quot;&gt;&lt;a href=&quot;#Istio-会取代-Kubernetes-的服务吗&quot; class=&quot;headerlink&quot; title=&quot;Istio 会取代 Kubernetes 的服务吗?&quot;&gt;&lt;/a&gt;Istio 会取代 Kubernetes 的服务吗?&lt;/h2&gt;&lt;p&gt;不。当我开始使用 Istio 时，我问自己的一个问题是它是否会取代现有的 Kubernetes 服务。答案是否定的。Istio 使用现有的 Kubernetes 服务获取它们的所有 endpoints/pod IP 地址。&lt;/p&gt;
+&lt;h2 id=&quot;Istio-取代了-Kubernetes-的-Ingress-吗&quot;&gt;&lt;a href=&quot;#Istio-取代了-Kubernetes-的-Ingress-吗&quot; class=&quot;headerlink&quot; title=&quot;Istio 取代了 Kubernetes 的 Ingress 吗?&quot;&gt;&lt;/a&gt;Istio 取代了 Kubernetes 的 Ingress 吗?&lt;/h2&gt;&lt;p&gt;是的。Istio 提供了新的资源，比如网关和虚拟服务，甚至还附带了 ingress 转换器&lt;code&gt;istioctl convert-ingress&lt;/code&gt;。一个很好的来源是 &lt;a href=&quot;https://istio.io/docs/concepts/traffic-management&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;https://istio.io/docs/concepts/traffic-management&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;图 6 显示了 Istio 网关如何处理进入流量。网关本身也是一个 &lt;code&gt;istio-proxy&lt;/code&gt; 组件。&lt;br&gt;&lt;img src=&quot;/images/k8s/istio_9.png&quot; alt=&quot;Istio Gateway&quot;&gt;&lt;/p&gt;
+&lt;h2 id=&quot;控制平面组件&quot;&gt;&lt;a href=&quot;#控制平面组件&quot; class=&quot;headerlink&quot; title=&quot;控制平面组件&quot;&gt;&lt;/a&gt;控制平面组件&lt;/h2&gt;&lt;p&gt;Istio 控制平面由几个较小的部件组成，如 &lt;code&gt;Pilot&lt;/code&gt;、&lt;code&gt;Mixer&lt;/code&gt;、&lt;code&gt;Citadel&lt;/code&gt; 和 &lt;code&gt;Galley&lt;/code&gt;。如果您想深入研究，我建议您访问 &lt;a href=&quot;https://istio.io/docs/ops/deployment/architecture&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;https://istio.io/docs/ops/deployment/architecture&lt;/a&gt;&lt;/p&gt;
+&lt;h2 id=&quot;如果-Istio-控制平面关闭会发生什么？&quot;&gt;&lt;a href=&quot;#如果-Istio-控制平面关闭会发生什么？&quot; class=&quot;headerlink&quot; title=&quot;如果 Istio 控制平面关闭会发生什么？&quot;&gt;&lt;/a&gt;如果 Istio 控制平面关闭会发生什么？&lt;/h2&gt;&lt;p&gt;因为所有的 &lt;code&gt;istio-proxy&lt;/code&gt;  sidecar 都已经编程好了，所以 istio 的控制平面可以关闭，流量也会像以前一样工作。但是配置更新或新创建的 pods 不会被应用。&lt;/p&gt;
+&lt;p&gt;但对于高级路由，如将流量发送到使用最少的 pod 或策略(&lt;a href=&quot;https://istio.io/docs/tasks/policy-enforcement&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;https://istio.io/docs/tasks/policy-enforcement&lt;/a&gt;)，所有 &lt;code&gt;istio-proxys&lt;/code&gt; 之间需要通过 istio 控制平面进行通信。然后，在允许请求之前，每个 &lt;code&gt;istio-proxy&lt;/code&gt; 都需要检查 istio 控制平面。&lt;/p&gt;
+&lt;p&gt;为了使这些配置正常工作，我认为控制平面必须始终可用。如果您有与此相关的链接，请随时添加评论。&lt;/p&gt;
+&lt;h2 id=&quot;下一步你能做什么？&quot;&gt;&lt;a href=&quot;#下一步你能做什么？&quot; class=&quot;headerlink&quot; title=&quot;下一步你能做什么？&quot;&gt;&lt;/a&gt;下一步你能做什么？&lt;/h2&gt;&lt;p&gt;我写了一篇关于 &lt;a href=&quot;https://medium.com/@wuestkamp/kubernetes-istio-canary-deployment-5ecfd7920e1c?source=friends_link&amp;amp;sk=2be48393ac175a2199bf5d486cb91acf&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;Istio Canray&lt;/a&gt; 部署的示例文章。&lt;/p&gt;
+&lt;p&gt;Istio 提供了一个很好的示例应用程序和一些微服务。如果你喜欢进入 Istio，这是一个很好的开始方法：&lt;a href=&quot;https://istio.io/docs/setup/getting-started/&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;https://istio.io/docs/setup/getting-started&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;如果你想更深入地研究，&lt;a href=&quot;https://www.youtube.com/watch?v=cB611FtjHcQ&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;这段视频&lt;/a&gt;也是很棒的。&lt;/p&gt;
+&lt;h2 id=&quot;回顾&quot;&gt;&lt;a href=&quot;#回顾&quot; class=&quot;headerlink&quot; title=&quot;回顾&quot;&gt;&lt;/a&gt;回顾&lt;/h2&gt;&lt;p&gt;这是一个简单的介绍和广泛的概述，我希望对人们有所帮助。Istio 无疑在 Kubernetes 之上又增加了另一层次的复杂性。尽管对于现代微服务架构来说，它实际上提供了一种比必须在应用程序代码本身中实现跟踪或可观察性更简单的方法。&lt;/p&gt;
+&lt;p&gt;作者：Kim Wuestkamp 来源：medium.com&lt;/p&gt;
+&lt;p&gt;&lt;img src=&quot;/images/wx_dyh.png&quot; alt=&quot;微信订阅号&quot;&gt;&lt;/p&gt;
+</content>
+    
+    <summary type="html">
+    
+      &lt;h2 id=&quot;什么是-Istio？&quot;&gt;&lt;a href=&quot;#什么是-Istio？&quot; class=&quot;headerlink&quot; title=&quot;什么是 Istio？&quot;&gt;&lt;/a&gt;什么是 Istio？&lt;/h2&gt;&lt;p&gt;Istio 是一个服务网格，它允许在集群中的 pods 和服务之间进行更详细、复杂和可观察的通信。&lt;/p&gt;
+&lt;p&gt;它通过使用 CRD 扩展 Kubernetes API 来进行管理。它将代理容器注入到所有 pods 中，然后由这些 pods 控制集群中的流量。&lt;br&gt;
+    
+    </summary>
+    
+      <category term="kubernetes" scheme="http://team.jiunile.com/categories/kubernetes/"/>
+    
+      <category term="istio" scheme="http://team.jiunile.com/categories/kubernetes/istio/"/>
+    
+    
+      <category term="k8s" scheme="http://team.jiunile.com/tags/k8s/"/>
+    
+      <category term="istio" scheme="http://team.jiunile.com/tags/istio/"/>
+    
+  </entry>
   
   <entry>
     <title>k8s ingress 在删除资源时 hang 住无法删除</title>
@@ -2445,87 +2514,6 @@
       <category term="go" scheme="http://team.jiunile.com/tags/go/"/>
     
       <category term="scheduler" scheme="http://team.jiunile.com/tags/scheduler/"/>
-    
-  </entry>
-  
-  <entry>
-    <title>k8s v1.17 新增拓扑感知服务路由</title>
-    <link href="http://team.jiunile.com//blog/2020/05/k8s-service-topology.html"/>
-    <id>http://team.jiunile.com//blog/2020/05/k8s-service-topology.html</id>
-    <published>2020-05-22T11:00:00.000Z</published>
-    <updated>2020-05-22T07:47:44.000Z</updated>
-    
-    <content type="html">&lt;h2 id=&quot;名词解释&quot;&gt;&lt;a href=&quot;#名词解释&quot; class=&quot;headerlink&quot; title=&quot;名词解释&quot;&gt;&lt;/a&gt;名词解释&lt;/h2&gt;&lt;ul&gt;
-&lt;li&gt;&lt;code&gt;拓扑域&lt;/code&gt;: 表示在集群中的某一类 “地方”，比如某节点、某机架、某可用区或某地域等，这些都可以作为某种拓扑域。&lt;/li&gt;
-&lt;li&gt;&lt;code&gt;endpoint&lt;/code&gt;: k8s 某个服务的某个 ip+port，通常是 pod 的 ip+port。&lt;/li&gt;
-&lt;li&gt;&lt;code&gt;service&lt;/code&gt;: k8s 的 service 资源(服务)，关联一组 endpoint ，访问 service 会被转发到关联的某个 endpoint 上。&lt;/li&gt;
-&lt;/ul&gt;
-&lt;h2 id=&quot;背景&quot;&gt;&lt;a href=&quot;#背景&quot; class=&quot;headerlink&quot; title=&quot;背景&quot;&gt;&lt;/a&gt;背景&lt;/h2&gt;&lt;p&gt;拓扑感知服务路由，此特性最初由杜军大佬提出并设计。为什么要设计此特性呢？想象一下，k8s 集群节点分布在不同的地方，service 对应的 endpoints 分布在不同节点，传统转发策略会对所有 endpoint 做负载均衡，通常会等概率转发，当访问 service 时，流量就可能被分散打到这些不同的地方。虽然 service 转发做了负载均衡，但如果 endpoint 距离比较远，流量转发过去网络时延就相对比较高，会影响网络性能，在某些情况下甚至还可能会付出额外的流量费用。要是如能实现 service 就近转发 endpoint，是不是就可以实现降低网络时延，提升网络性能了呢？是的！这也正是该特性所提出的目的和意义。&lt;br&gt;&lt;a id=&quot;more&quot;&gt;&lt;/a&gt;&lt;/p&gt;
-&lt;h2 id=&quot;k8s-亲和性&quot;&gt;&lt;a href=&quot;#k8s-亲和性&quot; class=&quot;headerlink&quot; title=&quot;k8s 亲和性&quot;&gt;&lt;/a&gt;k8s 亲和性&lt;/h2&gt;&lt;p&gt;service 的就近转发实际就是一种网络的亲和性，倾向于转发到离自己比较近的 endpoint。在此特性之前，已经在调度和存储方面有一些亲和性的设计与实现:&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;&lt;code&gt;节点亲和性 (Node Affinity)&lt;/code&gt;: 让 Pod 被调度到符合一些期望条件的 Node 上，比如限制调度到某一可用区，或者要求节点支持 GPU，这算是调度亲和，调度结果取决于节点属性。&lt;/li&gt;
-&lt;li&gt;&lt;code&gt;Pod 亲和性与反亲和性 (Pod Affinity/AntiAffinity)&lt;/code&gt;: 让一组 Pod 调度到同一拓扑域的节点上，或者打散到不同拓扑域的节点， 这也算是调度亲和，调度结果取决于其它 Pod。&lt;/li&gt;
-&lt;li&gt;&lt;code&gt;数据卷拓扑感知调度 (Volume Topology-aware Scheduling)&lt;/code&gt;: 让 Pod 只被调度到符合其绑定的存储所在拓扑域的节点上，这算是调度与存储的亲和，调度结果取决于存储的拓扑域。&lt;/li&gt;
-&lt;li&gt;&lt;code&gt;本地数据卷 (Local Persistent Volume)&lt;/code&gt;: 让 Pod 使用本地数据卷，比如高性能 SSD，在某些需要高 IOPS 低时延的场景很有用，它还会保证 Pod 始终被调度到同一节点，数据就不会不丢失，这也算是调度与存储的亲和，调度结果取决于存储所在节点。&lt;/li&gt;
-&lt;li&gt;&lt;code&gt;数据卷拓扑感知动态创建 (Topology-Aware Volume Dynamic Provisioning)&lt;/code&gt;: 先调度 Pod，再根据 Pod 所在节点的拓扑域来创建存储，这算是存储与调度的亲和，存储的创建取决于调度的结果。&lt;/li&gt;
-&lt;/ul&gt;
-&lt;p&gt;而 k8s 目前在网络方面还没有亲和性能力，拓扑感知服务路由这个新特性恰好可以补齐这个的空缺，此特性使得 service 可以实现就近转发而不是所有 endpoint 等概率转发。&lt;/p&gt;
-&lt;h2 id=&quot;如何实现&quot;&gt;&lt;a href=&quot;#如何实现&quot; class=&quot;headerlink&quot; title=&quot;如何实现&quot;&gt;&lt;/a&gt;如何实现&lt;/h2&gt;&lt;p&gt;我们知道，service 转发主要是 node 上的 kube-proxy 进程通过 watch apiserver 获取 service 对应的 endpoint，再写入 iptables 或 ipvs 规则来实现的; 对于 headless service，主要是通过 kube-dns 或 coredns 动态解析到不同 endpoint ip 来实现的。实现 service 就近转发的关键点就在于如何将流量转发到跟当前节点在同一拓扑域的 endpoint 上，也就是会进行一次 endpoint 筛选，选出一部分符合当前节点拓扑域的 endpoint 进行转发。&lt;/p&gt;
-&lt;p&gt;那么如何判断 endpoint 跟当前节点是否在同一拓扑域里呢？只要能获取到 endpoint 的拓扑信息，用它跟当前节点拓扑对比下就可以知道了。那又如何获取 endpoint 的拓扑信息呢？答案是通过 endpoint 所在节点的 label，我们可以使用 node label 来描述拓扑域。&lt;/p&gt;
-&lt;p&gt;通常在节点初始化的时候，controller-manager 就会为节点打上许多 label，比如 &lt;code&gt;kubernetes.io/hostname&lt;/code&gt; 表示节点的 hostname 来区分节点；另外，在云厂商提供的 k8s 服务，或者使用 cloud-controller-manager 的自建集群，通常还会给节点打上 &lt;code&gt;failure-domain.beta.kubernetes.io/zone&lt;/code&gt; 和 &lt;code&gt;failure-domain.beta.kubernetes.io/region&lt;/code&gt; 以区分节点所在可用区和所在地域，但自 v1.17 开始将会改名成 &lt;code&gt;topology.kubernetes.io/zone&lt;/code&gt; 和 &lt;code&gt;topology.kubernetes.io/region&lt;/code&gt;，参见 &lt;a href=&quot;https://github.com/kubernetes/kubernetes/pull/81431&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;PR #81431&lt;/a&gt;。&lt;/p&gt;
-&lt;p&gt;如何根据 endpoint 查到它所在节点的这些 label 呢？答案是通过 &lt;code&gt;Endpoint Slice&lt;/code&gt;，该特性在 v1.16 发布了 alpha，在 v1.17 将会进入 beta，它相当于 Endpoint API 增强版，通过将 endpoint 做数据分片来解决大规模 endpoint 的性能问题，并且可以携带更多的信息，包括 endpoint 所在节点的拓扑信息，拓扑感知服务路由特性会通过 &lt;code&gt;Endpoint Slice&lt;/code&gt; 获取这些拓扑信息实现 endpoint 筛选 (过滤出在同一拓扑域的 endpoint)，然后再转换为 iptables 或 ipvs 规则写入节点以实现拓扑感知的路由转发。&lt;/p&gt;
-&lt;p&gt;细心的你可能已经发现，之前每个节点上转发 service 的 iptables/ipvs 规则基本是一样的，但启用了拓扑感知服务路由特性之后，每个节点上的转发规则就可能不一样了，因为不同节点的拓扑信息不一样，导致过滤出的 endpoint 就不一样，也正是因为这样，service 转发变得不再等概率，灵活的就近转发才得以实现。&lt;/p&gt;
-&lt;p&gt;当前还不支持 headless service 的拓扑路由，计划在 beta 阶段支持。由于 &lt;a href=&quot;https://zhuanlan.zhihu.com/p/54153164&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;headless service&lt;/a&gt; 不是通过 kube-proxy 生成转发规则，而是通过 dns 动态解析实现的，所以需要改 kube-dns/coredns 来支持这个特性。&lt;/p&gt;
-&lt;h2 id=&quot;前提条件&quot;&gt;&lt;a href=&quot;#前提条件&quot; class=&quot;headerlink&quot; title=&quot;前提条件&quot;&gt;&lt;/a&gt;前提条件&lt;/h2&gt;&lt;p&gt;启用当前 alpha 实现的拓扑感知服务路由特性需要满足以下前提条件:&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;集群版本在 v1.17 及其以上。&lt;/li&gt;
-&lt;li&gt;Kube-proxy 以 iptables 或 IPVS 模式运行 (alpha 阶段暂时只实现了这两种模式)。&lt;/li&gt;
-&lt;li&gt;启用了 &lt;a href=&quot;https://kubernetes.io/docs/concepts/services-networking/endpoint-slices/&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;Endpoint Slices&lt;/a&gt; (此特性虽然在 v1.17 进入 beta，但没有默认开启)。&lt;/li&gt;
-&lt;/ul&gt;
-&lt;h2 id=&quot;如何启用此特性&quot;&gt;&lt;a href=&quot;#如何启用此特性&quot; class=&quot;headerlink&quot; title=&quot;如何启用此特性&quot;&gt;&lt;/a&gt;如何启用此特性&lt;/h2&gt;&lt;p&gt;给所有 k8s 组件打开 &lt;code&gt;ServiceTopology&lt;/code&gt; 和 &lt;code&gt;EndpointSlice&lt;/code&gt; 这两个 feature:&lt;br&gt;&lt;figure class=&quot;highlight bash&quot;&gt;&lt;table&gt;&lt;tr&gt;&lt;td class=&quot;gutter&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;1&lt;/span&gt;&lt;br&gt;&lt;/pre&gt;&lt;/td&gt;&lt;td class=&quot;code&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;--feature-gates=&lt;span class=&quot;string&quot;&gt;&quot;ServiceTopology=true,EndpointSlice=true&quot;&lt;/span&gt;&lt;/span&gt;&lt;br&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/figure&gt;&lt;/p&gt;
-&lt;h2 id=&quot;如何使用&quot;&gt;&lt;a href=&quot;#如何使用&quot; class=&quot;headerlink&quot; title=&quot;如何使用&quot;&gt;&lt;/a&gt;如何使用&lt;/h2&gt;&lt;p&gt;在 Service spec 里加上 &lt;code&gt;topologyKeys&lt;/code&gt; 字段，表示该 Service 优先顺序选用的拓扑域列表，对应节点标签的 key；当访问此 Service 时，会找是否有 endpoint 有对应 topology key 的拓扑信息并且 value 跟当前节点也一样，如果是，那就选定此 topology key 作为当前转发的拓扑域，并且筛选出其余所有在这个拓扑域的 endpoint 来进行转发；如果没有找到任何 endpoint 在当前 topology key 对应拓扑域，就会尝试第二个 topology key，依此类推；如果遍历完所有 topology key 也没有匹配到 endpoint 就会拒绝转发，就像此 service 没有后端 endpoint 一样。&lt;/p&gt;
-&lt;p&gt;有一个特殊的 topology key “&lt;code&gt;*&lt;/code&gt;”，它可以匹配所有 endpoint，如果 &lt;code&gt;topologyKeys&lt;/code&gt; 包含了 &lt;code&gt;*&lt;/code&gt;，它必须在列表末尾，通常是在没有匹配到合适的拓扑域来实现就近转发时，就打消就近转发的念头，可以转发到任意 endpoint 上。&lt;/p&gt;
-&lt;p&gt;当前 topology key 支持以下可能的值（未来会增加更多）:&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;&lt;code&gt;kubernetes.io/hostname&lt;/code&gt;: 节点的 hostname，通常将它放列表中第一个，表示如果本机有 endpoint 就直接转发到本机的 endpoint。&lt;/li&gt;
-&lt;li&gt;&lt;code&gt;topology.kubernetes.io/zone&lt;/code&gt;: 节点所在的可用区，通常将它放在 &lt;code&gt;kubernetes.io/hostname&lt;/code&gt; 后面，表示如果本机没有对应 endpoint，就转发到当前可用区其它节点上的 endpoint（部分云厂商跨可用区通信会收取额外的流量费用）。&lt;/li&gt;
-&lt;li&gt;&lt;code&gt;topology.kubernetes.io/region&lt;/code&gt;: 表示节点所在的地域，表示转发到当前地域的 endpoint，这个用的应该会比较少，因为通常集群所有节点都只会在同一个地域，如果节点跨地域了，节点之间通信延时将会很高。&lt;/li&gt;
-&lt;li&gt;&lt;code&gt;*&lt;/code&gt;: 忽略拓扑域，匹配所有 endpoint，相当于一个保底策略，避免丢包，只能放在列表末尾。&lt;/li&gt;
-&lt;/ul&gt;
-&lt;p&gt;除此之外，还有以下约束:&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;&lt;code&gt;topologyKeys&lt;/code&gt; 与 &lt;code&gt;externalTrafficPolicy=Local&lt;/code&gt; 不兼容，是互斥的，如果 &lt;code&gt;externalTrafficPolicy&lt;/code&gt; 为 &lt;code&gt;Local&lt;/code&gt;，就不能定义 &lt;code&gt;topologyKeys&lt;/code&gt;，反之亦然。&lt;/li&gt;
-&lt;li&gt;topology key 必须是合法的 label 格式，并且最多定义 16 个 key。&lt;/li&gt;
-&lt;/ul&gt;
-&lt;p&gt;这里给出一个简单的 Service 示例:&lt;br&gt;&lt;figure class=&quot;highlight yaml&quot;&gt;&lt;table&gt;&lt;tr&gt;&lt;td class=&quot;gutter&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;1&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;2&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;3&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;4&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;5&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;6&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;7&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;8&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;9&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;10&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;11&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;12&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;13&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;14&lt;/span&gt;&lt;br&gt;&lt;/pre&gt;&lt;/td&gt;&lt;td class=&quot;code&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;&lt;span class=&quot;attr&quot;&gt;apiVersion:&lt;/span&gt; v1&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;&lt;span class=&quot;attr&quot;&gt;kind:&lt;/span&gt; Service&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;&lt;span class=&quot;attr&quot;&gt;metadata:&lt;/span&gt;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;&lt;span class=&quot;attr&quot;&gt;  name:&lt;/span&gt; nginx&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;&lt;span class=&quot;attr&quot;&gt;spec:&lt;/span&gt;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;&lt;span class=&quot;attr&quot;&gt;  type:&lt;/span&gt; ClusterIP&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;&lt;span class=&quot;attr&quot;&gt;  ports:&lt;/span&gt;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;&lt;span class=&quot;attr&quot;&gt;  - name:&lt;/span&gt; http&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;&lt;span class=&quot;attr&quot;&gt;    port:&lt;/span&gt; &lt;span class=&quot;number&quot;&gt;80&lt;/span&gt;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;&lt;span class=&quot;attr&quot;&gt;    protocol:&lt;/span&gt; TCP&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;&lt;span class=&quot;attr&quot;&gt;    targetPort:&lt;/span&gt; &lt;span class=&quot;number&quot;&gt;80&lt;/span&gt;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;&lt;span class=&quot;attr&quot;&gt;  selector:&lt;/span&gt;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;&lt;span class=&quot;attr&quot;&gt;    app:&lt;/span&gt; nginx&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;&lt;span class=&quot;attr&quot;&gt;  topologyKeys:&lt;/span&gt; [&lt;span class=&quot;string&quot;&gt;&quot;kubernetes.io/hostname&quot;&lt;/span&gt;, &lt;span class=&quot;string&quot;&gt;&quot;topology.kubernetes.io/zone&quot;&lt;/span&gt;, &lt;span class=&quot;string&quot;&gt;&quot;*&quot;&lt;/span&gt;]&lt;/span&gt;&lt;br&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/figure&gt;&lt;/p&gt;
-&lt;p&gt;解释: 当访问 nginx 服务时，首先看本机是否有这个服务的 endpoint，如果有就直接本机路由过去；如果没有，就看是否有 endpoint 位于当前节点所在可用区，如果有，就转发过去，如果还是没有，就转发给任意 endpoint。&lt;br&gt;&lt;img src=&quot;/images/k8s/service-topology.png&quot; alt=&quot;service-topology&quot;&gt;&lt;/p&gt;
-&lt;p&gt;上图就是其中一次转发的例子：Pod 访问 nginx 这个 service 时，发现本机没有 endpoint，就找当前可用区的，找到了就转发过去，也就不会考虑转发给另一可用区的 endpoint。&lt;/p&gt;
-&lt;p&gt;参考：imroc&lt;/p&gt;
-</content>
-    
-    <summary type="html">
-    
-      &lt;h2 id=&quot;名词解释&quot;&gt;&lt;a href=&quot;#名词解释&quot; class=&quot;headerlink&quot; title=&quot;名词解释&quot;&gt;&lt;/a&gt;名词解释&lt;/h2&gt;&lt;ul&gt;
-&lt;li&gt;&lt;code&gt;拓扑域&lt;/code&gt;: 表示在集群中的某一类 “地方”，比如某节点、某机架、某可用区或某地域等，这些都可以作为某种拓扑域。&lt;/li&gt;
-&lt;li&gt;&lt;code&gt;endpoint&lt;/code&gt;: k8s 某个服务的某个 ip+port，通常是 pod 的 ip+port。&lt;/li&gt;
-&lt;li&gt;&lt;code&gt;service&lt;/code&gt;: k8s 的 service 资源(服务)，关联一组 endpoint ，访问 service 会被转发到关联的某个 endpoint 上。&lt;/li&gt;
-&lt;/ul&gt;
-&lt;h2 id=&quot;背景&quot;&gt;&lt;a href=&quot;#背景&quot; class=&quot;headerlink&quot; title=&quot;背景&quot;&gt;&lt;/a&gt;背景&lt;/h2&gt;&lt;p&gt;拓扑感知服务路由，此特性最初由杜军大佬提出并设计。为什么要设计此特性呢？想象一下，k8s 集群节点分布在不同的地方，service 对应的 endpoints 分布在不同节点，传统转发策略会对所有 endpoint 做负载均衡，通常会等概率转发，当访问 service 时，流量就可能被分散打到这些不同的地方。虽然 service 转发做了负载均衡，但如果 endpoint 距离比较远，流量转发过去网络时延就相对比较高，会影响网络性能，在某些情况下甚至还可能会付出额外的流量费用。要是如能实现 service 就近转发 endpoint，是不是就可以实现降低网络时延，提升网络性能了呢？是的！这也正是该特性所提出的目的和意义。&lt;br&gt;
-    
-    </summary>
-    
-      <category term="kubrenetes" scheme="http://team.jiunile.com/categories/kubrenetes/"/>
-    
-      <category term="新特性" scheme="http://team.jiunile.com/categories/kubrenetes/%E6%96%B0%E7%89%B9%E6%80%A7/"/>
-    
-    
-      <category term="k8s" scheme="http://team.jiunile.com/tags/k8s/"/>
-    
-      <category term="kubernetes" scheme="http://team.jiunile.com/tags/kubernetes/"/>
-    
-      <category term="服务路由" scheme="http://team.jiunile.com/tags/%E6%9C%8D%E5%8A%A1%E8%B7%AF%E7%94%B1/"/>
-    
-      <category term="新特性" scheme="http://team.jiunile.com/tags/%E6%96%B0%E7%89%B9%E6%80%A7/"/>
     
   </entry>
   
