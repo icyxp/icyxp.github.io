@@ -4,6 +4,104 @@
   
     
     <entry>
+      <title><![CDATA[Kubernetes 网络插件在超过 10Gbit/s 下的基准测试结果]]></title>
+      <url>http://team.jiunile.com/blog/2020/11/k8s-cni-benchmark.html</url>
+      <content type="html"><![CDATA[<h2 id="概览"><a href="#概览" class="headerlink" title="概览"></a>概览</h2><blockquote>
+<p>在运行 Kubernetes 1.19 和 Ubuntu 18.04 上进行基准测试</p>
+</blockquote>
+<ol>
+<li>在我们深入讨论度量之前</li>
+<li>CNI 经过 MTU 调优</li>
+<li>CNI 基准:原始数据</li>
+<li>CNI 加密</li>
+<li>总结</li>
+<li>结论-我的结论</li>
+</ol>
+<h2 id="1-在我们深入讨论度量标准之前…"><a href="#1-在我们深入讨论度量标准之前…" class="headerlink" title="1 在我们深入讨论度量标准之前…"></a>1 在我们深入讨论度量标准之前…</h2><h3 id="1-1-自2019年4月以来有什么新鲜事吗"><a href="#1-1-自2019年4月以来有什么新鲜事吗" class="headerlink" title="1.1 自2019年4月以来有什么新鲜事吗?"></a>1.1 自2019年4月以来有什么新鲜事吗?</h3><ul>
+<li><strong>测试您自己的群集</strong>：现在您可以使用我们发布的“Kubernetes网络基准测试”工具：knb (<a href="https://github.com/InfraBuilder/k8s-bench-suite" target="_blank" rel="external">https://github.com/InfraBuilder/k8s-bench-suite</a>)在自己的集群上运行基准测试。</li>
+<li>在CNI 竞争中欢迎新的挑战者:<ul>
+<li>来自 VMware Tanzu 的 “<a href="https://antrea.io/docs/master/getting-started/" target="_blank" rel="external">Antrea</a>”</li>
+<li>来自 alauda.io 的 “<a href="https://github.com/alauda/kube-ovn" target="_blank" rel="external">Kube-OVN</a>”</li>
+</ul>
+</li>
+<li><strong>新场景</strong>：这个基准测试涵盖了 “Pod-to-Pod” 的网络性能，还包括一个新的 “Pod-to-Service” 场景，该方案涉及真实的测试案例。实际上，您的 API 容器将通过服务而不是容器 IP 消耗服务中的数据库（当然，我们对这两种场景也会测试 TCP 和 UDP）</li>
+<li><strong>资源消耗</strong>：现在每个测试都有自己的资源比较。</li>
+<li><strong>删除应用程序测试</strong>：我们不再运行 HTTP、FTP 和 SCP 测试。我们与社区和 CNI 维护者卓有成效的合作突显了 iperf TCP 结果和 curl 结果之间的差距，这是由于 CNI 启动的延迟(Pod 启动时的最初几秒钟，与实际用例无关)。</li>
+<li><strong>开源</strong>：所有基准测试的源代码（脚本、cni yml 和原始结果）都可以在 github 上获得：<a href="https://github.com/icyxp/benchmark-k8s-cni-2020-08" target="_blank" rel="external">https://github.com/icyxp/benchmark-k8s-cni-2020-08</a><a id="more"></a>
+</li>
+</ul>
+<h3 id="1-2-基准协议"><a href="#1-2-基准协议" class="headerlink" title="1.2 基准协议"></a>1.2 基准协议</h3><p>整个协议详见：<a href="https://github.com/icyxp/benchmark-k8s-cni-2020-08/blob/master/PROTOCOL.md" target="_blank" rel="external">https://github.com/icyxp/benchmark-k8s-cni-2020-08/blob/master/PROTOCOL.md</a></p>
+<p>请注意，当前的文章只关注 Ubuntu 18.04 的默认内核。</p>
+<h3 id="1-3-选择-CNIs-做基准测试"><a href="#1-3-选择-CNIs-做基准测试" class="headerlink" title="1.3 选择 CNIs 做基准测试"></a>1.3 选择 CNIs 做基准测试</h3><p>这个基准测试旨在比较可以用单个 yaml 文件设置的 CNIs（因此排除所有基于脚本的安装，如基于 VPP 的 CNIs 等）。</p>
+<p>我们将比较的 CNIs 列表如下：</p>
+<ul>
+<li><code>Antrea</code> v.0.9.1</li>
+<li><code>Calico</code> v3.16</li>
+<li><code>Canal</code> v3.16 (Flannel network + Calico Network Policies)</li>
+<li><code>Cilium</code> 1.8.2</li>
+<li><code>Flannel</code> 0.12.0</li>
+<li><code>Kube-router</code> latest (2020–08–25)</li>
+<li><code>WeaveNet</code> 2.7.0</li>
+</ul>
+<h2 id="2-CNI-MTU-调优"><a href="#2-CNI-MTU-调优" class="headerlink" title="2 CNI MTU 调优"></a>2 CNI MTU 调优</h2><p>首先，我们将检查 <code>MTU detection</code> 对 TCP 性能的影响：<br><img src="/images/k8s/cni_1.png" alt="MTU impact on TCP performance"></p>
+<p>UDP 的缺点更加明显：<br><img src="/images/k8s/cni_2.png" alt="MTU Impact on UDP performance"></p>
+<p>考虑到这里所揭示的对性能的巨大影响，我们希望向所有 CNI 维护者传达一个希望的消息：请在CNIs 中实现 <code>MTU auto-detection</code>。你将会拯救小猫，独角兽，甚至是最可爱的一个:  devops 小家伙！</p>
+<p>然而，如果您确实必须选择一个没有实现 <code>auto-MTU</code> 的 CNI，那么您需要自己对它进行调优以保持性能。请注意，这适用于 <code>Calico</code>，<code>Canal</code> 和 <code>Weavenet</code>。<br><img src="/images/k8s/cni_3.png" alt="My little message to CNI maintainers …."></p>
+<h2 id="3-CNI基准：原始数据"><a href="#3-CNI基准：原始数据" class="headerlink" title="3 CNI基准：原始数据"></a>3 CNI基准：原始数据</h2><p>在本节中，我们将比较 CNI 和正确的 MTU（<code>auto-detected</code> 或手动调优）。这里的主要目标是在图表中显示原始数据。</p>
+<p>颜色代码：</p>
+<ul>
+<li>灰色 : 参考 (裸机)</li>
+<li>绿色 : 带宽 &gt; 9500 Mbit/s</li>
+<li>黄色 : 带宽 &gt; 9000 Mbit/s</li>
+<li>橙色 : 带宽 &gt; 8000 Mbit/s</li>
+<li>红色 : 带宽 &lt; 8000 Mbit/s</li>
+<li>蓝色 : 中性 (与带宽无关)</li>
+</ul>
+<h3 id="3-1-Idle"><a href="#3-1-Idle" class="headerlink" title="3.1 Idle"></a>3.1 Idle</h3><p>首先要建立 CNI 消耗，当整个集群….像是在休眠？<br><img src="/images/k8s/cni_4.png" alt="Idle resource consumption"></p>
+<h3 id="3-2-Pod-to-Pod"><a href="#3-2-Pod-to-Pod" class="headerlink" title="3.2 Pod-to-Pod"></a>3.2 Pod-to-Pod</h3><p>在这个场景中，客户端 Pod 直接连接到服务器 Pod 的 IP 地址。<br><img src="/images/k8s/cni_5.png" alt="Pod-to-Pod scenario"></p>
+<h4 id="3-2-1-TCP"><a href="#3-2-1-TCP" class="headerlink" title="3.2.1 TCP"></a>3.2.1 TCP</h4><p>“<strong>Pod-to-Pod</strong>” <strong>TCP</strong> 相关资源消耗结果如下:<br><img src="/images/k8s/cni_6.png" alt="pod-to-pod tcp"><br><img src="/images/k8s/cni_7.png" alt="pod-to-pod tcp"></p>
+<h4 id="3-2-2-UDP"><a href="#3-2-2-UDP" class="headerlink" title="3.2.2 UDP"></a>3.2.2 UDP</h4><p>“<strong>Pod-to-Pod</strong>” <strong>UDP</strong> 相关资源消耗结果如下:<br><img src="/images/k8s/cni_8.png" alt="pod-to-pod udp"><br><img src="/images/k8s/cni_9.png" alt="pod-to-pod udp"></p>
+<h3 id="3-3-Pod-to-Service"><a href="#3-3-Pod-to-Service" class="headerlink" title="3.3 Pod-to-Service"></a>3.3 Pod-to-Service</h3><p>在本节中，客户端 Pod 通过 <code>ClusterIP Service</code> 连接到服务端 Pod。这与实际的用例更相关。<br><img src="/images/k8s/cni_10.png" alt="Pod-to-Service scenario"></p>
+<h4 id="3-3-1-TCP"><a href="#3-3-1-TCP" class="headerlink" title="3.3.1 TCP"></a>3.3.1 TCP</h4><p>“<strong>Pod-to-Service</strong>” <strong>TCP</strong> 相关资源消耗结果如下:<br><img src="/images/k8s/cni_11.png" alt="pod-to-service tcp"><br><img src="/images/k8s/cni_12.png" alt="pod-to-service tcp"></p>
+<h4 id="3-3-2-UDP"><a href="#3-3-2-UDP" class="headerlink" title="3.3.2 UDP"></a>3.3.2 UDP</h4><p>“<strong>Pod-to-Service</strong>” <strong>UDP</strong> 相关资源消耗结果如下:<br><img src="/images/k8s/cni_13.png" alt="pod-to-service udp"><br><img src="/images/k8s/cni_14.png" alt="pod-to-service udp"></p>
+<h3 id="3-4-网络策略"><a href="#3-4-网络策略" class="headerlink" title="3.4 网络策略"></a>3.4 网络策略</h3><p>在此基准测试中所列出的所有 CNIs 中，唯一不完全支持网络策略的是 Flannel。所有其他的都正确地实现了网络策略，包括入口和出口。做得好!</p>
+<h2 id="4-CNI-加密"><a href="#4-CNI-加密" class="headerlink" title="4 CNI 加密"></a>4 CNI 加密</h2><p>在我们测试的所有 CNIs 中，以下是能够加密 pod 间通信：</p>
+<ul>
+<li><code>Antrea</code> with IPsec</li>
+<li><code>Calico</code> with wireguard</li>
+<li><code>Cilium</code> with IPsec</li>
+<li><code>WeaveNet</code> with IPsec</li>
+</ul>
+<h3 id="4-1-带宽"><a href="#4-1-带宽" class="headerlink" title="4.1 带宽"></a>4.1 带宽</h3><p>由于在这场对比中 CNIs 较少，因此让我们在一张图中概况所有场景：<br><img src="/images/k8s/cni_15.png" alt="encryption"></p>
+<h3 id="4-2-资源消耗"><a href="#4-2-资源消耗" class="headerlink" title="4.2 资源消耗"></a>4.2 资源消耗</h3><p>在本节中，我们将研究 Pod-to-Pod 通信所使用的资源，包括 TCP 和 UDP。在这里显示 Pod-to-Service 的图没有意义，因为它没有提供更多信息。<br><img src="/images/k8s/cni_16.png" alt="encryption-tcp"><br><img src="/images/k8s/cni_17.png" alt="encryption-udp"></p>
+<h2 id="5-总结"><a href="#5-总结" class="headerlink" title="5 总结"></a>5 总结</h2><p>让我们尝试回顾一下这些图表。我们在这里引入了一点主观性，用修饰符替换了实际值，如“非常快”、“低”等。<br><img src="/images/k8s/cni_18.png" alt="Benchmark result summary (August 2020)"></p>
+<h2 id="6-结论-我的结论"><a href="#6-结论-我的结论" class="headerlink" title="6 结论 - 我的结论"></a>6 结论 - 我的结论</h2><p>最后一部分是主观的，表达了我自己对结果的理解。</p>
+<p>我很高兴看到 CNI 的新成员加入进来。<code>Antrea</code> 在游戏中表现得很好，它提供了许多特性，甚至在早期版本中也有：<code>auto-mtu</code>、加密选项和直接安装。</p>
+<p>考虑到性能，除了 <code>Kube-OVN</code> 和 <code>Kube-Router</code> 之外，所有 CNIs 都表现的很好。关于 <code>Kube-Router</code>，它无法检测到 MTU，而且我在文档中找不到调优它的方法（<a href="https://github.com/cloudnativelabs/kube-router/issues/165" target="_blank" rel="external">这里</a>有一个关于 MTU 配置的 open issue）。</p>
+<p>在资源消耗方面，<code>Cilium</code> 仍然比竞争对手使用更多的 RAM，但该公司公开目标是大规模集群，这与在这个 3 节点基准的情况不完全一样。<code>Kube-OVN</code> 也是 RAM 和 cpu 密集型的，它仍然是一个相当年轻的 CNI，它依赖于 <code>Open vSwitch</code> (<code>Antrea</code> 也是，但 <code>Antrea</code> 更轻，性能更好)。</p>
+<p>网络策略由所有测试的 CNIs 实现，<code>Flannel</code> 除外。<code>Flannel</code> 很可能永远不会（永远）实现它，因为他们的目的很明确：越轻越好。</p>
+<p>此外，加密性能在这里是真正的 “哇效果”。<code>Calico</code> 是最古老的 CNIs 之一，但他们直到几周前才提供加密服务。他们更喜欢 <code>wireguard</code> 而不是 <code>IPsec</code>，而且至少可以说，它在这一领域的表现是伟大的，惊人的，完全优秀的对于其他 CNIs。当然，由于加密负载，它会消耗大量 CPU，但它们所实现的带宽是完全值得的（记住，<code>Calico encrypted perf</code> 大约比<code>Cilium</code> 好 6 倍，后者排名第二）。此外，在集群上部署 <code>Calico</code> 之后，您还可以随时激活 <code>wireguard</code> 加密，您也可以暂时禁用它，或者永远禁用它。这是难以置信的对于用户友好度。但是！我们提醒您，<code>Calico</code> 目前还不能 <code>auto-detect MTU</code>（该特性计划很快发布），因此，如果您的网络支持巨型帧（MTU 9000），请不要忘记调整 MTU。</p>
+<p>此外，请注意，<code>Cilium</code> 能够加密整个节点到节点的通信（不仅仅是 pod 通信），这对于面向公共的集群节点来说可能是一个非常有吸引力的特性。</p>
+<p>总结一下，这是我对以下用例的建议：</p>
+<ul>
+<li><strong>我需要一个 CNI 来容纳额外的小型节点集群，或者我不关心安全性</strong></li>
+</ul>
+<p>选用 <code>Flannel</code>，这是最轻最稳定的 CNI。<br>(它也是最古老的之一。根据传说，它是由 Homo-Kubernautus 或 Homo-Containorus 发明的。您可能会对精彩的 <a href="https://k3s.io/" target="_blank" rel="external">k3s</a> 项目感兴趣！点击这里查看详情！</p>
+<ul>
+<li><strong>我的标准群集需要一个 CNI</strong></li>
+</ul>
+<p>好的，<code>Calico</code> 是你的选择，如果有必要的话，不要忘记调整 MTU。您可以使用网络策略，轻松启用/禁用加密，等等。</p>
+<ul>
+<li><strong>我的（非常）大型集群需要一个 CNI</strong></li>
+</ul>
+<p>好吧，该基准测试无法反映大型集群的行为。我很乐意为此工作，但是我们没有数百台具有 10Gbit/s 连接性的服务器。因此，最好的选择是至少使用 <code>Calico</code> 和 <code>Cilium</code> 在您的节点上运行自定义的基准测试。</p>
+<p>感谢阅读！</p>
+<p>作者：Alexis Ducastel 来源：medium.com</p>
+<p><img src="/images/wx_dyh.png" alt="微信订阅号"></p>
+]]></content>
+    </entry>
+    
+    <entry>
       <title><![CDATA[Nginx proxy_pass 配置域名引发的故障]]></title>
       <url>http://team.jiunile.com/blog/2020/11/nginx-proxy-pass-domain.html</url>
       <content type="html"><![CDATA[<h2 id="背景描述"><a href="#背景描述" class="headerlink" title="背景描述"></a>背景描述</h2><p>业务场景：<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">用户 ----&gt; waf ----&gt; 后端服务</span><br></pre></td></tr></table></figure></p>
