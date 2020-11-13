@@ -2,6 +2,13 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   
   <url>
+    <loc>http://team.jiunile.com/blog/2020/11/go-build-container-ns.html</loc>
+    
+    <lastmod>2020-11-13T01:53:02.000Z</lastmod>
+    
+  </url>
+  
+  <url>
     <loc>http://team.jiunile.com/blog/2020/11/k8s-network-source.html</loc>
     
     <lastmod>2020-11-11T03:09:30.000Z</lastmod>

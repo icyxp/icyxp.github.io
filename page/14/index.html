@@ -369,6 +369,231 @@
   
   
   <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://team.jiunile.com/blog/2018/12/k8s-descheduler.html">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="icyboy">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="CloudNative 架构">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h2 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/blog/2018/12/k8s-descheduler.html" itemprop="url">认识Kubernetes Descheduler</a></h2>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-12-12T21:00:00+08:00">
+                2018-12-12
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/kubernetes/" itemprop="url" rel="index">
+                    <span itemprop="name">kubernetes</span>
+                  </a>
+                </span>
+
+                
+                
+                  ， 
+                
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/kubernetes/调度器/" itemprop="url" rel="index">
+                    <span itemprop="name">调度器</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+                <a href="/blog/2018/12/k8s-descheduler.html#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count valine-comment-count" data-xid="/blog/2018/12/k8s-descheduler.html" itemprop="commentCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+          
+             <span id="/blog/2018/12/k8s-descheduler.html" class="leancloud_visitors" data-flag-title="认识Kubernetes Descheduler">
+               <span class="post-meta-divider">|</span>
+               <span class="post-meta-item-icon">
+                 <i class="fa fa-eye"></i>
+               </span>
+               
+                 <span class="post-meta-item-text">热度&#58;</span>
+               
+                 <span class="leancloud-visitors-count"></span>
+		 <span>℃</span>
+             </span>
+          
+
+          
+
+          
+            <div class="post-wordcount">
+              
+                
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-file-word-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">字数统计&#58;</span>
+                
+                <span title="字数统计">
+                  1,900 字
+                </span>
+              
+
+              
+                <span class="post-meta-divider">|</span>
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-clock-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">阅读时长 &asymp;</span>
+                
+                <span title="阅读时长">
+                  10 分钟
+                </span>
+              
+            </div>
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          <p><code>kube-scheduler</code> 是 Kubernetes 中负责调度的组件，它本身的调度功能已经很强大了。但由于 Kubernetes 集群非常活跃，它的状态会随时间而改变，由于各种原因，你可能需要将已经运行的 Pod 移动到其他节点：</p>
+<ul>
+<li>某些节点负载过高</li>
+<li>某些资源对象被添加了 <a href="https://kubernetes.io/docs/concepts/configuration/assign-pod-node/#node-affinity-beta-feature">node 亲和性</a> 或 <a href="https://kubernetes.io/docs/concepts/configuration/assign-pod-node/#inter-pod-affinity-and-anti-affinity-beta-feature">pod （反）亲和性</a></li>
+<li>集群中加入了新节点</li>
+</ul>
+<p>一旦 Pod 启动之后 <code>kube-scheduler</code> 便不会再尝试重新调度它。根据环境的不同，你可能会有很多需要手动调整 Pod 的分布，例如：如果集群中新加入了一个节点，那么已经运行的 Pod 并不会被分摊到这台节点上，这台节点可能只运行了少量的几个 Pod，这并不理想，对吧？</p>
+<h3 id="Descheduler-如何工作？"><a href="#Descheduler-如何工作？" class="headerlink" title="Descheduler 如何工作？"></a>Descheduler 如何工作？</h3><p><a href="https://github.com/kubernetes-incubator/descheduler">Descheduler</a> 会检查 Pod 的状态，并根据自定义的策略将不满足要求的 Pod 从该节点上驱逐出去。Descheduler 并不是 <code>kube-scheduler</code> 的替代品，而是要依赖于它。该项目目前放在 Kubernetes 的孵化项目中，还没准备投入生产，但经过我实验发现它的运行效果很好，而且非常稳定。那么该如何安装呢？<br>
+          <!--noindex-->
+          <div class="post-button text-center">
+            <a class="btn" href="/blog/2018/12/k8s-descheduler.html#more" rel="contents">
+              阅读全文 &raquo;
+            </a>
+          </div>
+          <!--/noindex-->
+        
+      
+    </div>
+    
+    
+    
+
+    <div>
+    
+    </div>
+
+    <div>
+      
+    </div>
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
     <link itemprop="mainEntityOfPage" href="http://team.jiunile.com/blog/2018/12/k8s-handling-client-requests-properly-with-kubernetes.html">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -1239,229 +1464,11 @@
 
 
     
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://team.jiunile.com/blog/2018/07/docker-java与docker的那点事.html">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="icyboy">
-      <meta itemprop="description" content="">
-      <meta itemprop="image" content="/images/avatar.jpg">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="CloudNative 架构">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h2 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/blog/2018/07/docker-java与docker的那点事.html" itemprop="url">Java和Docker限制的那些事儿</a></h2>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-07-18T21:30:00+08:00">
-                2018-07-18
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
-            <span class="post-category" >
-            
-              <span class="post-meta-divider">|</span>
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">分类于</span>
-              
-              
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/docker/" itemprop="url" rel="index">
-                    <span itemprop="name">docker</span>
-                  </a>
-                </span>
-
-                
-                
-              
-            </span>
-          
-
-          
-            
-              <span class="post-comments-count">
-                <span class="post-meta-divider">|</span>
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-comment-o"></i>
-                </span>
-                <a href="/blog/2018/07/docker-java与docker的那点事.html#comments" itemprop="discussionUrl">
-                  <span class="post-comments-count valine-comment-count" data-xid="/blog/2018/07/docker-java与docker的那点事.html" itemprop="commentCount"></span>
-                </a>
-              </span>
-            
-          
-
-          
-          
-             <span id="/blog/2018/07/docker-java与docker的那点事.html" class="leancloud_visitors" data-flag-title="Java和Docker限制的那些事儿">
-               <span class="post-meta-divider">|</span>
-               <span class="post-meta-item-icon">
-                 <i class="fa fa-eye"></i>
-               </span>
-               
-                 <span class="post-meta-item-text">热度&#58;</span>
-               
-                 <span class="leancloud-visitors-count"></span>
-		 <span>℃</span>
-             </span>
-          
-
-          
-
-          
-            <div class="post-wordcount">
-              
-                
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-file-word-o"></i>
-                </span>
-                
-                  <span class="post-meta-item-text">字数统计&#58;</span>
-                
-                <span title="字数统计">
-                  3,090 字
-                </span>
-              
-
-              
-                <span class="post-meta-divider">|</span>
-              
-
-              
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-clock-o"></i>
-                </span>
-                
-                  <span class="post-meta-item-text">阅读时长 &asymp;</span>
-                
-                <span title="阅读时长">
-                  13 分钟
-                </span>
-              
-            </div>
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          <h2 id="揭秘"><a href="#揭秘" class="headerlink" title="揭秘"></a>揭秘</h2><p>Java和Docker不是天然的朋友。 Docker可以设置内存和CPU限制，而Java不能自动检测到。使用Java的Xmx标识（繁琐/重复）或新的实验性JVM标识，我们可以解决这个问题。</p>
-<h2 id="虚拟化中的不匹配"><a href="#虚拟化中的不匹配" class="headerlink" title="虚拟化中的不匹配"></a>虚拟化中的不匹配</h2><p>Java和Docker的结合并不是完美匹配的，最初的时候离完美匹配有相当大的距离。对于初学者来说，JVM的全部设想就是，虚拟机可以让程序与底层硬件无关。</p>
-<p>那么，把我们的Java应用打包到JVM中，然后整个再塞进Docker容器中，能给我们带来什么好处呢？大多数情况下，你只是在复制JVMs和Linux容器，除了浪费更多的内存，没任何好处。感觉这样子挺傻的。</p>
-<p>不过，Docker可以把你的程序，设置，特定的JDK，Linux设置和应用服务器，还有其他工具打包在一起，当做一个东西。站在DevOps/Cloud的角度来看，这样一个完整的容器有着更高层次的封装。</p>
-<h3 id="问题一：内存"><a href="#问题一：内存" class="headerlink" title="问题一：内存"></a>问题一：内存</h3><p>时至今日，绝大多数产品级应用仍然在使用Java 8（或者更旧的版本），而这可能会带来问题。Java 8（update 131之前的版本）跟Docker无法很好地一起工作。问题是在你的机器上，JVM的可用内存和CPU数量并不是Docker允许你使用的可用内存和CPU数量。</p>
-<p>比如，如果你限制了你的Docker容器只能使用100MB内存，但是呢，旧版本的Java并不能识别这个限制。Java看不到这个限制。JVM会要求更多内存，而且远超这个限制。如果使用太多内存，Docker将采取行动并杀死容器内的进程！JAVA进程被干掉了，很明显，这并不是我们想要的。</p>
-<p>为了解决这个问题，你需要给Java指定一个最大内存限制。在旧版本的Java（8u131之前），你需要在容器中通过设置-Xmx来限制堆大小。这感觉不太对，你可不想定义这些限制两次，也不太想在你的容器中来定义。</p>
-<p>幸运的是我们现在有了更好的方式来解决这个问题。从Java 9之后（8u131+），JVM增加了如下标志：<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">-XX:+UnlockExperimentalVMOptions -XX:+UseCGroupMemoryLimitForHeap</span><br></pre></td></tr></table></figure></p>
-<p>这些标志强制JVM检查Linux的cgroup配置，Docker是通过cgroup来实现最大内存设置的。现在，如果你的应用到达了Docker设置的限制（比如500MB），JVM是可以看到这个限制的。JVM将会尝试GC操作。如果仍然超过内存限制，JVM就会做它该做的事情，抛出OutOfMemoryException。也就是说，JVM能够看到Docker的这些设置。</p>
-<p>从Java 10之后（参考下面的测试），这些体验标志位是默认开启的，也可以使用-XX:+UseContainerSupport来使能（你可以通过设置-XX:-UseContainerSupport来禁止这些行为）。</p>
-<h3 id="问题二：CPU"><a href="#问题二：CPU" class="headerlink" title="问题二：CPU"></a>问题二：CPU</h3><p>第二个问题是类似的，但它与CPU有关。简而言之，JVM将查看硬件并检测CPU的数量。它会优化你的runtime以使用这些CPUs。但是同样的情况，这里还有另一个不匹配，Docker可能不允许你使用所有这些CPUs。可惜的是，这在Java 8或Java 9中并没有修复，但是在Java 10中得到了解决。</p>
-<p>从Java 10开始，可用的CPUs的计算将采用以不同的方式（默认情况下）解决此问题（同样是通过UseContainerSupport）。<br>
-          <!--noindex-->
-          <div class="post-button text-center">
-            <a class="btn" href="/blog/2018/07/docker-java与docker的那点事.html#more" rel="contents">
-              阅读全文 &raquo;
-            </a>
-          </div>
-          <!--/noindex-->
-        
-      
-    </div>
-    
-    
-    
-
-    <div>
-    
-    </div>
-
-    <div>
-      
-    </div>
-
-    
-
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
   </section>
 
   
   <nav class="pagination">
-    <a class="extend prev" rel="prev" href="/page/13/"><i class="fa fa-angle-left"></i></a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/13/">13</a><span class="page-number current">14</span><a class="page-number" href="/page/15/">15</a><span class="space">&hellip;</span><a class="page-number" href="/page/18/">18</a><a class="extend next" rel="next" href="/page/15/"><i class="fa fa-angle-right"></i></a>
+    <a class="extend prev" rel="prev" href="/page/13/"><i class="fa fa-angle-left"></i></a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/13/">13</a><span class="page-number current">14</span><a class="page-number" href="/page/15/">15</a><span class="space">&hellip;</span><a class="page-number" href="/page/19/">19</a><a class="extend next" rel="next" href="/page/15/"><i class="fa fa-angle-right"></i></a>
   </nav>
 
 
@@ -1511,7 +1518,7 @@
               
                 <a href="/archives/">
               
-                  <span class="site-state-item-count">90</span>
+                  <span class="site-state-item-count">91</span>
                   <span class="site-state-item-name">日志</span>
                 </a>
               </div>
@@ -1522,7 +1529,7 @@
               
               <div class="site-state-item site-state-categories">
                 <a href="/categories/index.html">
-                  <span class="site-state-item-count">77</span>
+                  <span class="site-state-item-count">78</span>
                   <span class="site-state-item-name">分类</span>
                 </a>
               </div>
@@ -1533,7 +1540,7 @@
               
               <div class="site-state-item site-state-tags">
                 <a href="/tags/index.html">
-                  <span class="site-state-item-count">159</span>
+                  <span class="site-state-item-count">161</span>
                   <span class="site-state-item-name">标签</span>
                 </a>
               </div>
@@ -1636,7 +1643,7 @@
     
       <span class="post-meta-item-text">Site words total count&#58;</span>
     
-    <span title="Site words total count">274.0k</span>
+    <span title="Site words total count">278.6k</span>
   
 </div>
 
@@ -1648,7 +1655,7 @@
 
 <div class="theme-info">
   <div class="powered-by"></div>
-  <span class="post-count">博客全站共274.0k字</span>
+  <span class="post-count">博客全站共278.6k字</span>
 </div>
 
 
