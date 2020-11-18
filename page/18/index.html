@@ -369,6 +369,222 @@
   
   
   <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://team.jiunile.com/blog/2016/07/lsyncd.html">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="icyboy">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="CloudNative 架构">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h2 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/blog/2016/07/lsyncd.html" itemprop="url">使用lsyncd实时同步文件</a></h2>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2016-07-15T17:30:00+08:00">
+                2016-07-15
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/实时同步/" itemprop="url" rel="index">
+                    <span itemprop="name">实时同步</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+                <a href="/blog/2016/07/lsyncd.html#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count valine-comment-count" data-xid="/blog/2016/07/lsyncd.html" itemprop="commentCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+          
+             <span id="/blog/2016/07/lsyncd.html" class="leancloud_visitors" data-flag-title="使用lsyncd实时同步文件">
+               <span class="post-meta-divider">|</span>
+               <span class="post-meta-item-icon">
+                 <i class="fa fa-eye"></i>
+               </span>
+               
+                 <span class="post-meta-item-text">热度&#58;</span>
+               
+                 <span class="leancloud-visitors-count"></span>
+		 <span>℃</span>
+             </span>
+          
+
+          
+
+          
+            <div class="post-wordcount">
+              
+                
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-file-word-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">字数统计&#58;</span>
+                
+                <span title="字数统计">
+                  2,596 字
+                </span>
+              
+
+              
+                <span class="post-meta-divider">|</span>
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-clock-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">阅读时长 &asymp;</span>
+                
+                <span title="阅读时长">
+                  11 分钟
+                </span>
+              
+            </div>
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          <h2 id="简介"><a href="#简介" class="headerlink" title="简介"></a>简介</h2><p>Lysncd 实际上是lua语言封装了 inotify 和 rsync 工具，采用了 Linux 内核（2.6.13 及以后）里的 inotify 触发机制，然后通过rsync去差异同步，达到实时的效果。我认为它最令人称道的特性是，完美解决了 inotify + rsync海量文件同步带来的文件频繁发送文件列表的问题 —— 通过时间延迟或累计触发事件次数实现。另外，它的配置方式很简单，lua本身就是一种配置语言，可读性非常强。lsyncd也有多种工作模式可以选择，本地目录cp，本地目录rsync，远程目录rsyncssh。</p>
+<p>实现简单高效的本地目录同步备份（网络存储挂载也当作本地目录），一个命令搞定。</p>
+<p>github地址：<a href="https://github.com/axkibe/lsyncd">https://github.com/axkibe/lsyncd</a> </p>
+<h2 id="使用-lsyncd-本地目录实时备份"><a href="#使用-lsyncd-本地目录实时备份" class="headerlink" title="使用 lsyncd 本地目录实时备份"></a>使用 lsyncd 本地目录实时备份</h2><p>这一节实现的功能是，本地目录source实时同步到另一个目录target，而在source下有大量的文件，并且有部分目录和临时文件不需要同步。</p>
+<h3 id="安装lsyncd"><a href="#安装lsyncd" class="headerlink" title="安装lsyncd"></a>安装lsyncd</h3><p>安装<code>lsyncd</code>极为简单，已经收录在ubuntu的官方镜像源里，直接通过<code>apt-get install lsyncd</code>就可以。<br>在Redhat系（我的环境是CentOS 6.2 x86_64 ），可以手动去下载 <a href="ftp://195.220.108.108/linux/fedora/linux/updates/21/x86_64/l/lsyncd-2.1.5-6.fc21.x86_64.rpm">lsyncd-2.1.5-6.fc21.x86_64.rpm</a>，但首先你得安装两个依赖<code>yum install lua lua-devel</code>。也可以通过在线安装，需要<code>epel-release</code>扩展包：<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">rpm -ivh http://dl.fedoraproject.org/pub/epel/6/x86_64/epel-release-6-8.noarch.rpm</span><br><span class="line">yum install lsyncd</span><br></pre></td></tr></table></figure></p>
+<p><strong>源码编译安装</strong><br>从源码编译安装可以使用最新版的lsyncd程序，但必须要相应的依赖库文件和编译工具：<code>yum install lua lua-devel asciidoc cmake</code>。</p>
+<p>从 <a href="http://code.google.com/p/lsyncd/downloads/list">googlecode lsyncd</a> 上下载的<code>lsyncd-2.1.5.tar.gz</code>，直接<code>./configure、make &amp;&amp; make install</code>就可以了。</p>
+<p>从github上下载<a href="https://github.com/axkibe/lsyncd/archive/master.zip">lsyncd-master.zip</a> 的2.1.5版本使用的是 cmake 编译工具，无法<code>./configure</code>：<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">uzip lsyncd-master.zip</span><br><span class="line"><span class="built_in">cd</span> lsyncd-master</span><br><span class="line">cmake -DCMAKE_INSTALL_PREFIX=/usr/<span class="built_in">local</span>/lsyncd-2.1.5</span><br><span class="line">make &amp;&amp; make install</span><br></pre></td></tr></table></figure></p>
+<p>我这个版本编译时有个小bug，如果按照<code>INSTALL</code>在    <code>build</code>目录中make，会提示：<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">[100%] Generating doc/lsyncd.1</span><br><span class="line">Updating the manpage</span><br><span class="line">a2x: failed: <span class="built_in">source</span> file not found: doc/lsyncd.1.txt</span><br><span class="line">make[2]: *** [doc/lsyncd.1] Error 1</span><br><span class="line">make[1]: *** [CMakeFiles/manpage.dir/all] Error 2</span><br><span class="line">make: *** [all] Error 2</span><br></pre></td></tr></table></figure></p>
+<p>解决办法是要么直接在解压目录下cmake，不要<code>mkdir build</code>，要么在<code>CMakeList.txt</code>中搜索doc字符串，在前面加上<code>${PROJECT_SOURCE_DIR}</code>。</p>
+          <!--noindex-->
+          <div class="post-button text-center">
+            <a class="btn" href="/blog/2016/07/lsyncd.html#more" rel="contents">
+              阅读全文 &raquo;
+            </a>
+          </div>
+          <!--/noindex-->
+        
+      
+    </div>
+    
+    
+    
+
+    <div>
+    
+    </div>
+
+    <div>
+      
+    </div>
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
     <link itemprop="mainEntityOfPage" href="http://team.jiunile.com/blog/2016/07/mysql-mysql-develop-standard.html">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -1220,224 +1436,6 @@
 
 
     
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://team.jiunile.com/blog/2016/07/mysql-mysql-auto-increment-primary-key.html">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="icyboy">
-      <meta itemprop="description" content="">
-      <meta itemprop="image" content="/images/avatar.jpg">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="CloudNative 架构">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h2 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/blog/2016/07/mysql-mysql-auto-increment-primary-key.html" itemprop="url">MySQL为什么需要一个自增主键</a></h2>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2016-07-04T17:38:00+08:00">
-                2016-07-04
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
-            <span class="post-category" >
-            
-              <span class="post-meta-divider">|</span>
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">分类于</span>
-              
-              
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/mysql/" itemprop="url" rel="index">
-                    <span itemprop="name">mysql</span>
-                  </a>
-                </span>
-
-                
-                
-              
-            </span>
-          
-
-          
-            
-              <span class="post-comments-count">
-                <span class="post-meta-divider">|</span>
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-comment-o"></i>
-                </span>
-                <a href="/blog/2016/07/mysql-mysql-auto-increment-primary-key.html#comments" itemprop="discussionUrl">
-                  <span class="post-comments-count valine-comment-count" data-xid="/blog/2016/07/mysql-mysql-auto-increment-primary-key.html" itemprop="commentCount"></span>
-                </a>
-              </span>
-            
-          
-
-          
-          
-             <span id="/blog/2016/07/mysql-mysql-auto-increment-primary-key.html" class="leancloud_visitors" data-flag-title="MySQL为什么需要一个自增主键">
-               <span class="post-meta-divider">|</span>
-               <span class="post-meta-item-icon">
-                 <i class="fa fa-eye"></i>
-               </span>
-               
-                 <span class="post-meta-item-text">热度&#58;</span>
-               
-                 <span class="leancloud-visitors-count"></span>
-		 <span>℃</span>
-             </span>
-          
-
-          
-
-          
-            <div class="post-wordcount">
-              
-                
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-file-word-o"></i>
-                </span>
-                
-                  <span class="post-meta-item-text">字数统计&#58;</span>
-                
-                <span title="字数统计">
-                  989 字
-                </span>
-              
-
-              
-                <span class="post-meta-divider">|</span>
-              
-
-              
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-clock-o"></i>
-                </span>
-                
-                  <span class="post-meta-item-text">阅读时长 &asymp;</span>
-                
-                <span title="阅读时长">
-                  3 分钟
-                </span>
-              
-            </div>
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          <h2 id="主键"><a href="#主键" class="headerlink" title="主键"></a>主键</h2><p>表中每一行都应该有可以唯一标识自己的一列（或一组列）。</p>
-<p>一个顾客可以使用顾客编号列，而订单可以使用订单ID，雇员可以使用雇员ID 或 雇员社会保险号。</p>
-<p>主键（primary key） 一列（或一组列），其值能够唯一区分表中的每个行。<br>唯一标识表中每行的这个列（或这组列）称为主键。<strong><code>没有主键，更新或删除表中特定行很困难，因为没有安全的方法保证只涉及相关的行。</code></strong></p>
-<p>虽然并不总是都需要主键，但大多数数据库设计人员都应保证他们创建的每个表有一个主键，以便于以后数据操纵和管理</p>
-<p>表中的任何列都可以作为主键，只要它满足一下条件:<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">任何两行都不具有相同的主键值</span><br><span class="line">每个行都必须具有一个主键值（主键列不允许NULL值）</span><br></pre></td></tr></table></figure></p>
-<p>主键值规范：这里列出的规则是MySQL本身强制实施的。</p>
-<p>主键的最好习惯：<br>除MySQL强制实施的规则外，应该坚持的几个普遍认为的最好习惯为:</p>
-<pre><code class="plain">1、不更新主键列的值
-2、不重用主键列的值
-3、不在主键列中使用可能会更改的值（例如，如果使用一个名字作为主键以标识某个供应商，应该供应商合并和更改其名字时，必须更改这个主键）
-</code></pre>
-<p>总之：不应该使用一个具有意义的column（id 本身并不保存表 有意义信息） 作为主键，并且一个表必须要有一个主键，为方便扩展、松耦合，高可用的系统做铺垫。<br>
-          <!--noindex-->
-          <div class="post-button text-center">
-            <a class="btn" href="/blog/2016/07/mysql-mysql-auto-increment-primary-key.html#more" rel="contents">
-              阅读全文 &raquo;
-            </a>
-          </div>
-          <!--/noindex-->
-        
-      
-    </div>
-    
-    
-    
-
-    <div>
-    
-    </div>
-
-    <div>
-      
-    </div>
-
-    
-
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
   </section>
 
   
@@ -1492,7 +1490,7 @@
               
                 <a href="/archives/">
               
-                  <span class="site-state-item-count">94</span>
+                  <span class="site-state-item-count">95</span>
                   <span class="site-state-item-name">日志</span>
                 </a>
               </div>
@@ -1503,7 +1501,7 @@
               
               <div class="site-state-item site-state-categories">
                 <a href="/categories/index.html">
-                  <span class="site-state-item-count">81</span>
+                  <span class="site-state-item-count">82</span>
                   <span class="site-state-item-name">分类</span>
                 </a>
               </div>
@@ -1617,7 +1615,7 @@
     
       <span class="post-meta-item-text">Site words total count&#58;</span>
     
-    <span title="Site words total count">285.3k</span>
+    <span title="Site words total count">286.1k</span>
   
 </div>
 
@@ -1629,7 +1627,7 @@
 
 <div class="theme-info">
   <div class="powered-by"></div>
-  <span class="post-count">博客全站共285.3k字</span>
+  <span class="post-count">博客全站共286.1k字</span>
 </div>
 
 

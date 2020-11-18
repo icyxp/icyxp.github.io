@@ -4,6 +4,38 @@
   
     
     <entry>
+      <title><![CDATA[Go 多重错误管理]]></title>
+      <url>http://team.jiunile.com/blog/2020/11/go-multi-errors.html</url>
+      <content type="html"><![CDATA[<h2 id="概述"><a href="#概述" class="headerlink" title="概述"></a>概述</h2><p>在<a href="https://blog.golang.org/survey2019-results" target="_blank" rel="external">年度调查</a>中，关于开发人员在使用 Go 时面临的最大挑战，Go 中的错误管理总是容易引起争论，并且是一个反复出现的话题。然而，当涉及到在并发环境中处理错误或为同一个 <code>goroutine</code> 合并多个错误时，Go 提供了很棒的包，使管理多个错误变得容易。让我们看看如何合并由单个 <code>goroutine</code> 生成的多个错误。<br><a id="more"></a></p>
+<h2 id="单个-goroutine-多个错误"><a href="#单个-goroutine-多个错误" class="headerlink" title="单个 goroutine, 多个错误"></a>单个 goroutine, 多个错误</h2><p>例如，当您处理具有重试策略的代码时，将多个错误合并为一个错误会非常有用。这是我们需要收集生成的错误的基本示例：<br><img src="/images/go/manage_muti_error_1.png" alt="multiple errors"></p>
+<p>这个程序读取和解析一个 CSV 文本，并显示发现的错误。将错误分组以获得完整的报告可能更方便。要将错误合并为一个，我们可以在两个很棒的包中进行选择：</p>
+<ul>
+<li>使用 <a href="https://github.com/hashicorp" target="_blank" rel="external">HashiCorp</a> 的 <a href="https://github.com/hashicorp/go-multierror" target="_blank" rel="external">go-multierror</a></li>
+</ul>
+<p><img src="/images/go/manage_muti_error_2.png" alt="multiple errors"></p>
+<p>输出结果如下：<br><img src="/images/go/manage_muti_error_3.png" alt="multiple errors"></p>
+<ul>
+<li>使用 <a href="https://github.com/uber-go" target="_blank" rel="external">Uber</a> 的 <a href="https://github.com/uber-go/multierr" target="_blank" rel="external">multierr</a></li>
+</ul>
+<p>这里的实现类似，下面是输出:<br><img src="/images/go/manage_muti_error_4.png" alt="multiple errors"></p>
+<p>错误通过分号连接起来，没有任何其他格式。</p>
+<p>对于每个包的性能，下面是一个基准测试结论：<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">name                    time/op         alloc/op        allocs/op</span><br><span class="line">HashiCorpMultiErrors-4  6.01µs ± 1%     6.78kB ± 0%     77.0 ± 0%</span><br><span class="line">UberMultiErrors-4       9.26µs ± 1%     10.3kB ± 0%      126 ± 0%</span><br></pre></td></tr></table></figure></p>
+<p>Uber 的实现稍微慢一些，消耗更多的内存。但是，这个包的设计目的是将收集到的错误分组在一起，而不是每次都附加它们。当对错误进行分组时，结果很接近，但是代码不够优雅，因为它需要额外的步骤。以下是最新的测试结果：<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">name                    time/op         alloc/op        allocs/op</span><br><span class="line">HashiCorpMultiErrors-4  6.01µs ± 1%     6.78kB ± 0%     77.0 ± 0%</span><br><span class="line">UberMultiErrors-4       6.02µs ± 1%     7.06kB ± 0%     77.0 ± 0%</span><br></pre></td></tr></table></figure></p>
+<p>这两个包都利用了 Go <code>error</code> 接口，并在其自定义实现中实现了 <code>Error() string</code> 函数。</p>
+<h2 id="单个错误-多个-goroutines"><a href="#单个错误-多个-goroutines" class="headerlink" title="单个错误, 多个 goroutines"></a>单个错误, 多个 goroutines</h2><p>当处理多个 <code>goroutines</code> 来执行一个任务时，有必要正确管理结果和将错误聚合，以确保程序的正确性。</p>
+<p>让我们从一个使用多个 <code>goroutines</code> 执行一系列操作的程序开始; 每个操作持续一秒钟:<br><img src="/images/go/manage_muti_error_5.png" alt="multiple errors"></p>
+<p>为了说明错误传播，第三个 <code>goroutine</code> 的第一个操作将失败。事情是这样的:<br><img src="/images/go/manage_muti_error_6.png" alt="multiple errors"></p>
+<p>正如预期的那样，这个程序大约需要 3 秒，因为大多数 <code>goroutines</code> 需要经历三个动作，每个动作需要 1 秒:<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">go run .  0.30s user 0.19s system 14% cpu 3.274 total</span><br></pre></td></tr></table></figure></p>
+<p>但是，我们可能希望使 <code>goroutines</code> 相互依赖，并在其中一个失败时取消它们。避免不必要工作的解决方案是添加上下文，一旦 <code>goroutine</code> 失败，它就会取消它:<br><img src="/images/go/manage_muti_error_7.png" alt="multiple errors"></p>
+<p>这正是 <a href="https://pkg.go.dev/golang.org/x/sync/errgroup?tab=doc" target="_blank" rel="external">errgroup</a> 所提供的;处理一组 <code>goroutines</code> 时的错误和上下文传播。下面是使用包 <a href="https://pkg.go.dev/golang.org/x/sync/errgroup?tab=doc" target="_blank" rel="external">errgroup</a> 的新代码：<br><img src="/images/go/manage_muti_error_8.png" alt="multiple errors"></p>
+<p>程序现在运行得更快，因为它通过错误传播取消的上下文：<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">go run .  0.30s user 0.19s system 38% cpu 1.269 total</span><br></pre></td></tr></table></figure></p>
+<p>该包提供的另一个好处是，我们不需要再担心等待组添加和标记 <code>goroutines</code> 完成。包为我们管理这些，我们只需要说我们准备好等待过程的结束。</p>
+<p><img src="/images/wx_dyh.png" alt="微信订阅号"></p>
+<p>译自：<a href="https://medium.com/a-journey-with-go/go-multiple-errors-management-a67477628cf1" target="_blank" rel="external">https://medium.com/a-journey-with-go/go-multiple-errors-management-a67477628cf1</a></p>
+]]></content>
+    </entry>
+    
+    <entry>
       <title><![CDATA[Go chan 为啥没有判断 close 的接口]]></title>
       <url>http://team.jiunile.com/blog/2020/11/go-chan-close.html</url>
       <content type="html"><![CDATA[<h2 id="大纲"><a href="#大纲" class="headerlink" title="大纲"></a>大纲</h2><ul>
