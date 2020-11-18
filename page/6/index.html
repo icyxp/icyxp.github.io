@@ -369,6 +369,238 @@
   
   
   <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://team.jiunile.com/blog/2020/09/k8s-securitycontext.html">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="icyboy">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="CloudNative 架构">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h2 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/blog/2020/09/k8s-securitycontext.html" itemprop="url">Kubernetes securityContext</a></h2>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2020-09-09T20:00:00+08:00">
+                2020-09-09
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/kubrenetes/" itemprop="url" rel="index">
+                    <span itemprop="name">kubrenetes</span>
+                  </a>
+                </span>
+
+                
+                
+                  ， 
+                
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/kubrenetes/securityContext/" itemprop="url" rel="index">
+                    <span itemprop="name">securityContext</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+                <a href="/blog/2020/09/k8s-securitycontext.html#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count valine-comment-count" data-xid="/blog/2020/09/k8s-securitycontext.html" itemprop="commentCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+          
+             <span id="/blog/2020/09/k8s-securitycontext.html" class="leancloud_visitors" data-flag-title="Kubernetes securityContext">
+               <span class="post-meta-divider">|</span>
+               <span class="post-meta-item-icon">
+                 <i class="fa fa-eye"></i>
+               </span>
+               
+                 <span class="post-meta-item-text">热度&#58;</span>
+               
+                 <span class="leancloud-visitors-count"></span>
+		 <span>℃</span>
+             </span>
+          
+
+          
+
+          
+            <div class="post-wordcount">
+              
+                
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-file-word-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">字数统计&#58;</span>
+                
+                <span title="字数统计">
+                  1,398 字
+                </span>
+              
+
+              
+                <span class="post-meta-divider">|</span>
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-clock-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">阅读时长 &asymp;</span>
+                
+                <span title="阅读时长">
+                  6 分钟
+                </span>
+              
+            </div>
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          <h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>kubernetes 中的 <code>securityContext</code> 是什么？在什么场景下来使用？第一感觉反正是和安全相关的东西，来自官方定义如下：</p>
+<p>安全上下文（Security Context）定义 Pod 或 Container 的特权与访问控制设置。 安全上下文包括但不限于：</p>
+<ul>
+<li>自主访问控制（Discretionary Access Control）：基于 用户 ID（UID）和组 ID（GID）. 来判定对对象（例如文件）的访问权限</li>
+<li><a href="https://zh.wikipedia.org/wiki/%E5%AE%89%E5%85%A8%E5%A2%9E%E5%BC%BA%E5%BC%8FLinux">安全性增强的 Linux（SELinux）</a>： 为对象赋予安全性标签。</li>
+<li>以特权模式或者非特权模式运行。</li>
+<li><a href="https://linux-audit.com/linux-capabilities-hardening-linux-binaries-by-removing-setuid/">Linux 权能</a>: 为进程赋予 root 用户的部分特权而非全部特权。</li>
+<li><a href="https://kubernetes.io/zh/docs/tutorials/clusters/apparmor/">AppArmor</a>：使用程序文件来限制单个程序的权限。</li>
+<li><a href="https://en.wikipedia.org/wiki/Seccomp">Seccomp</a>：限制一个进程访问文件描述符的权限。</li>
+<li>AllowPrivilegeEscalation：控制进程是否可以获得超出其父进程的特权。 此布尔值直接控制是否为容器进程设置 <a href="https://www.kernel.org/doc/Documentation/prctl/no_new_privs.txt">no_new_privs</a> 标志。 当容器以特权模式运行或者具有 <code>CAP_SYS_ADMIN</code> 权能时，AllowPrivilegeEscalation 总是为 <strong><code>true</code></strong>。</li>
+<li>readOnlyRootFilesystem：以只读方式加载容器的根文件系统。</li>
+</ul>
+<p>以上条目不是安全上下文设置的完整列表 – 请参阅 <a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.19/#securitycontext-v1-core">SecurityContext</a> 了解其完整列表。</p>
+<p>关于在 Linux 系统中的安全机制的更多信息，可参阅 <a href="https://www.linux.com/learn/overview-linux-kernel-security-features">Linux 内核安全性能力概述</a>。</p>
+<p>上面的定义有些似懂非懂，能不能更加直白的描述下呢？好吧，下面来给大家来一些实际的应用场景来讲解下。</p>
+          <!--noindex-->
+          <div class="post-button text-center">
+            <a class="btn" href="/blog/2020/09/k8s-securitycontext.html#more" rel="contents">
+              阅读全文 &raquo;
+            </a>
+          </div>
+          <!--/noindex-->
+        
+      
+    </div>
+    
+    
+    
+
+    <div>
+    
+    </div>
+
+    <div>
+      
+    </div>
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
     <link itemprop="mainEntityOfPage" href="http://team.jiunile.com/blog/2020/06/k8s-k8s-in-k8s.html">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -1244,236 +1476,11 @@
 
 
     
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://team.jiunile.com/blog/2020/05/k8s-nodelocal-dnscache.html">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="icyboy">
-      <meta itemprop="description" content="">
-      <meta itemprop="image" content="/images/avatar.jpg">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="CloudNative 架构">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h2 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/blog/2020/05/k8s-nodelocal-dnscache.html" itemprop="url">使用NodeLocal DNSCache来提升CoreDNS的性能及压力</a></h2>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2020-05-22T18:00:00+08:00">
-                2020-05-22
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
-            <span class="post-category" >
-            
-              <span class="post-meta-divider">|</span>
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">分类于</span>
-              
-              
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/kubrenetes/" itemprop="url" rel="index">
-                    <span itemprop="name">kubrenetes</span>
-                  </a>
-                </span>
-
-                
-                
-                  ， 
-                
-              
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/kubrenetes/coredns/" itemprop="url" rel="index">
-                    <span itemprop="name">coredns</span>
-                  </a>
-                </span>
-
-                
-                
-              
-            </span>
-          
-
-          
-            
-              <span class="post-comments-count">
-                <span class="post-meta-divider">|</span>
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-comment-o"></i>
-                </span>
-                <a href="/blog/2020/05/k8s-nodelocal-dnscache.html#comments" itemprop="discussionUrl">
-                  <span class="post-comments-count valine-comment-count" data-xid="/blog/2020/05/k8s-nodelocal-dnscache.html" itemprop="commentCount"></span>
-                </a>
-              </span>
-            
-          
-
-          
-          
-             <span id="/blog/2020/05/k8s-nodelocal-dnscache.html" class="leancloud_visitors" data-flag-title="使用NodeLocal DNSCache来提升CoreDNS的性能及压力">
-               <span class="post-meta-divider">|</span>
-               <span class="post-meta-item-icon">
-                 <i class="fa fa-eye"></i>
-               </span>
-               
-                 <span class="post-meta-item-text">热度&#58;</span>
-               
-                 <span class="leancloud-visitors-count"></span>
-		 <span>℃</span>
-             </span>
-          
-
-          
-
-          
-            <div class="post-wordcount">
-              
-                
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-file-word-o"></i>
-                </span>
-                
-                  <span class="post-meta-item-text">字数统计&#58;</span>
-                
-                <span title="字数统计">
-                  1,966 字
-                </span>
-              
-
-              
-                <span class="post-meta-divider">|</span>
-              
-
-              
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-clock-o"></i>
-                </span>
-                
-                  <span class="post-meta-item-text">阅读时长 &asymp;</span>
-                
-                <span title="阅读时长">
-                  9 分钟
-                </span>
-              
-            </div>
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          <h2 id="概况"><a href="#概况" class="headerlink" title="概况"></a>概况</h2><p>之前在解决 CoreDNS 的5秒超时问题的时候，除了通过 <code>dnsConfig</code> 去强制使用 tcp 方式解析之外，我们提到过使用 <code>NodeLocal DNSCache</code> 来解决这个问题。<code>NodeLocal DNSCache</code> 通过在集群节点上运行一个 DaemonSet 来提高 clusterDNS 性能和可靠性。处于 <code>ClusterFirst</code> 的 DNS 模式下的 Pod 可以连接到 <code>kube-dns</code> 的 serviceIP 进行 DNS 查询。通过 <code>kube-proxy</code> 组件添加的 <code>iptables</code> 规则将其转换为 <code>CoreDNS</code> 端点。通过在每个集群节点上运行 DNS 缓存，<code>NodeLocal DNSCache</code> 可以缩短 DNS 查找的延迟时间、使 DNS 查找时间更加一致，以及减少发送到 <code>kube-dns</code> 的 DNS 查询次数。</p>
-<p>在集群中运行 NodeLocal DNSCache 有如下几个好处：</p>
-<ul>
-<li>如果本地没有 CoreDNS 实例，则具有最高 DNS QPS 的 Pod 可能必须到另一个节点进行解析，使用 NodeLocal DNSCache 后，拥有本地缓存将有助于改善延迟</li>
-<li>跳过 iptables DNAT 和连接跟踪将有助于减少 <code>conntrack</code> 竞争并避免 UDP DNS 条目填满 <code>conntrack</code> 表（常见的5s超时问题就是这个原因造成的）</li>
-<li>从本地缓存代理到 kube-dns 服务的连接可以升级到 TCP，TCP conntrack 条目将在连接关闭时被删除，而 UDP 条目必须超时(<a href="https://www.kernel.org/doc/Documentation/networking/nf_conntrack-sysctl.txt">默认 nf_conntrack_udp_timeout 是 30 秒</a>)</li>
-<li>将 DNS 查询从 UDP 升级到 TCP 将减少归因于丢弃的 UDP 数据包和 DNS 超时的尾部等待时间，通常长达 30 秒（3 次重试+ 10 秒超时）</li>
-</ul>
-          <!--noindex-->
-          <div class="post-button text-center">
-            <a class="btn" href="/blog/2020/05/k8s-nodelocal-dnscache.html#more" rel="contents">
-              阅读全文 &raquo;
-            </a>
-          </div>
-          <!--/noindex-->
-        
-      
-    </div>
-    
-    
-    
-
-    <div>
-    
-    </div>
-
-    <div>
-      
-    </div>
-
-    
-
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
   </section>
 
   
   <nav class="pagination">
-    <a class="extend prev" rel="prev" href="/page/5/"><i class="fa fa-angle-left"></i></a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/5/">5</a><span class="page-number current">6</span><a class="page-number" href="/page/7/">7</a><span class="space">&hellip;</span><a class="page-number" href="/page/19/">19</a><a class="extend next" rel="next" href="/page/7/"><i class="fa fa-angle-right"></i></a>
+    <a class="extend prev" rel="prev" href="/page/5/"><i class="fa fa-angle-left"></i></a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/5/">5</a><span class="page-number current">6</span><a class="page-number" href="/page/7/">7</a><span class="space">&hellip;</span><a class="page-number" href="/page/20/">20</a><a class="extend next" rel="next" href="/page/7/"><i class="fa fa-angle-right"></i></a>
   </nav>
 
 
@@ -1523,7 +1530,7 @@
               
                 <a href="/archives/">
               
-                  <span class="site-state-item-count">95</span>
+                  <span class="site-state-item-count">96</span>
                   <span class="site-state-item-name">日志</span>
                 </a>
               </div>
@@ -1534,7 +1541,7 @@
               
               <div class="site-state-item site-state-categories">
                 <a href="/categories/index.html">
-                  <span class="site-state-item-count">82</span>
+                  <span class="site-state-item-count">84</span>
                   <span class="site-state-item-name">分类</span>
                 </a>
               </div>
@@ -1648,7 +1655,7 @@
     
       <span class="post-meta-item-text">Site words total count&#58;</span>
     
-    <span title="Site words total count">286.1k</span>
+    <span title="Site words total count">287.9k</span>
   
 </div>
 
@@ -1660,7 +1667,7 @@
 
 <div class="theme-info">
   <div class="powered-by"></div>
-  <span class="post-count">博客全站共286.1k字</span>
+  <span class="post-count">博客全站共287.9k字</span>
 </div>
 
 

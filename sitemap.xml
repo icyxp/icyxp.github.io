@@ -2,6 +2,13 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   
   <url>
+    <loc>http://team.jiunile.com/blog/2020/11/k8s-proxy-iptables.html</loc>
+    
+    <lastmod>2020-11-18T13:56:14.000Z</lastmod>
+    
+  </url>
+  
+  <url>
     <loc>http://team.jiunile.com/blog/2020/11/go-multi-errors.html</loc>
     
     <lastmod>2020-11-18T03:55:12.000Z</lastmod>
