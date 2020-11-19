@@ -369,6 +369,230 @@
   
   
   <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://team.jiunile.com/blog/2020/10/k8s-cpu-alert.html">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="icyboy">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="CloudNative 架构">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h2 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/blog/2020/10/k8s-cpu-alert.html" itemprop="url">Kubernetes CPUThrottlingHigh 告警解析</a></h2>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2020-10-13T20:00:00+08:00">
+                2020-10-13
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/kubernetes/" itemprop="url" rel="index">
+                    <span itemprop="name">kubernetes</span>
+                  </a>
+                </span>
+
+                
+                
+                  ， 
+                
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/kubernetes/告警/" itemprop="url" rel="index">
+                    <span itemprop="name">告警</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+                <a href="/blog/2020/10/k8s-cpu-alert.html#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count valine-comment-count" data-xid="/blog/2020/10/k8s-cpu-alert.html" itemprop="commentCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+          
+             <span id="/blog/2020/10/k8s-cpu-alert.html" class="leancloud_visitors" data-flag-title="Kubernetes CPUThrottlingHigh 告警解析">
+               <span class="post-meta-divider">|</span>
+               <span class="post-meta-item-icon">
+                 <i class="fa fa-eye"></i>
+               </span>
+               
+                 <span class="post-meta-item-text">热度&#58;</span>
+               
+                 <span class="leancloud-visitors-count"></span>
+		 <span>℃</span>
+             </span>
+          
+
+          
+
+          
+            <div class="post-wordcount">
+              
+                
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-file-word-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">字数统计&#58;</span>
+                
+                <span title="字数统计">
+                  2,635 字
+                </span>
+              
+
+              
+                <span class="post-meta-divider">|</span>
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-clock-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">阅读时长 &asymp;</span>
+                
+                <span title="阅读时长">
+                  11 分钟
+                </span>
+              
+            </div>
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          <h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>在使用Kubernetes的过程中，我们看到过这样一个告警信息：</p>
+<blockquote>
+<p>[K8S]告警主题: CPUThrottlingHigh<br>告警级别: warning<br>告警类型: CPUThrottlingHigh<br>故障实例: xxxx<br>告警详情: 27% throttling of CPU in namespace kube-system for container kube-proxy in pod kube-proxy-9pj9j.<br>触发时间: 2020-05-08 17:34:17</p>
+</blockquote>
+<p>这个告警信息说明 <code>kube-proxy</code> 容器被 <code>throttling</code> 了，然而查看该容器的资源使用历史信息，发现该容器以及容器所在的节点的 CPU 资源使用率都不高：</p>
+<p><img src="/images/k8s/m-1.png" alt="告警期间容器所在节点CPU使用率"><br><img src="/images/k8s/m-2.png" alt="告警期间kube-proxy的资源使用率"></p>
+<p>经过我们的分析，发现该告警实际上是和 Kubernetes 对于 CPU 资源的限制和管控机制有关。Kubernetes 依赖于容器的 <code>runtime</code> 进行 CPU 资源的调度，而容器 <code>runtime</code> 以 Docker 为例，是借助于 <code>cgroup</code> 和 <code>CFS</code> 调度机制进行资源管控。本文基于这个告警案例，首先分析了 <code>CFS</code> 的基本原理，然后对于 Kubernetes 借助 <code>CFS</code> 进行 CPU 资源的调度和管控方法进行了介绍，最后使用一个例子来分析 <code>CFS</code> 的一些调度特性来解释这个告警的 <code>root cause</code> 和解决方案。</p>
+          <!--noindex-->
+          <div class="post-button text-center">
+            <a class="btn" href="/blog/2020/10/k8s-cpu-alert.html#more" rel="contents">
+              阅读全文 &raquo;
+            </a>
+          </div>
+          <!--/noindex-->
+        
+      
+    </div>
+    
+    
+    
+
+    <div>
+    
+    </div>
+
+    <div>
+      
+    </div>
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
     <link itemprop="mainEntityOfPage" href="http://team.jiunile.com/blog/2020/10/go-debug-memory2.html">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -1308,233 +1532,6 @@
 
 
     
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://team.jiunile.com/blog/2020/09/go-singleflight-deadlock.html">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="icyboy">
-      <meta itemprop="description" content="">
-      <meta itemprop="image" content="/images/avatar.jpg">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="CloudNative 架构">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h2 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/blog/2020/09/go-singleflight-deadlock.html" itemprop="url">Go Singleflight导致死锁问题分析</a></h2>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2020-09-14T20:00:00+08:00">
-                2020-09-14
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
-            <span class="post-category" >
-            
-              <span class="post-meta-divider">|</span>
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">分类于</span>
-              
-              
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/go/" itemprop="url" rel="index">
-                    <span itemprop="name">go</span>
-                  </a>
-                </span>
-
-                
-                
-                  ， 
-                
-              
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/go/singleflight/" itemprop="url" rel="index">
-                    <span itemprop="name">singleflight</span>
-                  </a>
-                </span>
-
-                
-                
-              
-            </span>
-          
-
-          
-            
-              <span class="post-comments-count">
-                <span class="post-meta-divider">|</span>
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-comment-o"></i>
-                </span>
-                <a href="/blog/2020/09/go-singleflight-deadlock.html#comments" itemprop="discussionUrl">
-                  <span class="post-comments-count valine-comment-count" data-xid="/blog/2020/09/go-singleflight-deadlock.html" itemprop="commentCount"></span>
-                </a>
-              </span>
-            
-          
-
-          
-          
-             <span id="/blog/2020/09/go-singleflight-deadlock.html" class="leancloud_visitors" data-flag-title="Go Singleflight导致死锁问题分析">
-               <span class="post-meta-divider">|</span>
-               <span class="post-meta-item-icon">
-                 <i class="fa fa-eye"></i>
-               </span>
-               
-                 <span class="post-meta-item-text">热度&#58;</span>
-               
-                 <span class="leancloud-visitors-count"></span>
-		 <span>℃</span>
-             </span>
-          
-
-          
-
-          
-            <div class="post-wordcount">
-              
-                
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-file-word-o"></i>
-                </span>
-                
-                  <span class="post-meta-item-text">字数统计&#58;</span>
-                
-                <span title="字数统计">
-                  2,465 字
-                </span>
-              
-
-              
-                <span class="post-meta-divider">|</span>
-              
-
-              
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-clock-o"></i>
-                </span>
-                
-                  <span class="post-meta-item-text">阅读时长 &asymp;</span>
-                
-                <span title="阅读时长">
-                  9 分钟
-                </span>
-              
-            </div>
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          <h2 id="思路排查"><a href="#思路排查" class="headerlink" title="思路排查"></a>思路排查</h2><h3 id="Dump-堆栈很重要"><a href="#Dump-堆栈很重要" class="headerlink" title="Dump 堆栈很重要"></a>Dump 堆栈很重要</h3><p>线上某个环境发现 S3 上传请求卡住，请求不返回，卡了30分钟，长时间没有发现有效日志。一般来讲，死锁问题还是好排查的，因为现场一般都在。类似于 c 程序，遇到死锁问题都会用 pstack 看一把。golang 死锁排查思路也类似（golang 不适合使用 pstack，因为 golang 调度的是协程，pstack 只能看到线程栈），我们其实是需要知道 S3 程序里 goroutine 的栈状态。golang 遇到这个问题我们有两个办法：</p>
-<ol>
-<li>方法一：条件允许的话，gcore 出一个堆栈，这个是最有效的方法，因为是把整个 golang 程序的内存镜像 dump 出来，然后用 dlv 分析</li>
-<li>方法二：如果你提前开启 net/pprof 库的引用，开启了 debug 接口，那么就可以调用 curl 接口，通过 http 接口获取进程的状态信息</li>
-</ol>
-<p>需要注意到，golang 程序和 c 程序还是有点区别，goroutine 非常多，成百上千个 goroutine 是常态，甚至上万个也不稀奇。所以我们一般无法在终端上直接看完所有的栈，一般都是把所有的 goroutine 栈 dump 到文件，然用 vi 打开慢慢分析。</p>
-<ul>
-<li>调试这个 core 文件，意图从堆栈里找到些东西，由于堆栈太多了，所以就使用 <code>gorouties -t -u</code> 这个命令，并且把输出 dump 到文件；</li>
-<li><code>curl xxx/debug/pprof/goroutine</code></li>
-</ul>
-          <!--noindex-->
-          <div class="post-button text-center">
-            <a class="btn" href="/blog/2020/09/go-singleflight-deadlock.html#more" rel="contents">
-              阅读全文 &raquo;
-            </a>
-          </div>
-          <!--/noindex-->
-        
-      
-    </div>
-    
-    
-    
-
-    <div>
-    
-    </div>
-
-    <div>
-      
-    </div>
-
-    
-
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
   </section>
 
   
@@ -1589,7 +1586,7 @@
               
                 <a href="/archives/">
               
-                  <span class="site-state-item-count">97</span>
+                  <span class="site-state-item-count">98</span>
                   <span class="site-state-item-name">日志</span>
                 </a>
               </div>
@@ -1611,7 +1608,7 @@
               
               <div class="site-state-item site-state-tags">
                 <a href="/tags/index.html">
-                  <span class="site-state-item-count">165</span>
+                  <span class="site-state-item-count">167</span>
                   <span class="site-state-item-name">标签</span>
                 </a>
               </div>
@@ -1714,7 +1711,7 @@
     
       <span class="post-meta-item-text">Site words total count&#58;</span>
     
-    <span title="Site words total count">289.5k</span>
+    <span title="Site words total count">291.0k</span>
   
 </div>
 
@@ -1726,7 +1723,7 @@
 
 <div class="theme-info">
   <div class="powered-by"></div>
-  <span class="post-count">博客全站共289.5k字</span>
+  <span class="post-count">博客全站共291.0k字</span>
 </div>
 
 
