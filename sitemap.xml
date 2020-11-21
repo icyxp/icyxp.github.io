@@ -2,6 +2,13 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   
   <url>
+    <loc>http://team.jiunile.com/blog/2020/11/go-trace.html</loc>
+    
+    <lastmod>2020-11-21T16:34:46.000Z</lastmod>
+    
+  </url>
+  
+  <url>
     <loc>http://team.jiunile.com/blog/2020/11/go-copy-struct-or-pointer.html</loc>
     
     <lastmod>2020-11-19T14:49:22.000Z</lastmod>

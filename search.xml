@@ -4,6 +4,60 @@
   
     
     <entry>
+      <title><![CDATA[探索 Go Trace 包]]></title>
+      <url>http://team.jiunile.com/blog/2020/11/go-trace.html</url>
+      <content type="html"><![CDATA[<h2 id="概述"><a href="#概述" class="headerlink" title="概述"></a>概述</h2><blockquote>
+<p>本文基于 Go 1.13</p>
+</blockquote>
+<p>Go 为我们提供了一个工具，可以在运行时进行跟踪，并获得程序执行的详细视图。这个工具可以通过在测试中使用标记 <code>-trace</code> 来启用，可以通过 <code>pprof</code> 来进行实时跟踪，也可以通过<code>trace</code> <a href="https://golang.org/pkg/runtime/trace/" target="_blank" rel="external">包</a>在代码中的任何位置启用。这个工具可以更加强大，因为您可以自定义 traces 来增强它。让我们回顾一下它是如何工作的。</p>
+<h2 id="流程"><a href="#流程" class="headerlink" title="流程"></a>流程</h2><p>该工具的流程非常简单。每个事件，如内存分配；垃圾回收器的所有阶段；goroutines 在运行、暂停等情况下会被 Go 标准库静态记录，并格式化后显示。然而，在录制开始之前，Go 首先“stops the world”，并对当前的 goroutines 及其状态进行快照。<br><a id="more"></a></p>
+<p>这将在之后能让 Go 正确地构建每个 goroutine 的生命周期。流程如下:<br><img src="/images/go/trace_1.png" alt="Initialization phase before tracing"></p>
+<p>然后，将收集的事件推送到缓冲区，当达到最大容量时，该缓冲区随后将刷新到完整缓冲区列表。这是此流程的图:<br><img src="/images/go/trace_2.png" alt="Tracing collect events per P"></p>
+<p>跟踪器现在需要一种将这些跟踪转储到输出的方法。为此，当追踪开始时，Go 会产生一个专用于此的 goroutine。如果可用，该 goroutine 将转储数据，并将把 goroutine 停放到下一个。这是它的一个表示：<br><img src="/images/go/trace_3.png" alt="A dedicated goroutine reads and dump the traces"></p>
+<p>现在流程非常清晰，所以让我们回顾一下记录的跟踪事件。</p>
+<h2 id="追踪"><a href="#追踪" class="headerlink" title="追踪"></a>追踪</h2><p>生成跟踪后，就可以通过运行命令 <code>go tool trace my-output.out</code> 来实现可视化。让我们以一些跟踪事件为例：<br><img src="/images/go/trace_4.png" alt="Tracing from go tool"></p>
+<p>大多数都很简单。与垃圾回收器相关的跟踪位于蓝色跟踪 <code>GC</code> 下:<br><img src="/images/go/trace_5.png" alt="Traces of the garbage collector"></p>
+<p>快速回顾：</p>
+<ul>
+<li><code>STW</code> 是垃圾回收器中的两个 “Stop the World” 阶段。在这两个阶段，goroutines 被停止。</li>
+<li><code>GC (空闲)</code> 是在没有工作要做时标记内存的 goroutine。</li>
+<li><code>MARK ASSIST</code> 是在分配期间帮助标记内存的 goroutines。</li>
+<li><code>GXX runtime.bgsweep</code> 是垃圾回收器完成后的内存扫描阶段。</li>
+<li><code>GXX runtime.gcBgMarkWorker</code> 是帮助标记内存的专用后台 goroutines。</li>
+</ul>
+<p>然而，有些追踪事件并不容易理解。让我们回顾一下，以便更好地理解：</p>
+<ul>
+<li><p>当处理器与线程关联时，将调用 <code>proc start</code>。当启动新线程或从 syscall 恢复时，就会发生这种情况。<br><img src="/images/go/trace_6.png" alt="trace"></p>
+</li>
+<li><p>当线程与当前处理器解除关联时，将调用 <code>proc stop</code>。当线程在 syscall 中被阻塞或线程退出时，就会发生这种情况。<br><img src="/images/go/trace_7.png" alt="trace"></p>
+</li>
+<li><p>当 goroutine 进行系统调用时，将调用 <code>syscall</code>:<br><img src="/images/go/trace_8.png" alt="trace"></p>
+</li>
+<li><p>当 goroutine 从 syscall 解除阻止时，将调用 <code>unblock</code> – 在这种情况下，标签 (<code>sysexit</code>) 将从被阻塞的通道显示:<br><img src="/images/go/trace_9.png" alt="trace"></p>
+</li>
+</ul>
+<p>跟踪可以增强，因为 Go 允许您定义和可视化自己的跟踪以及标准库中的跟踪。</p>
+<h2 id="用户自定义追踪"><a href="#用户自定义追踪" class="headerlink" title="用户自定义追踪"></a>用户自定义追踪</h2><p>我们可以定义的跟踪有两个级别：</p>
+<ul>
+<li>在任务的顶层，有开始和结束。</li>
+<li>在区域的子级别上。</li>
+</ul>
+<p>下面是一个简单的例子：<br><figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> &#123;</span><br><span class="line">	ctx, task := trace.NewTask(context.Background(), <span class="string">"main start"</span>)</span><br><span class="line"> </span><br><span class="line">	<span class="keyword">var</span> wg sync.WaitGroup</span><br><span class="line">	wg.Add(<span class="number">2</span>)</span><br><span class="line"> </span><br><span class="line">	<span class="keyword">go</span> <span class="function"><span class="keyword">func</span><span class="params">()</span></span> &#123;</span><br><span class="line">		<span class="keyword">defer</span> wg.Done()</span><br><span class="line">		r := trace.StartRegion(ctx, <span class="string">"reading file"</span>)</span><br><span class="line">		<span class="keyword">defer</span> r.End()</span><br><span class="line"> </span><br><span class="line">		ioutil.ReadFile(<span class="string">`n1.txt`</span>)</span><br><span class="line">	&#125;()</span><br><span class="line"> </span><br><span class="line">	<span class="keyword">go</span> <span class="function"><span class="keyword">func</span><span class="params">()</span></span> &#123;</span><br><span class="line">		<span class="keyword">defer</span> wg.Done()</span><br><span class="line">		r := trace.StartRegion(ctx, <span class="string">"writing file"</span>)</span><br><span class="line">		<span class="keyword">defer</span> r.End()</span><br><span class="line"> </span><br><span class="line">		ioutil.WriteFile(<span class="string">`n2.txt`</span>, []<span class="keyword">byte</span>(<span class="string">`42`</span>), <span class="number">0644</span>)</span><br><span class="line">	&#125;()</span><br><span class="line"> </span><br><span class="line">	wg.Wait()</span><br><span class="line"> </span><br><span class="line">	<span class="keyword">defer</span> task.End()</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>这些新的跟踪可以通过菜单用户自定义直接从工具中可视化：<br><img src="/images/go/trace_10.png" alt="Custom task and regions"></p>
+<p>还可以任意将一些日志记录到任务中:<br><figure class="highlight golang"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">ctx, task := trace.NewTask(context.Background(), <span class="string">"main start"</span>)</span><br><span class="line">trace.Log(ctx, <span class="string">"category"</span>, <span class="string">"I/O file"</span>)</span><br><span class="line">trace.Log(ctx, <span class="string">"goroutine"</span>, <span class="string">"2"</span>)</span><br></pre></td></tr></table></figure></p>
+<p>这些日志将在设置任务的 goroutine 下找到：<br><img src="/images/go/trace_11.png" alt="Custom logs in the tracing"></p>
+<p>还可以通过派生父任务的上下文等将任务嵌入到其他任务中。</p>
+<p>但是，由于 <code>pprof</code> 的存在，在生产中实时跟踪所有这些事件可能会在收集它们时略微降低性能。</p>
+<h2 id="性能影响"><a href="#性能影响" class="headerlink" title="性能影响"></a>性能影响</h2><p>一个简单的基准测试可以帮助理解跟踪的影响。其中一个将带标志 <code>-trace</code> 运行，另一个则不带。下面是 <code>ioutil.ReadFile()</code> 函数的基准测试结果，该函数生成了很多事件:<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">name         time/op</span><br><span class="line">ReadFiles-8  48.1µs ± 0%</span><br><span class="line">name         time/op</span><br><span class="line">ReadFiles-8  63.5µs ± 0%  // with tracing</span><br></pre></td></tr></table></figure></p>
+<p>在这种情况下，影响约为 ~35%，并且可能因应用程序而异。但是有一些工具（如 StackDriver ），允许在生产环境中进行连续的分析，同时又对应用程序保持较小的开销。</p>
+<blockquote>
+<p>译自：<a href="https://medium.com/a-journey-with-go/go-discovery-of-the-trace-package-e5a821743c3c" target="_blank" rel="external">https://medium.com/a-journey-with-go/go-discovery-of-the-trace-package-e5a821743c3c</a></p>
+</blockquote>
+<p><img src="/images/wx_dyh.png" alt="微信订阅号"></p>
+]]></content>
+    </entry>
+    
+    <entry>
       <title><![CDATA[在 Go 中我应该使用指针还是拷贝结构体？]]></title>
       <url>http://team.jiunile.com/blog/2020/11/go-copy-struct-or-pointer.html</url>
       <content type="html"><![CDATA[<h2 id="概述"><a href="#概述" class="headerlink" title="概述"></a>概述</h2><p>对于许多 Go 开发人员来说，系统地使用指针来共享结构体而不是拷贝本身似乎是性能方面的最佳选择。</p>
