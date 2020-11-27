@@ -2,6 +2,13 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   
   <url>
+    <loc>http://team.jiunile.com/blog/2020/11/go-slices.html</loc>
+    
+    <lastmod>2020-11-27T07:10:03.000Z</lastmod>
+    
+  </url>
+  
+  <url>
     <loc>http://team.jiunile.com/blog/2020/11/k8s-cilium-service.html</loc>
     
     <lastmod>2020-11-25T06:00:19.000Z</lastmod>
