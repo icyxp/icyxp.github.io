@@ -369,6 +369,476 @@
   
   
   <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://team.jiunile.com/blog/2020/11/k8s-cni-benchmark.html">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="icyboy">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="CloudNative 架构">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h2 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/blog/2020/11/k8s-cni-benchmark.html" itemprop="url">Kubernetes 网络插件在超过 10Gbit/s 下的基准测试结果</a></h2>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2020-11-11T20:00:00+08:00">
+                2020-11-11
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/kubernetes/" itemprop="url" rel="index">
+                    <span itemprop="name">kubernetes</span>
+                  </a>
+                </span>
+
+                
+                
+                  ， 
+                
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/kubernetes/基准测试/" itemprop="url" rel="index">
+                    <span itemprop="name">基准测试</span>
+                  </a>
+                </span>
+
+                
+                
+                  ， 
+                
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/kubernetes/基准测试/网络/" itemprop="url" rel="index">
+                    <span itemprop="name">网络</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+                <a href="/blog/2020/11/k8s-cni-benchmark.html#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count valine-comment-count" data-xid="/blog/2020/11/k8s-cni-benchmark.html" itemprop="commentCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+          
+             <span id="/blog/2020/11/k8s-cni-benchmark.html" class="leancloud_visitors" data-flag-title="Kubernetes 网络插件在超过 10Gbit/s 下的基准测试结果">
+               <span class="post-meta-divider">|</span>
+               <span class="post-meta-item-icon">
+                 <i class="fa fa-eye"></i>
+               </span>
+               
+                 <span class="post-meta-item-text">热度&#58;</span>
+               
+                 <span class="leancloud-visitors-count"></span>
+		 <span>℃</span>
+             </span>
+          
+
+          
+
+          
+            <div class="post-wordcount">
+              
+                
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-file-word-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">字数统计&#58;</span>
+                
+                <span title="字数统计">
+                  1,980 字
+                </span>
+              
+
+              
+                <span class="post-meta-divider">|</span>
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-clock-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">阅读时长 &asymp;</span>
+                
+                <span title="阅读时长">
+                  8 分钟
+                </span>
+              
+            </div>
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          <h2 id="概览"><a href="#概览" class="headerlink" title="概览"></a>概览</h2><blockquote>
+<p>在运行 Kubernetes 1.19 和 Ubuntu 18.04 上进行基准测试</p>
+</blockquote>
+<ol>
+<li>在我们深入讨论度量之前</li>
+<li>CNI 经过 MTU 调优</li>
+<li>CNI 基准:原始数据</li>
+<li>CNI 加密</li>
+<li>总结</li>
+<li>结论-我的结论</li>
+</ol>
+<h2 id="1-在我们深入讨论度量标准之前…"><a href="#1-在我们深入讨论度量标准之前…" class="headerlink" title="1 在我们深入讨论度量标准之前…"></a>1 在我们深入讨论度量标准之前…</h2><h3 id="1-1-自2019年4月以来有什么新鲜事吗"><a href="#1-1-自2019年4月以来有什么新鲜事吗" class="headerlink" title="1.1 自2019年4月以来有什么新鲜事吗?"></a>1.1 自2019年4月以来有什么新鲜事吗?</h3><ul>
+<li><strong>测试您自己的群集</strong>：现在您可以使用我们发布的“Kubernetes网络基准测试”工具：knb (<a href="https://github.com/InfraBuilder/k8s-bench-suite">https://github.com/InfraBuilder/k8s-bench-suite</a>)在自己的集群上运行基准测试。</li>
+<li>在CNI 竞争中欢迎新的挑战者:<ul>
+<li>来自 VMware Tanzu 的 “<a href="https://antrea.io/docs/master/getting-started/">Antrea</a>”</li>
+<li>来自 alauda.io 的 “<a href="https://github.com/alauda/kube-ovn">Kube-OVN</a>”</li>
+</ul>
+</li>
+<li><strong>新场景</strong>：这个基准测试涵盖了 “Pod-to-Pod” 的网络性能，还包括一个新的 “Pod-to-Service” 场景，该方案涉及真实的测试案例。实际上，您的 API 容器将通过服务而不是容器 IP 消耗服务中的数据库（当然，我们对这两种场景也会测试 TCP 和 UDP）</li>
+<li><strong>资源消耗</strong>：现在每个测试都有自己的资源比较。</li>
+<li><strong>删除应用程序测试</strong>：我们不再运行 HTTP、FTP 和 SCP 测试。我们与社区和 CNI 维护者卓有成效的合作突显了 iperf TCP 结果和 curl 结果之间的差距，这是由于 CNI 启动的延迟(Pod 启动时的最初几秒钟，与实际用例无关)。</li>
+<li><strong>开源</strong>：所有基准测试的源代码（脚本、cni yml 和原始结果）都可以在 github 上获得：<a href="https://github.com/icyxp/benchmark-k8s-cni-2020-08">https://github.com/icyxp/benchmark-k8s-cni-2020-08</a>
+          <!--noindex-->
+          <div class="post-button text-center">
+            <a class="btn" href="/blog/2020/11/k8s-cni-benchmark.html#more" rel="contents">
+              阅读全文 &raquo;
+            </a>
+          </div>
+          <!--/noindex-->
+        
+      
+    </div>
+    
+    
+    
+
+    <div>
+    
+    </div>
+
+    <div>
+      
+    </div>
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://team.jiunile.com/blog/2020/11/nginx-proxy-pass-domain.html">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="icyboy">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="CloudNative 架构">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h2 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/blog/2020/11/nginx-proxy-pass-domain.html" itemprop="url">Nginx proxy_pass 配置域名引发的故障</a></h2>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2020-11-10T20:00:00+08:00">
+                2020-11-10
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/nginx/" itemprop="url" rel="index">
+                    <span itemprop="name">nginx</span>
+                  </a>
+                </span>
+
+                
+                
+                  ， 
+                
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/nginx/反向代理/" itemprop="url" rel="index">
+                    <span itemprop="name">反向代理</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+                <a href="/blog/2020/11/nginx-proxy-pass-domain.html#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count valine-comment-count" data-xid="/blog/2020/11/nginx-proxy-pass-domain.html" itemprop="commentCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+          
+             <span id="/blog/2020/11/nginx-proxy-pass-domain.html" class="leancloud_visitors" data-flag-title="Nginx proxy_pass 配置域名引发的故障">
+               <span class="post-meta-divider">|</span>
+               <span class="post-meta-item-icon">
+                 <i class="fa fa-eye"></i>
+               </span>
+               
+                 <span class="post-meta-item-text">热度&#58;</span>
+               
+                 <span class="leancloud-visitors-count"></span>
+		 <span>℃</span>
+             </span>
+          
+
+          
+
+          
+            <div class="post-wordcount">
+              
+                
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-file-word-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">字数统计&#58;</span>
+                
+                <span title="字数统计">
+                  3,303 字
+                </span>
+              
+
+              
+                <span class="post-meta-divider">|</span>
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-clock-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">阅读时长 &asymp;</span>
+                
+                <span title="阅读时长">
+                  15 分钟
+                </span>
+              
+            </div>
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          <h2 id="背景描述"><a href="#背景描述" class="headerlink" title="背景描述"></a>背景描述</h2><p>业务场景：<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">用户 ----&gt; waf ----&gt; 后端服务</span><br></pre></td></tr></table></figure></p>
+<p><code>waf</code> 是采用 Nginx 做的二次开发，做了一些安全验证后将请求转发到后端服务，通过 nginx <code>proxy_pass</code> 转发。 <code>proxy_pass</code> 后面直接配置的是域名（如：xxxxx-1760550967.cn-northwest-1.elb.amazonaws.com.cn ）</p>
+<h2 id="故障现象"><a href="#故障现象" class="headerlink" title="故障现象"></a>故障现象</h2><p>有部分用户开始反馈访问站点出错 <code>504 Gateway Time-out</code>, 通过监控查到有部分请求打了一个下线的 IP 上。这里简单简述下故障场景：使用nginx做反向代理，将请求发送到一个域名(例如: <code>proxy_pass http://www.test.com</code> 该域名对应的 IP 是 A) ，刚开始运行一切正常，但是当运行了一段时间以后，域名对应的 IP 变了(例如 <a href="http://www.test.com">http://www.test.com</a> 对应的 IP 由 A 变为 B)，nginx 的转发仍然还在向原先的 IP 发送请求，导致业务中断，此时<code>reload nginx</code> 后才会重新恢复正常，且日志显示数据转发到新的 IP B。<br>
+          <!--noindex-->
+          <div class="post-button text-center">
+            <a class="btn" href="/blog/2020/11/nginx-proxy-pass-domain.html#more" rel="contents">
+              阅读全文 &raquo;
+            </a>
+          </div>
+          <!--/noindex-->
+        
+      
+    </div>
+    
+    
+    
+
+    <div>
+    
+    </div>
+
+    <div>
+      
+    </div>
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
     <link itemprop="mainEntityOfPage" href="http://team.jiunile.com/blog/2020/11/k8s-istio-intro.html">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -1037,453 +1507,6 @@
 
 
     
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://team.jiunile.com/blog/2020/10/docker-hang.html">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="icyboy">
-      <meta itemprop="description" content="">
-      <meta itemprop="image" content="/images/avatar.jpg">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="CloudNative 架构">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h2 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/blog/2020/10/docker-hang.html" itemprop="url">docker 卡死引起的 container runtime is down</a></h2>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2020-10-26T20:00:00+08:00">
-                2020-10-26
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
-            <span class="post-category" >
-            
-              <span class="post-meta-divider">|</span>
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">分类于</span>
-              
-              
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/docker/" itemprop="url" rel="index">
-                    <span itemprop="name">docker</span>
-                  </a>
-                </span>
-
-                
-                
-                  ， 
-                
-              
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/docker/error/" itemprop="url" rel="index">
-                    <span itemprop="name">error</span>
-                  </a>
-                </span>
-
-                
-                
-              
-            </span>
-          
-
-          
-            
-              <span class="post-comments-count">
-                <span class="post-meta-divider">|</span>
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-comment-o"></i>
-                </span>
-                <a href="/blog/2020/10/docker-hang.html#comments" itemprop="discussionUrl">
-                  <span class="post-comments-count valine-comment-count" data-xid="/blog/2020/10/docker-hang.html" itemprop="commentCount"></span>
-                </a>
-              </span>
-            
-          
-
-          
-          
-             <span id="/blog/2020/10/docker-hang.html" class="leancloud_visitors" data-flag-title="docker 卡死引起的 container runtime is down">
-               <span class="post-meta-divider">|</span>
-               <span class="post-meta-item-icon">
-                 <i class="fa fa-eye"></i>
-               </span>
-               
-                 <span class="post-meta-item-text">热度&#58;</span>
-               
-                 <span class="leancloud-visitors-count"></span>
-		 <span>℃</span>
-             </span>
-          
-
-          
-
-          
-            <div class="post-wordcount">
-              
-                
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-file-word-o"></i>
-                </span>
-                
-                  <span class="post-meta-item-text">字数统计&#58;</span>
-                
-                <span title="字数统计">
-                  9,328 字
-                </span>
-              
-
-              
-                <span class="post-meta-divider">|</span>
-              
-
-              
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-clock-o"></i>
-                </span>
-                
-                  <span class="post-meta-item-text">阅读时长 &asymp;</span>
-                
-                <span title="阅读时长">
-                  49 分钟
-                </span>
-              
-            </div>
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          <h2 id="1-背景"><a href="#1-背景" class="headerlink" title="1 背景"></a>1 背景</h2><p>最近升级了一版 kubelet，修复因 kubelet 删除 Pod 慢导致平台删除集群超时的问题。在灰度 redis 隔离集群的时候，发现升级 kubelet 并重启服务后，少量宿主状态变成了 NotReady，并且回滚 kubelet 至之前版本，宿主状态仍然是 NotReady。查看宿主状态时提示 ‘container runtime is down’ ，根据经验，此时一般就是容器运行时出了问题。弹性云使用的容器运行时是 docker，我们就去检查 docker 的状态，检测结果如下：</p>
-<ul>
-<li><code>docker ps</code> 查看所有容器状态，执行正常</li>
-<li><code>docker inspect</code> 查看某一容器详细状态，执行阻塞</li>
-</ul>
-<p>典型的 <code>docker hang</code> 死行为。因为我们最近在升级 docker 版本，存量宿主 docker 的版本为 1.13.1，并且在逐步升级至 18.06.3，新宿主的 docker 版本都是 18.06.3。<code>docker hang</code> 死问题在 1.13.1 版本上表现得更彻底，在执行 <code>docker ps</code> 的时候就已经 hang 死了，一旦某个容器出了问题，docker 就处于无响应状态；而 docker 18.06.3 做了一点小小的优化，在执行 docker ps 时去掉了针对容器级别的加锁操作，但是 <code>docker inspect</code> 依然会加容器锁，因此某一个容器出现问题，并不会造成 docker 服务不可响应，受影响的也仅仅是该容器，无法执行任何操作。</p>
-<p>至于为什么以 <code>docker ps</code> 与 <code>docker inspect</code> 为指标检查 docker 状态，因为 kubelet 就是依赖这两个 docker API 获取容器状态。</p>
-<p>所以，现在问题有二：</p>
-<ol>
-<li><code>docker hang</code> 死的根因是什么？</li>
-<li><code>docker hang</code> 死时，为什么重启 kubelet，会导致宿主状态变为 NotReady？
-          <!--noindex-->
-          <div class="post-button text-center">
-            <a class="btn" href="/blog/2020/10/docker-hang.html#more" rel="contents">
-              阅读全文 &raquo;
-            </a>
-          </div>
-          <!--/noindex-->
-        
-      
-    </div>
-    
-    
-    
-
-    <div>
-    
-    </div>
-
-    <div>
-      
-    </div>
-
-    
-
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://team.jiunile.com/blog/2020/10/trace-packet-with-perf-ebpf.html">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="icyboy">
-      <meta itemprop="description" content="">
-      <meta itemprop="image" content="/images/avatar.jpg">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="CloudNative 架构">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h2 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/blog/2020/10/trace-packet-with-perf-ebpf.html" itemprop="url">使用 Linux tracepoint、perf 和 eBPF 跟踪数据包</a></h2>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2020-10-25T20:00:00+08:00">
-                2020-10-25
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
-            <span class="post-category" >
-            
-              <span class="post-meta-divider">|</span>
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">分类于</span>
-              
-              
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/抓包/" itemprop="url" rel="index">
-                    <span itemprop="name">抓包</span>
-                  </a>
-                </span>
-
-                
-                
-                  ， 
-                
-              
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/抓包/debug/" itemprop="url" rel="index">
-                    <span itemprop="name">debug</span>
-                  </a>
-                </span>
-
-                
-                
-              
-            </span>
-          
-
-          
-            
-              <span class="post-comments-count">
-                <span class="post-meta-divider">|</span>
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-comment-o"></i>
-                </span>
-                <a href="/blog/2020/10/trace-packet-with-perf-ebpf.html#comments" itemprop="discussionUrl">
-                  <span class="post-comments-count valine-comment-count" data-xid="/blog/2020/10/trace-packet-with-perf-ebpf.html" itemprop="commentCount"></span>
-                </a>
-              </span>
-            
-          
-
-          
-          
-             <span id="/blog/2020/10/trace-packet-with-perf-ebpf.html" class="leancloud_visitors" data-flag-title="使用 Linux tracepoint、perf 和 eBPF 跟踪数据包">
-               <span class="post-meta-divider">|</span>
-               <span class="post-meta-item-icon">
-                 <i class="fa fa-eye"></i>
-               </span>
-               
-                 <span class="post-meta-item-text">热度&#58;</span>
-               
-                 <span class="leancloud-visitors-count"></span>
-		 <span>℃</span>
-             </span>
-          
-
-          
-
-          
-            <div class="post-wordcount">
-              
-                
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-file-word-o"></i>
-                </span>
-                
-                  <span class="post-meta-item-text">字数统计&#58;</span>
-                
-                <span title="字数统计">
-                  5,596 字
-                </span>
-              
-
-              
-                <span class="post-meta-divider">|</span>
-              
-
-              
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-clock-o"></i>
-                </span>
-                
-                  <span class="post-meta-item-text">阅读时长 &asymp;</span>
-                
-                <span title="阅读时长">
-                  25 分钟
-                </span>
-              
-            </div>
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          <p>一段时间以来，我一直在寻找 Linux 上的底层网络调试（debug）工具。</p>
-<p>Linux 允许在主机上用<strong>虚拟网卡</strong>（virtual interface）和<strong>网络命名空间</strong>（network namespace）构建复杂的网络。但出现故障时，排障（troubleshooting）相当痛苦。如果是 3 层路由问题，<code>mtr</code> 可以排上用场。但如果是更底层的问题，我通常只能手动检查每个网 卡/网桥/网络命名空间/iptables 规则，用 <code>tcpdump</code> 抓一些包，以确定到底是什么状况。如 果不了解故障之前的网络设置，那感觉就像在走迷宫。<br>
-          <!--noindex-->
-          <div class="post-button text-center">
-            <a class="btn" href="/blog/2020/10/trace-packet-with-perf-ebpf.html#more" rel="contents">
-              阅读全文 &raquo;
-            </a>
-          </div>
-          <!--/noindex-->
-        
-      
-    </div>
-    
-    
-    
-
-    <div>
-    
-    </div>
-
-    <div>
-      
-    </div>
-
-    
-
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
   </section>
 
   
@@ -1538,7 +1561,7 @@
               
                 <a href="/archives/">
               
-                  <span class="site-state-item-count">102</span>
+                  <span class="site-state-item-count">104</span>
                   <span class="site-state-item-name">日志</span>
                 </a>
               </div>
@@ -1549,7 +1572,7 @@
               
               <div class="site-state-item site-state-categories">
                 <a href="/categories/index.html">
-                  <span class="site-state-item-count">90</span>
+                  <span class="site-state-item-count">93</span>
                   <span class="site-state-item-name">分类</span>
                 </a>
               </div>
@@ -1560,7 +1583,7 @@
               
               <div class="site-state-item site-state-tags">
                 <a href="/tags/index.html">
-                  <span class="site-state-item-count">174</span>
+                  <span class="site-state-item-count">177</span>
                   <span class="site-state-item-name">标签</span>
                 </a>
               </div>
@@ -1663,7 +1686,7 @@
     
       <span class="post-meta-item-text">Site words total count&#58;</span>
     
-    <span title="Site words total count">303.0k</span>
+    <span title="Site words total count">306.5k</span>
   
 </div>
 
@@ -1675,7 +1698,7 @@
 
 <div class="theme-info">
   <div class="powered-by"></div>
-  <span class="post-count">博客全站共303.0k字</span>
+  <span class="post-count">博客全站共306.5k字</span>
 </div>
 
 

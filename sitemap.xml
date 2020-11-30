@@ -2,6 +2,20 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   
   <url>
+    <loc>http://team.jiunile.com/blog/2020/12/go-async-await.html</loc>
+    
+    <lastmod>2020-11-30T15:41:49.000Z</lastmod>
+    
+  </url>
+  
+  <url>
+    <loc>http://team.jiunile.com/blog/2020/11/go-struct.html</loc>
+    
+    <lastmod>2020-11-30T02:34:25.000Z</lastmod>
+    
+  </url>
+  
+  <url>
     <loc>http://team.jiunile.com/blog/2020/11/go-slices.html</loc>
     
     <lastmod>2020-11-27T07:10:03.000Z</lastmod>
