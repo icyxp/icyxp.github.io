@@ -1,0 +1,1680 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next mist use-motion" lang="zh-Hans">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+<script src="//cdn.bootcss.com/pace/1.0.2/pace.min.js"></script>
+<link href="//cdn.bootcss.com/pace/1.0.2/themes/pink/pace-theme-flash.css" rel="stylesheet">
+<script>
+    (function () {
+        if ('') {
+            if (prompt('请输入文章密码') !== '') {
+                alert('密码错误！');
+                if (history.length === 1) {
+                    location.replace("http://team.jiunile.com"); // 这里替换成你的首页
+                } else {
+                    history.back();
+                }
+            }
+        }
+    })();
+</script>
+<meta name="theme-color" content="#222">
+<style>
+    .pace .pace-progress {
+        background: #1E92FB; /*进度条颜色*/
+        height: 2px;
+    }
+    .pace .pace-progress-inner {
+         box-shadow: 0 0 10px #1E92FB, 0 0 5px     #1E92FB; /*阴影颜色*/
+    }
+    .pace .pace-activity {
+        border-top-color: #1E92FB;    /*上边框颜色*/
+        border-left-color: #1E92FB;    /*左边框颜色*/
+    }
+</style>
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+<!--
+  <script>
+  (function(i,s,o,g,r,a,m){i["DaoVoiceObject"]=r;i[r]=i[r]||function(){(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;a.charset="utf-8";m.parentNode.insertBefore(a,m)})(window,document,"script",('https:' == document.location.protocol ? 'https:' : 'http:') + "//widget.daovoice.io/widget/0f81ff2f.js","daovoice")
+  daovoice('init', {
+      app_id: "2a2a668f"
+    });
+  daovoice('update');
+  </script>
+-->
+<!--
+<script type='text/javascript'>
+  (function (window, a, b) {
+    window[a] = window[a] || function () {
+        (window[a].a = window[a].a || []).push(arguments)
+    };
+    window[b] = window[b] || function () {
+        (window[b].a = window[b].a || []).push(arguments)
+    };
+    var s = document.createElement("script");
+    s.src = "https://jsapi.weiliaokefu.com/Public/dist/js/jsapi.js?v=" + Math.round(Math.random() * 1000);
+    s.async = true;
+    s.charset = "UTF-8";
+    document.getElementsByTagName("head")[0].appendChild(s);
+  })(window, '_FENBOT', "_FENBOT_API");
+  _FENBOT({cid: '36159', type: '0'});
+</script>
+-->
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/favicon.ico?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon.ico?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon.ico?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/favicon.ico?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="k8s,ebpf,service,bpf," />
+
+
+
+
+
+  <link rel="alternate" href="/atom.xml" title="CloudNative 架构" type="application/atom+xml" />
+
+
+
+
+
+
+<meta name="description" content="概述本文翻译自 2019 年 Daniel Borkmann 和 Martynas Pumputis 在 Linux Plumbers Conference 的一篇分享: Making the Kubernetes Service Abstraction Scale using eBPF 。 翻译时对大家耳熟能详或已显陈旧的内容（K8s 介绍、Cilium 1.6 之前的版本对 Service 实">
+<meta property="og:type" content="article">
+<meta property="og:title" content="利用 eBPF 支撑大规模 K8s Service">
+<meta property="og:url" content="http://team.jiunile.com/blog/2020/12/k8s-cilium-service-2019.html">
+<meta property="og:site_name" content="CloudNative 架构">
+<meta property="og:description" content="概述本文翻译自 2019 年 Daniel Borkmann 和 Martynas Pumputis 在 Linux Plumbers Conference 的一篇分享: Making the Kubernetes Service Abstraction Scale using eBPF 。 翻译时对大家耳熟能详或已显陈旧的内容（K8s 介绍、Cilium 1.6 之前的版本对 Service 实">
+<meta property="og:image" content="http://team.jiunile.com/images/k8s/cim_k8s-service.png">
+<meta property="og:image" content="http://team.jiunile.com/images/k8s/cim_k8s-net-demystified-svc-lb.png">
+<meta property="og:image" content="http://team.jiunile.com/images/k8s/cim_cilium-cluster-ip.png">
+<meta property="og:image" content="http://team.jiunile.com/images/k8s/cim_cilium-node-port.png">
+<meta property="og:image" content="http://team.jiunile.com/images/k8s/cim_cilium-node-port-2.png">
+<meta property="og:image" content="http://team.jiunile.com/images/k8s/cim_cilium-node-port-3.png">
+<meta property="og:image" content="http://team.jiunile.com/images/k8s/cim_cilium-snat.png">
+<meta property="og:image" content="http://team.jiunile.com/images/k8s/cim_performance.png">
+<meta property="og:image" content="http://team.jiunile.com/images/k8s/cim_udp-recvmsg-before.png">
+<meta property="og:image" content="http://team.jiunile.com/images/k8s/cim_udp-recvmsg-after.png">
+<meta property="og:image" content="http://team.jiunile.com/images/wx_dyh.png">
+<meta property="og:updated_time" content="2020-12-03T02:31:35.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="利用 eBPF 支撑大规模 K8s Service">
+<meta name="twitter:description" content="概述本文翻译自 2019 年 Daniel Borkmann 和 Martynas Pumputis 在 Linux Plumbers Conference 的一篇分享: Making the Kubernetes Service Abstraction Scale using eBPF 。 翻译时对大家耳熟能详或已显陈旧的内容（K8s 介绍、Cilium 1.6 之前的版本对 Service 实">
+<meta name="twitter:image" content="http://team.jiunile.com/images/k8s/cim_k8s-service.png">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Mist',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://team.jiunile.com/blog/2020/12/k8s-cilium-service-2019.html"/>
+
+
+
+
+
+  <title>利用 eBPF 支撑大规模 K8s Service | CloudNative 架构</title>
+  
+
+
+
+
+
+  <script type="text/javascript">
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "https://hm.baidu.com/hm.js?126663bc923877f90024929ac5555b0f";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+
+
+
+  <!-- 页面点击小红心 -->
+  <script type="text/javascript" src="/js/src/love.js"></script>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+    <a href="https://github.com/icyxp"><a href="https://github.com/icyxp" class="github-corner" aria-label="View source on GitHub"><svg width="80" height="80" viewBox="0 0 250 250" style="fill:#151513; color:#fff; position: absolute; top: 0; border: 0; right: 0;" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path></svg></a><style>.github-corner:hover .octo-arm{animation:octocat-wave 560ms ease-in-out}@keyframes octocat-wave{0%,100%{transform:rotate(0)}20%,60%{transform:rotate(-25deg)}40%,80%{transform:rotate(10deg)}}@media (max-width:500px){.github-corner:hover .octo-arm{animation:none}.github-corner .octo-arm{animation:octocat-wave 560ms ease-in-out}}</style></a>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">CloudNative 架构</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <h1 class="site-subtitle" itemprop="description">CloudNative|云原生应用架构|云原生架构|容器化架构|微服务架构|平台架构|基础架构</h1>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br />
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-k8s">
+          <a href="/pro/k8s/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-heartbeat"></i> <br />
+            
+            k8s离线安装包
+          </a>
+        </li>
+      
+
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="popup-trigger">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br />
+            
+            搜索
+          </a>
+        </li>
+      
+    </ul>
+  
+
+  
+    <div class="site-search">
+      
+  <div class="popup search-popup local-search-popup">
+  <div class="local-search-header clearfix">
+    <span class="search-icon">
+      <i class="fa fa-search"></i>
+    </span>
+    <span class="popup-btn-close">
+      <i class="fa fa-times-circle"></i>
+    </span>
+    <div class="local-search-input-wrapper">
+      <input autocomplete="off"
+             placeholder="搜索..." spellcheck="false"
+             type="text" id="local-search-input">
+    </div>
+  </div>
+  <div id="local-search-result"></div>
+</div>
+
+
+
+    </div>
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://team.jiunile.com/blog/2020/12/k8s-cilium-service-2019.html">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="icyboy">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="CloudNative 架构">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h2 class="post-title" itemprop="name headline">利用 eBPF 支撑大规模 K8s Service</h2>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2020-12-02T22:00:00+08:00">
+                2020-12-02
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Kubernetes/" itemprop="url" rel="index">
+                    <span itemprop="name">Kubernetes</span>
+                  </a>
+                </span>
+
+                
+                
+                  ， 
+                
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Kubernetes/Cilium/" itemprop="url" rel="index">
+                    <span itemprop="name">Cilium</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+                <a href="/blog/2020/12/k8s-cilium-service-2019.html#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count valine-comment-count" data-xid="/blog/2020/12/k8s-cilium-service-2019.html" itemprop="commentCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+          
+             <span id="/blog/2020/12/k8s-cilium-service-2019.html" class="leancloud_visitors" data-flag-title="利用 eBPF 支撑大规模 K8s Service">
+               <span class="post-meta-divider">|</span>
+               <span class="post-meta-item-icon">
+                 <i class="fa fa-eye"></i>
+               </span>
+               
+                 <span class="post-meta-item-text">热度&#58;</span>
+               
+                 <span class="leancloud-visitors-count"></span>
+		 <span>℃</span>
+             </span>
+          
+
+          
+
+          
+            <div class="post-wordcount">
+              
+                
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-file-word-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">字数统计&#58;</span>
+                
+                <span title="字数统计">
+                  6,068 字
+                </span>
+              
+
+              
+                <span class="post-meta-divider">|</span>
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-clock-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">阅读时长 &asymp;</span>
+                
+                <span title="阅读时长">
+                  24 分钟
+                </span>
+              
+            </div>
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h2 id="概述"><a href="#概述" class="headerlink" title="概述"></a>概述</h2><p>本文翻译自 2019 年 Daniel Borkmann 和 Martynas Pumputis 在 Linux Plumbers Conference 的一篇分享: <a href="https://linuxplumbersconf.org/event/4/contributions/458/" target="_blank" rel="external">Making the Kubernetes Service Abstraction Scale using eBPF</a> 。 翻译时对大家耳熟能详或已显陈旧的内容（K8s 介绍、Cilium 1.6 之前的版本对 Service 实现等）略有删减，如有需要请查阅原 PDF。</p>
+<p>实际上，一年之后 Daniel 和 Martynas 又在 LPC 做了一次分享，内容是本文的延续：<a href="http://team.jiunile.com/blog/2020/11/k8s-cilium-service.html">Cilium：基于 BPF/XDP 实现 K8s Service 负载均衡</a></p>
+<p><strong>K8s 当前重度依赖 iptables 来实现 Service 的抽象</strong>。对于每个 Service 及其 backend pods，在 K8s 里会生成很多 iptables 规则。<strong>例如 5K 个 Service 时，iptables 规则将达到 25K 条</strong>，导致的后果：</p>
+<ul>
+<li><strong>较高、并且不可预测的转发延迟</strong>（packet latency），因为每个包都要遍历这些规则 ，直到匹配到某条规则；</li>
+<li><strong>更新规则的操作非常慢</strong>：无法单独更新某条 iptables 规则，只能将全部规则读出来 ，更新整个集合，再将新的规则集合下发到宿主机。在动态环境中这一问题尤其明显，因为每 小时可能都有几千次的 backend pods 创建和销毁。</li>
+<li><strong>可靠性问题</strong>：iptables 依赖 Netfilter 和系统的连接跟踪模块（conntrack），在 大流量场景下会出现一些竞争问题（race conditions）；<strong>UDP 场景尤其明显</strong>，会导 致丢包、应用的负载升高等问题。</li>
+</ul>
+<p>本文将介绍如何基于 Cilium/BPF 来解决这些问题，实现 K8s Service 的大规模扩展。<br><a id="more"></a></p>
+<h2 id="1-K8s-Service-类型及默认基于-kube-proxy-的实现"><a href="#1-K8s-Service-类型及默认基于-kube-proxy-的实现" class="headerlink" title="1 K8s Service 类型及默认基于 kube-proxy 的实现"></a>1 K8s Service 类型及默认基于 kube-proxy 的实现</h2><p>K8s 提供了 Service 抽象，可以将多个 backend pods 组织为一个<strong>逻辑单元</strong>（logical unit）。K8s 会为这个逻辑单元分配 <strong>虚拟 IP 地址</strong>（VIP），客户端通过该 VIP 就 能访问到这些 pods 提供的服务。</p>
+<p>下图是一个具体的例子，<br><img src="/images/k8s/cim_k8s-service.png" alt="k8s-service"></p>
+<ol>
+<li>右边的 yaml 定义了一个名为 <code>nginx</code> 的 Service，它在 TCP 80 端口提供服务；<ul>
+<li>创建：<code>kubectl -f nginx-svc.yaml</code></li>
+</ul>
+</li>
+<li>K8s 会给每个 Service 分配一个虚拟 IP，这里给 <code>nginx</code> 分的是 <code>3.3.3.3</code>；<ul>
+<li>查看：<code>kubectl get service nginx</code></li>
+</ul>
+</li>
+<li>左边是 <code>nginx</code> Service 的两个 backend pods（在 K8s 对应两个 endpoint），这里 位于同一台节点，每个 Pod 有独立的 IP 地址；<ul>
+<li>查看：<code>kubectl get endpoints nginx</code></li>
+</ul>
+</li>
+</ol>
+<p>上面看到的是所谓的 <code>ClusterIP</code> 类型的 Service。实际上，<strong>在 K8s 里有几种不同类型 的 Service</strong>：</p>
+<ul>
+<li>ClusterIP</li>
+<li>NodePort</li>
+<li>LoadBalancer</li>
+<li>ExternalName</li>
+</ul>
+<p>本文将主要关注前两种类型。</p>
+<p><strong>K8s 里实现 Service 的组件是 kube-proxy</strong>，实现的主要功能就是<strong>将访问 VIP 的请 求转发（及负载均衡）到相应的后端 pods</strong>。前面提到的那些 iptables 规则就是它创建 和管理的。</p>
+<p>另外，kube-proxy 是 K8s 的可选组件，如果不需要 Service 功能，可以不启用它。</p>
+<h3 id="ClusterIP-Service"><a href="#ClusterIP-Service" class="headerlink" title="ClusterIP Service"></a>ClusterIP Service</h3><p>这是 <strong>K8s 的默认 Service 类型，使得宿主机或 pod 可以通过 VIP 访问一个 Service</strong>。</p>
+<ul>
+<li>Virtual IP to any endpoint (pod)</li>
+<li>Only in-cluster access</li>
+</ul>
+<p>kube-proxy 是通过如下的 iptables 规则来实现这个功能的：<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br></pre></td><td class="code"><pre><span class="line">-t nat -A &#123;PREROUTING, OUTPUT&#125; -m conntrack --ctstate NEW -j KUBE-SERVICES</span><br><span class="line"></span><br><span class="line"><span class="comment"># 宿主机访问 nginx Service 的流量，同时满足 4 个条件：</span></span><br><span class="line"><span class="comment"># 1. src_ip 不是 Pod 网段</span></span><br><span class="line"><span class="comment"># 2. dst_ip=3.3.3.3/32 (ClusterIP)</span></span><br><span class="line"><span class="comment"># 3. proto=TCP</span></span><br><span class="line"><span class="comment"># 4. dport=80</span></span><br><span class="line"><span class="comment"># 如果匹配成功，直接跳转到 KUBE-MARK-MASQ；否则，继续匹配下面一条（iptables 是链式规则，高优先级在前）</span></span><br><span class="line"><span class="comment"># 跳转到 KUBE-MARK-MASQ 是为了保证这些包出宿主机时，src_ip 用的是宿主机 IP。</span></span><br><span class="line">-A KUBE-SERVICES ! <span class="_">-s</span> 1.1.0.0/16 <span class="_">-d</span> 3.3.3.3/32 -p tcp -m tcp --dport 80 -j KUBE-MARK-MASQ</span><br><span class="line"><span class="comment"># Pod 访问 nginx Service 的流量：同时满足 4 个条件：</span></span><br><span class="line"><span class="comment"># 1. 没有匹配到前一条的，（说明 src_ip 是 Pod 网段）</span></span><br><span class="line"><span class="comment"># 2. dst_ip=3.3.3.3/32 (ClusterIP)</span></span><br><span class="line"><span class="comment"># 3. proto=TCP</span></span><br><span class="line"><span class="comment"># 4. dport=80</span></span><br><span class="line">-A KUBE-SERVICES <span class="_">-d</span> 3.3.3.3/32 -p tcp -m tcp --dport 80 -j KUBE-SVC-NGINX</span><br><span class="line"></span><br><span class="line"><span class="comment"># 以 50% 的概率跳转到 KUBE-SEP-NGINX1</span></span><br><span class="line">-A KUBE-SVC-NGINX -m statistic --mode random --probability 0.50 -j KUBE-SEP-NGINX1</span><br><span class="line"><span class="comment"># 如果没有命中上面一条，则以 100% 的概率跳转到 KUBE-SEP-NGINX2</span></span><br><span class="line">-A KUBE-SVC-NGINX -j KUBE-SEP-NGINX2</span><br><span class="line"></span><br><span class="line"><span class="comment"># 如果 src_ip=1.1.1.1/32，说明是 Service-&gt;client 流量，则</span></span><br><span class="line"><span class="comment"># 需要做 SNAT（MASQ 是动态版的 SNAT），替换 src_ip -&gt; svc_ip，这样客户端收到包时，</span></span><br><span class="line"><span class="comment"># 看到就是从 svc_ip 回的包，跟它期望的是一致的。</span></span><br><span class="line">-A KUBE-SEP-NGINX1 <span class="_">-s</span> 1.1.1.1/32 -j KUBE-MARK-MASQ</span><br><span class="line"><span class="comment"># 如果没有命令上面一条，说明 src_ip != 1.1.1.1/32，则说明是 client-&gt; Service 流量，</span></span><br><span class="line"><span class="comment"># 需要做 DNAT，将 svc_ip -&gt; pod1_ip，</span></span><br><span class="line">-A KUBE-SEP-NGINX1 -p tcp -m tcp -j DNAT --to-destination 1.1.1.1:80</span><br><span class="line"><span class="comment"># 同理，见上面两条的注释</span></span><br><span class="line">-A KUBE-SEP-NGINX2 <span class="_">-s</span> 1.1.1.2/32 -j KUBE-MARK-MASQ</span><br><span class="line">-A KUBE-SEP-NGINX2 -p tcp -m tcp -j DNAT --to-destination 1.1.1.2:80</span><br></pre></td></tr></table></figure></p>
+<ol>
+<li>Service 既要能被宿主机访问，又要能被 pod 访问（<strong>二者位于不同的 netns</strong>）， 因此需要在 <code>PREROUTING</code> 和 <code>OUTPUT</code> 两个 hook 点拦截请求，然后跳转到自定义的 <code>KUBE-SERVICES</code> chain；</li>
+<li><code>KUBE-SERVICES</code> chain <strong>执行真正的 Service 匹配</strong>，依据协议类型、目的 IP 和目的端口号。当匹配到某个 Service 后，就会跳转到专门针对这个 Service 创 建的 chain，命名格式为 <code>KUBE-SVC-&lt;Service&gt;</code>。</li>
+<li><code>KUBE-SVC-&lt;Service&gt;</code> chain <strong>根据概率选择某个后端 pod</strong> 然后将请求转发过去。这其实是一种<strong>穷人的负载均衡器</strong> —— 基于 iptables。选中某个 pod 后，会跳转到这个 pod 相关的一条 iptables chain <code>KUBE-SEP-&lt;POD&gt;</code>。</li>
+<li><code>KUBE-SEP-&lt;POD&gt;</code> chain 会<strong>执行 DNAT</strong>，将 VIP 换成 PodIP。</li>
+</ol>
+<blockquote>
+<p>译注：以上解释并不是非常详细和直观，因为这不是本文重点。想更深入地理解基于 iptables 的实现，可参考网上其他一些文章，例如下面这张图所出自的博客 <a href="https://www.stackrox.com/post/2020/01/kubernetes-networking-demystified/" target="_blank" rel="external">Kubernetes Networking Demystified: A Brief Guide</a>，<br><img src="/images/k8s/cim_k8s-net-demystified-svc-lb.png" alt="k8s-net-demystified-svc-lb"></p>
+</blockquote>
+<h3 id="1-2-NodePort-Service"><a href="#1-2-NodePort-Service" class="headerlink" title="1.2 NodePort Service"></a>1.2 NodePort Service</h3><p>这种类型的 Service 也能被宿主机和 pod 访问，但与 ClusterIP 不同的是，<strong>它还能被集群外的服务访问</strong>。</p>
+<ul>
+<li>External node IP + port in NodePort range to any endpoint (pod), e.g. 10.0.0.1:31000</li>
+<li>Enables access from outside</li>
+</ul>
+<p>实现上，kube-apiserver 会<strong>从预留的端口范围内分配一个端口给 Service</strong>，然后<strong>每个宿主机上的 kube-proxy 都会创建以下规则</strong>：<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">-t nat -A &#123;PREROUTING, OUTPUT&#125; -m conntrack --ctstate NEW -j KUBE-SERVICES</span><br><span class="line"></span><br><span class="line">-A KUBE-SERVICES ! <span class="_">-s</span> 1.1.0.0/16 <span class="_">-d</span> 3.3.3.3/32 -p tcp -m tcp --dport 80 -j KUBE-MARK-MASQ</span><br><span class="line">-A KUBE-SERVICES <span class="_">-d</span> 3.3.3.3/32 -p tcp -m tcp --dport 80 -j KUBE-SVC-NGINX</span><br><span class="line"><span class="comment"># 如果前面两条都没匹配到（说明不是 ClusterIP service 流量），并且 dst 是 LOCAL，跳转到 KUBE-NODEPORTS</span></span><br><span class="line">-A KUBE-SERVICES -m addrtype --dst-type LOCAL -j KUBE-NODEPORTS</span><br><span class="line"></span><br><span class="line">-A KUBE-NODEPORTS -p tcp -m tcp --dport 31000 -j KUBE-MARK-MASQ</span><br><span class="line">-A KUBE-NODEPORTS -p tcp -m tcp --dport 31000 -j KUBE-SVC-NGINX</span><br><span class="line"></span><br><span class="line">-A KUBE-SVC-NGINX -m statistic --mode random --probability 0.50 -j KUBE-SEP-NGINX1</span><br><span class="line">-A KUBE-SVC-NGINX -j KUBE-SEP-NGINX2</span><br></pre></td></tr></table></figure></p>
+<ol>
+<li>前面几步和 ClusterIP Service 一样；如果没匹配到 ClusterIP 规则，则跳转到 <code>KUBE-NODEPORTS</code> chain。</li>
+<li><code>KUBE-NODEPORTS</code> chain 里做 Service 匹配，但<strong>这次只匹配协议类型和目的端口号</strong>。</li>
+<li>匹配成功后，转到对应的 <code>KUBE-SVC-&lt;Service&gt;</code> chain，后面的过程跟 ClusterIP 是一样的。</li>
+</ol>
+<h3 id="1-3-小结"><a href="#1-3-小结" class="headerlink" title="1.3 小结"></a>1.3 小结</h3><p>以上可以看到，每个 Service 会对应多条 iptables 规则。</p>
+<p>Service 数量不断增长时，<strong>iptables 规则的数量增长会更快</strong>。而且，<strong>每个包都需要遍历这些规则</strong>，直到最终匹配到一条相应的规则。如果不幸匹配到最后一条规则才命中， 那相比其他流量，这些包就会有<strong>很高的延迟</strong>。</p>
+<p>有了这些背景知识，我们来看如何用 BPF/Cilium 来替换掉 kube-proxy，也可以说是 重新实现 kube-proxy 的逻辑。</p>
+<h2 id="2-用-Cilium-BPF-替换-kube-proxy"><a href="#2-用-Cilium-BPF-替换-kube-proxy" class="headerlink" title="2 用 Cilium/BPF 替换 kube-proxy"></a>2 用 Cilium/BPF 替换 kube-proxy</h2><p>我们从 Cilium 早起版本开始，已经逐步用 BPF 实现 Service 功能，但其中仍然有些 地方需要用到 iptables。在这一时期，每台 node 上会同时运行 cilium-agent 和 kube-proxy。</p>
+<p>到了 Cilium 1.6，我们已经能<strong>完全基于 BPF 实现，不再依赖 iptables，也不再需要 kube-proxy</strong>。<br><img src="/images/k8s/cim_cilium-cluster-ip.png" alt="cim_cilium-cluster-ip"></p>
+<p>这里有一些实现上的考虑：相比于在 TC ingress 层做 Service 转换，我们优先利用 cgroupv2 hooks，<strong>在 socket BPF 层直接做这种转换</strong>（需要高版本内核支持，如果不支 持则 fallback 回 TC ingress 方式）。</p>
+<h3 id="2-1-ClusterIP-Service"><a href="#2-1-ClusterIP-Service" class="headerlink" title="2.1 ClusterIP Service"></a>2.1 ClusterIP Service</h3><p>对于 ClusterIP，我们在 BPF 里<strong>拦截 socket 的 <code>connect</code> 和 <code>send</code> 系统调用</strong>； 这些 BPF 执行时，<strong>协议层还没开始执行</strong>（这些系统调用 handlers）。</p>
+<ul>
+<li>Attach on the cgroupv2 root mount <code>BPF_PROG_TYPE_CGROUP_SOCK_ADDR</code></li>
+<li><code>BPF_CGROUP_INET{4,6}_CONNECT</code> - TCP, connected UDP</li>
+</ul>
+<h4 id="TCP-amp-connected-UDP"><a href="#TCP-amp-connected-UDP" class="headerlink" title="TCP &amp; connected UDP"></a>TCP &amp; connected UDP</h4><p>对于 TCP 和 connected UDP 场景，执行的是下面一段逻辑，<br><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">sock4_xlate</span><span class="params">(<span class="keyword">struct</span> bpf_sock_addr *ctx)</span> </span>&#123;</span><br><span class="line">	<span class="keyword">struct</span> lb4_svc_key key = &#123; .dip = ctx-&gt;user_ip4, .dport = ctx-&gt;user_port &#125;;</span><br><span class="line">	svc = lb4_lookup_svc(&amp;key)</span><br><span class="line">		<span class="keyword">if</span> (svc) &#123;</span><br><span class="line">			ctx-&gt;user_ip4 = svc-&gt;endpoint_addr;</span><br><span class="line">			ctx-&gt;user_port = svc-&gt;endpoint_port;</span><br><span class="line">		&#125;</span><br><span class="line">	<span class="keyword">return</span> <span class="number">1</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>所做的事情：在 BPF map 中查找 Service，然后做地址转换。但这里的重点是（相比于 TC ingress BPF 实现）：</p>
+<ol>
+<li><strong>不经过连接跟踪（conntrack）模块，也不需要修改包头</strong>（实际上这时候还没有包 ），也不再 mangle 包。这也意味着，<strong>不需要重新计算包的 checksum</strong>。</li>
+<li>对于 TCP 和 connected UDP，<strong>负载均衡的开销是一次性的</strong>，只需要在 socket 建立时做一次转换，后面都不需要了，<strong>不存在包级别的转换</strong>。</li>
+<li>这种方式是对宿主机 netns 上的 socket 和 pod netns 内的 socket 都是适用的。</li>
+</ol>
+<h4 id="某些-UDP-应用：存在的问题及解决方式"><a href="#某些-UDP-应用：存在的问题及解决方式" class="headerlink" title="某些 UDP 应用：存在的问题及解决方式"></a>某些 UDP 应用：存在的问题及解决方式</h4><p>但这种方式<strong>对某些 UDP 应用是不适用的</strong>，因为这些 UDP 应用会检查包的源地址，以及 会调用 <code>recvmsg</code> 系统调用。</p>
+<p>针对这个问题，我们引入了新的 BPF attach 类型：</p>
+<ul>
+<li><code>BPF_CGROUP_UDP4_RECVMSG</code></li>
+<li><code>BPF_CGROUP_UDP6_RECVMSG</code></li>
+</ul>
+<p>另外还引入了用于 NAT 的 UDP map、rev-NAT map：<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">              BPF rev NAT map</span><br><span class="line">Cookie   EndpointIP  Port =&gt; ServiceID  IP       Port</span><br><span class="line">-----------------------------------------------------</span><br><span class="line">42       1.1.1.1     80   =&gt; 1          3.3.3.30 80</span><br></pre></td></tr></table></figure></p>
+<ul>
+<li>通过 <code>bpf_get_socket_cookie()</code> 创建 socket cookie。</li>
+<li>除了 Service 访问方式，还会有一些<strong>客户端通过 PodIP 直连的方式建立 UDP 连接， cookie 就是为了防止对这些类型的流量做 rev-NAT</strong>。</li>
+<li>在 <code>connect(2)</code> 和 <code>sendmsg(2)</code> 时更新 map。</li>
+<li>在 <code>recvmsg(2)</code> 时做 rev-NAT。</li>
+</ul>
+<h3 id="2-2-NodePort-Service"><a href="#2-2-NodePort-Service" class="headerlink" title="2.2 NodePort Service"></a>2.2 NodePort Service</h3><p>NodePort 会更复杂一些，我们先从最简单的场景看起。</p>
+<h4 id="2-2-1-后端-pod-在本节点"><a href="#2-2-1-后端-pod-在本节点" class="headerlink" title="2.2.1 后端 pod 在本节点"></a>2.2.1 后端 pod 在本节点</h4><p><img src="/images/k8s/cim_cilium-node-port.png" alt="cilium-node-port"></p>
+<p>后端 pod 在本节点时，只需要<strong>在宿主机的网络设备上 attach 一段 tc ingress bpf 程序</strong>，这段程序做的事情：</p>
+<ol>
+<li>Service 查找</li>
+<li>DNAT</li>
+<li>redirect 到容器的 lxc0。</li>
+</ol>
+<p>对于应答包，lxc0 负责 rev-NAT，FIB 查找（因为我们需要设置 L2 地址，否则会被 drop）， 然后将其 redirect 回客户端。</p>
+<h3 id="2-2-2-后端-pod-在其他节点"><a href="#2-2-2-后端-pod-在其他节点" class="headerlink" title="2.2.2 后端 pod 在其他节点"></a>2.2.2 后端 pod 在其他节点</h3><p>后端 pod 在其他节点时，会复杂一些，因为要转发到其他节点。这种情况下，<strong>需要在 BPF 做 SNAT</strong>，否则 pod 会直接回包给客户端，而由于不同 node 之间没有做连接跟踪（ conntrack）同步，因此直接回给客户端的包出 pod 后就会被 drop 掉。</p>
+<p>所以需要<strong>在当前节点做一次 SNAT</strong>（<code>src_ip</code> 从原来的 ClientIP 替换为 NodeIP），让回包也经过 当前节点，然后在这里再做 rev-SNAT（<code>dst_ip</code> 从原来的 NodeIP 替换为 ClientIP）。</p>
+<p>具体来说，在 <strong>TC ingress</strong> 插入一段 BPF 代码，然后依次执行：Service 查找、DNAT、 选择合适的 egress interface、SNAT、FIB lookup，最后发送给相应的 node，<br><img src="/images/k8s/cim_cilium-node-port-2.png" alt="cilium-node-port-2"></p>
+<p>反向路径是类似的，也是回到这个 node，TC ingress BPF 先执行 rev-SNAT，然后 rev-DNAT，FIB lookup，最后再发送回客户端，<br><img src="/images/k8s/cim_cilium-node-port-3.png" alt="cilium-node-port-3"></p>
+<p>现在跨宿主机转发是 SNAT 模式，但将来我们打算支持 <strong>DSR 模式</strong>（译注，Cilium 1.8+ 已经支持了）。DSR 的好处是 <strong>backend pods 直接将包回给客户端</strong>，回包不再经过当前 节点转发。</p>
+<p>另外，现在 Service 的处理是在 TC ingress 做的，<strong>这些逻辑其实也能够在 XDP 层实现</strong>， 那将会是另一件激动人心的事情（译注，Cilium 1.8+ 已经支持了，性能大幅提升）。</p>
+<h4 id="SNAT"><a href="#SNAT" class="headerlink" title="SNAT"></a>SNAT</h4><p>当前基于 BPF 的 SNAT 实现中，用一个 LRU BPF map 存放 Service 和 backend pods 的映 射信息。</p>
+<p>需要说明的是，<strong>SNAT 除了替换 <code>src_ip</code>，还可能会替换 <code>src_port</code></strong>：不同客户端的 <code>src_port</code> 可能是相同的，如果只替换 <code>src_ip</code>，不同客户端的应答包在反向转换时就会失 败。因此这种情况下需要做 <code>src_port</code> 转换。现在的做法是，先进行哈希，如果哈希失败， 就调用 <code>prandom()</code> 随机选择一个端口。</p>
+<p>此外，我们还需要跟踪宿主机上的流（local flows）信息，因此在 Cilium 里<strong>基于 BPF 实现了一个连接跟踪器</strong>（connection tracker），它会监听宿主机的主物理网络设备（ main physical device）；我们也会对宿主机上的应用执行 NAT，pod 流量 NAT 之后使用的 是宿主机的 src_port，而宿主机上的应用使用的也是同一个 src_port 空间，它们可能会 有冲突，因此需要在这里处理。</p>
+<p>这就是 NodePort Service 类型的流量到达一台节点后，我们在 BPF 所做的事情。</p>
+<h3 id="2-2-3-Client-pods-和-backend-pods-在同一节点"><a href="#2-2-3-Client-pods-和-backend-pods-在同一节点" class="headerlink" title="2.2.3 Client pods 和 backend pods 在同一节点"></a>2.2.3 Client pods 和 backend pods 在同一节点</h3><p>另外一种情况是：本机上的 pod 访问某个 NodePort Service，而且 backend pods 也在本机。</p>
+<p>这种情况下，流量会从 loopback 口转发到 backend pods，中间会经历路由和转发过程， 整个过程对应用是透明的 —— 我们可以在<strong>应用无感知的情况下，修改二者之间的通信方式</strong>， 只要流量能被双方正确地接受就行。因此，我们在这里<strong>使用了 ClusterIP，并对其进行了一点扩展</strong>，只要连接的 Service 是 loopback 地址或者其他 local 地址，它都能正 确地转发到本机 pods。</p>
+<p>另外，比较好的一点是，这种实现方式是基于 cgroups 的，因此独立于 netns。这意味着 我们不需要进入到每个 pod 的 netns 来做这种转换。<br><img src="/images/k8s/cim_cilium-snat.png" alt="cilium-snat"></p>
+<h2 id="2-3-Service-规则的规模及请求延迟对比"><a href="#2-3-Service-规则的规模及请求延迟对比" class="headerlink" title="2.3 Service 规则的规模及请求延迟对比"></a>2.3 Service 规则的规模及请求延迟对比</h2><p>有了以上功能，基本上就可以避免 kube-proxy 那样 per-service 的 iptables 规则了， 每个节点上只留下了少数几条由 Kubernetes 自己创建的 iptables 规则：<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ iptables-save | grep ‘\-A KUBE’ | wc <span class="_">-l</span></span><br></pre></td></tr></table></figure></p>
+<ul>
+<li>With kube-proxy: 25401</li>
+<li>With BPF: 4</li>
+</ul>
+<p>在将来，我们有希望连这几条规则也不需要，完全绕开 Netfilter 框架（译注：新版本已经做到了）。</p>
+<p>此外，我们做了一些初步的基准测试，如下图所示，<br><img src="/images/k8s/cim_performance.png" alt="performance"></p>
+<p>可以看到，随着 Service 数量从 1 增加到 2000+，<strong>kube-proxy/iptables 的请求延 迟增加了将近一倍</strong>，而 Cilium/eBPF 的延迟几乎没有任何增加。</p>
+<h2 id="3-相关的-Cilium-BPF-优化"><a href="#3-相关的-Cilium-BPF-优化" class="headerlink" title="3 相关的 Cilium/BPF 优化"></a>3 相关的 Cilium/BPF 优化</h2><p>接下来介绍一些我们在实现 Service 过程中的优化工作，以及一些未来可能会做的事情。</p>
+<h3 id="3-1-BPF-UDP-recvmsg-hook"><a href="#3-1-BPF-UDP-recvmsg-hook" class="headerlink" title="3.1 BPF UDP recvmsg() hook"></a>3.1 BPF UDP <code>recvmsg()</code> hook</h3><p>实现 socket 层 UDP Service 转换时，我们发现如果只对 UDP <code>sendmsg</code> 做 hook ，会导致 <strong>DNS 等应用无法正常工作</strong>，会出现下面这种错误：<br><img src="/images/k8s/cim_udp-recvmsg-before.png" alt="udp-recvmsg-before"></p>
+<p>深入分析发现，<code>nslookup</code> 及其他一些工具会检查 <strong><code>connect()</code> 时用的 IP 地址和 <code>recvmsg()</code> 读到的 reply message 里的 IP 地址</strong>是否一致。如果不一致，就会 报上面的错误。</p>
+<p>原因清楚之后，解决就比较简单了：我们引入了一个做反向映射的 BPF hook，对 <code>recvmsg()</code> 做额外处理，这个问题就解决了：<br><img src="/images/k8s/cim_udp-recvmsg-after.png" alt="udp-recvmsg-after"></p>
+<blockquote>
+<p><a href="https://github.com/torvalds/linux/commit/983695fa6765" target="_blank" rel="external">983695fa6765</a> bpf: fix unconnected udp hooks。<br>这个 patch 能在不重写包（without packet rewrite）的前提下，会对 BPF ClusterIP 做反向映射（reverse mapping）。</p>
+</blockquote>
+<h3 id="3-2-全局唯一-socket-cookie"><a href="#3-2-全局唯一-socket-cookie" class="headerlink" title="3.2 全局唯一 socket cookie"></a>3.2 全局唯一 socket cookie</h3><p>BPF ClusterIP Service 为 UDP 维护了一个 LRU 反向映射表（reverse mapping table）。</p>
+<p><strong>Socket cookie 是这个映射表的 key 的一部分，但这个 cookie 只在每个 netns 内唯一</strong>，其背后的实现比较简单：每次调用 BPF cookie helper，它都会增加计数器，然后将 cookie 存储到 socket。因此不同 netns 内分配出来的 cookie 值可能会一样，导致冲突。</p>
+<p>为解决这个问题，我们将 cookie generator 改成了全局的，见下面的 commit。</p>
+<blockquote>
+<p><a href="https://github.com/torvalds/linux/commit/cd48bdda4fb8" target="_blank" rel="external">cd48bdda4fb8</a> sock: make cookie generation global instead of per netns。</p>
+</blockquote>
+<h3 id="3-3-维护邻居表"><a href="#3-3-维护邻居表" class="headerlink" title="3.3 维护邻居表"></a>3.3 维护邻居表</h3><p>Cilium agent 从 K8s apiserver 收到 Service 事件时， 会将 backend entry 更新到 datapath 中的 Service backend 列表。</p>
+<p>前面已经看到，当 Service 是 NodePort 类型并且 backend 是 remote 时，需要转发到其 他节点（TC ingress BPF <code>redirect()</code>）。</p>
+<p>我们发现<strong>在某些直接路由（direct routing）的场景下，会出现 fib 查找失败的问题</strong> （<code>fib_lookup()</code>），原因是系统中没有对应 backend 的 neighbor entry（IP-&gt;MAC 映射 信息），并且接下来<strong>不会主动做 ARP 探测</strong>（ARP probe）。</p>
+<blockquote>
+<p>Tunneling 模式下这个问题可以忽略，因为本来发送端的 BPF 程 序就会将 src/dst mac 清零，另一台节点对收到的包做处理时， VxLAN 设备上的另一段 BPF 程序会能够正确的转发这个包，因此这种方式更像是 L3 方式。</p>
+</blockquote>
+<p>我们目前 workaround 了这个问题，解决方式有点丑陋：Cilium 解析 backend，然后直接 将 neighbor entry 永久性地（<code>NUD_PERMANENT</code>）插入邻居表中。</p>
+<p>目前这样做是没问题的，因为邻居的数量是固定或者可控的（fixed/controlled number of entries）。但后面我们想尝试的是让内核来做这些事情，因为它能以最好的方式处理这个 问题。实现方式就是引入一些新的 <code>NUD_*</code> 类型，只需要传 L3 地址，然后内核自己将解 析 L2 地址，并负责这个地址的维护。这样 Cilium 就不需要再处理 L2 地址的事情了。 但到今天为止，我并没有看到这种方式的可能性。</p>
+<p>对于从集群外来的访问 NodePort Service 的请求，也存在类似的问题， 因为最后将响应流量回给客户端也需要邻居表。由于这些流量都是在 pre-routing，因此我 们现在的处理方式是：自己维护了一个小的 BPF LRU map（L3-&gt;L2 mapping in BPF LRU map）；由于这是主处理逻辑（转发路径），流量可能很高，因此将这种映射放到 BPF LRU 是更合适的，不会导致邻居表的 overflow。</p>
+<h3 id="3-4-LRU-BPF-callback-on-entry-eviction"><a href="#3-4-LRU-BPF-callback-on-entry-eviction" class="headerlink" title="3.4 LRU BPF callback on entry eviction"></a>3.4 LRU BPF callback on entry eviction</h3><p>我们想讨论的另一件事情是：在每个 LRU entry 被 eviction（驱逐）时，能有一个 callback 将会更好。为什么呢？</p>
+<p>Cilium 中现在有一个 BPF conntrack table，我们支持到了一些非常老的内核版本 ，例如 4.9。Cilium 在启动时会检查内核版本，优先选择使用 LRU，没有 LRU 再 fallback 到普通的哈希表（Hash Table）。<strong>对于哈希表，就需要一个不断 GC 的过程</strong>。</p>
+<p>我们<strong>有意将 NAT map 与 CT map 独立开来</strong>，这是因 为我们要求在 <strong>cilium-agent 升级或降级过程中，现有的连接/流量不能受影响</strong>。 如果二者是耦合在一起的，假如 CT 相关的东西有很大改动，那升级时那要么 是将当前的连接状态全部删掉重新开始；要么就是服务中断，临时不可用，升级完成后再将 老状态迁移到新状态表，但我认为，要轻松、正确地实现这件事情非常困难。 这就是为什么将它们分开的原因。但实际上，GC 在回收 CT entry 的同时， 也会顺便回收 NAT entry。</p>
+<p>另外一个问题：<strong>每次从 userspace 操作 conntrack entry 都会破坏 LRU 的正常工作流程</strong>（因为不恰当地更新了所有 entry 的时间戳）。我们通过下面的 commit 解决了这个问题，但要彻底避免这个问题，<strong>最好有一个 GC 以 callback 的方式在第一时 间清理掉这些被 evicted entry</strong>，例如在 CT entry 被 evict 之后，顺便也清理掉 NAT 映射。这是我们正在做的事情（译注，Cilium 1.9+ 已经实现了）。</p>
+<blockquote>
+<p><a href="https://github.com/torvalds/linux/commit/50b045a8c0cc" target="_blank" rel="external">50b045a8c0cc</a> (“bpf, lru: avoid messing with eviction heuristics upon syscall lookup”) fixed map walking from user space</p>
+</blockquote>
+<h3 id="3-5-LRU-BPF-eviction-zones"><a href="#3-5-LRU-BPF-eviction-zones" class="headerlink" title="3.5 LRU BPF eviction zones"></a>3.5 LRU BPF eviction zones</h3><p>另一件跟 CT map 相关的比较有意思的探讨：<strong>未来是否能根据流量类型，将 LRU eviction 分割为不同的 zone</strong>？例如，</p>
+<ul>
+<li>东西向流量分到 zone1：处理 ClusterIP service 流量，都是 pod-{pod,host} 流量， 比较大；</li>
+<li>南北向流量分到 zone2：处理 NodePort 和 ExternalName service 流量，相对比较小。</li>
+</ul>
+<p>这样的好处是：当<strong>对南北向流量 CT 进行操作时，占大头的东西向流量不会受影响</strong>。</p>
+<p>理想的情况是这种隔离是有保障的，例如：可以安全地假设，如果正在清理 zone1 内的 entries， 那预期不会对 zone2 内的 entry 有任何影响。不过，虽然分为了多个 zones，但在全局， 只有一个 map。</p>
+<h3 id="3-6-BPF-原子操作"><a href="#3-6-BPF-原子操作" class="headerlink" title="3.6 BPF 原子操作"></a>3.6 BPF 原子操作</h3><p>另一个要讨论的内容是原子操作。</p>
+<p>使用场景之一是<strong>过期 NAT entry 的快速重复利用</strong>（fast recycling）。 例如，结合前面的 GC 过程，如果一个连接断开时， 不是直接删除对应的 entry，而是更 新一个标记，表明这条 entry 过期了；接下来如果有新的连接刚好命中了这个 entry，就 直接将其标记为正常（非过期），重复利用（循环）这个 entry，而不是像之前一样从新创 建。</p>
+<p>现在基于 BPF spinlock 可以实现做这个功能，但并不是最优的方式，因为如果有合适的原 子操作，我们就能节省两次辅助函数调用，然后将 spinlock 移到 map 里。将 spinlock 放到 map 结构体的额外好处是，每个结构体都有自己独立的结构（互相解耦），因此更能 够避免升级/降低导致的问题。</p>
+<p>当前内核只有 <code>BPF_XADD</code> 指令，我认为它主要适用于计数（counting），因为它并不像原 子递增（inc）函数一样返回一个值。此外内核中还有的就是针对 maps 的 spinlock。</p>
+<p>我觉得如果有 <code>READ_ONCE/WRITE_ONCE</code> 语义将会带来很大便利，现在的 BPF 代码中其实已 经有了一些这样功能的、自己实现的代码。此外，我们还需要 <code>BPF_XCHG</code>, <code>BPF_CMPXCHG</code> 指令，这也将带来很大帮助。</p>
+<h3 id="3-7-BPF-getpeername-hook"><a href="#3-7-BPF-getpeername-hook" class="headerlink" title="3.7 BPF getpeername hook"></a>3.7 BPF <code>getpeername</code> hook</h3><p>还有一个 hook —— <code>getpeername()</code> —— 没有讨论到，它<strong>用在 TCP 和 connected UDP 场景</strong>，对应用是透明的。</p>
+<p>这里的想法是：永远返回 Service IP 而不是 backend pod IP，这样对应用来说，它看到 就是和 Service IP 建立的连接，而不是和某个具体的 backend pod。</p>
+<p>现在返回的是 backend IP 而不是 service IP。从应用的角度看，它连接到的对端并不是 它期望的。</p>
+<h3 id="3-8-绕过内核最大-BPF-指令数的限制"><a href="#3-8-绕过内核最大-BPF-指令数的限制" class="headerlink" title="3.8 绕过内核最大 BPF 指令数的限制"></a>3.8 绕过内核最大 BPF 指令数的限制</h3><p>最后再讨论几个非内核的改动（non-kernel changes）。</p>
+<p>内核对 <strong>BPF 最大指令数有 4K 条</strong>的限制，现在这个限制已经放大到 <strong>1M</strong>（一百万） 条（但需要 5.1+ 内核，或者稍低版本的内核 + 相应 patch）。</p>
+<p>我们的 BPF 程序中包含了 NAT 引擎，因此肯定是超过这个限制的。 但 Cilium 这边，我们目前还并未用到这个新的最大限制，而是通过“外包”的方式将 BPF 切分成了子 BPF 程序，然后通过尾调用（tail call）跳转过去，以此来绕过这个 4K 的限 制。</p>
+<p>另外，我们当前使用的是 BPF tail call，而不是 BPF-to-BPF call，因为<strong>二者不能同时使用</strong>。更好的方式是，Cilium agent 在启动时进行检查，如果内核支持 1M BPF insns/complexity limit + bounded loops（我们用于 NAT mappings 查询优化），就用这 些新特性；否则回退到尾调用的方式。</p>
+<h2 id="4-Cilium-上手：用-kubeadm-搭建体验环境"><a href="#4-Cilium-上手：用-kubeadm-搭建体验环境" class="headerlink" title="4 Cilium 上手：用 kubeadm 搭建体验环境"></a>4 Cilium 上手：用 kubeadm 搭建体验环境</h2><p>有兴趣尝试 Cilium，可以参考下面的快速安装命令：<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">$ kubeadm init --pod-network-cidr=10.217.0.0/16 --skip-phases=addon/kube-proxy</span><br><span class="line">$ kubeadm join [...]</span><br><span class="line">$ helm template cilium \</span><br><span class="line">		 --namespace kube-system --set global.nodePort.enabled=<span class="literal">true</span> \</span><br><span class="line">		 --set global.k8sServiceHost=<span class="variable">$API_SERVER_IP</span> \</span><br><span class="line">		 --set global.k8sServicePort=<span class="variable">$API_SERVER_PORT</span> \</span><br><span class="line">		 --set global.tag=v1.6.1 &gt; cilium.yaml</span><br><span class="line">		 kubectl apply <span class="_">-f</span> cilium.yaml</span><br></pre></td></tr></table></figure></p>
+<p>附录: <a href="/images/k8s/Making_the_Kubernetes_Service_Abstraction_Scale_using_BPF.pdf">Making_the_Kubernetes_Service_Abstraction_Scale_using_BPF.pdf</a></p>
+<blockquote>
+<p>译自：ArthurChiao 原文：<a href="https://linuxplumbersconf.org/event/4/contributions/458/" target="_blank" rel="external">https://linuxplumbersconf.org/event/4/contributions/458/</a></p>
+</blockquote>
+<p><img src="/images/wx_dyh.png" alt="微信订阅号"></p>
+
+      
+    </div>
+    
+    
+    
+
+    <div>
+    
+        <div>
+    
+        <div style="text-align:center;color: #ccc;font-size:14px;">-------------本文结束<i class="fa fa-paw"></i>感谢您的阅读-------------</div>
+    
+</div>
+
+    
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    
+
+    
+      <div>
+        <div style="padding: 10px 0; margin: 20px auto; width: 90%; text-align: center;">
+  <div></div>
+  <button id="rewardButton" disable="enable" onclick="var qr = document.getElementById('QR'); if (qr.style.display === 'none') {qr.style.display='block';} else {qr.style.display='none'}">
+    <span>打赏</span>
+  </button>
+  <div id="QR" style="display: none;">
+
+    
+      <div id="wechat" style="display: inline-block">
+        <img id="wechat_qr" src="/images/wechatpay.jpg" alt="icyboy 微信支付"/>
+        <p>微信支付</p>
+      </div>
+    
+
+    
+      <div id="alipay" style="display: inline-block">
+        <img id="alipay_qr" src="/images/alipay.jpg" alt="icyboy 支付宝"/>
+        <p>支付宝</p>
+      </div>
+    
+
+    
+
+  </div>
+</div>
+<script src="https://my.openwrite.cn/js/readmore.js" type="text/javascript"></script>
+<script>
+    const btw = new BTWPlugin();
+    btw.init({
+        id: 'main',
+        blogId: '24547-1604391054161-398',
+        name: '云原生领域',
+        qrcode: 'http://team.jiunile.com/images/dyh.png',
+        keyword: 'vip',
+    });
+</script>
+
+      </div>
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/k8s/" rel="tag"># k8s</a>
+          
+            <a href="/tags/ebpf/" rel="tag"># ebpf</a>
+          
+            <a href="/tags/service/" rel="tag"># service</a>
+          
+            <a href="/tags/bpf/" rel="tag"># bpf</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/blog/2020/12/go-async-await.html" rel="next" title="使用 Go 实现 Async/Await 模式">
+                <i class="fa fa-chevron-left"></i> 使用 Go 实现 Async/Await 模式
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+    <div class="comments" id="comments">
+    </div>
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image"
+                src="/images/avatar.jpg"
+                alt="icyboy" />
+            
+              <p class="site-author-name" itemprop="name">icyboy</p>
+              <p class="site-description motion-element" itemprop="description"></p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">105</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-categories">
+                <a href="/categories/index.html">
+                  <span class="site-state-item-count">93</span>
+                  <span class="site-state-item-name">分类</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                <a href="/tags/index.html">
+                  <span class="site-state-item-count">177</span>
+                  <span class="site-state-item-name">标签</span>
+                </a>
+              </div>
+            
+
+          </nav>
+
+          
+            <div class="feed-link motion-element">
+              <a href="/atom.xml" rel="alternate">
+                <i class="fa fa-rss"></i>
+                RSS
+              </a>
+            </div>
+          
+
+          
+            <div class="links-of-author motion-element">
+                
+                  <span class="links-of-author-item">
+                    <a href="https://github.com/icyxp" target="_blank" title="GitHub">
+                      
+                        <i class="fa fa-fw fa-github"></i>GitHub</a>
+                  </span>
+                
+                  <span class="links-of-author-item">
+                    <a href="http://weibo.com/joysteam" target="_blank" title="微博">
+                      
+                        <i class="fa fa-fw fa-weibo"></i>微博</a>
+                  </span>
+                
+                  <span class="links-of-author-item">
+                    <a href="http://www.zhihu.com/people/xupeng" target="_blank" title="知乎">
+                      
+                        <i class="fa fa-fw fa-zhihu"></i>知乎</a>
+                  </span>
+                
+            </div>
+          
+
+          
+          
+
+          
+          
+            <div class="links-of-blogroll motion-element links-of-blogroll-inline">
+              <div class="links-of-blogroll-title">
+                <i class="fa  fa-fw fa-link"></i>
+                友情链接
+              </div>
+              <ul class="links-of-blogroll-list">
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="http://www.zjgsmt.com" title="张家港水蜜桃" target="_blank">张家港水蜜桃</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="http://blog.jiunile.com" title="运维开发" target="_blank">运维开发</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="http://devops.jiunile.com" title="DevOps" target="_blank">DevOps</a>
+                  </li>
+                
+              </ul>
+            </div>
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#概述"><span class="nav-number">1.</span> <span class="nav-text">概述</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#1-K8s-Service-类型及默认基于-kube-proxy-的实现"><span class="nav-number">2.</span> <span class="nav-text">1 K8s Service 类型及默认基于 kube-proxy 的实现</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#ClusterIP-Service"><span class="nav-number">2.1.</span> <span class="nav-text">ClusterIP Service</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#1-2-NodePort-Service"><span class="nav-number">2.2.</span> <span class="nav-text">1.2 NodePort Service</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#1-3-小结"><span class="nav-number">2.3.</span> <span class="nav-text">1.3 小结</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2-用-Cilium-BPF-替换-kube-proxy"><span class="nav-number">3.</span> <span class="nav-text">2 用 Cilium/BPF 替换 kube-proxy</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#2-1-ClusterIP-Service"><span class="nav-number">3.1.</span> <span class="nav-text">2.1 ClusterIP Service</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#TCP-amp-connected-UDP"><span class="nav-number">3.1.1.</span> <span class="nav-text">TCP & connected UDP</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#某些-UDP-应用：存在的问题及解决方式"><span class="nav-number">3.1.2.</span> <span class="nav-text">某些 UDP 应用：存在的问题及解决方式</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-2-NodePort-Service"><span class="nav-number">3.2.</span> <span class="nav-text">2.2 NodePort Service</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#2-2-1-后端-pod-在本节点"><span class="nav-number">3.2.1.</span> <span class="nav-text">2.2.1 后端 pod 在本节点</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-2-2-后端-pod-在其他节点"><span class="nav-number">3.3.</span> <span class="nav-text">2.2.2 后端 pod 在其他节点</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#SNAT"><span class="nav-number">3.3.1.</span> <span class="nav-text">SNAT</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-2-3-Client-pods-和-backend-pods-在同一节点"><span class="nav-number">3.4.</span> <span class="nav-text">2.2.3 Client pods 和 backend pods 在同一节点</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2-3-Service-规则的规模及请求延迟对比"><span class="nav-number">4.</span> <span class="nav-text">2.3 Service 规则的规模及请求延迟对比</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#3-相关的-Cilium-BPF-优化"><span class="nav-number">5.</span> <span class="nav-text">3 相关的 Cilium/BPF 优化</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#3-1-BPF-UDP-recvmsg-hook"><span class="nav-number">5.1.</span> <span class="nav-text">3.1 BPF UDP recvmsg() hook</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-2-全局唯一-socket-cookie"><span class="nav-number">5.2.</span> <span class="nav-text">3.2 全局唯一 socket cookie</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-3-维护邻居表"><span class="nav-number">5.3.</span> <span class="nav-text">3.3 维护邻居表</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-4-LRU-BPF-callback-on-entry-eviction"><span class="nav-number">5.4.</span> <span class="nav-text">3.4 LRU BPF callback on entry eviction</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-5-LRU-BPF-eviction-zones"><span class="nav-number">5.5.</span> <span class="nav-text">3.5 LRU BPF eviction zones</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-6-BPF-原子操作"><span class="nav-number">5.6.</span> <span class="nav-text">3.6 BPF 原子操作</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-7-BPF-getpeername-hook"><span class="nav-number">5.7.</span> <span class="nav-text">3.7 BPF getpeername hook</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-8-绕过内核最大-BPF-指令数的限制"><span class="nav-number">5.8.</span> <span class="nav-text">3.8 绕过内核最大 BPF 指令数的限制</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#4-Cilium-上手：用-kubeadm-搭建体验环境"><span class="nav-number">6.</span> <span class="nav-text">4 Cilium 上手：用 kubeadm 搭建体验环境</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+<div class="copyright">&copy; 2016 &mdash; <span itemprop="copyrightYear">2020</span>
+  <span class="with-love" id="heart">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">icyboy</span>
+
+  
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-area-chart"></i>
+    </span>
+    
+      <span class="post-meta-item-text">Site words total count&#58;</span>
+    
+    <span title="Site words total count">312.5k</span>
+  
+</div>
+
+<div class="powered-by">
+<i class="fa fa-user-md"></i><span id="busuanzi_container_site_uv">
+  本站访客数:<span id="busuanzi_value_site_uv"></span>
+</span>
+</div>
+
+<div class="theme-info">
+  <div class="powered-by"></div>
+  <span class="post-count">博客全站共312.5k字</span>
+</div>
+
+
+
+
+
+
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/canvas-nest/canvas-nest.min.js"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+  <script src="//cdn1.lncld.net/static/js/3.0.4/av-min.js"></script>
+  <script src="//unpkg.com/valine/dist/Valine.min.js"></script>
+  
+  <script type="text/javascript">
+    var GUEST = ['nick','mail','link'];
+    var guest = 'nick,mail,link';
+    guest = guest.split(',').filter(item=>{
+      return GUEST.indexOf(item)>-1;
+    });
+    new Valine({
+        el: '#comments' ,
+        verify: false,
+        notify: false,
+        appId: 'B6yqSmGPw5uBIAfWEqm7Xyws-gzGzoHsz',
+        appKey: '2soiHGUrbGw33caCmkT47236',
+        placeholder: 'Just do it!',
+        avatar:'mm',
+        guest_info:guest,
+        pageSize:'10' || 10,
+    });
+  </script>
+
+
+
+  
+
+  <script type="text/javascript">
+    // Popup Window;
+    var isfetched = false;
+    var isXml = true;
+    // Search DB path;
+    var search_path = "search.xml";
+    if (search_path.length === 0) {
+      search_path = "search.xml";
+    } else if (/json$/i.test(search_path)) {
+      isXml = false;
+    }
+    var path = "/" + search_path;
+    // monitor main search box;
+
+    var onPopupClose = function (e) {
+      $('.popup').hide();
+      $('#local-search-input').val('');
+      $('.search-result-list').remove();
+      $('#no-result').remove();
+      $(".local-search-pop-overlay").remove();
+      $('body').css('overflow', '');
+    }
+
+    function proceedsearch() {
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay"></div>')
+        .css('overflow', 'hidden');
+      $('.search-popup-overlay').click(onPopupClose);
+      $('.popup').toggle();
+      var $localSearchInput = $('#local-search-input');
+      $localSearchInput.attr("autocapitalize", "none");
+      $localSearchInput.attr("autocorrect", "off");
+      $localSearchInput.focus();
+    }
+
+    // search function;
+    var searchFunc = function(path, search_id, content_id) {
+      'use strict';
+
+      // start loading animation
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay">' +
+          '<div id="search-loading-icon">' +
+          '<i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>' +
+          '</div>' +
+          '</div>')
+        .css('overflow', 'hidden');
+      $("#search-loading-icon").css('margin', '20% auto 0 auto').css('text-align', 'center');
+
+      $.ajax({
+        url: path,
+        dataType: isXml ? "xml" : "json",
+        async: true,
+        success: function(res) {
+          // get the contents from search data
+          isfetched = true;
+          $('.popup').detach().appendTo('.header-inner');
+          var datas = isXml ? $("entry", res).map(function() {
+            return {
+              title: $("title", this).text(),
+              content: $("content",this).text(),
+              url: $("url" , this).text()
+            };
+          }).get() : res;
+          var input = document.getElementById(search_id);
+          var resultContent = document.getElementById(content_id);
+          var inputEventFunction = function() {
+            var searchText = input.value.trim().toLowerCase();
+            var keywords = searchText.split(/[\s\-]+/);
+            if (keywords.length > 1) {
+              keywords.push(searchText);
+            }
+            var resultItems = [];
+            if (searchText.length > 0) {
+              // perform local searching
+              datas.forEach(function(data) {
+                var isMatch = false;
+                var hitCount = 0;
+                var searchTextCount = 0;
+                var title = data.title.trim();
+                var titleInLowerCase = title.toLowerCase();
+                var content = data.content.trim().replace(/<[^>]+>/g,"");
+                var contentInLowerCase = content.toLowerCase();
+                var articleUrl = decodeURIComponent(data.url);
+                var indexOfTitle = [];
+                var indexOfContent = [];
+                // only match articles with not empty titles
+                if(title != '') {
+                  keywords.forEach(function(keyword) {
+                    function getIndexByWord(word, text, caseSensitive) {
+                      var wordLen = word.length;
+                      if (wordLen === 0) {
+                        return [];
+                      }
+                      var startPosition = 0, position = [], index = [];
+                      if (!caseSensitive) {
+                        text = text.toLowerCase();
+                        word = word.toLowerCase();
+                      }
+                      while ((position = text.indexOf(word, startPosition)) > -1) {
+                        index.push({position: position, word: word});
+                        startPosition = position + wordLen;
+                      }
+                      return index;
+                    }
+
+                    indexOfTitle = indexOfTitle.concat(getIndexByWord(keyword, titleInLowerCase, false));
+                    indexOfContent = indexOfContent.concat(getIndexByWord(keyword, contentInLowerCase, false));
+                  });
+                  if (indexOfTitle.length > 0 || indexOfContent.length > 0) {
+                    isMatch = true;
+                    hitCount = indexOfTitle.length + indexOfContent.length;
+                  }
+                }
+
+                // show search results
+
+                if (isMatch) {
+                  // sort index by position of keyword
+
+                  [indexOfTitle, indexOfContent].forEach(function (index) {
+                    index.sort(function (itemLeft, itemRight) {
+                      if (itemRight.position !== itemLeft.position) {
+                        return itemRight.position - itemLeft.position;
+                      } else {
+                        return itemLeft.word.length - itemRight.word.length;
+                      }
+                    });
+                  });
+
+                  // merge hits into slices
+
+                  function mergeIntoSlice(text, start, end, index) {
+                    var item = index[index.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    var hits = [];
+                    var searchTextCountInSlice = 0;
+                    while (position + word.length <= end && index.length != 0) {
+                      if (word === searchText) {
+                        searchTextCountInSlice++;
+                      }
+                      hits.push({position: position, length: word.length});
+                      var wordEnd = position + word.length;
+
+                      // move to next position of hit
+
+                      index.pop();
+                      while (index.length != 0) {
+                        item = index[index.length - 1];
+                        position = item.position;
+                        word = item.word;
+                        if (wordEnd > position) {
+                          index.pop();
+                        } else {
+                          break;
+                        }
+                      }
+                    }
+                    searchTextCount += searchTextCountInSlice;
+                    return {
+                      hits: hits,
+                      start: start,
+                      end: end,
+                      searchTextCount: searchTextCountInSlice
+                    };
+                  }
+
+                  var slicesOfTitle = [];
+                  if (indexOfTitle.length != 0) {
+                    slicesOfTitle.push(mergeIntoSlice(title, 0, title.length, indexOfTitle));
+                  }
+
+                  var slicesOfContent = [];
+                  while (indexOfContent.length != 0) {
+                    var item = indexOfContent[indexOfContent.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    // cut out 100 characters
+                    var start = position - 20;
+                    var end = position + 80;
+                    if(start < 0){
+                      start = 0;
+                    }
+                    if (end < position + word.length) {
+                      end = position + word.length;
+                    }
+                    if(end > content.length){
+                      end = content.length;
+                    }
+                    slicesOfContent.push(mergeIntoSlice(content, start, end, indexOfContent));
+                  }
+
+                  // sort slices in content by search text's count and hits' count
+
+                  slicesOfContent.sort(function (sliceLeft, sliceRight) {
+                    if (sliceLeft.searchTextCount !== sliceRight.searchTextCount) {
+                      return sliceRight.searchTextCount - sliceLeft.searchTextCount;
+                    } else if (sliceLeft.hits.length !== sliceRight.hits.length) {
+                      return sliceRight.hits.length - sliceLeft.hits.length;
+                    } else {
+                      return sliceLeft.start - sliceRight.start;
+                    }
+                  });
+
+                  // select top N slices in content
+
+                  var upperBound = parseInt('1');
+                  if (upperBound >= 0) {
+                    slicesOfContent = slicesOfContent.slice(0, upperBound);
+                  }
+
+                  // highlight title and content
+
+                  function highlightKeyword(text, slice) {
+                    var result = '';
+                    var prevEnd = slice.start;
+                    slice.hits.forEach(function (hit) {
+                      result += text.substring(prevEnd, hit.position);
+                      var end = hit.position + hit.length;
+                      result += '<b class="search-keyword">' + text.substring(hit.position, end) + '</b>';
+                      prevEnd = end;
+                    });
+                    result += text.substring(prevEnd, slice.end);
+                    return result;
+                  }
+
+                  var resultItem = '';
+
+                  if (slicesOfTitle.length != 0) {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + highlightKeyword(title, slicesOfTitle[0]) + "</a>";
+                  } else {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + title + "</a>";
+                  }
+
+                  slicesOfContent.forEach(function (slice) {
+                    resultItem += "<a href='" + articleUrl + "'>" +
+                      "<p class=\"search-result\">" + highlightKeyword(content, slice) +
+                      "...</p>" + "</a>";
+                  });
+
+                  resultItem += "</li>";
+                  resultItems.push({
+                    item: resultItem,
+                    searchTextCount: searchTextCount,
+                    hitCount: hitCount,
+                    id: resultItems.length
+                  });
+                }
+              })
+            };
+            if (keywords.length === 1 && keywords[0] === "") {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-search fa-5x" /></div>'
+            } else if (resultItems.length === 0) {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-frown-o fa-5x" /></div>'
+            } else {
+              resultItems.sort(function (resultLeft, resultRight) {
+                if (resultLeft.searchTextCount !== resultRight.searchTextCount) {
+                  return resultRight.searchTextCount - resultLeft.searchTextCount;
+                } else if (resultLeft.hitCount !== resultRight.hitCount) {
+                  return resultRight.hitCount - resultLeft.hitCount;
+                } else {
+                  return resultRight.id - resultLeft.id;
+                }
+              });
+              var searchResultList = '<ul class=\"search-result-list\">';
+              resultItems.forEach(function (result) {
+                searchResultList += result.item;
+              })
+              searchResultList += "</ul>";
+              resultContent.innerHTML = searchResultList;
+            }
+          }
+
+          if ('auto' === 'auto') {
+            input.addEventListener('input', inputEventFunction);
+          } else {
+            $('.search-icon').click(inputEventFunction);
+            input.addEventListener('keypress', function (event) {
+              if (event.keyCode === 13) {
+                inputEventFunction();
+              }
+            });
+          }
+
+          // remove loading animation
+          $(".local-search-pop-overlay").remove();
+          $('body').css('overflow', '');
+
+          proceedsearch();
+        }
+      });
+    }
+
+    // handle and trigger popup window;
+    $('.popup-trigger').click(function(e) {
+      e.stopPropagation();
+      if (isfetched === false) {
+        searchFunc(path, 'local-search-input', 'local-search-result');
+      } else {
+        proceedsearch();
+      };
+    });
+
+    $('.popup-btn-close').click(onPopupClose);
+    $('.popup').click(function(e){
+      e.stopPropagation();
+    });
+    $(document).on('keyup', function (event) {
+      var shouldDismissSearchPopup = event.which === 27 &&
+        $('.search-popup').is(':visible');
+      if (shouldDismissSearchPopup) {
+        onPopupClose();
+      }
+    });
+  </script>
+
+
+
+
+
+  
+
+  
+  <script src="https://cdn1.lncld.net/static/js/av-core-mini-0.6.4.js"></script>
+  <script>AV.initialize("B6yqSmGPw5uBIAfWEqm7Xyws-gzGzoHsz", "2soiHGUrbGw33caCmkT47236");</script>
+  <script>
+    function showTime(Counter) {
+      var query = new AV.Query(Counter);
+      var entries = [];
+      var $visitors = $(".leancloud_visitors");
+
+      $visitors.each(function () {
+        entries.push( $(this).attr("id").trim() );
+      });
+
+      query.containedIn('url', entries);
+      query.find()
+        .done(function (results) {
+          var COUNT_CONTAINER_REF = '.leancloud-visitors-count';
+
+          if (results.length === 0) {
+            $visitors.find(COUNT_CONTAINER_REF).text(0);
+            return;
+          }
+
+          for (var i = 0; i < results.length; i++) {
+            var item = results[i];
+            var url = item.get('url');
+            var time = item.get('time');
+            var element = document.getElementById(url);
+
+            $(element).find(COUNT_CONTAINER_REF).text(time);
+          }
+          for(var i = 0; i < entries.length; i++) {
+            var url = entries[i];
+            var element = document.getElementById(url);
+            var countSpan = $(element).find(COUNT_CONTAINER_REF);
+            if( countSpan.text() == '') {
+              countSpan.text(0);
+            }
+          }
+        })
+        .fail(function (object, error) {
+          console.log("Error: " + error.code + " " + error.message);
+        });
+    }
+
+    function addCount(Counter) {
+      var $visitors = $(".leancloud_visitors");
+      var url = $visitors.attr('id').trim();
+      var title = $visitors.attr('data-flag-title').trim();
+      var query = new AV.Query(Counter);
+
+      query.equalTo("url", url);
+      query.find({
+        success: function(results) {
+          if (results.length > 0) {
+            var counter = results[0];
+            counter.fetchWhenSave(true);
+            counter.increment("time");
+            counter.save(null, {
+              success: function(counter) {
+                var $element = $(document.getElementById(url));
+                $element.find('.leancloud-visitors-count').text(counter.get('time'));
+              },
+              error: function(counter, error) {
+                console.log('Failed to save Visitor num, with error message: ' + error.message);
+              }
+            });
+          } else {
+            var newcounter = new Counter();
+            /* Set ACL */
+            var acl = new AV.ACL();
+            acl.setPublicReadAccess(true);
+            acl.setPublicWriteAccess(true);
+            newcounter.setACL(acl);
+            /* End Set ACL */
+            newcounter.set("title", title);
+            newcounter.set("url", url);
+            newcounter.set("time", 1);
+            newcounter.save(null, {
+              success: function(newcounter) {
+                var $element = $(document.getElementById(url));
+                $element.find('.leancloud-visitors-count').text(newcounter.get('time'));
+              },
+              error: function(newcounter, error) {
+                console.log('Failed to create');
+              }
+            });
+          }
+        },
+        error: function(error) {
+          console.log('Error:' + error.code + " " + error.message);
+        }
+      });
+    }
+
+    $(function() {
+      var Counter = AV.Object.extend("Counter");
+      if ($('.leancloud_visitors').length == 1) {
+        addCount(Counter);
+      } else if ($('.post-title-link').length > 1) {
+        showTime(Counter);
+      }
+    });
+  </script>
+
+
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

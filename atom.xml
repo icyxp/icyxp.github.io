@@ -5,7 +5,7 @@
   <link href="/atom.xml" rel="self"/>
   
   <link href="http://team.jiunile.com/"/>
-  <updated>2020-11-30T15:41:49.000Z</updated>
+  <updated>2020-12-03T02:31:35.000Z</updated>
   <id>http://team.jiunile.com/</id>
   
   <author>
@@ -14,6 +14,220 @@
   </author>
   
   <generator uri="http://hexo.io/">Hexo</generator>
+  
+  <entry>
+    <title>利用 eBPF 支撑大规模 K8s Service</title>
+    <link href="http://team.jiunile.com//blog/2020/12/k8s-cilium-service-2019.html"/>
+    <id>http://team.jiunile.com//blog/2020/12/k8s-cilium-service-2019.html</id>
+    <published>2020-12-02T14:00:00.000Z</published>
+    <updated>2020-12-03T02:31:35.000Z</updated>
+    
+    <content type="html">&lt;h2 id=&quot;概述&quot;&gt;&lt;a href=&quot;#概述&quot; class=&quot;headerlink&quot; title=&quot;概述&quot;&gt;&lt;/a&gt;概述&lt;/h2&gt;&lt;p&gt;本文翻译自 2019 年 Daniel Borkmann 和 Martynas Pumputis 在 Linux Plumbers Conference 的一篇分享: &lt;a href=&quot;https://linuxplumbersconf.org/event/4/contributions/458/&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;Making the Kubernetes Service Abstraction Scale using eBPF&lt;/a&gt; 。 翻译时对大家耳熟能详或已显陈旧的内容（K8s 介绍、Cilium 1.6 之前的版本对 Service 实现等）略有删减，如有需要请查阅原 PDF。&lt;/p&gt;
+&lt;p&gt;实际上，一年之后 Daniel 和 Martynas 又在 LPC 做了一次分享，内容是本文的延续：&lt;a href=&quot;http://team.jiunile.com/blog/2020/11/k8s-cilium-service.html&quot;&gt;Cilium：基于 BPF/XDP 实现 K8s Service 负载均衡&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;K8s 当前重度依赖 iptables 来实现 Service 的抽象&lt;/strong&gt;。对于每个 Service 及其 backend pods，在 K8s 里会生成很多 iptables 规则。&lt;strong&gt;例如 5K 个 Service 时，iptables 规则将达到 25K 条&lt;/strong&gt;，导致的后果：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;较高、并且不可预测的转发延迟&lt;/strong&gt;（packet latency），因为每个包都要遍历这些规则 ，直到匹配到某条规则；&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;更新规则的操作非常慢&lt;/strong&gt;：无法单独更新某条 iptables 规则，只能将全部规则读出来 ，更新整个集合，再将新的规则集合下发到宿主机。在动态环境中这一问题尤其明显，因为每 小时可能都有几千次的 backend pods 创建和销毁。&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;可靠性问题&lt;/strong&gt;：iptables 依赖 Netfilter 和系统的连接跟踪模块（conntrack），在 大流量场景下会出现一些竞争问题（race conditions）；&lt;strong&gt;UDP 场景尤其明显&lt;/strong&gt;，会导 致丢包、应用的负载升高等问题。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;本文将介绍如何基于 Cilium/BPF 来解决这些问题，实现 K8s Service 的大规模扩展。&lt;br&gt;&lt;a id=&quot;more&quot;&gt;&lt;/a&gt;&lt;/p&gt;
+&lt;h2 id=&quot;1-K8s-Service-类型及默认基于-kube-proxy-的实现&quot;&gt;&lt;a href=&quot;#1-K8s-Service-类型及默认基于-kube-proxy-的实现&quot; class=&quot;headerlink&quot; title=&quot;1 K8s Service 类型及默认基于 kube-proxy 的实现&quot;&gt;&lt;/a&gt;1 K8s Service 类型及默认基于 kube-proxy 的实现&lt;/h2&gt;&lt;p&gt;K8s 提供了 Service 抽象，可以将多个 backend pods 组织为一个&lt;strong&gt;逻辑单元&lt;/strong&gt;（logical unit）。K8s 会为这个逻辑单元分配 &lt;strong&gt;虚拟 IP 地址&lt;/strong&gt;（VIP），客户端通过该 VIP 就 能访问到这些 pods 提供的服务。&lt;/p&gt;
+&lt;p&gt;下图是一个具体的例子，&lt;br&gt;&lt;img src=&quot;/images/k8s/cim_k8s-service.png&quot; alt=&quot;k8s-service&quot;&gt;&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;右边的 yaml 定义了一个名为 &lt;code&gt;nginx&lt;/code&gt; 的 Service，它在 TCP 80 端口提供服务；&lt;ul&gt;
+&lt;li&gt;创建：&lt;code&gt;kubectl -f nginx-svc.yaml&lt;/code&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;K8s 会给每个 Service 分配一个虚拟 IP，这里给 &lt;code&gt;nginx&lt;/code&gt; 分的是 &lt;code&gt;3.3.3.3&lt;/code&gt;；&lt;ul&gt;
+&lt;li&gt;查看：&lt;code&gt;kubectl get service nginx&lt;/code&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;左边是 &lt;code&gt;nginx&lt;/code&gt; Service 的两个 backend pods（在 K8s 对应两个 endpoint），这里 位于同一台节点，每个 Pod 有独立的 IP 地址；&lt;ul&gt;
+&lt;li&gt;查看：&lt;code&gt;kubectl get endpoints nginx&lt;/code&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;上面看到的是所谓的 &lt;code&gt;ClusterIP&lt;/code&gt; 类型的 Service。实际上，&lt;strong&gt;在 K8s 里有几种不同类型 的 Service&lt;/strong&gt;：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;ClusterIP&lt;/li&gt;
+&lt;li&gt;NodePort&lt;/li&gt;
+&lt;li&gt;LoadBalancer&lt;/li&gt;
+&lt;li&gt;ExternalName&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;本文将主要关注前两种类型。&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;K8s 里实现 Service 的组件是 kube-proxy&lt;/strong&gt;，实现的主要功能就是&lt;strong&gt;将访问 VIP 的请 求转发（及负载均衡）到相应的后端 pods&lt;/strong&gt;。前面提到的那些 iptables 规则就是它创建 和管理的。&lt;/p&gt;
+&lt;p&gt;另外，kube-proxy 是 K8s 的可选组件，如果不需要 Service 功能，可以不启用它。&lt;/p&gt;
+&lt;h3 id=&quot;ClusterIP-Service&quot;&gt;&lt;a href=&quot;#ClusterIP-Service&quot; class=&quot;headerlink&quot; title=&quot;ClusterIP Service&quot;&gt;&lt;/a&gt;ClusterIP Service&lt;/h3&gt;&lt;p&gt;这是 &lt;strong&gt;K8s 的默认 Service 类型，使得宿主机或 pod 可以通过 VIP 访问一个 Service&lt;/strong&gt;。&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;Virtual IP to any endpoint (pod)&lt;/li&gt;
+&lt;li&gt;Only in-cluster access&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;kube-proxy 是通过如下的 iptables 规则来实现这个功能的：&lt;br&gt;&lt;figure class=&quot;highlight bash&quot;&gt;&lt;table&gt;&lt;tr&gt;&lt;td class=&quot;gutter&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;1&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;2&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;3&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;4&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;5&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;6&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;7&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;8&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;9&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;10&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;11&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;12&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;13&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;14&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;15&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;16&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;17&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;18&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;19&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;20&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;21&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;22&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;23&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;24&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;25&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;26&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;27&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;28&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;29&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;30&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;31&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;32&lt;/span&gt;&lt;br&gt;&lt;/pre&gt;&lt;/td&gt;&lt;td class=&quot;code&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;-t nat -A &amp;#123;PREROUTING, OUTPUT&amp;#125; -m conntrack --ctstate NEW -j KUBE-SERVICES&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;&lt;span class=&quot;comment&quot;&gt;# 宿主机访问 nginx Service 的流量，同时满足 4 个条件：&lt;/span&gt;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;&lt;span class=&quot;comment&quot;&gt;# 1. src_ip 不是 Pod 网段&lt;/span&gt;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;&lt;span class=&quot;comment&quot;&gt;# 2. dst_ip=3.3.3.3/32 (ClusterIP)&lt;/span&gt;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;&lt;span class=&quot;comment&quot;&gt;# 3. proto=TCP&lt;/span&gt;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;&lt;span class=&quot;comment&quot;&gt;# 4. dport=80&lt;/span&gt;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;&lt;span class=&quot;comment&quot;&gt;# 如果匹配成功，直接跳转到 KUBE-MARK-MASQ；否则，继续匹配下面一条（iptables 是链式规则，高优先级在前）&lt;/span&gt;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;&lt;span class=&quot;comment&quot;&gt;# 跳转到 KUBE-MARK-MASQ 是为了保证这些包出宿主机时，src_ip 用的是宿主机 IP。&lt;/span&gt;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;-A KUBE-SERVICES ! &lt;span class=&quot;_&quot;&gt;-s&lt;/span&gt; 1.1.0.0/16 &lt;span class=&quot;_&quot;&gt;-d&lt;/span&gt; 3.3.3.3/32 -p tcp -m tcp --dport 80 -j KUBE-MARK-MASQ&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;&lt;span class=&quot;comment&quot;&gt;# Pod 访问 nginx Service 的流量：同时满足 4 个条件：&lt;/span&gt;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;&lt;span class=&quot;comment&quot;&gt;# 1. 没有匹配到前一条的，（说明 src_ip 是 Pod 网段）&lt;/span&gt;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;&lt;span class=&quot;comment&quot;&gt;# 2. dst_ip=3.3.3.3/32 (ClusterIP)&lt;/span&gt;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;&lt;span class=&quot;comment&quot;&gt;# 3. proto=TCP&lt;/span&gt;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;&lt;span class=&quot;comment&quot;&gt;# 4. dport=80&lt;/span&gt;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;-A KUBE-SERVICES &lt;span class=&quot;_&quot;&gt;-d&lt;/span&gt; 3.3.3.3/32 -p tcp -m tcp --dport 80 -j KUBE-SVC-NGINX&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;&lt;span class=&quot;comment&quot;&gt;# 以 50% 的概率跳转到 KUBE-SEP-NGINX1&lt;/span&gt;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;-A KUBE-SVC-NGINX -m statistic --mode random --probability 0.50 -j KUBE-SEP-NGINX1&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;&lt;span class=&quot;comment&quot;&gt;# 如果没有命中上面一条，则以 100% 的概率跳转到 KUBE-SEP-NGINX2&lt;/span&gt;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;-A KUBE-SVC-NGINX -j KUBE-SEP-NGINX2&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;&lt;span class=&quot;comment&quot;&gt;# 如果 src_ip=1.1.1.1/32，说明是 Service-&amp;gt;client 流量，则&lt;/span&gt;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;&lt;span class=&quot;comment&quot;&gt;# 需要做 SNAT（MASQ 是动态版的 SNAT），替换 src_ip -&amp;gt; svc_ip，这样客户端收到包时，&lt;/span&gt;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;&lt;span class=&quot;comment&quot;&gt;# 看到就是从 svc_ip 回的包，跟它期望的是一致的。&lt;/span&gt;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;-A KUBE-SEP-NGINX1 &lt;span class=&quot;_&quot;&gt;-s&lt;/span&gt; 1.1.1.1/32 -j KUBE-MARK-MASQ&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;&lt;span class=&quot;comment&quot;&gt;# 如果没有命令上面一条，说明 src_ip != 1.1.1.1/32，则说明是 client-&amp;gt; Service 流量，&lt;/span&gt;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;&lt;span class=&quot;comment&quot;&gt;# 需要做 DNAT，将 svc_ip -&amp;gt; pod1_ip，&lt;/span&gt;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;-A KUBE-SEP-NGINX1 -p tcp -m tcp -j DNAT --to-destination 1.1.1.1:80&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;&lt;span class=&quot;comment&quot;&gt;# 同理，见上面两条的注释&lt;/span&gt;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;-A KUBE-SEP-NGINX2 &lt;span class=&quot;_&quot;&gt;-s&lt;/span&gt; 1.1.1.2/32 -j KUBE-MARK-MASQ&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;-A KUBE-SEP-NGINX2 -p tcp -m tcp -j DNAT --to-destination 1.1.1.2:80&lt;/span&gt;&lt;br&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/figure&gt;&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;Service 既要能被宿主机访问，又要能被 pod 访问（&lt;strong&gt;二者位于不同的 netns&lt;/strong&gt;）， 因此需要在 &lt;code&gt;PREROUTING&lt;/code&gt; 和 &lt;code&gt;OUTPUT&lt;/code&gt; 两个 hook 点拦截请求，然后跳转到自定义的 &lt;code&gt;KUBE-SERVICES&lt;/code&gt; chain；&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;KUBE-SERVICES&lt;/code&gt; chain &lt;strong&gt;执行真正的 Service 匹配&lt;/strong&gt;，依据协议类型、目的 IP 和目的端口号。当匹配到某个 Service 后，就会跳转到专门针对这个 Service 创 建的 chain，命名格式为 &lt;code&gt;KUBE-SVC-&amp;lt;Service&amp;gt;&lt;/code&gt;。&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;KUBE-SVC-&amp;lt;Service&amp;gt;&lt;/code&gt; chain &lt;strong&gt;根据概率选择某个后端 pod&lt;/strong&gt; 然后将请求转发过去。这其实是一种&lt;strong&gt;穷人的负载均衡器&lt;/strong&gt; —— 基于 iptables。选中某个 pod 后，会跳转到这个 pod 相关的一条 iptables chain &lt;code&gt;KUBE-SEP-&amp;lt;POD&amp;gt;&lt;/code&gt;。&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;KUBE-SEP-&amp;lt;POD&amp;gt;&lt;/code&gt; chain 会&lt;strong&gt;执行 DNAT&lt;/strong&gt;，将 VIP 换成 PodIP。&lt;/li&gt;
+&lt;/ol&gt;
+&lt;blockquote&gt;
+&lt;p&gt;译注：以上解释并不是非常详细和直观，因为这不是本文重点。想更深入地理解基于 iptables 的实现，可参考网上其他一些文章，例如下面这张图所出自的博客 &lt;a href=&quot;https://www.stackrox.com/post/2020/01/kubernetes-networking-demystified/&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;Kubernetes Networking Demystified: A Brief Guide&lt;/a&gt;，&lt;br&gt;&lt;img src=&quot;/images/k8s/cim_k8s-net-demystified-svc-lb.png&quot; alt=&quot;k8s-net-demystified-svc-lb&quot;&gt;&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;h3 id=&quot;1-2-NodePort-Service&quot;&gt;&lt;a href=&quot;#1-2-NodePort-Service&quot; class=&quot;headerlink&quot; title=&quot;1.2 NodePort Service&quot;&gt;&lt;/a&gt;1.2 NodePort Service&lt;/h3&gt;&lt;p&gt;这种类型的 Service 也能被宿主机和 pod 访问，但与 ClusterIP 不同的是，&lt;strong&gt;它还能被集群外的服务访问&lt;/strong&gt;。&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;External node IP + port in NodePort range to any endpoint (pod), e.g. 10.0.0.1:31000&lt;/li&gt;
+&lt;li&gt;Enables access from outside&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;实现上，kube-apiserver 会&lt;strong&gt;从预留的端口范围内分配一个端口给 Service&lt;/strong&gt;，然后&lt;strong&gt;每个宿主机上的 kube-proxy 都会创建以下规则&lt;/strong&gt;：&lt;br&gt;&lt;figure class=&quot;highlight bash&quot;&gt;&lt;table&gt;&lt;tr&gt;&lt;td class=&quot;gutter&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;1&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;2&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;3&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;4&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;5&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;6&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;7&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;8&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;9&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;10&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;11&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;12&lt;/span&gt;&lt;br&gt;&lt;/pre&gt;&lt;/td&gt;&lt;td class=&quot;code&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;-t nat -A &amp;#123;PREROUTING, OUTPUT&amp;#125; -m conntrack --ctstate NEW -j KUBE-SERVICES&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;-A KUBE-SERVICES ! &lt;span class=&quot;_&quot;&gt;-s&lt;/span&gt; 1.1.0.0/16 &lt;span class=&quot;_&quot;&gt;-d&lt;/span&gt; 3.3.3.3/32 -p tcp -m tcp --dport 80 -j KUBE-MARK-MASQ&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;-A KUBE-SERVICES &lt;span class=&quot;_&quot;&gt;-d&lt;/span&gt; 3.3.3.3/32 -p tcp -m tcp --dport 80 -j KUBE-SVC-NGINX&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;&lt;span class=&quot;comment&quot;&gt;# 如果前面两条都没匹配到（说明不是 ClusterIP service 流量），并且 dst 是 LOCAL，跳转到 KUBE-NODEPORTS&lt;/span&gt;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;-A KUBE-SERVICES -m addrtype --dst-type LOCAL -j KUBE-NODEPORTS&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;-A KUBE-NODEPORTS -p tcp -m tcp --dport 31000 -j KUBE-MARK-MASQ&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;-A KUBE-NODEPORTS -p tcp -m tcp --dport 31000 -j KUBE-SVC-NGINX&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;-A KUBE-SVC-NGINX -m statistic --mode random --probability 0.50 -j KUBE-SEP-NGINX1&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;-A KUBE-SVC-NGINX -j KUBE-SEP-NGINX2&lt;/span&gt;&lt;br&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/figure&gt;&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;前面几步和 ClusterIP Service 一样；如果没匹配到 ClusterIP 规则，则跳转到 &lt;code&gt;KUBE-NODEPORTS&lt;/code&gt; chain。&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;KUBE-NODEPORTS&lt;/code&gt; chain 里做 Service 匹配，但&lt;strong&gt;这次只匹配协议类型和目的端口号&lt;/strong&gt;。&lt;/li&gt;
+&lt;li&gt;匹配成功后，转到对应的 &lt;code&gt;KUBE-SVC-&amp;lt;Service&amp;gt;&lt;/code&gt; chain，后面的过程跟 ClusterIP 是一样的。&lt;/li&gt;
+&lt;/ol&gt;
+&lt;h3 id=&quot;1-3-小结&quot;&gt;&lt;a href=&quot;#1-3-小结&quot; class=&quot;headerlink&quot; title=&quot;1.3 小结&quot;&gt;&lt;/a&gt;1.3 小结&lt;/h3&gt;&lt;p&gt;以上可以看到，每个 Service 会对应多条 iptables 规则。&lt;/p&gt;
+&lt;p&gt;Service 数量不断增长时，&lt;strong&gt;iptables 规则的数量增长会更快&lt;/strong&gt;。而且，&lt;strong&gt;每个包都需要遍历这些规则&lt;/strong&gt;，直到最终匹配到一条相应的规则。如果不幸匹配到最后一条规则才命中， 那相比其他流量，这些包就会有&lt;strong&gt;很高的延迟&lt;/strong&gt;。&lt;/p&gt;
+&lt;p&gt;有了这些背景知识，我们来看如何用 BPF/Cilium 来替换掉 kube-proxy，也可以说是 重新实现 kube-proxy 的逻辑。&lt;/p&gt;
+&lt;h2 id=&quot;2-用-Cilium-BPF-替换-kube-proxy&quot;&gt;&lt;a href=&quot;#2-用-Cilium-BPF-替换-kube-proxy&quot; class=&quot;headerlink&quot; title=&quot;2 用 Cilium/BPF 替换 kube-proxy&quot;&gt;&lt;/a&gt;2 用 Cilium/BPF 替换 kube-proxy&lt;/h2&gt;&lt;p&gt;我们从 Cilium 早起版本开始，已经逐步用 BPF 实现 Service 功能，但其中仍然有些 地方需要用到 iptables。在这一时期，每台 node 上会同时运行 cilium-agent 和 kube-proxy。&lt;/p&gt;
+&lt;p&gt;到了 Cilium 1.6，我们已经能&lt;strong&gt;完全基于 BPF 实现，不再依赖 iptables，也不再需要 kube-proxy&lt;/strong&gt;。&lt;br&gt;&lt;img src=&quot;/images/k8s/cim_cilium-cluster-ip.png&quot; alt=&quot;cim_cilium-cluster-ip&quot;&gt;&lt;/p&gt;
+&lt;p&gt;这里有一些实现上的考虑：相比于在 TC ingress 层做 Service 转换，我们优先利用 cgroupv2 hooks，&lt;strong&gt;在 socket BPF 层直接做这种转换&lt;/strong&gt;（需要高版本内核支持，如果不支 持则 fallback 回 TC ingress 方式）。&lt;/p&gt;
+&lt;h3 id=&quot;2-1-ClusterIP-Service&quot;&gt;&lt;a href=&quot;#2-1-ClusterIP-Service&quot; class=&quot;headerlink&quot; title=&quot;2.1 ClusterIP Service&quot;&gt;&lt;/a&gt;2.1 ClusterIP Service&lt;/h3&gt;&lt;p&gt;对于 ClusterIP，我们在 BPF 里&lt;strong&gt;拦截 socket 的 &lt;code&gt;connect&lt;/code&gt; 和 &lt;code&gt;send&lt;/code&gt; 系统调用&lt;/strong&gt;； 这些 BPF 执行时，&lt;strong&gt;协议层还没开始执行&lt;/strong&gt;（这些系统调用 handlers）。&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;Attach on the cgroupv2 root mount &lt;code&gt;BPF_PROG_TYPE_CGROUP_SOCK_ADDR&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;BPF_CGROUP_INET{4,6}_CONNECT&lt;/code&gt; - TCP, connected UDP&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h4 id=&quot;TCP-amp-connected-UDP&quot;&gt;&lt;a href=&quot;#TCP-amp-connected-UDP&quot; class=&quot;headerlink&quot; title=&quot;TCP &amp;amp; connected UDP&quot;&gt;&lt;/a&gt;TCP &amp;amp; connected UDP&lt;/h4&gt;&lt;p&gt;对于 TCP 和 connected UDP 场景，执行的是下面一段逻辑，&lt;br&gt;&lt;figure class=&quot;highlight c&quot;&gt;&lt;table&gt;&lt;tr&gt;&lt;td class=&quot;gutter&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;1&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;2&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;3&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;4&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;5&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;6&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;7&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;8&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;9&lt;/span&gt;&lt;br&gt;&lt;/pre&gt;&lt;/td&gt;&lt;td class=&quot;code&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;&lt;span class=&quot;function&quot;&gt;&lt;span class=&quot;keyword&quot;&gt;int&lt;/span&gt; &lt;span class=&quot;title&quot;&gt;sock4_xlate&lt;/span&gt;&lt;span class=&quot;params&quot;&gt;(&lt;span class=&quot;keyword&quot;&gt;struct&lt;/span&gt; bpf_sock_addr *ctx)&lt;/span&gt; &lt;/span&gt;&amp;#123;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;	&lt;span class=&quot;keyword&quot;&gt;struct&lt;/span&gt; lb4_svc_key key = &amp;#123; .dip = ctx-&amp;gt;user_ip4, .dport = ctx-&amp;gt;user_port &amp;#125;;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;	svc = lb4_lookup_svc(&amp;amp;key)&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;		&lt;span class=&quot;keyword&quot;&gt;if&lt;/span&gt; (svc) &amp;#123;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;			ctx-&amp;gt;user_ip4 = svc-&amp;gt;endpoint_addr;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;			ctx-&amp;gt;user_port = svc-&amp;gt;endpoint_port;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;		&amp;#125;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;	&lt;span class=&quot;keyword&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;number&quot;&gt;1&lt;/span&gt;;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;&amp;#125;&lt;/span&gt;&lt;br&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/figure&gt;&lt;/p&gt;
+&lt;p&gt;所做的事情：在 BPF map 中查找 Service，然后做地址转换。但这里的重点是（相比于 TC ingress BPF 实现）：&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;&lt;strong&gt;不经过连接跟踪（conntrack）模块，也不需要修改包头&lt;/strong&gt;（实际上这时候还没有包 ），也不再 mangle 包。这也意味着，&lt;strong&gt;不需要重新计算包的 checksum&lt;/strong&gt;。&lt;/li&gt;
+&lt;li&gt;对于 TCP 和 connected UDP，&lt;strong&gt;负载均衡的开销是一次性的&lt;/strong&gt;，只需要在 socket 建立时做一次转换，后面都不需要了，&lt;strong&gt;不存在包级别的转换&lt;/strong&gt;。&lt;/li&gt;
+&lt;li&gt;这种方式是对宿主机 netns 上的 socket 和 pod netns 内的 socket 都是适用的。&lt;/li&gt;
+&lt;/ol&gt;
+&lt;h4 id=&quot;某些-UDP-应用：存在的问题及解决方式&quot;&gt;&lt;a href=&quot;#某些-UDP-应用：存在的问题及解决方式&quot; class=&quot;headerlink&quot; title=&quot;某些 UDP 应用：存在的问题及解决方式&quot;&gt;&lt;/a&gt;某些 UDP 应用：存在的问题及解决方式&lt;/h4&gt;&lt;p&gt;但这种方式&lt;strong&gt;对某些 UDP 应用是不适用的&lt;/strong&gt;，因为这些 UDP 应用会检查包的源地址，以及 会调用 &lt;code&gt;recvmsg&lt;/code&gt; 系统调用。&lt;/p&gt;
+&lt;p&gt;针对这个问题，我们引入了新的 BPF attach 类型：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;code&gt;BPF_CGROUP_UDP4_RECVMSG&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;BPF_CGROUP_UDP6_RECVMSG&lt;/code&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;另外还引入了用于 NAT 的 UDP map、rev-NAT map：&lt;br&gt;&lt;figure class=&quot;highlight bash&quot;&gt;&lt;table&gt;&lt;tr&gt;&lt;td class=&quot;gutter&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;1&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;2&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;3&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;4&lt;/span&gt;&lt;br&gt;&lt;/pre&gt;&lt;/td&gt;&lt;td class=&quot;code&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;              BPF rev NAT map&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;Cookie   EndpointIP  Port =&amp;gt; ServiceID  IP       Port&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;-----------------------------------------------------&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;42       1.1.1.1     80   =&amp;gt; 1          3.3.3.30 80&lt;/span&gt;&lt;br&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/figure&gt;&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;通过 &lt;code&gt;bpf_get_socket_cookie()&lt;/code&gt; 创建 socket cookie。&lt;/li&gt;
+&lt;li&gt;除了 Service 访问方式，还会有一些&lt;strong&gt;客户端通过 PodIP 直连的方式建立 UDP 连接， cookie 就是为了防止对这些类型的流量做 rev-NAT&lt;/strong&gt;。&lt;/li&gt;
+&lt;li&gt;在 &lt;code&gt;connect(2)&lt;/code&gt; 和 &lt;code&gt;sendmsg(2)&lt;/code&gt; 时更新 map。&lt;/li&gt;
+&lt;li&gt;在 &lt;code&gt;recvmsg(2)&lt;/code&gt; 时做 rev-NAT。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id=&quot;2-2-NodePort-Service&quot;&gt;&lt;a href=&quot;#2-2-NodePort-Service&quot; class=&quot;headerlink&quot; title=&quot;2.2 NodePort Service&quot;&gt;&lt;/a&gt;2.2 NodePort Service&lt;/h3&gt;&lt;p&gt;NodePort 会更复杂一些，我们先从最简单的场景看起。&lt;/p&gt;
+&lt;h4 id=&quot;2-2-1-后端-pod-在本节点&quot;&gt;&lt;a href=&quot;#2-2-1-后端-pod-在本节点&quot; class=&quot;headerlink&quot; title=&quot;2.2.1 后端 pod 在本节点&quot;&gt;&lt;/a&gt;2.2.1 后端 pod 在本节点&lt;/h4&gt;&lt;p&gt;&lt;img src=&quot;/images/k8s/cim_cilium-node-port.png&quot; alt=&quot;cilium-node-port&quot;&gt;&lt;/p&gt;
+&lt;p&gt;后端 pod 在本节点时，只需要&lt;strong&gt;在宿主机的网络设备上 attach 一段 tc ingress bpf 程序&lt;/strong&gt;，这段程序做的事情：&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;Service 查找&lt;/li&gt;
+&lt;li&gt;DNAT&lt;/li&gt;
+&lt;li&gt;redirect 到容器的 lxc0。&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;对于应答包，lxc0 负责 rev-NAT，FIB 查找（因为我们需要设置 L2 地址，否则会被 drop）， 然后将其 redirect 回客户端。&lt;/p&gt;
+&lt;h3 id=&quot;2-2-2-后端-pod-在其他节点&quot;&gt;&lt;a href=&quot;#2-2-2-后端-pod-在其他节点&quot; class=&quot;headerlink&quot; title=&quot;2.2.2 后端 pod 在其他节点&quot;&gt;&lt;/a&gt;2.2.2 后端 pod 在其他节点&lt;/h3&gt;&lt;p&gt;后端 pod 在其他节点时，会复杂一些，因为要转发到其他节点。这种情况下，&lt;strong&gt;需要在 BPF 做 SNAT&lt;/strong&gt;，否则 pod 会直接回包给客户端，而由于不同 node 之间没有做连接跟踪（ conntrack）同步，因此直接回给客户端的包出 pod 后就会被 drop 掉。&lt;/p&gt;
+&lt;p&gt;所以需要&lt;strong&gt;在当前节点做一次 SNAT&lt;/strong&gt;（&lt;code&gt;src_ip&lt;/code&gt; 从原来的 ClientIP 替换为 NodeIP），让回包也经过 当前节点，然后在这里再做 rev-SNAT（&lt;code&gt;dst_ip&lt;/code&gt; 从原来的 NodeIP 替换为 ClientIP）。&lt;/p&gt;
+&lt;p&gt;具体来说，在 &lt;strong&gt;TC ingress&lt;/strong&gt; 插入一段 BPF 代码，然后依次执行：Service 查找、DNAT、 选择合适的 egress interface、SNAT、FIB lookup，最后发送给相应的 node，&lt;br&gt;&lt;img src=&quot;/images/k8s/cim_cilium-node-port-2.png&quot; alt=&quot;cilium-node-port-2&quot;&gt;&lt;/p&gt;
+&lt;p&gt;反向路径是类似的，也是回到这个 node，TC ingress BPF 先执行 rev-SNAT，然后 rev-DNAT，FIB lookup，最后再发送回客户端，&lt;br&gt;&lt;img src=&quot;/images/k8s/cim_cilium-node-port-3.png&quot; alt=&quot;cilium-node-port-3&quot;&gt;&lt;/p&gt;
+&lt;p&gt;现在跨宿主机转发是 SNAT 模式，但将来我们打算支持 &lt;strong&gt;DSR 模式&lt;/strong&gt;（译注，Cilium 1.8+ 已经支持了）。DSR 的好处是 &lt;strong&gt;backend pods 直接将包回给客户端&lt;/strong&gt;，回包不再经过当前 节点转发。&lt;/p&gt;
+&lt;p&gt;另外，现在 Service 的处理是在 TC ingress 做的，&lt;strong&gt;这些逻辑其实也能够在 XDP 层实现&lt;/strong&gt;， 那将会是另一件激动人心的事情（译注，Cilium 1.8+ 已经支持了，性能大幅提升）。&lt;/p&gt;
+&lt;h4 id=&quot;SNAT&quot;&gt;&lt;a href=&quot;#SNAT&quot; class=&quot;headerlink&quot; title=&quot;SNAT&quot;&gt;&lt;/a&gt;SNAT&lt;/h4&gt;&lt;p&gt;当前基于 BPF 的 SNAT 实现中，用一个 LRU BPF map 存放 Service 和 backend pods 的映 射信息。&lt;/p&gt;
+&lt;p&gt;需要说明的是，&lt;strong&gt;SNAT 除了替换 &lt;code&gt;src_ip&lt;/code&gt;，还可能会替换 &lt;code&gt;src_port&lt;/code&gt;&lt;/strong&gt;：不同客户端的 &lt;code&gt;src_port&lt;/code&gt; 可能是相同的，如果只替换 &lt;code&gt;src_ip&lt;/code&gt;，不同客户端的应答包在反向转换时就会失 败。因此这种情况下需要做 &lt;code&gt;src_port&lt;/code&gt; 转换。现在的做法是，先进行哈希，如果哈希失败， 就调用 &lt;code&gt;prandom()&lt;/code&gt; 随机选择一个端口。&lt;/p&gt;
+&lt;p&gt;此外，我们还需要跟踪宿主机上的流（local flows）信息，因此在 Cilium 里&lt;strong&gt;基于 BPF 实现了一个连接跟踪器&lt;/strong&gt;（connection tracker），它会监听宿主机的主物理网络设备（ main physical device）；我们也会对宿主机上的应用执行 NAT，pod 流量 NAT 之后使用的 是宿主机的 src_port，而宿主机上的应用使用的也是同一个 src_port 空间，它们可能会 有冲突，因此需要在这里处理。&lt;/p&gt;
+&lt;p&gt;这就是 NodePort Service 类型的流量到达一台节点后，我们在 BPF 所做的事情。&lt;/p&gt;
+&lt;h3 id=&quot;2-2-3-Client-pods-和-backend-pods-在同一节点&quot;&gt;&lt;a href=&quot;#2-2-3-Client-pods-和-backend-pods-在同一节点&quot; class=&quot;headerlink&quot; title=&quot;2.2.3 Client pods 和 backend pods 在同一节点&quot;&gt;&lt;/a&gt;2.2.3 Client pods 和 backend pods 在同一节点&lt;/h3&gt;&lt;p&gt;另外一种情况是：本机上的 pod 访问某个 NodePort Service，而且 backend pods 也在本机。&lt;/p&gt;
+&lt;p&gt;这种情况下，流量会从 loopback 口转发到 backend pods，中间会经历路由和转发过程， 整个过程对应用是透明的 —— 我们可以在&lt;strong&gt;应用无感知的情况下，修改二者之间的通信方式&lt;/strong&gt;， 只要流量能被双方正确地接受就行。因此，我们在这里&lt;strong&gt;使用了 ClusterIP，并对其进行了一点扩展&lt;/strong&gt;，只要连接的 Service 是 loopback 地址或者其他 local 地址，它都能正 确地转发到本机 pods。&lt;/p&gt;
+&lt;p&gt;另外，比较好的一点是，这种实现方式是基于 cgroups 的，因此独立于 netns。这意味着 我们不需要进入到每个 pod 的 netns 来做这种转换。&lt;br&gt;&lt;img src=&quot;/images/k8s/cim_cilium-snat.png&quot; alt=&quot;cilium-snat&quot;&gt;&lt;/p&gt;
+&lt;h2 id=&quot;2-3-Service-规则的规模及请求延迟对比&quot;&gt;&lt;a href=&quot;#2-3-Service-规则的规模及请求延迟对比&quot; class=&quot;headerlink&quot; title=&quot;2.3 Service 规则的规模及请求延迟对比&quot;&gt;&lt;/a&gt;2.3 Service 规则的规模及请求延迟对比&lt;/h2&gt;&lt;p&gt;有了以上功能，基本上就可以避免 kube-proxy 那样 per-service 的 iptables 规则了， 每个节点上只留下了少数几条由 Kubernetes 自己创建的 iptables 规则：&lt;br&gt;&lt;figure class=&quot;highlight bash&quot;&gt;&lt;table&gt;&lt;tr&gt;&lt;td class=&quot;gutter&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;1&lt;/span&gt;&lt;br&gt;&lt;/pre&gt;&lt;/td&gt;&lt;td class=&quot;code&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;$ iptables-save | grep ‘\-A KUBE’ | wc &lt;span class=&quot;_&quot;&gt;-l&lt;/span&gt;&lt;/span&gt;&lt;br&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/figure&gt;&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;With kube-proxy: 25401&lt;/li&gt;
+&lt;li&gt;With BPF: 4&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;在将来，我们有希望连这几条规则也不需要，完全绕开 Netfilter 框架（译注：新版本已经做到了）。&lt;/p&gt;
+&lt;p&gt;此外，我们做了一些初步的基准测试，如下图所示，&lt;br&gt;&lt;img src=&quot;/images/k8s/cim_performance.png&quot; alt=&quot;performance&quot;&gt;&lt;/p&gt;
+&lt;p&gt;可以看到，随着 Service 数量从 1 增加到 2000+，&lt;strong&gt;kube-proxy/iptables 的请求延 迟增加了将近一倍&lt;/strong&gt;，而 Cilium/eBPF 的延迟几乎没有任何增加。&lt;/p&gt;
+&lt;h2 id=&quot;3-相关的-Cilium-BPF-优化&quot;&gt;&lt;a href=&quot;#3-相关的-Cilium-BPF-优化&quot; class=&quot;headerlink&quot; title=&quot;3 相关的 Cilium/BPF 优化&quot;&gt;&lt;/a&gt;3 相关的 Cilium/BPF 优化&lt;/h2&gt;&lt;p&gt;接下来介绍一些我们在实现 Service 过程中的优化工作，以及一些未来可能会做的事情。&lt;/p&gt;
+&lt;h3 id=&quot;3-1-BPF-UDP-recvmsg-hook&quot;&gt;&lt;a href=&quot;#3-1-BPF-UDP-recvmsg-hook&quot; class=&quot;headerlink&quot; title=&quot;3.1 BPF UDP recvmsg() hook&quot;&gt;&lt;/a&gt;3.1 BPF UDP &lt;code&gt;recvmsg()&lt;/code&gt; hook&lt;/h3&gt;&lt;p&gt;实现 socket 层 UDP Service 转换时，我们发现如果只对 UDP &lt;code&gt;sendmsg&lt;/code&gt; 做 hook ，会导致 &lt;strong&gt;DNS 等应用无法正常工作&lt;/strong&gt;，会出现下面这种错误：&lt;br&gt;&lt;img src=&quot;/images/k8s/cim_udp-recvmsg-before.png&quot; alt=&quot;udp-recvmsg-before&quot;&gt;&lt;/p&gt;
+&lt;p&gt;深入分析发现，&lt;code&gt;nslookup&lt;/code&gt; 及其他一些工具会检查 &lt;strong&gt;&lt;code&gt;connect()&lt;/code&gt; 时用的 IP 地址和 &lt;code&gt;recvmsg()&lt;/code&gt; 读到的 reply message 里的 IP 地址&lt;/strong&gt;是否一致。如果不一致，就会 报上面的错误。&lt;/p&gt;
+&lt;p&gt;原因清楚之后，解决就比较简单了：我们引入了一个做反向映射的 BPF hook，对 &lt;code&gt;recvmsg()&lt;/code&gt; 做额外处理，这个问题就解决了：&lt;br&gt;&lt;img src=&quot;/images/k8s/cim_udp-recvmsg-after.png&quot; alt=&quot;udp-recvmsg-after&quot;&gt;&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;&lt;a href=&quot;https://github.com/torvalds/linux/commit/983695fa6765&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;983695fa6765&lt;/a&gt; bpf: fix unconnected udp hooks。&lt;br&gt;这个 patch 能在不重写包（without packet rewrite）的前提下，会对 BPF ClusterIP 做反向映射（reverse mapping）。&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;h3 id=&quot;3-2-全局唯一-socket-cookie&quot;&gt;&lt;a href=&quot;#3-2-全局唯一-socket-cookie&quot; class=&quot;headerlink&quot; title=&quot;3.2 全局唯一 socket cookie&quot;&gt;&lt;/a&gt;3.2 全局唯一 socket cookie&lt;/h3&gt;&lt;p&gt;BPF ClusterIP Service 为 UDP 维护了一个 LRU 反向映射表（reverse mapping table）。&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;Socket cookie 是这个映射表的 key 的一部分，但这个 cookie 只在每个 netns 内唯一&lt;/strong&gt;，其背后的实现比较简单：每次调用 BPF cookie helper，它都会增加计数器，然后将 cookie 存储到 socket。因此不同 netns 内分配出来的 cookie 值可能会一样，导致冲突。&lt;/p&gt;
+&lt;p&gt;为解决这个问题，我们将 cookie generator 改成了全局的，见下面的 commit。&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;&lt;a href=&quot;https://github.com/torvalds/linux/commit/cd48bdda4fb8&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;cd48bdda4fb8&lt;/a&gt; sock: make cookie generation global instead of per netns。&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;h3 id=&quot;3-3-维护邻居表&quot;&gt;&lt;a href=&quot;#3-3-维护邻居表&quot; class=&quot;headerlink&quot; title=&quot;3.3 维护邻居表&quot;&gt;&lt;/a&gt;3.3 维护邻居表&lt;/h3&gt;&lt;p&gt;Cilium agent 从 K8s apiserver 收到 Service 事件时， 会将 backend entry 更新到 datapath 中的 Service backend 列表。&lt;/p&gt;
+&lt;p&gt;前面已经看到，当 Service 是 NodePort 类型并且 backend 是 remote 时，需要转发到其 他节点（TC ingress BPF &lt;code&gt;redirect()&lt;/code&gt;）。&lt;/p&gt;
+&lt;p&gt;我们发现&lt;strong&gt;在某些直接路由（direct routing）的场景下，会出现 fib 查找失败的问题&lt;/strong&gt; （&lt;code&gt;fib_lookup()&lt;/code&gt;），原因是系统中没有对应 backend 的 neighbor entry（IP-&amp;gt;MAC 映射 信息），并且接下来&lt;strong&gt;不会主动做 ARP 探测&lt;/strong&gt;（ARP probe）。&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;Tunneling 模式下这个问题可以忽略，因为本来发送端的 BPF 程 序就会将 src/dst mac 清零，另一台节点对收到的包做处理时， VxLAN 设备上的另一段 BPF 程序会能够正确的转发这个包，因此这种方式更像是 L3 方式。&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;我们目前 workaround 了这个问题，解决方式有点丑陋：Cilium 解析 backend，然后直接 将 neighbor entry 永久性地（&lt;code&gt;NUD_PERMANENT&lt;/code&gt;）插入邻居表中。&lt;/p&gt;
+&lt;p&gt;目前这样做是没问题的，因为邻居的数量是固定或者可控的（fixed/controlled number of entries）。但后面我们想尝试的是让内核来做这些事情，因为它能以最好的方式处理这个 问题。实现方式就是引入一些新的 &lt;code&gt;NUD_*&lt;/code&gt; 类型，只需要传 L3 地址，然后内核自己将解 析 L2 地址，并负责这个地址的维护。这样 Cilium 就不需要再处理 L2 地址的事情了。 但到今天为止，我并没有看到这种方式的可能性。&lt;/p&gt;
+&lt;p&gt;对于从集群外来的访问 NodePort Service 的请求，也存在类似的问题， 因为最后将响应流量回给客户端也需要邻居表。由于这些流量都是在 pre-routing，因此我 们现在的处理方式是：自己维护了一个小的 BPF LRU map（L3-&amp;gt;L2 mapping in BPF LRU map）；由于这是主处理逻辑（转发路径），流量可能很高，因此将这种映射放到 BPF LRU 是更合适的，不会导致邻居表的 overflow。&lt;/p&gt;
+&lt;h3 id=&quot;3-4-LRU-BPF-callback-on-entry-eviction&quot;&gt;&lt;a href=&quot;#3-4-LRU-BPF-callback-on-entry-eviction&quot; class=&quot;headerlink&quot; title=&quot;3.4 LRU BPF callback on entry eviction&quot;&gt;&lt;/a&gt;3.4 LRU BPF callback on entry eviction&lt;/h3&gt;&lt;p&gt;我们想讨论的另一件事情是：在每个 LRU entry 被 eviction（驱逐）时，能有一个 callback 将会更好。为什么呢？&lt;/p&gt;
+&lt;p&gt;Cilium 中现在有一个 BPF conntrack table，我们支持到了一些非常老的内核版本 ，例如 4.9。Cilium 在启动时会检查内核版本，优先选择使用 LRU，没有 LRU 再 fallback 到普通的哈希表（Hash Table）。&lt;strong&gt;对于哈希表，就需要一个不断 GC 的过程&lt;/strong&gt;。&lt;/p&gt;
+&lt;p&gt;我们&lt;strong&gt;有意将 NAT map 与 CT map 独立开来&lt;/strong&gt;，这是因 为我们要求在 &lt;strong&gt;cilium-agent 升级或降级过程中，现有的连接/流量不能受影响&lt;/strong&gt;。 如果二者是耦合在一起的，假如 CT 相关的东西有很大改动，那升级时那要么 是将当前的连接状态全部删掉重新开始；要么就是服务中断，临时不可用，升级完成后再将 老状态迁移到新状态表，但我认为，要轻松、正确地实现这件事情非常困难。 这就是为什么将它们分开的原因。但实际上，GC 在回收 CT entry 的同时， 也会顺便回收 NAT entry。&lt;/p&gt;
+&lt;p&gt;另外一个问题：&lt;strong&gt;每次从 userspace 操作 conntrack entry 都会破坏 LRU 的正常工作流程&lt;/strong&gt;（因为不恰当地更新了所有 entry 的时间戳）。我们通过下面的 commit 解决了这个问题，但要彻底避免这个问题，&lt;strong&gt;最好有一个 GC 以 callback 的方式在第一时 间清理掉这些被 evicted entry&lt;/strong&gt;，例如在 CT entry 被 evict 之后，顺便也清理掉 NAT 映射。这是我们正在做的事情（译注，Cilium 1.9+ 已经实现了）。&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;&lt;a href=&quot;https://github.com/torvalds/linux/commit/50b045a8c0cc&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;50b045a8c0cc&lt;/a&gt; (“bpf, lru: avoid messing with eviction heuristics upon syscall lookup”) fixed map walking from user space&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;h3 id=&quot;3-5-LRU-BPF-eviction-zones&quot;&gt;&lt;a href=&quot;#3-5-LRU-BPF-eviction-zones&quot; class=&quot;headerlink&quot; title=&quot;3.5 LRU BPF eviction zones&quot;&gt;&lt;/a&gt;3.5 LRU BPF eviction zones&lt;/h3&gt;&lt;p&gt;另一件跟 CT map 相关的比较有意思的探讨：&lt;strong&gt;未来是否能根据流量类型，将 LRU eviction 分割为不同的 zone&lt;/strong&gt;？例如，&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;东西向流量分到 zone1：处理 ClusterIP service 流量，都是 pod-{pod,host} 流量， 比较大；&lt;/li&gt;
+&lt;li&gt;南北向流量分到 zone2：处理 NodePort 和 ExternalName service 流量，相对比较小。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;这样的好处是：当&lt;strong&gt;对南北向流量 CT 进行操作时，占大头的东西向流量不会受影响&lt;/strong&gt;。&lt;/p&gt;
+&lt;p&gt;理想的情况是这种隔离是有保障的，例如：可以安全地假设，如果正在清理 zone1 内的 entries， 那预期不会对 zone2 内的 entry 有任何影响。不过，虽然分为了多个 zones，但在全局， 只有一个 map。&lt;/p&gt;
+&lt;h3 id=&quot;3-6-BPF-原子操作&quot;&gt;&lt;a href=&quot;#3-6-BPF-原子操作&quot; class=&quot;headerlink&quot; title=&quot;3.6 BPF 原子操作&quot;&gt;&lt;/a&gt;3.6 BPF 原子操作&lt;/h3&gt;&lt;p&gt;另一个要讨论的内容是原子操作。&lt;/p&gt;
+&lt;p&gt;使用场景之一是&lt;strong&gt;过期 NAT entry 的快速重复利用&lt;/strong&gt;（fast recycling）。 例如，结合前面的 GC 过程，如果一个连接断开时， 不是直接删除对应的 entry，而是更 新一个标记，表明这条 entry 过期了；接下来如果有新的连接刚好命中了这个 entry，就 直接将其标记为正常（非过期），重复利用（循环）这个 entry，而不是像之前一样从新创 建。&lt;/p&gt;
+&lt;p&gt;现在基于 BPF spinlock 可以实现做这个功能，但并不是最优的方式，因为如果有合适的原 子操作，我们就能节省两次辅助函数调用，然后将 spinlock 移到 map 里。将 spinlock 放到 map 结构体的额外好处是，每个结构体都有自己独立的结构（互相解耦），因此更能 够避免升级/降低导致的问题。&lt;/p&gt;
+&lt;p&gt;当前内核只有 &lt;code&gt;BPF_XADD&lt;/code&gt; 指令，我认为它主要适用于计数（counting），因为它并不像原 子递增（inc）函数一样返回一个值。此外内核中还有的就是针对 maps 的 spinlock。&lt;/p&gt;
+&lt;p&gt;我觉得如果有 &lt;code&gt;READ_ONCE/WRITE_ONCE&lt;/code&gt; 语义将会带来很大便利，现在的 BPF 代码中其实已 经有了一些这样功能的、自己实现的代码。此外，我们还需要 &lt;code&gt;BPF_XCHG&lt;/code&gt;, &lt;code&gt;BPF_CMPXCHG&lt;/code&gt; 指令，这也将带来很大帮助。&lt;/p&gt;
+&lt;h3 id=&quot;3-7-BPF-getpeername-hook&quot;&gt;&lt;a href=&quot;#3-7-BPF-getpeername-hook&quot; class=&quot;headerlink&quot; title=&quot;3.7 BPF getpeername hook&quot;&gt;&lt;/a&gt;3.7 BPF &lt;code&gt;getpeername&lt;/code&gt; hook&lt;/h3&gt;&lt;p&gt;还有一个 hook —— &lt;code&gt;getpeername()&lt;/code&gt; —— 没有讨论到，它&lt;strong&gt;用在 TCP 和 connected UDP 场景&lt;/strong&gt;，对应用是透明的。&lt;/p&gt;
+&lt;p&gt;这里的想法是：永远返回 Service IP 而不是 backend pod IP，这样对应用来说，它看到 就是和 Service IP 建立的连接，而不是和某个具体的 backend pod。&lt;/p&gt;
+&lt;p&gt;现在返回的是 backend IP 而不是 service IP。从应用的角度看，它连接到的对端并不是 它期望的。&lt;/p&gt;
+&lt;h3 id=&quot;3-8-绕过内核最大-BPF-指令数的限制&quot;&gt;&lt;a href=&quot;#3-8-绕过内核最大-BPF-指令数的限制&quot; class=&quot;headerlink&quot; title=&quot;3.8 绕过内核最大 BPF 指令数的限制&quot;&gt;&lt;/a&gt;3.8 绕过内核最大 BPF 指令数的限制&lt;/h3&gt;&lt;p&gt;最后再讨论几个非内核的改动（non-kernel changes）。&lt;/p&gt;
+&lt;p&gt;内核对 &lt;strong&gt;BPF 最大指令数有 4K 条&lt;/strong&gt;的限制，现在这个限制已经放大到 &lt;strong&gt;1M&lt;/strong&gt;（一百万） 条（但需要 5.1+ 内核，或者稍低版本的内核 + 相应 patch）。&lt;/p&gt;
+&lt;p&gt;我们的 BPF 程序中包含了 NAT 引擎，因此肯定是超过这个限制的。 但 Cilium 这边，我们目前还并未用到这个新的最大限制，而是通过“外包”的方式将 BPF 切分成了子 BPF 程序，然后通过尾调用（tail call）跳转过去，以此来绕过这个 4K 的限 制。&lt;/p&gt;
+&lt;p&gt;另外，我们当前使用的是 BPF tail call，而不是 BPF-to-BPF call，因为&lt;strong&gt;二者不能同时使用&lt;/strong&gt;。更好的方式是，Cilium agent 在启动时进行检查，如果内核支持 1M BPF insns/complexity limit + bounded loops（我们用于 NAT mappings 查询优化），就用这 些新特性；否则回退到尾调用的方式。&lt;/p&gt;
+&lt;h2 id=&quot;4-Cilium-上手：用-kubeadm-搭建体验环境&quot;&gt;&lt;a href=&quot;#4-Cilium-上手：用-kubeadm-搭建体验环境&quot; class=&quot;headerlink&quot; title=&quot;4 Cilium 上手：用 kubeadm 搭建体验环境&quot;&gt;&lt;/a&gt;4 Cilium 上手：用 kubeadm 搭建体验环境&lt;/h2&gt;&lt;p&gt;有兴趣尝试 Cilium，可以参考下面的快速安装命令：&lt;br&gt;&lt;figure class=&quot;highlight bash&quot;&gt;&lt;table&gt;&lt;tr&gt;&lt;td class=&quot;gutter&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;1&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;2&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;3&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;4&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;5&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;6&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;7&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;8&lt;/span&gt;&lt;br&gt;&lt;/pre&gt;&lt;/td&gt;&lt;td class=&quot;code&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;$ kubeadm init --pod-network-cidr=10.217.0.0/16 --skip-phases=addon/kube-proxy&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;$ kubeadm join [...]&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;$ helm template cilium \&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;		 --namespace kube-system --set global.nodePort.enabled=&lt;span class=&quot;literal&quot;&gt;true&lt;/span&gt; \&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;		 --set global.k8sServiceHost=&lt;span class=&quot;variable&quot;&gt;$API_SERVER_IP&lt;/span&gt; \&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;		 --set global.k8sServicePort=&lt;span class=&quot;variable&quot;&gt;$API_SERVER_PORT&lt;/span&gt; \&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;		 --set global.tag=v1.6.1 &amp;gt; cilium.yaml&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;		 kubectl apply &lt;span class=&quot;_&quot;&gt;-f&lt;/span&gt; cilium.yaml&lt;/span&gt;&lt;br&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/figure&gt;&lt;/p&gt;
+&lt;p&gt;附录: &lt;a href=&quot;/images/k8s/Making_the_Kubernetes_Service_Abstraction_Scale_using_BPF.pdf&quot;&gt;Making_the_Kubernetes_Service_Abstraction_Scale_using_BPF.pdf&lt;/a&gt;&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;译自：ArthurChiao 原文：&lt;a href=&quot;https://linuxplumbersconf.org/event/4/contributions/458/&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;https://linuxplumbersconf.org/event/4/contributions/458/&lt;/a&gt;&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;&lt;img src=&quot;/images/wx_dyh.png&quot; alt=&quot;微信订阅号&quot;&gt;&lt;/p&gt;
+</content>
+    
+    <summary type="html">
+    
+      &lt;h2 id=&quot;概述&quot;&gt;&lt;a href=&quot;#概述&quot; class=&quot;headerlink&quot; title=&quot;概述&quot;&gt;&lt;/a&gt;概述&lt;/h2&gt;&lt;p&gt;本文翻译自 2019 年 Daniel Borkmann 和 Martynas Pumputis 在 Linux Plumbers Conference 的一篇分享: &lt;a href=&quot;https://linuxplumbersconf.org/event/4/contributions/458/&quot;&gt;Making the Kubernetes Service Abstraction Scale using eBPF&lt;/a&gt; 。 翻译时对大家耳熟能详或已显陈旧的内容（K8s 介绍、Cilium 1.6 之前的版本对 Service 实现等）略有删减，如有需要请查阅原 PDF。&lt;/p&gt;
+&lt;p&gt;实际上，一年之后 Daniel 和 Martynas 又在 LPC 做了一次分享，内容是本文的延续：&lt;a href=&quot;http://team.jiunile.com/blog/2020/11/k8s-cilium-service.html&quot;&gt;Cilium：基于 BPF/XDP 实现 K8s Service 负载均衡&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;K8s 当前重度依赖 iptables 来实现 Service 的抽象&lt;/strong&gt;。对于每个 Service 及其 backend pods，在 K8s 里会生成很多 iptables 规则。&lt;strong&gt;例如 5K 个 Service 时，iptables 规则将达到 25K 条&lt;/strong&gt;，导致的后果：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;较高、并且不可预测的转发延迟&lt;/strong&gt;（packet latency），因为每个包都要遍历这些规则 ，直到匹配到某条规则；&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;更新规则的操作非常慢&lt;/strong&gt;：无法单独更新某条 iptables 规则，只能将全部规则读出来 ，更新整个集合，再将新的规则集合下发到宿主机。在动态环境中这一问题尤其明显，因为每 小时可能都有几千次的 backend pods 创建和销毁。&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;可靠性问题&lt;/strong&gt;：iptables 依赖 Netfilter 和系统的连接跟踪模块（conntrack），在 大流量场景下会出现一些竞争问题（race conditions）；&lt;strong&gt;UDP 场景尤其明显&lt;/strong&gt;，会导 致丢包、应用的负载升高等问题。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;本文将介绍如何基于 Cilium/BPF 来解决这些问题，实现 K8s Service 的大规模扩展。&lt;br&gt;
+    
+    </summary>
+    
+      <category term="Kubernetes" scheme="http://team.jiunile.com/categories/Kubernetes/"/>
+    
+      <category term="Cilium" scheme="http://team.jiunile.com/categories/Kubernetes/Cilium/"/>
+    
+    
+      <category term="k8s" scheme="http://team.jiunile.com/tags/k8s/"/>
+    
+      <category term="ebpf" scheme="http://team.jiunile.com/tags/ebpf/"/>
+    
+      <category term="service" scheme="http://team.jiunile.com/tags/service/"/>
+    
+      <category term="bpf" scheme="http://team.jiunile.com/tags/bpf/"/>
+    
+  </entry>
   
   <entry>
     <title>使用 Go 实现 Async/Await 模式</title>
@@ -64,13 +278,13 @@
     
       <category term="go" scheme="http://team.jiunile.com/tags/go/"/>
     
-      <category term="goroutine" scheme="http://team.jiunile.com/tags/goroutine/"/>
-    
-      <category term="channel" scheme="http://team.jiunile.com/tags/channel/"/>
-    
       <category term="async" scheme="http://team.jiunile.com/tags/async/"/>
     
       <category term="await" scheme="http://team.jiunile.com/tags/await/"/>
+    
+      <category term="goroutine" scheme="http://team.jiunile.com/tags/goroutine/"/>
+    
+      <category term="channel" scheme="http://team.jiunile.com/tags/channel/"/>
     
   </entry>
   
@@ -845,11 +1059,11 @@
       <category term="error" scheme="http://team.jiunile.com/categories/golang/error/"/>
     
     
+      <category term="error" scheme="http://team.jiunile.com/tags/error/"/>
+    
       <category term="go" scheme="http://team.jiunile.com/tags/go/"/>
     
       <category term="golang" scheme="http://team.jiunile.com/tags/golang/"/>
-    
-      <category term="error" scheme="http://team.jiunile.com/tags/error/"/>
     
   </entry>
   
@@ -1012,11 +1226,11 @@
       <category term="error" scheme="http://team.jiunile.com/categories/golang/error/"/>
     
     
+      <category term="error" scheme="http://team.jiunile.com/tags/error/"/>
+    
       <category term="go" scheme="http://team.jiunile.com/tags/go/"/>
     
       <category term="golang" scheme="http://team.jiunile.com/tags/golang/"/>
-    
-      <category term="error" scheme="http://team.jiunile.com/tags/error/"/>
     
   </entry>
   
@@ -1907,114 +2121,6 @@
       <category term="finalizers" scheme="http://team.jiunile.com/tags/finalizers/"/>
     
       <category term="ALBIngressController" scheme="http://team.jiunile.com/tags/ALBIngressController/"/>
-    
-  </entry>
-  
-  <entry>
-    <title>如何为 Kubernetes 实现原地升级</title>
-    <link href="http://team.jiunile.com//blog/2020/10/k8s-pod-update-local.html"/>
-    <id>http://team.jiunile.com//blog/2020/10/k8s-pod-update-local.html</id>
-    <published>2020-10-28T12:00:00.000Z</published>
-    <updated>2020-10-29T06:01:53.000Z</updated>
-    
-    <content type="html">&lt;h2 id=&quot;概念介绍&quot;&gt;&lt;a href=&quot;#概念介绍&quot; class=&quot;headerlink&quot; title=&quot;概念介绍&quot;&gt;&lt;/a&gt;概念介绍&lt;/h2&gt;&lt;p&gt;&lt;strong&gt;原地升级&lt;/strong&gt;一词中，“升级”不难理解，是将应用实例的版本由旧版替换为新版。那么如何结合 Kubernetes 环境来理解“原地”呢？&lt;/p&gt;
-&lt;p&gt;我们先来看看 K8s 原生 workload 的发布方式。这里假设我们需要部署一个应用，包括 foo、bar 两个容器在 Pod 中。其中，foo 容器第一次部署时用的镜像版本是 v1，我们需要将其升级为 v2 版本镜像，该怎么做呢？&lt;br&gt;&lt;a id=&quot;more&quot;&gt;&lt;/a&gt;&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;如果这个应用使用 Deployment 部署，那么升级过程中 Deployment 会触发新版本 ReplicaSet 创建 Pod，并删除旧版本 Pod。如下图所示：&lt;/li&gt;
-&lt;/ul&gt;
-&lt;p&gt;&lt;img src=&quot;/images/k8s/update-1.png&quot; alt=&quot;1.png&quot;&gt;&lt;/p&gt;
-&lt;p&gt;在本次升级过程中，原 Pod 对象被删除，一个新 Pod 对象被创建。新 Pod 被调度到另一个 Node 上，分配到一个新的 IP，并把 foo、bar 两个容器在这个 Node 上重新拉取镜像、启动容器。&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;如果这个应该使用 StatefulSet 部署，那么升级过程中 StatefulSet 会先删除旧 Pod 对象，等删除完成后用同样的名字在创建一个新的 Pod 对象。如下图所示：&lt;/li&gt;
-&lt;/ul&gt;
-&lt;p&gt;&lt;img src=&quot;/images/k8s/update-2.png&quot; alt=&quot;2.png&quot;&gt;&lt;/p&gt;
-&lt;p&gt;值得注意的是，尽管新旧两个 Pod 名字都叫 pod-0，但其实是两个完全不同的 Pod 对象（uid也变了）。StatefulSet 等到原先的 pod-0 对象完全从 Kubernetes 集群中被删除后，才会提交创建一个新的 pod-0 对象。而这个新的 Pod 也会被重新调度、分配IP、拉镜像、启动容器。&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;而所谓原地升级模式，就是在应用升级过程中避免将整个 Pod 对象删除、新建，而是基于原有的 Pod 对象升级其中某一个或多个容器的镜像版本：&lt;/li&gt;
-&lt;/ul&gt;
-&lt;p&gt;&lt;img src=&quot;/images/k8s/update-3.png&quot; alt=&quot;3.png&quot;&gt;&lt;/p&gt;
-&lt;p&gt;在原地升级的过程中，我们仅仅更新了原 Pod 对象中 foo 容器的 image 字段来触发 foo 容器升级到新版本。而不管是 Pod 对象，还是 Node、IP 都没有发生变化，甚至 foo 容器升级的过程中 bar 容器还一直处于运行状态。&lt;/p&gt;
-&lt;p&gt;&lt;strong&gt;总结：这种只更新 Pod 中某一个或多个容器版本、而不影响整个 Pod 对象、其余容器的升级方式，被我们称为 Kubernetes 中的原地升级&lt;/strong&gt;。&lt;/p&gt;
-&lt;h2 id=&quot;收益分析&quot;&gt;&lt;a href=&quot;#收益分析&quot; class=&quot;headerlink&quot; title=&quot;收益分析&quot;&gt;&lt;/a&gt;收益分析&lt;/h2&gt;&lt;p&gt;那么，我们为什么要在 Kubernetes 中引入这种原地升级的理念和设计呢？&lt;/p&gt;
-&lt;p&gt;首先，这种原地升级的模式极大地提升了应用发布的效率，根据非完全统计数据，在阿里环境下原地升级至少比完全重建升级提升了 80% 以上的发布速度。这其实很容易理解，原地升级为发布效率带来了以下优化点：&lt;/p&gt;
-&lt;ol&gt;
-&lt;li&gt;节省了调度的耗时，Pod 的位置、资源都不发生变化；&lt;/li&gt;
-&lt;li&gt;节省了分配网络的耗时，Pod 还使用原有的 IP；&lt;/li&gt;
-&lt;li&gt;节省了分配、挂载远程盘的耗时，Pod 还使用原有的 PV（且都是已经在 Node 上挂载好的）；&lt;/li&gt;
-&lt;li&gt;节省了大部分拉取镜像的耗时，因为 Node 上已经存在了应用的旧镜像，当拉取新版本镜像时只需要下载很少的几层 layer。&lt;/li&gt;
-&lt;/ol&gt;
-&lt;p&gt;其次，当我们升级 Pod 中一些 sidecar 容器（如采集日志、监控等）时，其实并不希望干扰到业务容器的运行。但面对这种场景，Deployment 或 StatefulSet 的升级都会将整个 Pod 重建，势必会对业务造成一定的影响。而容器级别的原地升级变动的范围非常可控，只会将需要升级的容器做重建，其余容器包括网络、挂载盘都不会受到影响。&lt;/p&gt;
-&lt;p&gt;最后，原地升级也为我们带来了集群的稳定性和确定性。当一个 Kubernetes 集群中大量应用触发重建 Pod 升级时，可能造成大规模的 Pod 飘移，以及对 Node 上一些低优先级的任务 Pod 造成反复的抢占迁移。这些大规模的 Pod 重建，本身会对 apiserver、scheduler、网络/磁盘分配等中心组件造成较大的压力，而这些组件的延迟也会给 Pod 重建带来恶性循环。而采用原地升级后，整个升级过程只会涉及到 controller 对 Pod 对象的更新操作和 kubelet 重建对应的容器。&lt;/p&gt;
-&lt;h2 id=&quot;技术背景&quot;&gt;&lt;a href=&quot;#技术背景&quot; class=&quot;headerlink&quot; title=&quot;技术背景&quot;&gt;&lt;/a&gt;技术背景&lt;/h2&gt;&lt;p&gt;支持原地升级的控制器就位于 &lt;a href=&quot;https://github.com/openkruise/kruise?spm=a2c6h.12873639.0.0.4bc314b5SPKTQY&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;OpenKruise&lt;/a&gt; 开源项目中。&lt;/p&gt;
-&lt;p&gt;也就是说，云原生应用都是统一使用 &lt;code&gt;OpenKruise&lt;/code&gt; 中的扩展 workload 做部署管理的，而并没有采用原生 &lt;code&gt;Deployment/StatefulSet&lt;/code&gt; 等。&lt;/p&gt;
-&lt;p&gt;那么 &lt;code&gt;OpenKruise&lt;/code&gt; 是如何实现原地升级能力的呢？在介绍原地升级实现原理之前，我们先来看一些原地升级功能所依赖的原生 Kubernetes 功能：&lt;/p&gt;
-&lt;h3 id=&quot;背景-1：Kubelet-针对-Pod-容器的版本管理&quot;&gt;&lt;a href=&quot;#背景-1：Kubelet-针对-Pod-容器的版本管理&quot; class=&quot;headerlink&quot; title=&quot;背景 1：Kubelet 针对 Pod 容器的版本管理&quot;&gt;&lt;/a&gt;背景 1：Kubelet 针对 Pod 容器的版本管理&lt;/h3&gt;&lt;p&gt;每个 Node 上的 Kubelet，会针对本机上所有 Pod.spec.containers 中的每个 container 计算一个 hash 值，并记录到实际创建的容器中。&lt;/p&gt;
-&lt;p&gt;如果我们修改了 Pod 中某个 container 的 image 字段，kubelet 会发现 container 的 hash 发生了变化、与机器上过去创建的容器 hash 不一致，而后 kubelet 就会把旧容器停掉，然后根据最新 Pod spec 中的 container 来创建新的容器。&lt;/p&gt;
-&lt;p&gt;&lt;strong&gt;这个功能，其实就是针对单个 Pod 的原地升级的核心原理&lt;/strong&gt;。&lt;/p&gt;
-&lt;h3 id=&quot;背景-2：Pod-更新限制&quot;&gt;&lt;a href=&quot;#背景-2：Pod-更新限制&quot; class=&quot;headerlink&quot; title=&quot;背景 2：Pod 更新限制&quot;&gt;&lt;/a&gt;背景 2：Pod 更新限制&lt;/h3&gt;&lt;p&gt;在原生 kube-apiserver 中，对 Pod 对象的更新请求有严格的 &lt;a href=&quot;https://github.com/kubernetes/kubernetes/blob/master/pkg/apis/core/validation/validation.go?spm=a2c6h.12873639.0.0.4bc314b5SPKTQY#L3729&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;validation 校验逻辑&lt;/a&gt;：&lt;br&gt;&lt;figure class=&quot;highlight golang&quot;&gt;&lt;table&gt;&lt;tr&gt;&lt;td class=&quot;gutter&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;1&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;2&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;3&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;4&lt;/span&gt;&lt;br&gt;&lt;/pre&gt;&lt;/td&gt;&lt;td class=&quot;code&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;&lt;span class=&quot;comment&quot;&gt;// validate updateable fields:&lt;/span&gt;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;&lt;span class=&quot;comment&quot;&gt;// 1.  spec.containers[*].image&lt;/span&gt;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;&lt;span class=&quot;comment&quot;&gt;// 2.  spec.initContainers[*].image&lt;/span&gt;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;&lt;span class=&quot;comment&quot;&gt;// 3.  spec.activeDeadlineSeconds&lt;/span&gt;&lt;/span&gt;&lt;br&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/figure&gt;&lt;/p&gt;
-&lt;p&gt;简单来说，对于一个已经创建出来的 Pod，在 Pod Spec 中只允许修改 containers/initContainers 中的 image 字段，以及 activeDeadlineSeconds 字段。对 Pod Spec 中所有其他字段的更新，都会被 kube-apiserver 拒绝。&lt;/p&gt;
-&lt;h3 id=&quot;背景-3：containerStatuses-上报&quot;&gt;&lt;a href=&quot;#背景-3：containerStatuses-上报&quot; class=&quot;headerlink&quot; title=&quot;背景 3：containerStatuses 上报&quot;&gt;&lt;/a&gt;背景 3：containerStatuses 上报&lt;/h3&gt;&lt;p&gt;kubelet 会在 pod.status 中上报 containerStatuses，对应 Pod 中所有容器的实际运行状态：&lt;br&gt;&lt;figure class=&quot;highlight yaml&quot;&gt;&lt;table&gt;&lt;tr&gt;&lt;td class=&quot;gutter&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;1&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;2&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;3&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;4&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;5&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;6&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;7&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;8&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;9&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;10&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;11&lt;/span&gt;&lt;br&gt;&lt;/pre&gt;&lt;/td&gt;&lt;td class=&quot;code&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;&lt;span class=&quot;attr&quot;&gt;apiVersion:&lt;/span&gt; v1&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;&lt;span class=&quot;attr&quot;&gt;kind:&lt;/span&gt; Pod&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;&lt;span class=&quot;attr&quot;&gt;spec:&lt;/span&gt;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;&lt;span class=&quot;attr&quot;&gt;  containers:&lt;/span&gt;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;&lt;span class=&quot;attr&quot;&gt;  - name:&lt;/span&gt; nginx&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;&lt;span class=&quot;attr&quot;&gt;    image:&lt;/span&gt; nginx:latest&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;&lt;span class=&quot;attr&quot;&gt;status:&lt;/span&gt;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;&lt;span class=&quot;attr&quot;&gt;  containerStatuses:&lt;/span&gt;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;&lt;span class=&quot;attr&quot;&gt;  - name:&lt;/span&gt; nginx&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;&lt;span class=&quot;attr&quot;&gt;    image:&lt;/span&gt; nginx:mainline&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;&lt;span class=&quot;attr&quot;&gt;    imageID:&lt;/span&gt; docker-pullable://nginx@sha256:&lt;span class=&quot;number&quot;&gt;2&lt;/span&gt;f68b99bc0d6d25d0c56876b924ec20418544ff28e1fb89a4c27679a40da811b&lt;/span&gt;&lt;br&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/figure&gt;&lt;/p&gt;
-&lt;p&gt;绝大多数情况下，spec.containers[x].image 与 status.containerStatuses[x].image 两个镜像是一致的。&lt;/p&gt;
-&lt;p&gt;但是也有上述这种情况，kubelet 上报的与 spec 中的 image 不一致（spec 中是 nginx:latest，但 status 中上报的是 nginx:mainline）。&lt;/p&gt;
-&lt;p&gt;这是因为，kubelet 所上报的 image 其实是从 CRI 接口中拿到的容器对应的镜像名。而如果 Node 机器上存在多个镜像对应了一个 imageID，那么上报的可能是其中任意一个：&lt;br&gt;&lt;figure class=&quot;highlight bash&quot;&gt;&lt;table&gt;&lt;tr&gt;&lt;td class=&quot;gutter&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;1&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;2&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;3&lt;/span&gt;&lt;br&gt;&lt;/pre&gt;&lt;/td&gt;&lt;td class=&quot;code&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;$ docker images | grep nginx&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;nginx            latest              2622e6cca7eb        2 days ago          132MB&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;nginx            mainline            2622e6cca7eb        2 days ago&lt;/span&gt;&lt;br&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/figure&gt;&lt;/p&gt;
-&lt;p&gt;因此，一个 Pod 中 spec 和 status 的 image 字段不一致，并不意味着宿主机上这个容器运行的镜像版本和期望的不一致。&lt;/p&gt;
-&lt;h3 id=&quot;背景-4：ReadinessGate-控制-Pod-是否-Ready&quot;&gt;&lt;a href=&quot;#背景-4：ReadinessGate-控制-Pod-是否-Ready&quot; class=&quot;headerlink&quot; title=&quot;背景 4：ReadinessGate 控制 Pod 是否 Ready&quot;&gt;&lt;/a&gt;背景 4：ReadinessGate 控制 Pod 是否 Ready&lt;/h3&gt;&lt;p&gt;在 Kubernetes 1.12 版本之前，一个 Pod 是否处于 Ready 状态只是由 kubelet 根据容器状态来判定：如果 Pod 中容器全部 ready，那么 Pod 就处于 Ready 状态。&lt;/p&gt;
-&lt;p&gt;但事实上，很多时候上层 operator 或用户都需要能控制 Pod 是否 Ready 的能力。因此，Kubernetes 1.12 版本之后提供了一个 readinessGates 功能来满足这个场景。如下：&lt;br&gt;&lt;figure class=&quot;highlight yaml&quot;&gt;&lt;table&gt;&lt;tr&gt;&lt;td class=&quot;gutter&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;1&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;2&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;3&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;4&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;5&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;6&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;7&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;8&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;9&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;10&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;11&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;12&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;13&lt;/span&gt;&lt;br&gt;&lt;/pre&gt;&lt;/td&gt;&lt;td class=&quot;code&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;&lt;span class=&quot;attr&quot;&gt;apiVersion:&lt;/span&gt; v1&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;&lt;span class=&quot;attr&quot;&gt;kind:&lt;/span&gt; Pod&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;&lt;span class=&quot;attr&quot;&gt;spec:&lt;/span&gt;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;&lt;span class=&quot;attr&quot;&gt;  readinessGates:&lt;/span&gt;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;&lt;span class=&quot;attr&quot;&gt;  - conditionType:&lt;/span&gt; MyDemo&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;&lt;span class=&quot;attr&quot;&gt;status:&lt;/span&gt;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;&lt;span class=&quot;attr&quot;&gt;  conditions:&lt;/span&gt;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;&lt;span class=&quot;attr&quot;&gt;  - type:&lt;/span&gt; MyDemo&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;&lt;span class=&quot;attr&quot;&gt;    status:&lt;/span&gt; &lt;span class=&quot;string&quot;&gt;&quot;True&quot;&lt;/span&gt;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;&lt;span class=&quot;attr&quot;&gt;  - type:&lt;/span&gt; ContainersReady&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;&lt;span class=&quot;attr&quot;&gt;    status:&lt;/span&gt; &lt;span class=&quot;string&quot;&gt;&quot;True&quot;&lt;/span&gt;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;&lt;span class=&quot;attr&quot;&gt;  - type:&lt;/span&gt; Ready&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;&lt;span class=&quot;attr&quot;&gt;    status:&lt;/span&gt; &lt;span class=&quot;string&quot;&gt;&quot;True&quot;&lt;/span&gt;&lt;/span&gt;&lt;br&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/figure&gt;&lt;/p&gt;
-&lt;p&gt;目前 kubelet 判定一个 Pod 是否 Ready 的两个前提条件：&lt;/p&gt;
-&lt;ol&gt;
-&lt;li&gt;Pod 中容器全部 Ready（其实对应了 ContainersReady condition 为 True）；&lt;/li&gt;
-&lt;li&gt;如果 pod.spec.readinessGates 中定义了一个或多个 conditionType，那么需要这些 conditionType 在 pod.status.conditions 中都有对应的 status: “true” 的状态。&lt;/li&gt;
-&lt;/ol&gt;
-&lt;p&gt;只有满足上述两个前提，kubelet 才会上报 Ready condition 为 True&lt;/p&gt;
-&lt;h2 id=&quot;实现原理&quot;&gt;&lt;a href=&quot;#实现原理&quot; class=&quot;headerlink&quot; title=&quot;实现原理&quot;&gt;&lt;/a&gt;实现原理&lt;/h2&gt;&lt;p&gt;了解了上面的四个背景之后，接下来分析一下 OpenKruise 是如何在 Kubernetes 中实现原地升级的原理。&lt;/p&gt;
-&lt;h3 id=&quot;1-单个-Pod-如何原地升级？&quot;&gt;&lt;a href=&quot;#1-单个-Pod-如何原地升级？&quot; class=&quot;headerlink&quot; title=&quot;1. 单个 Pod 如何原地升级？&quot;&gt;&lt;/a&gt;1. 单个 Pod 如何原地升级？&lt;/h3&gt;&lt;p&gt;由“背景 1”可知，其实我们对一个存量 Pod 的 spec.containers[x] 中字段做修改，kubelet 会感知到这个 container 的 hash 发生了变化，随即就会停掉对应的旧容器，并用新的 container 来拉镜像、创建和启动新容器。&lt;/p&gt;
-&lt;p&gt;由“背景 2”可知，当前我们对一个存量 Pod 的 spec.containers[x] 中的修改，仅限于 image 字段。&lt;/p&gt;
-&lt;p&gt;因此，得出第一个实现原理：**对于一个现有的 Pod 对象，我们能且只能修改其中的 spec.containers[x].image 字段，来触发 Pod 中对应容器升级到一个新的 image。&lt;/p&gt;
-&lt;h3 id=&quot;2-如何判断-Pod-原地升级成功？&quot;&gt;&lt;a href=&quot;#2-如何判断-Pod-原地升级成功？&quot; class=&quot;headerlink&quot; title=&quot;2. 如何判断 Pod 原地升级成功？&quot;&gt;&lt;/a&gt;2. 如何判断 Pod 原地升级成功？&lt;/h3&gt;&lt;p&gt;接下来的问题是，当我们修改了 Pod 中的 spec.containers[x].image 字段后，如何判断 kubelet 已经将容器重建成功了呢？&lt;/p&gt;
-&lt;p&gt;由“背景 3”可知，比较 spec 和 status 中的 image 字段是不靠谱的，因为很有可能 status 中上报的是 Node 上存在的另一个镜像名（相同 imageID）。&lt;/p&gt;
-&lt;p&gt;因此，得出第二个实现原理：&lt;strong&gt;判断 Pod 原地升级是否成功，相对来说比较靠谱的办法，是在原地升级前先将 status.containerStatuses[x].imageID 记录下来。在更新了 spec 镜像之后，如果观察到 Pod 的 status.containerStatuses[x].imageID 变化了，我们就认为原地升级已经重建了容器&lt;/strong&gt;。&lt;/p&gt;
-&lt;p&gt;但这样一来，我们对原地升级的 image 也有了一个要求：&lt;strong&gt;不能用 image 名字（tag）不同、但实际对应同一个 imageID 的镜像来做原地升级，否则可能一直都被判断为没有升级成功（因为 status 中 imageID 不会变化）&lt;/strong&gt;。&lt;/p&gt;
-&lt;p&gt;当然，后续我们还可以继续优化。OpenKruise 即将开源镜像预热的能力，会通过 DaemonSet 在每个 Node 上部署一个 NodeImage Pod。通过 NodeImage 上报我们可以得知 pod spec 中的 image 所对应的 imageID，然后和 pod status 中的 imageID 比较即可准确判断原地升级是否成功。&lt;/p&gt;
-&lt;h3 id=&quot;3-如何确保原地升级过程中流量无损？&quot;&gt;&lt;a href=&quot;#3-如何确保原地升级过程中流量无损？&quot; class=&quot;headerlink&quot; title=&quot;3. 如何确保原地升级过程中流量无损？&quot;&gt;&lt;/a&gt;3. 如何确保原地升级过程中流量无损？&lt;/h3&gt;&lt;p&gt;在 Kubernetes 中，一个 Pod 是否 Ready 就代表了它是否可以提供服务。因此，像 Service 这类的流量入口都会通过判断 Pod Ready 来选择是否能将这个 Pod 加入 endpoints 端点中。&lt;/p&gt;
-&lt;p&gt;由“背景 4”可知，从 Kubernetes 1.12+ 之后，operator/controller 这些组件也可以通过设置 readinessGates 和更新 pod.status.conditions 中的自定义 type 状态，来控制 Pod 是否可用。&lt;/p&gt;
-&lt;p&gt;因此，得出第三个实现原理：&lt;strong&gt;可以在 &lt;code&gt;pod.spec.readinessGates&lt;/code&gt; 中定义一个叫 &lt;code&gt;InPlaceUpdateReady&lt;/code&gt; 的 conditionType&lt;/strong&gt;。&lt;/p&gt;
-&lt;p&gt;在原地升级时：&lt;/p&gt;
-&lt;ol&gt;
-&lt;li&gt;&lt;strong&gt;先将 pod.status.conditions 中的 InPlaceUpdateReady condition 设为 “False”，这样就会触发 kubelet 将 Pod 上报为 NotReady，从而使流量组件（如 endpoint controller）将这个 Pod 从服务端点摘除&lt;/strong&gt;；&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;再更新 pod spec 中的 image 触发原地升级&lt;/strong&gt;。&lt;/li&gt;
-&lt;/ol&gt;
-&lt;p&gt;原地升级结束后，再将 InPlaceUpdateReady condition 设为 “True”，使 Pod 重新回到 Ready 状态。&lt;/p&gt;
-&lt;p&gt;另外在原地升级的两个步骤中，第一步将 Pod 改为 NotReady 后，流量组件异步 watch 到变化并摘除端点可能是需要一定时间的。因此我们也提供优雅原地升级的能力，即通过 gracePeriodSeconds 配置在修改 NotReady 状态和真正更新 image 触发原地升级两个步骤之间的静默期时间。&lt;/p&gt;
-&lt;h3 id=&quot;4-组合发布策略&quot;&gt;&lt;a href=&quot;#4-组合发布策略&quot; class=&quot;headerlink&quot; title=&quot;4. 组合发布策略&quot;&gt;&lt;/a&gt;4. 组合发布策略&lt;/h3&gt;&lt;p&gt;原地升级和 Pod 重建升级一样，可以配合各种发布策略来执行：&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;&lt;strong&gt;partition&lt;/strong&gt;：如果配置 partition 做灰度，那么只会将 replicas-partition 数量的 Pod 做原地升级；&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;maxUnavailable&lt;/strong&gt;：如果配置 maxUnavailable，那么只会将满足 unavailable 数量的 Pod 做原地升级；&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;maxSurge&lt;/strong&gt;：如果配置 maxSurge 做弹性，那么当先扩出来 maxSurge 数量的 Pod 之后，存量的 Pod 仍然使用原地升级；&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;priority/scatter&lt;/strong&gt;：如果配置了发布优先级/打散策略，会按照策略顺序对 Pod 做原地升级。&lt;/li&gt;
-&lt;/ul&gt;
-&lt;h2 id=&quot;总结&quot;&gt;&lt;a href=&quot;#总结&quot; class=&quot;headerlink&quot; title=&quot;总结&quot;&gt;&lt;/a&gt;总结&lt;/h2&gt;&lt;p&gt;如上文所述，&lt;a href=&quot;https://github.com/openkruise/kruise?spm=a2c6h.12873639.0.0.4bc314b5SPKTQY&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;OpenKruise&lt;/a&gt; 结合 Kubernetes 原生提供的 kubelet 容器版本管理、readinessGates 等功能，实现了针对 Pod 的原地升级能力。&lt;/p&gt;
-&lt;p&gt;而原地升级也为应用发布带来大幅的效率、稳定性提升。值得关注的是，随着集群、应用规模的增大，这种提升的收益越加明显。&lt;/p&gt;
-&lt;p&gt;来源：阿里云开发者社区 作者：王思宇&lt;/p&gt;
-&lt;p&gt;&lt;img src=&quot;/images/wx_dyh.png&quot; alt=&quot;微信订阅号&quot;&gt;&lt;/p&gt;
-</content>
-    
-    <summary type="html">
-    
-      &lt;h2 id=&quot;概念介绍&quot;&gt;&lt;a href=&quot;#概念介绍&quot; class=&quot;headerlink&quot; title=&quot;概念介绍&quot;&gt;&lt;/a&gt;概念介绍&lt;/h2&gt;&lt;p&gt;&lt;strong&gt;原地升级&lt;/strong&gt;一词中，“升级”不难理解，是将应用实例的版本由旧版替换为新版。那么如何结合 Kubernetes 环境来理解“原地”呢？&lt;/p&gt;
-&lt;p&gt;我们先来看看 K8s 原生 workload 的发布方式。这里假设我们需要部署一个应用，包括 foo、bar 两个容器在 Pod 中。其中，foo 容器第一次部署时用的镜像版本是 v1，我们需要将其升级为 v2 版本镜像，该怎么做呢？&lt;br&gt;
-    
-    </summary>
-    
-      <category term="kubernetes" scheme="http://team.jiunile.com/categories/kubernetes/"/>
-    
-      <category term="升级策略" scheme="http://team.jiunile.com/categories/kubernetes/%E5%8D%87%E7%BA%A7%E7%AD%96%E7%95%A5/"/>
-    
-    
-      <category term="k8s" scheme="http://team.jiunile.com/tags/k8s/"/>
-    
-      <category term="升级策略" scheme="http://team.jiunile.com/tags/%E5%8D%87%E7%BA%A7%E7%AD%96%E7%95%A5/"/>
-    
-      <category term="原地升级" scheme="http://team.jiunile.com/tags/%E5%8E%9F%E5%9C%B0%E5%8D%87%E7%BA%A7/"/>
     
   </entry>
   

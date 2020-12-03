@@ -2,6 +2,13 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   
   <url>
+    <loc>http://team.jiunile.com/blog/2020/12/k8s-cilium-service-2019.html</loc>
+    
+    <lastmod>2020-12-03T02:31:35.000Z</lastmod>
+    
+  </url>
+  
+  <url>
     <loc>http://team.jiunile.com/blog/2020/12/go-async-await.html</loc>
     
     <lastmod>2020-11-30T15:41:49.000Z</lastmod>
