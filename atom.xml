@@ -759,11 +759,11 @@
     
       <category term="k8s" scheme="http://team.jiunile.com/tags/k8s/"/>
     
-      <category term="cilium" scheme="http://team.jiunile.com/tags/cilium/"/>
-    
       <category term="service" scheme="http://team.jiunile.com/tags/service/"/>
     
       <category term="bpf" scheme="http://team.jiunile.com/tags/bpf/"/>
+    
+      <category term="cilium" scheme="http://team.jiunile.com/tags/cilium/"/>
     
       <category term="xdp" scheme="http://team.jiunile.com/tags/xdp/"/>
     
