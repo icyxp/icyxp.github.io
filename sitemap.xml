@@ -2,6 +2,13 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   
   <url>
+    <loc>http://team.jiunile.com/blog/2020/12/go-nobug-gorotuine.html</loc>
+    
+    <lastmod>2020-12-15T13:27:02.000Z</lastmod>
+    
+  </url>
+  
+  <url>
     <loc>http://team.jiunile.com/pro/k8s/install-ha/index.html</loc>
     
     <lastmod>2020-12-15T06:23:18.000Z</lastmod>
