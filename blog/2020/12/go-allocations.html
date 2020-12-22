@@ -1,0 +1,1564 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next mist use-motion" lang="zh-Hans">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+<script src="//cdn.bootcss.com/pace/1.0.2/pace.min.js"></script>
+<link href="//cdn.bootcss.com/pace/1.0.2/themes/pink/pace-theme-flash.css" rel="stylesheet">
+<script>
+    (function () {
+        if ('') {
+            if (prompt('请输入文章密码') !== '') {
+                alert('密码错误！');
+                if (history.length === 1) {
+                    location.replace("http://team.jiunile.com"); // 这里替换成你的首页
+                } else {
+                    history.back();
+                }
+            }
+        }
+    })();
+</script>
+<meta name="theme-color" content="#222">
+<style>
+    .pace .pace-progress {
+        background: #1E92FB; /*进度条颜色*/
+        height: 2px;
+    }
+    .pace .pace-progress-inner {
+         box-shadow: 0 0 10px #1E92FB, 0 0 5px     #1E92FB; /*阴影颜色*/
+    }
+    .pace .pace-activity {
+        border-top-color: #1E92FB;    /*上边框颜色*/
+        border-left-color: #1E92FB;    /*左边框颜色*/
+    }
+</style>
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+<!--
+  <script>
+  (function(i,s,o,g,r,a,m){i["DaoVoiceObject"]=r;i[r]=i[r]||function(){(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;a.charset="utf-8";m.parentNode.insertBefore(a,m)})(window,document,"script",('https:' == document.location.protocol ? 'https:' : 'http:') + "//widget.daovoice.io/widget/0f81ff2f.js","daovoice")
+  daovoice('init', {
+      app_id: "2a2a668f"
+    });
+  daovoice('update');
+  </script>
+-->
+<!--
+<script type='text/javascript'>
+  (function (window, a, b) {
+    window[a] = window[a] || function () {
+        (window[a].a = window[a].a || []).push(arguments)
+    };
+    window[b] = window[b] || function () {
+        (window[b].a = window[b].a || []).push(arguments)
+    };
+    var s = document.createElement("script");
+    s.src = "https://jsapi.weiliaokefu.com/Public/dist/js/jsapi.js?v=" + Math.round(Math.random() * 1000);
+    s.async = true;
+    s.charset = "UTF-8";
+    document.getElementsByTagName("head")[0].appendChild(s);
+  })(window, '_FENBOT', "_FENBOT_API");
+  _FENBOT({cid: '36159', type: '0'});
+</script>
+-->
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/favicon.ico?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon.ico?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon.ico?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/favicon.ico?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="go,allocations," />
+
+
+
+
+
+  <link rel="alternate" href="/atom.xml" title="CloudNative 架构" type="application/atom+xml" />
+
+
+
+
+
+
+<meta name="description" content="介绍得益于了 Go 运行时高效的内置内存管理，我们通常能够在程序中优先考虑正确性和可维护性，而不需要过多考虑如何进行分配的细节。不过，有时我们可能会发现代码中的性能瓶颈，并希望进行更深入的研究。
+任何使用 -benchmem 标志运行基准测试的人都会在输出中看到 allocs/op 的统计。在这篇文章中，我们将看看什么算作一个 alloc，以及我们可以做什么来影响这个数字。1BenchmarkFu">
+<meta property="og:type" content="article">
+<meta property="og:title" content="图文带你了解 Go 中的分配">
+<meta property="og:url" content="http://team.jiunile.com/blog/2020/12/go-allocations.html">
+<meta property="og:site_name" content="CloudNative 架构">
+<meta property="og:description" content="介绍得益于了 Go 运行时高效的内置内存管理，我们通常能够在程序中优先考虑正确性和可维护性，而不需要过多考虑如何进行分配的细节。不过，有时我们可能会发现代码中的性能瓶颈，并希望进行更深入的研究。
+任何使用 -benchmem 标志运行基准测试的人都会在输出中看到 allocs/op 的统计。在这篇文章中，我们将看看什么算作一个 alloc，以及我们可以做什么来影响这个数字。1BenchmarkFu">
+<meta property="og:image" content="http://team.jiunile.com/images/go/allocs_1.png">
+<meta property="og:image" content="http://team.jiunile.com/images/go/allocs_2.png">
+<meta property="og:image" content="http://team.jiunile.com/images/go/allocs_3.png">
+<meta property="og:image" content="http://team.jiunile.com/images/go/allocs_4.png">
+<meta property="og:image" content="http://team.jiunile.com/images/go/allocs_5.png">
+<meta property="og:image" content="http://team.jiunile.com/images/go/allocs_6.png">
+<meta property="og:image" content="http://team.jiunile.com/images/go/allocs_7.png">
+<meta property="og:image" content="http://team.jiunile.com/images/go/allocs_8.png">
+<meta property="og:image" content="http://team.jiunile.com/images/go/allocs_9.png">
+<meta property="og:image" content="http://team.jiunile.com/images/go/allocs_10.png">
+<meta property="og:image" content="http://team.jiunile.com/images/wx_dyh.png">
+<meta property="og:updated_time" content="2020-12-22T03:35:11.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="图文带你了解 Go 中的分配">
+<meta name="twitter:description" content="介绍得益于了 Go 运行时高效的内置内存管理，我们通常能够在程序中优先考虑正确性和可维护性，而不需要过多考虑如何进行分配的细节。不过，有时我们可能会发现代码中的性能瓶颈，并希望进行更深入的研究。
+任何使用 -benchmem 标志运行基准测试的人都会在输出中看到 allocs/op 的统计。在这篇文章中，我们将看看什么算作一个 alloc，以及我们可以做什么来影响这个数字。1BenchmarkFu">
+<meta name="twitter:image" content="http://team.jiunile.com/images/go/allocs_1.png">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Mist',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://team.jiunile.com/blog/2020/12/go-allocations.html"/>
+
+
+
+
+
+  <title>图文带你了解 Go 中的分配 | CloudNative 架构</title>
+  
+
+
+
+
+
+  <script type="text/javascript">
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "https://hm.baidu.com/hm.js?126663bc923877f90024929ac5555b0f";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+
+
+
+  <!-- 页面点击小红心 -->
+  <script type="text/javascript" src="/js/src/love.js"></script>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+    <a href="https://github.com/icyxp"><a href="https://github.com/icyxp" class="github-corner" aria-label="View source on GitHub"><svg width="80" height="80" viewBox="0 0 250 250" style="fill:#151513; color:#fff; position: absolute; top: 0; border: 0; right: 0;" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path></svg></a><style>.github-corner:hover .octo-arm{animation:octocat-wave 560ms ease-in-out}@keyframes octocat-wave{0%,100%{transform:rotate(0)}20%,60%{transform:rotate(-25deg)}40%,80%{transform:rotate(10deg)}}@media (max-width:500px){.github-corner:hover .octo-arm{animation:none}.github-corner .octo-arm{animation:octocat-wave 560ms ease-in-out}}</style></a>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">CloudNative 架构</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <h1 class="site-subtitle" itemprop="description">CloudNative|云原生应用架构|云原生架构|容器化架构|微服务架构|平台架构|基础架构</h1>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br />
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-k8s">
+          <a href="/pro/k8s/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-heartbeat"></i> <br />
+            
+            k8s离线安装包
+          </a>
+        </li>
+      
+
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="popup-trigger">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br />
+            
+            搜索
+          </a>
+        </li>
+      
+    </ul>
+  
+
+  
+    <div class="site-search">
+      
+  <div class="popup search-popup local-search-popup">
+  <div class="local-search-header clearfix">
+    <span class="search-icon">
+      <i class="fa fa-search"></i>
+    </span>
+    <span class="popup-btn-close">
+      <i class="fa fa-times-circle"></i>
+    </span>
+    <div class="local-search-input-wrapper">
+      <input autocomplete="off"
+             placeholder="搜索..." spellcheck="false"
+             type="text" id="local-search-input">
+    </div>
+  </div>
+  <div id="local-search-result"></div>
+</div>
+
+
+
+    </div>
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://team.jiunile.com/blog/2020/12/go-allocations.html">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="icyboy">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="CloudNative 架构">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h2 class="post-title" itemprop="name headline">图文带你了解 Go 中的分配</h2>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2020-12-21T22:00:00+08:00">
+                2020-12-21
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Golang/" itemprop="url" rel="index">
+                    <span itemprop="name">Golang</span>
+                  </a>
+                </span>
+
+                
+                
+                  ， 
+                
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Golang/Allocations/" itemprop="url" rel="index">
+                    <span itemprop="name">Allocations</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+                <a href="/blog/2020/12/go-allocations.html#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count valine-comment-count" data-xid="/blog/2020/12/go-allocations.html" itemprop="commentCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+          
+             <span id="/blog/2020/12/go-allocations.html" class="leancloud_visitors" data-flag-title="图文带你了解 Go 中的分配">
+               <span class="post-meta-divider">|</span>
+               <span class="post-meta-item-icon">
+                 <i class="fa fa-eye"></i>
+               </span>
+               
+                 <span class="post-meta-item-text">热度&#58;</span>
+               
+                 <span class="leancloud-visitors-count"></span>
+		 <span>℃</span>
+             </span>
+          
+
+          
+
+          
+            <div class="post-wordcount">
+              
+                
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-file-word-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">字数统计&#58;</span>
+                
+                <span title="字数统计">
+                  3,788 字
+                </span>
+              
+
+              
+                <span class="post-meta-divider">|</span>
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-clock-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">阅读时长 &asymp;</span>
+                
+                <span title="阅读时长">
+                  15 分钟
+                </span>
+              
+            </div>
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h2 id="介绍"><a href="#介绍" class="headerlink" title="介绍"></a>介绍</h2><p>得益于了 Go 运行时高效的内置内存管理，我们通常能够在程序中优先考虑正确性和可维护性，而不需要过多考虑如何进行分配的细节。不过，有时我们可能会发现代码中的性能瓶颈，并希望进行更深入的研究。</p>
+<p>任何使用 <code>-benchmem</code> 标志运行基准测试的人都会在输出中看到 <code>allocs/op</code> 的统计。在这篇文章中，我们将看看什么算作一个 alloc，以及我们可以做什么来影响这个数字。<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">BenchmarkFunc-8  67836464  16.0 ns/op  8 B/op  1 allocs/op</span><br></pre></td></tr></table></figure></p>
+<a id="more"></a>
+<h2 id="我们熟悉和喜爱的栈和堆"><a href="#我们熟悉和喜爱的栈和堆" class="headerlink" title="我们熟悉和喜爱的栈和堆"></a>我们熟悉和喜爱的栈和堆</h2><p>要讨论 Go 中的 <code>allocs/op</code> 统计，我们将对 Go 程序中的两个内存区域感兴趣：栈和堆。</p>
+<p>在许多流行的编程环境中，栈通常指的是线程的调用栈。调用栈是一个先进先出（LIFO）栈数据结构，它存储了线程执行函数时跟踪的参数、局部变量和其他数据。每一次函数调用都向栈增加（推）一个新的帧，每一次返回函数都会从栈中删除（弹出）。</p>
+<p>我们必须能够在最近的栈帧被弹出时安全地释放它的内存。因此，我们不能在栈上存储任何以后需要在其他地方引用的东西。</p>
+<p><img src="/images/go/allocs_1.png" alt="调用 println 后的调用栈视图"></p>
+<p>由于线程是由操作系统管理的，所以线程栈的可用内存量通常是固定的，例如在许多 Linux 环境中默认为 8MB。这意味着我们还需要注意栈上最终有多少数据，特别是在嵌套较深的递归函数的情况下。如果上图中的栈指针通过了栈保护，程序就会因栈溢出错误而崩溃。</p>
+<p>堆是内存中更复杂的区域，与同名的数据结构没有关系。我们可以按需使用堆来存储程序中需要的数据。在这里分配的内存不能在函数返回时简单地释放，需要仔细管理，以避免泄漏和碎片化。堆通常会比任何线程栈大许多倍，任何优化工作的大部分时间都将花费在研究堆的使用上。</p>
+<h2 id="Go-栈和堆"><a href="#Go-栈和堆" class="headerlink" title="Go 栈和堆"></a>Go 栈和堆</h2><p>由操作系统管理的线程被 Go 运行时完全抽象出来，我们使用的是一个新的抽象：goroutines。goroutine 在概念上与线程非常相似，但它们存在于用户空间中。这意味着是运行时而不是操作系统来设置栈的行为规则。</p>
+<p><img src="/images/go/allocs_2.png" alt="线程被抽离出来"></p>
+<p>goroutine 栈并不是由操作系统设置的硬性限制，而是以少量的内存（目前为 2KB）开始。在执行每个函数调用之前，在函数序言中会执行检查，以验证不会发生栈溢出。在下面的图中，<code>convert()</code> 函数可以在当前栈大小的限制下执行（在 SP 不超额处理 <code>stackguard0</code> 的情况下）。</p>
+<p><img src="/images/go/allocs_3.png" alt="goroutine 调用栈特写"></p>
+<p>如果不是这样，运行时将在执行 <code>convert()</code> 之前将当前栈复制到一个更大的连续内存空间中。这意味着 Go 中的栈是动态大小的，只要有足够的内存可用，通常就可以保持增长。</p>
+<p>Go 堆在概念上同样类似于上面描述的线程模型。所有的 goroutines 共享一个公共堆，任何不能存储在栈上的东西都将在那里结束。当对函数进行基准测试时发生堆分配时，我们将看到<code>allocs/ops</code> 属性增加 1。垃圾回收器的工作是稍后释放不再引用的堆变量。</p>
+<p>关于Go中如何处理内存管理的详细解释，请参阅 <a href="https://medium.com/@ankur_anand/a-visual-guide-to-golang-memory-allocator-from-ground-up-e132258453ed" target="_blank" rel="external">从头开始的 Go 内存分配器的可视化指南</a>。</p>
+<h2 id="我们如何知道一个变量何时被分配给堆？"><a href="#我们如何知道一个变量何时被分配给堆？" class="headerlink" title="我们如何知道一个变量何时被分配给堆？"></a>我们如何知道一个变量何时被分配给堆？</h2><p>这个问题答案在官方 FAQ 中。</p>
+<blockquote>
+<p>Go 编译器将为函数的栈帧中分配该函数的局部变量。但如果编译器不能证明该变量在函数返回后没有被引用，那么编译器必须在垃圾回收的堆上分配变量，以避免指针悬空错误。而且，如果局部变量非常大，那么将它存储在堆上而不是栈上可能更有意义。</p>
+<p>如果某个变量的地址已被占用，那么该变量将成为堆上分配的候选变量。然而，一个基本的转义分析可以识别出一些情况，即这样的变量不会活过函数的返回，可以驻留在栈中。</p>
+</blockquote>
+<p>由于编译器的实现会随着时间的推移而改变，<strong>所以仅仅通过阅读 Go 代码，是无法知道哪些变量会被分配到堆中的</strong>。不过，可以在编译器的输出中查看上面提到的 escape 分析结果。这可以通过传递给 <code>go build</code> 的 <code>gcflags</code> 参数来实现。完整的选项列表可以通过 <code>go tool compile -help</code> 来查看。</p>
+<p>对于转义分析结果，可以使用 <code>-m</code> 选项（<code>打印优化决策</code>）。让我们用一个简单的程序来测试一下，为函数 <code>main1</code> 和 <code>stackIt</code> 创建两个栈帧。<br><figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main1</span><span class="params">()</span></span> &#123;</span><br><span class="line">   _ = stackIt()</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">//go:noinline</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">stackIt</span><span class="params">()</span> <span class="title">int</span></span> &#123;</span><br><span class="line">   y := <span class="number">2</span></span><br><span class="line">   <span class="keyword">return</span> y * <span class="number">2</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>因为如果编译器删除了函数调用，我们就无法讨论栈行为，所以在编译代码时使用 <code>noinline</code> <a href="https://dave.cheney.net/2018/01/08/gos-hidden-pragmas" target="_blank" rel="external">pragma</a> 来防止内联。让我们看一下编译器对其优化决策说些什么。<code>-l</code> 选项用于省略内联决策。<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">$ go build -gcflags <span class="string">'-m -l'</span></span><br><span class="line"><span class="comment"># github.com/Jimeux/go-samples/allocations</span></span><br></pre></td></tr></table></figure></p>
+<p>在这里，我们看到，没有做出任何关于逃跑分析的决定。换句话说，变量 <code>y</code> 保留在栈中，并没有触发任何堆分配。我们可以用基准测试来验证这一点。<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">$ go <span class="built_in">test</span> -bench . -benchmem</span><br><span class="line">BenchmarkStackIt-8  680439016  1.52 ns/op  0 B/op  0 allocs/op</span><br></pre></td></tr></table></figure></p>
+<p>正如预期的那样，<code>allocs/op</code> 统计值为 <code>0</code>。从这个结果中我们可以得到的一个重要观察是，<strong>复制变量可以让我们将它们保留在栈中</strong>，避免分配到堆中。让我们通过修改程序来验证这一点，以避免使用指针进行复制。<br><figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main2</span><span class="params">()</span></span> &#123;</span><br><span class="line">   _ = stackIt2()</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">//go:noinline</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">stackIt2</span><span class="params">()</span> *<span class="title">int</span></span> &#123;</span><br><span class="line">   y := <span class="number">2</span></span><br><span class="line">   res := y * <span class="number">2</span></span><br><span class="line">   <span class="keyword">return</span> &amp;res</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>让我们看以下编译器的输出。<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">go build -gcflags <span class="string">'-m -l'</span></span><br><span class="line"><span class="comment"># github.com/Jimeux/go-samples/allocations</span></span><br><span class="line">./main.go:10:2: moved to heap: res</span><br></pre></td></tr></table></figure></p>
+<p>编译器告诉我们，它把指针 <code>res</code> 移到了堆上，从而触发了堆分配，这在下面的基准中得到了验证。<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">$ go <span class="built_in">test</span> -bench . -benchmem</span><br><span class="line">BenchmarkStackIt2-8  70922517  16.0 ns/op  8 B/op  1 allocs/op</span><br></pre></td></tr></table></figure></p>
+<p>那么这是否意味着指针一定会创建分配？让我们再次修改程序，这次将指针传到栈下。<br><figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main3</span><span class="params">()</span></span> &#123;</span><br><span class="line">   y := <span class="number">2</span></span><br><span class="line">   _ = stackIt3(&amp;y) <span class="comment">// pass y down the stack as a pointer</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">//go:noinline</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">stackIt3</span><span class="params">(y *<span class="keyword">int</span>)</span> <span class="title">int</span></span> &#123;</span><br><span class="line">   res := *y * <span class="number">2</span></span><br><span class="line">   <span class="keyword">return</span> res</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>然而运行基准测试显示没有任何东西被分配到堆中。<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">$ go <span class="built_in">test</span> -bench . -benchmem</span><br><span class="line">BenchmarkStackIt3-8  705347884  1.62 ns/op  0 B/op  0 allocs/op</span><br></pre></td></tr></table></figure></p>
+<p>编译器的输出明确地告诉我们这一点。<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">$ go build -gcflags <span class="string">'-m -l'</span></span><br><span class="line"><span class="comment"># github.com/Jimeux/go-samples/allocations</span></span><br><span class="line">./main.go:10:14: y does not escape</span><br></pre></td></tr></table></figure></p>
+<p>为什么会出现这种看似不一致的情况呢？<code>stackIt2</code> 将 <code>y</code> 的地址从栈上传递到 <code>main</code>，在 <code>main</code> 中，<code>y</code> 将在 <code>stackIt2</code> 的栈帧被释放后被引用。因此，编译器能够判断 <code>y</code> 必须被移到堆上才能保持活力。如果它不这样做，当我们试图引用 <code>y</code> 时，就会在 <code>main</code> 中得到一个 <code>nil</code> 指针。</p>
+<p>而 <code>stackIt3</code> 则是将 <code>y</code> 传到栈下，而且 <code>y</code> 在 <code>main3</code> 之外的任何地方都不会被引用。因此，编译器能够判断 <code>y</code> 可以单独存在于栈中，而不需要分配到堆中。在任何情况下，我们都无法通过引用 <code>y</code> 来产生一个 <code>nil</code> 指针。</p>
+<p><strong>从这里我们可以推断出一个通用规则，即在栈上共享指针会导致分配，而共享栈下的指针则不会</strong>。但是，这并不能保证，所以您仍然需要使用 <code>gcflags</code> 或基准来验证。我们可以肯定的是，任何试图减少 <code>allocs/op</code> 的尝试都将涉及到寻找任性的指针。</p>
+<h2 id="我们为什么要关心堆分配？"><a href="#我们为什么要关心堆分配？" class="headerlink" title="我们为什么要关心堆分配？"></a>我们为什么要关心堆分配？</h2><p>我们已经了解了一些关于 <code>allocs/op</code> 中的 <code>alloc</code> 的含义，以及如何验证是否触发了对堆的分配，但是为什么我们要关心这个统计是否是非零呢？我们已经做的基准测试可以回答这个问题。<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">BenchmarkStackIt-8   680439016  1.52 ns/op  0 B/op  0 allocs/op</span><br><span class="line">BenchmarkStackIt2-8  70922517   16.0 ns/op  8 B/op  1 allocs/op</span><br><span class="line">BenchmarkStackIt3-8  705347884  1.62 ns/op  0 B/op  0 allocs/op</span><br></pre></td></tr></table></figure></p>
+<p>尽管所涉及的变量对内存的需求几乎相等，但相对而言，<code>BenchmarkStackIt2</code> 对 CPU 的开销还是很明显的。我们可以通过生成 <code>stackIt</code> 和 <code>stackIt2</code> 生成的 CPU 曲线的火焰图来了解更多的情况。<br><img src="/images/go/allocs_4.png" alt="stackIt CPU profile"></p>
+<p><img src="/images/go/allocs_5.png" alt="stackIt2 CPU profile"></p>
+<p><code>stackIt</code> 有一个不起眼的配置文件，它可以预见地从调用栈运行到 <code>stackIt</code> 函数本身。另一方面，<code>stackIt2</code> 大量使用了大量的运行时函数，这些函数消耗了许多额外的 CPU 周期。这说明了分配到堆所涉及的复杂性，并初步了解了每个操作额外的 10 纳秒左右的去向。</p>
+<h2 id="那在现实世界中呢？"><a href="#那在现实世界中呢？" class="headerlink" title="那在现实世界中呢？"></a>那在现实世界中呢？</h2><p>如果没有生产条件，性能的许多方面不会变得明显。你的单个功能可能在微基准测试中高效运行，但当它为成千上万的并发用户服务时，它会对你的应用程序有什么影响呢?</p>
+<p>我们不会在这篇文章中重新创建一个完整的应用程序，但我们将使用<a href="https://golang.org/cmd/trace/" target="_blank" rel="external">跟踪工具</a>来看看一些更详细的性能诊断。让我们首先定义一个（有点）大的结构体，它有 9 个字段。<br><figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">type</span> BigStruct <span class="keyword">struct</span> &#123;</span><br><span class="line">   A, B, C <span class="keyword">int</span></span><br><span class="line">   D, E, F <span class="keyword">string</span></span><br><span class="line">   G, H, I <span class="keyword">bool</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>现在我们来定义两个函数：<code>CreateCopy</code>，它在栈帧之间复制 <code>BigStruct</code> 实例；<code>CreatePointer</code>，它在栈上共享 <code>BigStruct</code> 指针，避免复制，但会产生堆分配。<br><figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//go:noinline</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">CreateCopy</span><span class="params">()</span> <span class="title">BigStruct</span></span> &#123;</span><br><span class="line">   <span class="keyword">return</span> BigStruct&#123;</span><br><span class="line">      A: <span class="number">123</span>, B: <span class="number">456</span>, C: <span class="number">789</span>,</span><br><span class="line">      D: <span class="string">"ABC"</span>, E: <span class="string">"DEF"</span>, F: <span class="string">"HIJ"</span>,</span><br><span class="line">      G: <span class="literal">true</span>, H: <span class="literal">true</span>, I: <span class="literal">true</span>,</span><br><span class="line">   &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">//go:noinline</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">CreatePointer</span><span class="params">()</span> *<span class="title">BigStruct</span></span> &#123;</span><br><span class="line">   <span class="keyword">return</span> &amp;BigStruct&#123;</span><br><span class="line">      A: <span class="number">123</span>, B: <span class="number">456</span>, C: <span class="number">789</span>,</span><br><span class="line">      D: <span class="string">"ABC"</span>, E: <span class="string">"DEF"</span>, F: <span class="string">"HIJ"</span>,</span><br><span class="line">      G: <span class="literal">true</span>, H: <span class="literal">true</span>, I: <span class="literal">true</span>,</span><br><span class="line">   &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>我们可以用目前使用的技术来验证上面的解释。<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">$ go build -gcflags <span class="string">'-m -l'</span></span><br><span class="line">./main.go:67:9: &amp;BigStruct literal escapes to heap</span><br><span class="line"></span><br><span class="line">$ go <span class="built_in">test</span> -bench . -benchmem</span><br><span class="line">BenchmarkCopyIt-8     211907048  5.20 ns/op  0 B/op   0 allocs/op</span><br><span class="line">BenchmarkPointerIt-8  20393278   52.6 ns/op  80 B/op  1 allocs/op</span><br></pre></td></tr></table></figure></p>
+<p>以下是我们将用于跟踪工具的测试。它们分别用各自的 <code>Create</code> 函数创建 20,000,000 个 <code>BigStruct</code> 实例。<br><figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> creations = <span class="number">20</span>_000_000</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">TestCopyIt</span><span class="params">(t *testing.T)</span></span> &#123;</span><br><span class="line">   <span class="keyword">for</span> i := <span class="number">0</span>; i &lt; creations; i++ &#123;</span><br><span class="line">      _ = CreateCopy()</span><br><span class="line">   &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">TestPointerIt</span><span class="params">(t *testing.T)</span></span> &#123;</span><br><span class="line">   <span class="keyword">for</span> i := <span class="number">0</span>; i &lt; creations; i++ &#123;</span><br><span class="line">      _ = CreatePointer()</span><br><span class="line">   &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>接下来，我们将把 <code>CreateCopy</code> 的跟踪输出保存到文件 <code>copy_trace.out</code> 中。并在浏览器中用跟踪工具打开它。<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">$ go <span class="built_in">test</span> -run TestCopyIt -trace=copy_trace.out</span><br><span class="line">PASS</span><br><span class="line">ok   github.com/Jimeux/go-samples/allocations 0.281s</span><br><span class="line"></span><br><span class="line">$ go tool trace copy_trace.out</span><br><span class="line">Parsing trace...</span><br><span class="line">Splitting trace...</span><br><span class="line">Opening browser. Trace viewer is listening on http://127.0.0.1:57530</span><br></pre></td></tr></table></figure></p>
+<p>从菜单中选择 <code>View trace</code>，我们看到了下面的画面，它几乎和我们的 <code>stackIt</code> 功能的火焰图一样不引人注目。8 个潜在的逻辑核（Procs）中只有 2 个被使用，<code>goroutine G19</code> 几乎花费整个时间运行我们的测试循环–这正是我们想要的。<br><img src="/images/go/allocs_6.png" alt="Trace for 20,000,000 CreateCopy calls"></p>
+<p>让我们为 <code>CreatePointer</code> 代码生成跟踪数据。<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">$ go <span class="built_in">test</span> -run TestPointerIt -trace=pointer_trace.out</span><br><span class="line">PASS</span><br><span class="line">ok   github.com/Jimeux/go-samples/allocations 2.224s</span><br><span class="line"></span><br><span class="line">go tool trace pointer_trace.out</span><br><span class="line">Parsing trace...</span><br><span class="line">Splitting trace...</span><br><span class="line">Opening browser. Trace viewer is listening on http://127.0.0.1:57784</span><br></pre></td></tr></table></figure></p>
+<p>您可能已经注意到，与 <code>CreateCopy</code> 的 0.281 秒相比，测试花费了 2.224 秒，选择 <code>View trace</code> 这次显示的内容更加丰富多彩，更加繁忙。所有的逻辑内核都被利用了，堆操作、线程和 goroutines 似乎比上次多了很多。<br><img src="/images/go/allocs_7.png" alt="Trace for 20,000,000 CreatePointer calls"></p>
+<p>如果我们把跟踪的时间放大到一毫秒左右的跨度，我们会看到很多 goroutine 在执行与垃圾回收相关的操作。前面引用的 FAQ 中使用了“垃圾回收堆”这个词，因为垃圾回收器的工作就是清理堆上任何不再被引用的东西。<br><img src="/images/go/allocs_8.png" alt="在CreatePointer跟踪中的GC活动特写"></p>
+<p>尽管 Go 的垃圾回收器效率越来越高，但这个过程并不是免费的。我们可以从上面的跟踪输出中直观地验证，测试代码有时完全停止了。对于 <code>CreateCopy</code> 来说，情况并非如此，因为我们所有的 <code>BigStruct</code> 实例仍然在栈上，GC 几乎没有什么事情可做。</p>
+<p>比较两组跟踪数据中的 goroutine 分析可以更深入地了解这一点。<code>CreatePointer</code>（底部）花费了超过 15% 的执行时间来清扫或暂停（GC）和调度 goroutines。<br><img src="/images/go/allocs_9.png" alt="CreateCopy 的顶层 goroutine 分析"></p>
+<p><img src="/images/go/allocs_10.png" alt="CreatePointer 的顶层 goroutine 分析"></p>
+<p>看看跟踪数据中其他地方的一些统计数据，可以进一步说明堆分配的成本，生成的 goroutine数量有明显的差异，<code>CreatePointer</code> 测试有近 400 个 STW（停止世界）事件。<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">+------------+------+---------+</span><br><span class="line">|            | Copy | Pointer |</span><br><span class="line">+------------+------+---------+</span><br><span class="line">| Goroutines |   41 |  406965 |</span><br><span class="line">| Heap       |   10 |  197549 |</span><br><span class="line">| Threads    |   15 |   12943 |</span><br><span class="line">| bgsweep    |    0 |  193094 |</span><br><span class="line">| STW        |    0 |     397 |</span><br><span class="line">+------------+------+---------+</span><br></pre></td></tr></table></figure></p>
+<p>但请记住，尽管本节的标题是这样的，但 CreateCopy 测试的条件在一个典型的程序中是非常不现实的。GC 使用一致数量的 CPU 是很正常的，指针是任何真实程序的一个特征。然而，这和前面的火焰图一起给了我们一些启示，为什么我们可能要跟踪 allocs/op 统计，并尽可能避免不必要的堆分配。</p>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>希望这篇文章能让大家了解到 Go 程序中栈和堆之间的区别、<code>allocs/op</code> 统计的意义，以及我们可以调研内存使用情况的一些方法。</p>
+<p>代码的正确性和可维护性通常比减少指针使用和规避 GC 活动的技巧更重要。到目前为止，每个人都知道关于过早优化的那条线，在 Go 中编写代码也不例外。</p>
+<p>然而，如果我们确实有严格的性能要求或在其他方面确定了程序中的瓶颈，这里介绍的概念和工具有望成为进行必要优化的有用起点。</p>
+<p>如果你想玩玩这篇文章中的简单代码示例，请查看 <a href="https://github.com/Jimeux/go-samples/tree/master/allocations" target="_blank" rel="external">GitHub</a> 上的源代码和 README。</p>
+<p><img src="/images/wx_dyh.png" alt="微信订阅号"></p>
+<blockquote>
+<p>译自：<a href="https://medium.com/eureka-engineering/understanding-allocations-in-go-stack-heap-memory-9a2631b5035d" target="_blank" rel="external">https://medium.com/eureka-engineering/understanding-allocations-in-go-stack-heap-memory-9a2631b5035d</a></p>
+</blockquote>
+
+      
+    </div>
+    
+    
+    
+
+    <div>
+    
+        <div>
+    
+        <div style="text-align:center;color: #ccc;font-size:14px;">-------------本文结束<i class="fa fa-paw"></i>感谢您的阅读-------------</div>
+    
+</div>
+
+    
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    
+
+    
+      <div>
+        <div style="padding: 10px 0; margin: 20px auto; width: 90%; text-align: center;">
+  <div></div>
+  <button id="rewardButton" disable="enable" onclick="var qr = document.getElementById('QR'); if (qr.style.display === 'none') {qr.style.display='block';} else {qr.style.display='none'}">
+    <span>打赏</span>
+  </button>
+  <div id="QR" style="display: none;">
+
+    
+      <div id="wechat" style="display: inline-block">
+        <img id="wechat_qr" src="/images/wechatpay.jpg" alt="icyboy 微信支付"/>
+        <p>微信支付</p>
+      </div>
+    
+
+    
+      <div id="alipay" style="display: inline-block">
+        <img id="alipay_qr" src="/images/alipay.jpg" alt="icyboy 支付宝"/>
+        <p>支付宝</p>
+      </div>
+    
+
+    
+
+  </div>
+</div>
+<script src="https://my.openwrite.cn/js/readmore.js" type="text/javascript"></script>
+<script>
+    const btw = new BTWPlugin();
+    btw.init({
+        id: 'main',
+        blogId: '24547-1604391054161-398',
+        name: '云原生领域',
+        qrcode: 'http://team.jiunile.com/images/dyh.png',
+        keyword: 'vip',
+    });
+</script>
+
+      </div>
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/go/" rel="tag"># go</a>
+          
+            <a href="/tags/allocations/" rel="tag"># allocations</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/blog/2020/12/go-nobug-gorotuine.html" rel="next" title="如何在 Go 中编写无 Bug 的 Goroutines？">
+                <i class="fa fa-chevron-left"></i> 如何在 Go 中编写无 Bug 的 Goroutines？
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+    <div class="comments" id="comments">
+    </div>
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image"
+                src="/images/avatar.jpg"
+                alt="icyboy" />
+            
+              <p class="site-author-name" itemprop="name">icyboy</p>
+              <p class="site-description motion-element" itemprop="description"></p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">107</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-categories">
+                <a href="/categories/index.html">
+                  <span class="site-state-item-count">96</span>
+                  <span class="site-state-item-name">分类</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                <a href="/tags/index.html">
+                  <span class="site-state-item-count">179</span>
+                  <span class="site-state-item-name">标签</span>
+                </a>
+              </div>
+            
+
+          </nav>
+
+          
+            <div class="feed-link motion-element">
+              <a href="/atom.xml" rel="alternate">
+                <i class="fa fa-rss"></i>
+                RSS
+              </a>
+            </div>
+          
+
+          
+            <div class="links-of-author motion-element">
+                
+                  <span class="links-of-author-item">
+                    <a href="https://github.com/icyxp" target="_blank" title="GitHub">
+                      
+                        <i class="fa fa-fw fa-github"></i>GitHub</a>
+                  </span>
+                
+                  <span class="links-of-author-item">
+                    <a href="http://weibo.com/joysteam" target="_blank" title="微博">
+                      
+                        <i class="fa fa-fw fa-weibo"></i>微博</a>
+                  </span>
+                
+                  <span class="links-of-author-item">
+                    <a href="http://www.zhihu.com/people/xupeng" target="_blank" title="知乎">
+                      
+                        <i class="fa fa-fw fa-zhihu"></i>知乎</a>
+                  </span>
+                
+            </div>
+          
+
+          
+          
+
+          
+          
+            <div class="links-of-blogroll motion-element links-of-blogroll-inline">
+              <div class="links-of-blogroll-title">
+                <i class="fa  fa-fw fa-link"></i>
+                友情链接
+              </div>
+              <ul class="links-of-blogroll-list">
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="http://www.zjgsmt.com" title="张家港水蜜桃" target="_blank">张家港水蜜桃</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="http://blog.jiunile.com" title="运维开发" target="_blank">运维开发</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="http://devops.jiunile.com" title="DevOps" target="_blank">DevOps</a>
+                  </li>
+                
+              </ul>
+            </div>
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#介绍"><span class="nav-number">1.</span> <span class="nav-text">介绍</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#我们熟悉和喜爱的栈和堆"><span class="nav-number">2.</span> <span class="nav-text">我们熟悉和喜爱的栈和堆</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Go-栈和堆"><span class="nav-number">3.</span> <span class="nav-text">Go 栈和堆</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#我们如何知道一个变量何时被分配给堆？"><span class="nav-number">4.</span> <span class="nav-text">我们如何知道一个变量何时被分配给堆？</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#我们为什么要关心堆分配？"><span class="nav-number">5.</span> <span class="nav-text">我们为什么要关心堆分配？</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#那在现实世界中呢？"><span class="nav-number">6.</span> <span class="nav-text">那在现实世界中呢？</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#总结"><span class="nav-number">7.</span> <span class="nav-text">总结</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+<div class="copyright">&copy; 2016 &mdash; <span itemprop="copyrightYear">2020</span>
+  <span class="with-love" id="heart">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">icyboy</span>
+
+  
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-area-chart"></i>
+    </span>
+    
+      <span class="post-meta-item-text">Site words total count&#58;</span>
+    
+    <span title="Site words total count">318.9k</span>
+  
+</div>
+
+<div class="powered-by">
+<i class="fa fa-user-md"></i><span id="busuanzi_container_site_uv">
+  本站访客数:<span id="busuanzi_value_site_uv"></span>
+</span>
+</div>
+
+<div class="theme-info">
+  <div class="powered-by"></div>
+  <span class="post-count">博客全站共318.9k字</span>
+</div>
+
+
+
+
+
+
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/canvas-nest/canvas-nest.min.js"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+  <script src="//cdn1.lncld.net/static/js/3.0.4/av-min.js"></script>
+  <script src="//unpkg.com/valine/dist/Valine.min.js"></script>
+  
+  <script type="text/javascript">
+    var GUEST = ['nick','mail','link'];
+    var guest = 'nick,mail,link';
+    guest = guest.split(',').filter(item=>{
+      return GUEST.indexOf(item)>-1;
+    });
+    new Valine({
+        el: '#comments' ,
+        verify: false,
+        notify: false,
+        appId: 'B6yqSmGPw5uBIAfWEqm7Xyws-gzGzoHsz',
+        appKey: '2soiHGUrbGw33caCmkT47236',
+        placeholder: 'Just do it!',
+        avatar:'mm',
+        guest_info:guest,
+        pageSize:'10' || 10,
+    });
+  </script>
+
+
+
+  
+
+  <script type="text/javascript">
+    // Popup Window;
+    var isfetched = false;
+    var isXml = true;
+    // Search DB path;
+    var search_path = "search.xml";
+    if (search_path.length === 0) {
+      search_path = "search.xml";
+    } else if (/json$/i.test(search_path)) {
+      isXml = false;
+    }
+    var path = "/" + search_path;
+    // monitor main search box;
+
+    var onPopupClose = function (e) {
+      $('.popup').hide();
+      $('#local-search-input').val('');
+      $('.search-result-list').remove();
+      $('#no-result').remove();
+      $(".local-search-pop-overlay").remove();
+      $('body').css('overflow', '');
+    }
+
+    function proceedsearch() {
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay"></div>')
+        .css('overflow', 'hidden');
+      $('.search-popup-overlay').click(onPopupClose);
+      $('.popup').toggle();
+      var $localSearchInput = $('#local-search-input');
+      $localSearchInput.attr("autocapitalize", "none");
+      $localSearchInput.attr("autocorrect", "off");
+      $localSearchInput.focus();
+    }
+
+    // search function;
+    var searchFunc = function(path, search_id, content_id) {
+      'use strict';
+
+      // start loading animation
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay">' +
+          '<div id="search-loading-icon">' +
+          '<i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>' +
+          '</div>' +
+          '</div>')
+        .css('overflow', 'hidden');
+      $("#search-loading-icon").css('margin', '20% auto 0 auto').css('text-align', 'center');
+
+      $.ajax({
+        url: path,
+        dataType: isXml ? "xml" : "json",
+        async: true,
+        success: function(res) {
+          // get the contents from search data
+          isfetched = true;
+          $('.popup').detach().appendTo('.header-inner');
+          var datas = isXml ? $("entry", res).map(function() {
+            return {
+              title: $("title", this).text(),
+              content: $("content",this).text(),
+              url: $("url" , this).text()
+            };
+          }).get() : res;
+          var input = document.getElementById(search_id);
+          var resultContent = document.getElementById(content_id);
+          var inputEventFunction = function() {
+            var searchText = input.value.trim().toLowerCase();
+            var keywords = searchText.split(/[\s\-]+/);
+            if (keywords.length > 1) {
+              keywords.push(searchText);
+            }
+            var resultItems = [];
+            if (searchText.length > 0) {
+              // perform local searching
+              datas.forEach(function(data) {
+                var isMatch = false;
+                var hitCount = 0;
+                var searchTextCount = 0;
+                var title = data.title.trim();
+                var titleInLowerCase = title.toLowerCase();
+                var content = data.content.trim().replace(/<[^>]+>/g,"");
+                var contentInLowerCase = content.toLowerCase();
+                var articleUrl = decodeURIComponent(data.url);
+                var indexOfTitle = [];
+                var indexOfContent = [];
+                // only match articles with not empty titles
+                if(title != '') {
+                  keywords.forEach(function(keyword) {
+                    function getIndexByWord(word, text, caseSensitive) {
+                      var wordLen = word.length;
+                      if (wordLen === 0) {
+                        return [];
+                      }
+                      var startPosition = 0, position = [], index = [];
+                      if (!caseSensitive) {
+                        text = text.toLowerCase();
+                        word = word.toLowerCase();
+                      }
+                      while ((position = text.indexOf(word, startPosition)) > -1) {
+                        index.push({position: position, word: word});
+                        startPosition = position + wordLen;
+                      }
+                      return index;
+                    }
+
+                    indexOfTitle = indexOfTitle.concat(getIndexByWord(keyword, titleInLowerCase, false));
+                    indexOfContent = indexOfContent.concat(getIndexByWord(keyword, contentInLowerCase, false));
+                  });
+                  if (indexOfTitle.length > 0 || indexOfContent.length > 0) {
+                    isMatch = true;
+                    hitCount = indexOfTitle.length + indexOfContent.length;
+                  }
+                }
+
+                // show search results
+
+                if (isMatch) {
+                  // sort index by position of keyword
+
+                  [indexOfTitle, indexOfContent].forEach(function (index) {
+                    index.sort(function (itemLeft, itemRight) {
+                      if (itemRight.position !== itemLeft.position) {
+                        return itemRight.position - itemLeft.position;
+                      } else {
+                        return itemLeft.word.length - itemRight.word.length;
+                      }
+                    });
+                  });
+
+                  // merge hits into slices
+
+                  function mergeIntoSlice(text, start, end, index) {
+                    var item = index[index.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    var hits = [];
+                    var searchTextCountInSlice = 0;
+                    while (position + word.length <= end && index.length != 0) {
+                      if (word === searchText) {
+                        searchTextCountInSlice++;
+                      }
+                      hits.push({position: position, length: word.length});
+                      var wordEnd = position + word.length;
+
+                      // move to next position of hit
+
+                      index.pop();
+                      while (index.length != 0) {
+                        item = index[index.length - 1];
+                        position = item.position;
+                        word = item.word;
+                        if (wordEnd > position) {
+                          index.pop();
+                        } else {
+                          break;
+                        }
+                      }
+                    }
+                    searchTextCount += searchTextCountInSlice;
+                    return {
+                      hits: hits,
+                      start: start,
+                      end: end,
+                      searchTextCount: searchTextCountInSlice
+                    };
+                  }
+
+                  var slicesOfTitle = [];
+                  if (indexOfTitle.length != 0) {
+                    slicesOfTitle.push(mergeIntoSlice(title, 0, title.length, indexOfTitle));
+                  }
+
+                  var slicesOfContent = [];
+                  while (indexOfContent.length != 0) {
+                    var item = indexOfContent[indexOfContent.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    // cut out 100 characters
+                    var start = position - 20;
+                    var end = position + 80;
+                    if(start < 0){
+                      start = 0;
+                    }
+                    if (end < position + word.length) {
+                      end = position + word.length;
+                    }
+                    if(end > content.length){
+                      end = content.length;
+                    }
+                    slicesOfContent.push(mergeIntoSlice(content, start, end, indexOfContent));
+                  }
+
+                  // sort slices in content by search text's count and hits' count
+
+                  slicesOfContent.sort(function (sliceLeft, sliceRight) {
+                    if (sliceLeft.searchTextCount !== sliceRight.searchTextCount) {
+                      return sliceRight.searchTextCount - sliceLeft.searchTextCount;
+                    } else if (sliceLeft.hits.length !== sliceRight.hits.length) {
+                      return sliceRight.hits.length - sliceLeft.hits.length;
+                    } else {
+                      return sliceLeft.start - sliceRight.start;
+                    }
+                  });
+
+                  // select top N slices in content
+
+                  var upperBound = parseInt('1');
+                  if (upperBound >= 0) {
+                    slicesOfContent = slicesOfContent.slice(0, upperBound);
+                  }
+
+                  // highlight title and content
+
+                  function highlightKeyword(text, slice) {
+                    var result = '';
+                    var prevEnd = slice.start;
+                    slice.hits.forEach(function (hit) {
+                      result += text.substring(prevEnd, hit.position);
+                      var end = hit.position + hit.length;
+                      result += '<b class="search-keyword">' + text.substring(hit.position, end) + '</b>';
+                      prevEnd = end;
+                    });
+                    result += text.substring(prevEnd, slice.end);
+                    return result;
+                  }
+
+                  var resultItem = '';
+
+                  if (slicesOfTitle.length != 0) {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + highlightKeyword(title, slicesOfTitle[0]) + "</a>";
+                  } else {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + title + "</a>";
+                  }
+
+                  slicesOfContent.forEach(function (slice) {
+                    resultItem += "<a href='" + articleUrl + "'>" +
+                      "<p class=\"search-result\">" + highlightKeyword(content, slice) +
+                      "...</p>" + "</a>";
+                  });
+
+                  resultItem += "</li>";
+                  resultItems.push({
+                    item: resultItem,
+                    searchTextCount: searchTextCount,
+                    hitCount: hitCount,
+                    id: resultItems.length
+                  });
+                }
+              })
+            };
+            if (keywords.length === 1 && keywords[0] === "") {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-search fa-5x" /></div>'
+            } else if (resultItems.length === 0) {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-frown-o fa-5x" /></div>'
+            } else {
+              resultItems.sort(function (resultLeft, resultRight) {
+                if (resultLeft.searchTextCount !== resultRight.searchTextCount) {
+                  return resultRight.searchTextCount - resultLeft.searchTextCount;
+                } else if (resultLeft.hitCount !== resultRight.hitCount) {
+                  return resultRight.hitCount - resultLeft.hitCount;
+                } else {
+                  return resultRight.id - resultLeft.id;
+                }
+              });
+              var searchResultList = '<ul class=\"search-result-list\">';
+              resultItems.forEach(function (result) {
+                searchResultList += result.item;
+              })
+              searchResultList += "</ul>";
+              resultContent.innerHTML = searchResultList;
+            }
+          }
+
+          if ('auto' === 'auto') {
+            input.addEventListener('input', inputEventFunction);
+          } else {
+            $('.search-icon').click(inputEventFunction);
+            input.addEventListener('keypress', function (event) {
+              if (event.keyCode === 13) {
+                inputEventFunction();
+              }
+            });
+          }
+
+          // remove loading animation
+          $(".local-search-pop-overlay").remove();
+          $('body').css('overflow', '');
+
+          proceedsearch();
+        }
+      });
+    }
+
+    // handle and trigger popup window;
+    $('.popup-trigger').click(function(e) {
+      e.stopPropagation();
+      if (isfetched === false) {
+        searchFunc(path, 'local-search-input', 'local-search-result');
+      } else {
+        proceedsearch();
+      };
+    });
+
+    $('.popup-btn-close').click(onPopupClose);
+    $('.popup').click(function(e){
+      e.stopPropagation();
+    });
+    $(document).on('keyup', function (event) {
+      var shouldDismissSearchPopup = event.which === 27 &&
+        $('.search-popup').is(':visible');
+      if (shouldDismissSearchPopup) {
+        onPopupClose();
+      }
+    });
+  </script>
+
+
+
+
+
+  
+
+  
+  <script src="https://cdn1.lncld.net/static/js/av-core-mini-0.6.4.js"></script>
+  <script>AV.initialize("B6yqSmGPw5uBIAfWEqm7Xyws-gzGzoHsz", "2soiHGUrbGw33caCmkT47236");</script>
+  <script>
+    function showTime(Counter) {
+      var query = new AV.Query(Counter);
+      var entries = [];
+      var $visitors = $(".leancloud_visitors");
+
+      $visitors.each(function () {
+        entries.push( $(this).attr("id").trim() );
+      });
+
+      query.containedIn('url', entries);
+      query.find()
+        .done(function (results) {
+          var COUNT_CONTAINER_REF = '.leancloud-visitors-count';
+
+          if (results.length === 0) {
+            $visitors.find(COUNT_CONTAINER_REF).text(0);
+            return;
+          }
+
+          for (var i = 0; i < results.length; i++) {
+            var item = results[i];
+            var url = item.get('url');
+            var time = item.get('time');
+            var element = document.getElementById(url);
+
+            $(element).find(COUNT_CONTAINER_REF).text(time);
+          }
+          for(var i = 0; i < entries.length; i++) {
+            var url = entries[i];
+            var element = document.getElementById(url);
+            var countSpan = $(element).find(COUNT_CONTAINER_REF);
+            if( countSpan.text() == '') {
+              countSpan.text(0);
+            }
+          }
+        })
+        .fail(function (object, error) {
+          console.log("Error: " + error.code + " " + error.message);
+        });
+    }
+
+    function addCount(Counter) {
+      var $visitors = $(".leancloud_visitors");
+      var url = $visitors.attr('id').trim();
+      var title = $visitors.attr('data-flag-title').trim();
+      var query = new AV.Query(Counter);
+
+      query.equalTo("url", url);
+      query.find({
+        success: function(results) {
+          if (results.length > 0) {
+            var counter = results[0];
+            counter.fetchWhenSave(true);
+            counter.increment("time");
+            counter.save(null, {
+              success: function(counter) {
+                var $element = $(document.getElementById(url));
+                $element.find('.leancloud-visitors-count').text(counter.get('time'));
+              },
+              error: function(counter, error) {
+                console.log('Failed to save Visitor num, with error message: ' + error.message);
+              }
+            });
+          } else {
+            var newcounter = new Counter();
+            /* Set ACL */
+            var acl = new AV.ACL();
+            acl.setPublicReadAccess(true);
+            acl.setPublicWriteAccess(true);
+            newcounter.setACL(acl);
+            /* End Set ACL */
+            newcounter.set("title", title);
+            newcounter.set("url", url);
+            newcounter.set("time", 1);
+            newcounter.save(null, {
+              success: function(newcounter) {
+                var $element = $(document.getElementById(url));
+                $element.find('.leancloud-visitors-count').text(newcounter.get('time'));
+              },
+              error: function(newcounter, error) {
+                console.log('Failed to create');
+              }
+            });
+          }
+        },
+        error: function(error) {
+          console.log('Error:' + error.code + " " + error.message);
+        }
+      });
+    }
+
+    $(function() {
+      var Counter = AV.Object.extend("Counter");
+      if ($('.leancloud_visitors').length == 1) {
+        addCount(Counter);
+      } else if ($('.post-title-link').length > 1) {
+        showTime(Counter);
+      }
+    });
+  </script>
+
+
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>
