@@ -2,6 +2,13 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   
   <url>
+    <loc>http://team.jiunile.com/blog/2021/02/k8s-graceful-shutdown.html</loc>
+    
+    <lastmod>2021-02-02T06:24:19.000Z</lastmod>
+    
+  </url>
+  
+  <url>
     <loc>http://team.jiunile.com/blog/2020/12/go-allocations.html</loc>
     
     <lastmod>2020-12-22T03:35:11.000Z</lastmod>

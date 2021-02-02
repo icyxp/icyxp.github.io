@@ -4,6 +4,323 @@
   
     
     <entry>
+      <title><![CDATA[50 张图，掌握 Kubernetes 中优雅且零停机部署的实现]]></title>
+      <url>http://team.jiunile.com/blog/2021/02/k8s-graceful-shutdown.html</url>
+      <content type="html"><![CDATA[<h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>在本文中，您将了解如何在Pod启动或关闭时防止连接异常，并将学习如何以优雅的方式关闭长时间运行的任务。<br><img src="/images/k8s/g_shutdown_1.png" alt="graceful shutdown"></p>
+<a id="more"></a>
+<p>在 Kubernetes 中，创建和删除 Pod 是最常见的任务之一。</p>
+<p>当您执行滚动更新，扩展部署，每个新发行版，每个作业和 cron 作业等时，都会创建 Pod。</p>
+<p>但是在节点被驱逐之后，Pods 也会被删除并重新创建—例如，当您将节点标记为不可调度时。</p>
+<p>这些 Pod 的生命是如此短暂，那么当 Pod 在响应请求的过程中却被告知关闭时会发生什么？</p>
+<p>请求在关闭之前是否已完成？</p>
+<p>接下来的请求又如何呢？</p>
+<p>在讨论删除 Pod 时会发生什么之前，有必要讨论一下创建 Pod 时会发生什么。</p>
+<p>假设您要在集群中创建以下 Pod：<br><figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">apiVersion:</span> v1</span><br><span class="line"><span class="attr">kind:</span> Pod</span><br><span class="line"><span class="attr">metadata:</span></span><br><span class="line"><span class="attr">  name:</span> my-pod</span><br><span class="line"><span class="attr">spec:</span></span><br><span class="line"><span class="attr">  containers:</span></span><br><span class="line"><span class="attr">    - name:</span> web</span><br><span class="line"><span class="attr">      image:</span> nginx</span><br><span class="line"><span class="attr">      ports:</span></span><br><span class="line"><span class="attr">        - name:</span> web</span><br><span class="line"><span class="attr">          containerPort:</span> <span class="number">80</span></span><br></pre></td></tr></table></figure></p>
+<p>您可以使用以下方式将 YAML 定义提交给集群：<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">kubectl apply <span class="_">-f</span> pod.yaml</span><br></pre></td></tr></table></figure></p>
+<p>输入命令后，kubectl 便将 Pod 定义提交给 Kubernetes API。</p>
+<h2 id="在数据库中保存集群的状态"><a href="#在数据库中保存集群的状态" class="headerlink" title="在数据库中保存集群的状态"></a>在数据库中保存集群的状态</h2><p>API 接收和检查 Pod 定义，然后将其存储在数据库 etcd 中。</p>
+<p>Pod 也将添加到<a href="https://kubernetes.io/docs/concepts/scheduling-eviction/scheduling-framework/#scheduling-cycle-binding-cycle" target="_blank" rel="external">调度程序的队列</a>中。</p>
+<p>调度程序：</p>
+<ol>
+<li>检查定义</li>
+<li>收集有关工作负载的详细信息，例如 CPU 和内存请求，然后</li>
+<li>确定哪个节点最适合运行它。(<a href="https://kubernetes.io/docs/concepts/scheduling-eviction/scheduling-framework/#extension-points" target="_blank" rel="external">通过Filters 和 Predicates</a>)。</li>
+</ol>
+<p>在过程结束时：</p>
+<ul>
+<li>在 etcd 中将 Pod 标记为 Scheduled。</li>
+<li>为 Pod 分配了一个节点。</li>
+<li>Pod 的状态存储在 etcd 中。</li>
+</ul>
+<p><strong>但是Pod仍然不存在。</strong></p>
+<ol>
+<li>当您使用 <code>kubectl apply -f</code> 提交一个 Pod 时，YAML 被发送到 kubernetes api。<br><img src="/images/k8s/g_sd_2.png" alt="graceful shutdown"></li>
+<li>API 将 Pod 保存在数据库 etcd g中。<br><img src="/images/k8s/g_sd_3.png" alt="graceful shutdown"> </li>
+<li>调度程序为这个 Pod 分配最佳节点，并且 Pod 的状态更改为 Pending。pod 只存在于etcd中。<br><img src="/images/k8s/g_sd_4.png" alt="graceful shutdown"></li>
+</ol>
+<p>先前的任务发生在控制平面中，并且状态存储在数据库中。</p>
+<p>那么谁在您的节点中创建 Pod？</p>
+<h2 id="Kubelet-—-Kubernetes-代理"><a href="#Kubelet-—-Kubernetes-代理" class="headerlink" title="Kubelet — Kubernetes 代理"></a>Kubelet — Kubernetes 代理</h2><p><strong>kubelet 的工作是轮询控制平面以获取更新。</strong></p>
+<p>您可以想象 kubelet 不断地向主节点询问：“我管理工作节点1，是否对我有任何新的 Pod？”。</p>
+<p>当有 Pod 时，kubelet 会创建它。</p>
+<p>有一点需要注意。</p>
+<p>kubelet 不会自行创建 Pod。而是将工作委托给其他三个组件：</p>
+<ol>
+<li><strong>容器运行时接口（CRI）</strong> — 为 Pod 创建容器的组件。</li>
+<li><strong>容器网络接口（CNI）</strong> — 将容器连接到群集网络并分配IP地址的组件。</li>
+<li><strong>容器存储接口（CSI）</strong> — 在容器中装载卷的组件。</li>
+</ol>
+<p>在大多数情况下，容器运行时接口（CRI）的工作类似于：<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker run <span class="_">-d</span> &lt;my-container-image&gt;</span><br></pre></td></tr></table></figure></p>
+<p>容器网络接口（CNI）有点有趣，因为它负责：</p>
+<ol>
+<li>为 Pod 生成有效的 IP 地址。</li>
+<li>将容器连接到网络的其余部分。</li>
+</ol>
+<p>可以想象，有几种方法可以将容器连接到网络并分配有效的 IP 地址（您可以在 IPv4 或 IPv6 之间进行选择，也可以分配多个 I P地址）。</p>
+<p>例如，<a href="https://archive.shivam.dev/docker-networking-explained/" target="_blank" rel="external">Docker 创建虚拟以太网对并将其连接到网桥</a>，而 <a href="https://itnext.io/kubernetes-is-hard-why-eks-makes-it-easier-for-network-and-security-architects-ea6d8b2ca965" target="_blank" rel="external">AWS—CNI 将 Pods 直接连接到虚拟私有云（VPC）</a>。</p>
+<p>当容器网络接口完成其工作时，Pod已连接到网络，并分配了有效的IP地址。</p>
+<p>还有一个问题。</p>
+<p><strong>Kubelet 知道 IP 地址（因为它调用了容器网络接口），但是控制平面却不知道。</strong></p>
+<p>没有人告诉主节点，该Pod已分配了IP地址，并准备接收流量。</p>
+<p>就控制平面而言，仍在创建 Pod。</p>
+<p><strong>Kubelet 的工作是收集 Pod 的所有详细信息（例如 I P地址）并将其报告回控制平面。</strong></p>
+<p>您可以想象检查 etcd 不仅可以显示 Pod 的运行位置，还可以显示其 IP 地址。</p>
+<ol>
+<li>Kubelet 轮询控制平面以获取更新。<br><img src="/images/k8s/g_sd_5.png" alt="graceful shutdown"></li>
+<li>当一个新的 Pod 分配给它的节点时，kubelet 会检索详细信息<br><img src="/images/k8s/g_sd_6.png" alt="graceful shutdown"></li>
+<li>Kubernetns 不会自己创建 pod。它依赖于三个组件：容器运行时接口、容器网络接口和容器存储接口。<br><img src="/images/k8s/g_sd_7.png" alt="graceful shutdown"></li>
+<li>一旦所有三个组件都成功完成，Pod 就在您的节点中运行并分配了一个 IP 地址。<br><img src="/images/k8s/g_sd_8.png" alt="graceful shutdown"></li>
+<li>kubelet 向控制平面报告 IP 地址。<br><img src="/images/k8s/g_sd_9.png" alt="graceful shutdown"></li>
+</ol>
+<p>如果 Pod 不是任何服务的一部分，那么任务将结束。</p>
+<p>Pod 已创建并可以使用。</p>
+<p>如果 Pod 是服务的一部分，则还需要执行几个步骤。</p>
+<h2 id="Pods-和-Services"><a href="#Pods-和-Services" class="headerlink" title="Pods 和 Services"></a>Pods 和 Services</h2><p>创建服务时，通常需要注意以下两条信息：</p>
+<ol>
+<li><code>selector</code> — 用于指定将接收流量的 Pod。</li>
+<li><code>targetPort</code> — 通过 pod 使用的端口接收的流量。</li>
+</ol>
+<p>服务的典型 YAML 定义如下所示：<br><figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">apiVersion:</span> v1</span><br><span class="line"><span class="attr">kind:</span> Service</span><br><span class="line"><span class="attr">metadata:</span></span><br><span class="line"><span class="attr">  name:</span> my-service</span><br><span class="line"><span class="attr">spec:</span></span><br><span class="line"><span class="attr">  ports:</span></span><br><span class="line"><span class="attr">  - port:</span> <span class="number">80</span></span><br><span class="line"><span class="attr">    targetPort:</span> <span class="number">3000</span></span><br><span class="line"><span class="attr">  selector:</span></span><br><span class="line"><span class="attr">    name:</span> app</span><br></pre></td></tr></table></figure></p>
+<p>将 Service 提交给集群时 <code>kubectl apply</code>，Kubernetes 会找到所有具有与selector（<code>name: app</code>）相同标签的 Pod，并收集其 IP 地址 — 但前提是它们已通过<a href="https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/#define-a-tcp-liveness-probe" target="_blank" rel="external">Readiness 探针</a>。</p>
+<p>然后，对于每个 IP 地址，它将 IP 地址和端口连接在一起。</p>
+<p>如果 IP 地址是 <code>10.0.0.3</code> 和，<code>targetPort</code> 是 <code>3000</code>，Kubernetes 将两个结果连接起来并称为 endpoint。<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">IP address + port = endpoint</span><br><span class="line">---------------------------------</span><br><span class="line">10.0.0.3   + 3000 = 10.0.0.3:3000</span><br></pre></td></tr></table></figure></p>
+<p>endpoint 存储在 etcd 的另一个名为 Endpoint 的对象中。</p>
+<p><em>是否有点疑惑？</em></p>
+<p>Kubernetes 中定义：</p>
+<ul>
+<li>endpoint 是 IP 地址 + 端口对（<code>10.0.0.3:3000</code>）。</li>
+<li>Endpoint 是 endpoint 的集合。</li>
+</ul>
+<p>Endpoint 对象是 Kubernetes 中的真实对象，对于每个服务 Kubernetes 都会自动创建一个 endpoint 对象。</p>
+<p>您可以使用以下方法进行验证：<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">$ kubectl get services,endpoints</span><br><span class="line">NAME                   TYPE        CLUSTER-IP     EXTERNAL-IP   PORT(S)</span><br><span class="line">service/my-service-1   ClusterIP   10.105.17.65   &lt;none&gt;        80/TCP</span><br><span class="line">service/my-service-2   ClusterIP   10.96.0.1      &lt;none&gt;        443/TCP</span><br><span class="line"></span><br><span class="line">NAME                     ENDPOINTS</span><br><span class="line">endpoints/my-service-1   172.17.0.6:80,172.17.0.7:80</span><br><span class="line">endpoints/my-service-2   192.168.99.100:8443</span><br></pre></td></tr></table></figure></p>
+<p>Endpoint 从 Pod 收集所有 IP 地址和端口。</p>
+<p>但并不是一次性的。</p>
+<p>在以下情况下，将使用新的 endpoint 列表刷新 Endpoint 对象：</p>
+<ol>
+<li>创建一个 Pod。</li>
+<li>Pod 已删除。</li>
+<li>在 Pod 上修改了标签。</li>
+</ol>
+<p>因此，您可以想象，每次创建 Pod 并在 kubelet 将其 IP 地址发布到主节点后，Kubernetes 都会更新所有 endpoint 以反映更改：<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">$ kubectl get services,endpoints</span><br><span class="line">NAME                   TYPE        CLUSTER-IP     EXTERNAL-IP   PORT(S)</span><br><span class="line">service/my-service-1   ClusterIP   10.105.17.65   &lt;none&gt;        80/TCP</span><br><span class="line">service/my-service-2   ClusterIP   10.96.0.1      &lt;none&gt;        443/TCP</span><br><span class="line"></span><br><span class="line">NAME                     ENDPOINTS</span><br><span class="line">endpoints/my-service-1   172.17.0.6:80,172.17.0.7:80,172.17.0.8:80</span><br><span class="line">endpoints/my-service-2   192.168.99.100:8443</span><br></pre></td></tr></table></figure></p>
+<p>很好，endpoint 存储在控制平面中，并且 endpoint 对象已更新。</p>
+<ol>
+<li>在此图中，集群中部署了一个 Pod。Pod 属于服务。如果您要检查 etcd，则可以找到 Pod 的详细信息以及服务。<br><img src="/images/k8s/g_sd_10.png" alt="graceful shutdown"></li>
+<li>当部署新 pod 后会发生什么？<br><img src="/images/k8s/g_sd_11.png" alt="graceful shutdown"></li>
+<li>Kubernetes 必须跟踪 Pod 及其 IP 地址。服务应该将流量路由到新的 endpoint，因此应该传播 IP 地址和端口。<br><img src="/images/k8s/g_sd_12.png" alt="graceful shutdown"></li>
+<li>当部署另一个 Pod 时会发生什么？<br><img src="/images/k8s/g_sd_13.png" alt="graceful shutdown"></li>
+<li>完全相同的过程。在数据库中为 Pod 创建一个新的“记录”，并传递给 endpoint。<br><img src="/images/k8s/g_sd_14.png" alt="graceful shutdown"></li>
+<li>但是，当一个 Pod 被删除时会发生什么呢？<br><img src="/images/k8s/g_sd_15.png" alt="graceful shutdown"></li>
+<li>服务会立即删除 endpoint，最后，Pod 也会从数据库中删除。<br><img src="/images/k8s/g_sd_16.png" alt="graceful shutdown"></li>
+<li>Kubernetes 会对集群中的每一个小变化做出反应。<br><img src="/images/k8s/g_sd_17.png" alt="graceful shutdown"></li>
+</ol>
+<p><em>您准备好开始使用 Pod 了吗？</em></p>
+<h2 id="在-Kubernetes-中使用-Endpoint"><a href="#在-Kubernetes-中使用-Endpoint" class="headerlink" title="在 Kubernetes 中使用 Endpoint"></a>在 Kubernetes 中使用 Endpoint</h2><p><strong>endpoint 由 Kubernetes 中的多个组件使用。</strong></p>
+<p>Kube-proxy 使用 endpoint 在节点上设置 iptables 规则。</p>
+<p>因此，每当 endpoint（对象）发生变化时，kube-proxy 就会检索新的 IP 地址和端口列表，并编写新的 iptables 规则。</p>
+<ol>
+<li>让我们考虑具有两个 Pod 且不包含 Service 的三节点群集。Pod 的状态存储在 etcd 中。<br><img src="/images/k8s/g_sd_18.png" alt="graceful shutdown"></li>
+<li>创建服务时会发生什么？<br><img src="/images/k8s/g_sd_19.png" alt="graceful shutdown"></li>
+<li>Kubernetes 创建了一个 endpoint 对象，并从 pod 收集所有 endpoint（IP 地址和端口对）。<br><img src="/images/k8s/g_sd_20.png" alt="graceful shutdown"></li>
+<li>Kube-proxy 守护进程监听 endpoint 的更改。<br><img src="/images/k8s/g_sd_21.png" alt="graceful shutdown"></li>
+<li>当添加、删除或更新 endpoint 时，kube-proxy 检索 endpoint 的新列表。<br><img src="/images/k8s/g_sd_22.png" alt="graceful shutdown"></li>
+<li>Kube-proxy 使用 endpoint 在集群的每个节点上创建 iptables 规则。<br><img src="/images/k8s/g_sd_23.png" alt="graceful shutdown"></li>
+</ol>
+<p>Ingress controller 使用相同的 endpoint 列表。</p>
+<p>Ingress controller 是群集中将外部流量路由到群集中的那个组件。</p>
+<p>设置 Ingress 清单时，通常将 Service 指定为目标：<br><figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">apiVersion:</span> networking.k8s.io/v1beta1</span><br><span class="line"><span class="attr">kind:</span> Ingress</span><br><span class="line"><span class="attr">metadata:</span></span><br><span class="line"><span class="attr">  name:</span> my-ingress</span><br><span class="line"><span class="attr">spec:</span></span><br><span class="line"><span class="attr">  rules:</span></span><br><span class="line"><span class="attr">  - http:</span></span><br><span class="line"><span class="attr">      paths:</span></span><br><span class="line"><span class="attr">      - backend:</span></span><br><span class="line"><span class="attr">          serviceName:</span> my-service</span><br><span class="line"><span class="attr">          servicePort:</span> <span class="number">80</span></span><br><span class="line"><span class="attr">        path:</span> /</span><br></pre></td></tr></table></figure></p>
+<p><em>实际上，流量不会路由到服务。</em></p>
+<p>取而代之的是，Ingress controller 设置了一个订阅，每次该服务的 endpoint 更改时都将收到通知。</p>
+<p><strong>Ingress 会将流量直接路由到 Pod，从而跳过服务</strong>。</p>
+<p>可以想象，每次更改 endpoint（对象）时，Ingress 都会检索 IP 地址和端口的新列表，并将控制器重新配置为包括新的 Pod。</p>
+<ol>
+<li>在这张图片中，有一个 Ingress 控制器，它带有两个副本和一个 Service 的 Deployment。<br><img src="/images/k8s/g_sd_24.png" alt="graceful shutdown"></li>
+<li>如果您想通过入口将外部流量路由到 Pods，您应该创建一个入口清单（一个 YAML 文件）。<br><img src="/images/k8s/g_sd_25.png" alt="graceful shutdown"></li>
+<li>一旦你运行了 <code>kubectl apply -f ingress.yaml</code>，入口控制器从控制平面检索文件。<br><img src="/images/k8s/g_sd_26.png" alt="graceful shutdown"></li>
+<li>Ingress YAML 有一个 <code>serviceName</code> 属性，该属性描述它应该使用哪个服务。<br><img src="/images/k8s/g_sd_27.png" alt="graceful shutdown"></li>
+<li>入口控制器从服务检索 Endpoint 列表并跳过它。流量直接流向 endpoint（pod）。<br><img src="/images/k8s/g_sd_28.png" alt="graceful shutdown"></li>
+<li>当一个新的 Pod 被创建时会发生什么？<br><img src="/images/k8s/g_sd_29.png" alt="graceful shutdown"></li>
+<li>您已经知道 Kubernetes 如何创建 Pod 并通告 endpoint。<br><img src="/images/k8s/g_sd_30.png" alt="graceful shutdown"></li>
+<li>入口控制器正在订阅对 endpoint 的更改。因为有一个变更的通知，它检索新的 Endpoint 列表。<br><img src="/images/k8s/g_sd_31.png" alt="graceful shutdown"></li>
+<li>入口控制器将流量路由到新的 Pod。<br><img src="/images/k8s/g_sd_32.png" alt="graceful shutdown"></li>
+</ol>
+<p>有更多的 Kubernetes 组件示例订阅了对 endpoint 的更改。</p>
+<p>集群中的 DNS 组件 CoreDNS 是另一个示例。</p>
+<p>如果您使用 <a href="https://kubernetes.io/docs/concepts/services-networking/service/#headless-services" target="_blank" rel="external">Headless 类型的服务</a>，则每次添加或删除 endpoint 时，CoreDNS 都必须订阅对e ndpoint 的更改并重新配置自身。</p>
+<p>相同的 endpoint 被 istio 或 Linkerd 之类的服务网格所使用，<a href="https://thebsdbox.co.uk/2020/03/18/Creating-a-Kubernetes-cloud-doesn-t-required-boiling-the-ocean/" target="_blank" rel="external">云提供商也创建了</a> <code>type:LoadBalancer</code>。</p>
+<p>您必须记住，有几个组件订阅了对endpoint的更改，它们可能会在不同时间收到有关 endpoint 更新的通知。</p>
+<p><em>够了吗，还是在创建 Pod 之后有什么事发生？</em></p>
+<p><strong>这次您完成了！</strong></p>
+<p>快速回顾一下创建Pod时发生的情况：</p>
+<ol>
+<li>Pod 存储在 etcd 中。</li>
+<li>调度程序分配一个节点。它将节点写入 etcd。</li>
+<li>向 kubelet 通知新的和预定的 Pod。</li>
+<li>kubelet 将创建容器的委托委派给容器运行时接口（CRI）。</li>
+<li>kubelet 代表将容器附加到容器网络接口（CNI）。</li>
+<li>kubelet 将容器中的安装卷委托给容器存储接口（CSI）。</li>
+<li>容器网络接口分配 IP 地址。</li>
+<li>Kubelet 将 IP 地址报告给控制平面。</li>
+<li>IP 地址存储在 etcd 中。</li>
+</ol>
+<p>如果您的 Pod 属于服务：</p>
+<ol>
+<li>Kubelet 等待成功的 Readiness 探针。</li>
+<li>通知所有相关的 endpoint（对象）更改。</li>
+<li>Endpoint 将新 endpoint（IP 地址 + 端口对）添加到其列表中。</li>
+<li>Endpoint 更改将通知 Kube-proxy。Kube-proxy 更新每个节点上的 iptables 规则。</li>
+<li>通知 Endpoint 变化的入口控制器。控制器将流量路由到新的 IP 地址。</li>
+<li>CoreDNS 通知 Endpoint 更改。如果服务的类型为 Headless，则更新 DNS 条目。</li>
+<li>向云提供商通知 Endpoint 更改。如果服务为 <code>type: LoadBalancer</code>，则将新 Endpoint 配置为负载均衡器池的一部分。</li>
+<li>Endpoint 更改将通知群集中安装的所有服务网格。</li>
+<li>订阅 Endpoint 更改的其他运营商也会收到通知。</li>
+</ol>
+<p>如此长的列表令人惊讶地只是一项常见任务 — 创建 Pod。</p>
+<p>Pod 正在运行。现在是时候讨论删除它时会发生什么。</p>
+<h2 id="删除-pod"><a href="#删除-pod" class="headerlink" title="删除 pod"></a>删除 pod</h2><p>您可能已经猜到了，但是删除 Pod 时，必须遵循相同的步骤，但要相反。</p>
+<p>首先，应从 endpoint（对象）中删除 endpoint。</p>
+<p>这次将忽略 “Readiness” 探针，并立即从控制平面移除 endpoint。</p>
+<p>依次触发所有事件到 kube-proxy，Ingress 控制器，DNS，服务网格等。</p>
+<p>这些组件将更新其内部状态，并停止将流量路由到IP地址。</p>
+<p>由于组件可能正在忙于做其他事情，<strong>因此无法保证从其内部状态中删除IP地址将花费多长时间</strong>。</p>
+<p>对于某些人来说，可能不到一秒钟。对于其他人，可能需要更多时间。</p>
+<ol>
+<li>如果您要使用删除 Pod <code>kubectl delete pod</code>，则该命令将首先到达 Kubernetes API<br><img src="/images/k8s/g_sd_33.png" alt="graceful shutdown"></li>
+<li>消息被控制平面中的特定控制器截获：Endpoint 控制器。<br><img src="/images/k8s/g_sd_34.png" alt="graceful shutdown"></li>
+<li>Endpoint 控制器向 API 发出命令，从端点对象中删除 IP 地址和端口。<br><img src="/images/k8s/g_sd_35.png" alt="graceful shutdown"></li>
+<li>谁侦听 Endpoint 更改？ Kube-proxy、入口控制器、CoreDNS 等会收到更改通知。<br><img src="/images/k8s/g_sd_36.png" alt="graceful shutdown"></li>
+<li>一些组件（如 kube-proxy ）可能需要一些额外的时间来进一步传播更改。<br><img src="/images/k8s/g_sd_37.png" alt="graceful shutdown"></li>
+</ol>
+<p>同时，etcd 中 Pod 的状态更改为 Termination。</p>
+<p>将通知 kubelet 更改并委托：</p>
+<ol>
+<li>将全部容器卸载到容器存储接口（CSI）。</li>
+<li>从网络上分离容器并将IP地址释放到容器网络接口（CNI）。</li>
+<li>将容器销毁到容器运行时接口（CRI）。</li>
+</ol>
+<p>换句话说，Kubernetes遵循与创建Pod完全相同的步骤，但相反。</p>
+<ol>
+<li>如果您要使用删除 Pod <code>kubectl delete pod</code>，则该命令将首先到达 Kubernetes API。<br><img src="/images/k8s/g_sd_38.png" alt="graceful shutdown"></li>
+<li>当 kubelet 轮询控制平面以获取更新时，它注意到 Pod 被删除了。<br><img src="/images/k8s/g_sd_39.png" alt="graceful shutdown"></li>
+<li>kubelet 将销毁 Pod 委托给容器运行时接口、容器网络接口和容器存储接口。<br><img src="/images/k8s/g_sd_40.png" alt="graceful shutdown"></li>
+</ol>
+<p>但是，存在细微但必不可少的差异。</p>
+<p><strong>当您终止 Pod 时，将同时删除 endpoint 和发送到 kubelet 的信号。</strong></p>
+<p>首次创建 Pod 时，Kubernetes 等待 kubelet 报告 IP 地址，然后开始 endpoint 通告。</p>
+<p><strong>但是，当您删除 Pod 时，事件将并行开始。</strong></p>
+<p>这可能会导致很多竞争情况。</p>
+<p><em>如果在通告 endpoint 之前删除 Pod 怎么办？</em></p>
+<ol>
+<li>删除 endpoint 和删除 Pod 会同时发生。<br><img src="/images/k8s/g_sd_41.png" alt="graceful shutdown"></li>
+<li>因此，您可以在 kube-proxy 更新 iptables 规则之前删除 endpoint。<br><img src="/images/k8s/g_sd_42.png" alt="graceful shutdown"></li>
+<li>或者更幸运的是，只有在 endpoint 完全通告之后，Pod 才会被删除。<br><img src="/images/k8s/g_sd_43.png" alt="graceful shutdown"></li>
+</ol>
+<h2 id="正常关机（Graceful）"><a href="#正常关机（Graceful）" class="headerlink" title="正常关机（Graceful）"></a>正常关机（Graceful）</h2><p>当 Pod 从 kube-proxy 或 Ingress 控制器中删除之前终止时，您可能会遇到停机时间。</p>
+<p>而且，如果您考虑一下，这是有道理的。</p>
+<p>Kubernetes 仍将流量路由到 IP 地址，但 Pod 不再存在。</p>
+<p>Ingress 控制器，kube-proxy，CoreDNS 等没有足够的时间从其内部状态中删除 IP 地址。</p>
+<p>理想情况下，在删除 Pod 之前，Kubernetes 应该等待集群中的所有组件具有更新的 endpoint 列表。</p>
+<p>但是 Kubernetes 不能那样工作。</p>
+<p>Kubernetes 提供了健壮的机制来分布 endpoint（即 Endpoint 对象和更高级的抽象功能，例如 <a href="https://kubernetes.io/docs/concepts/services-networking/endpoint-slices/" target="_blank" rel="external">Endpoint Slices</a>）。</p>
+<p>但是，Kubernetes 不会验证订阅 endpoint 更改的组件是否是集群状态的最新信息。</p>
+<p>那么，如何避免这种竞争情况并确保在通告 endpoint 之后删除 Pod？</p>
+<p><strong>你应该等一下！</strong></p>
+<p><strong>当 Pod 即将被删除时，它会收到 SIGTERM 信号。</strong></p>
+<p>您的应用程序可以捕获该信号并开始关闭。</p>
+<p>由于 endpoint 不太可能立即从 Kubernetes 中的所有组件中删除，因此您可以：</p>
+<ol>
+<li>请稍等片刻，然后退出。</li>
+<li>尽管有 SIGTERM，仍然可以处理传入流量。</li>
+<li>最后，关闭现有的长期连接（也许是数据库连接或 WebSocket）。</li>
+<li>关闭该过程。</li>
+</ol>
+<p>你应该等多久？</p>
+<p><strong>默认情况下，Kubernetes 将发送 SIGTERM 信号并等待 30 秒，然后强制终止该进程。</strong></p>
+<p>因此，您可以在最初的15秒内继续操作，以防万一。</p>
+<p>希望该间隔应足以将 endpoint 删除通知到 kube-proxy，Ingress 控制器，CoreDNS 等。</p>
+<p>因此，越来越少的流量将到达您的 Pod，直到停止为止。</p>
+<p>15 秒后，可以安全地关闭与数据库的连接（或任何持久连接）并终止该过程。</p>
+<p>如果您认为需要更多时间，则可以在 20 或 25 秒时停止该过程。</p>
+<p>但是，您应该记住，Kubernetes 将在 30 秒后强行终止进程（<a href="https://kubernetes.io/docs/concepts/containers/container-lifecycle-hooks/#hook-handler-execution" target="_blank" rel="external">除非您更改 <code>terminationGracePeriodSecondsPod</code> 定义中的</a>）。</p>
+<p>如果您无法更改代码以等待更长的时间怎么办？</p>
+<p>您可以调用脚本以等待固定的时间，然后退出应用程序。</p>
+<p>在调用 SIGTERM 之前，Kubernetes <code>preStop</code> 在 Pod 中公开一个钩子。</p>
+<p>您可以将 <code>preStop</code> 钩子设置为等待 15 秒。</p>
+<p>让我们看一个例子：<br><figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">apiVersion:</span> v1</span><br><span class="line"><span class="attr">kind:</span> Pod</span><br><span class="line"><span class="attr">metadata:</span></span><br><span class="line"><span class="attr">  name:</span> my-pod</span><br><span class="line"><span class="attr">spec:</span></span><br><span class="line"><span class="attr">  containers:</span></span><br><span class="line"><span class="attr">    - name:</span> web</span><br><span class="line"><span class="attr">      image:</span> nginx</span><br><span class="line"><span class="attr">      ports:</span></span><br><span class="line"><span class="attr">        - name:</span> web</span><br><span class="line"><span class="attr">          containerPort:</span> <span class="number">80</span></span><br><span class="line"><span class="attr">      lifecycle:</span></span><br><span class="line"><span class="attr">        preStop:</span></span><br><span class="line"><span class="attr">          exec:</span></span><br><span class="line"><span class="attr">            command:</span> [<span class="string">"sleep"</span>, <span class="string">"15"</span>]</span><br></pre></td></tr></table></figure></p>
+<p>该 <code>preStop</code> 钩子是 <a href="https://kubernetes.io/docs/concepts/workloads/pods/pod-lifecycle/" target="_blank" rel="external">Pod LifeCycle 钩子之一</a>。</p>
+<p><em>建议延迟 15 秒吗？</em></p>
+<p>这要视情况而定，但这可能是开始测试的明智方法。</p>
+<p>以下是您可以选择的选项的概述：</p>
+<ol>
+<li>您已经知道，当删除 Pod 时，会通知 kubelet 更改。<br><img src="/images/k8s/g_sd_44.png" alt="graceful shutdown"></li>
+<li>如果 Pod 有一个 <code>preStop</code> 钩子，则首先调用它。<br><img src="/images/k8s/g_sd_45.png" alt="graceful shutdown"></li>
+<li>当 <code>preStop</code> 完成时，kubelet 向容器发送 SIGTERM 信号。从那时起，容器应该关闭所有长期存在的连接并准备终止。<br><img src="/images/k8s/g_sd_46.png" alt="graceful shutdown"></li>
+<li>默认情况下，进程有 30 秒的时间退出，这包括 <code>preStop</code> 钩子。如果进程还没有退出，kubelet 发送 SIGKILL 信号并强制终止进程。<br><img src="/images/k8s/g_sd_47.png" alt="graceful shutdown"></li>
+<li>kubelet 通知控制平面 pod 已成功删除。<br><img src="/images/k8s/g_sd_48.png" alt="graceful shutdown"></li>
+</ol>
+<h2 id="宽限时间（Grace-periods）和滚动更新"><a href="#宽限时间（Grace-periods）和滚动更新" class="headerlink" title="宽限时间（Grace periods）和滚动更新"></a>宽限时间（Grace periods）和滚动更新</h2><p>正常关机适用于要删除的 Pod。</p>
+<p>但是，如果不删除 Pod，该怎么办？</p>
+<p>即使您不这样做，Kubernetes 也会始终删除 Pod。</p>
+<p>尤其是，每次部署较新版本的应用程序时，Kubernetes 都会创建和删除 Pod。</p>
+<p>在部署中更改镜像时，Kubernetes 会逐步推出更改。<br><figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">apiVersion:</span> apps/v1</span><br><span class="line"><span class="attr">kind:</span> Deployment</span><br><span class="line"><span class="attr">metadata:</span></span><br><span class="line"><span class="attr">  name:</span> app</span><br><span class="line"><span class="attr">spec:</span></span><br><span class="line"><span class="attr">  replicas:</span> <span class="number">3</span></span><br><span class="line"><span class="attr">  selector:</span></span><br><span class="line"><span class="attr">    matchLabels:</span></span><br><span class="line"><span class="attr">      name:</span> app</span><br><span class="line"><span class="attr">  template:</span></span><br><span class="line"><span class="attr">    metadata:</span></span><br><span class="line"><span class="attr">      labels:</span></span><br><span class="line"><span class="attr">        name:</span> app</span><br><span class="line"><span class="attr">    spec:</span></span><br><span class="line"><span class="attr">      containers:</span></span><br><span class="line"><span class="attr">      - name:</span> app</span><br><span class="line">        <span class="comment"># image: nginx:1.18 OLD</span></span><br><span class="line"><span class="attr">        image:</span> nginx:<span class="number">1.19</span></span><br><span class="line"><span class="attr">        ports:</span></span><br><span class="line"><span class="attr">          - containerPort:</span> <span class="number">3000</span></span><br></pre></td></tr></table></figure></p>
+<p>如果您有三个副本，并且一旦提交新的 YAML 资源 Kubernetes，则：</p>
+<ul>
+<li>用新的容器镜像创建一个 Pod。</li>
+<li>销毁现有的 Pod。</li>
+<li>等待 Pod 准备就绪。</li>
+</ul>
+<p>并重复上述步骤，直到所有 Pod 都迁移到较新的版本。</p>
+<p>Kubernetes 仅在新的 Pod 准备好接收流量（换句话说，它通过 Readiness 检查）之后才重复每个周期。</p>
+<p>Kubernetes 是否在等待 Pod 被删除之后再移到下一个 Pod？</p>
+<p><strong>并不会！！！</strong></p>
+<p>如果您有 10 个 Pod，并且 Pod 需要 2 秒钟的准备时间和 20 个关闭的时间，则会发生以下情况：</p>
+<p>创建第一个 Pod，并终止前一个 Pod。</p>
+<p>Kubernetes 创建一个新的 Pod 之后，需要 2 秒钟的准备时间。</p>
+<p>同时，被终止的 Pod 会终止 20 秒</p>
+<p>20 秒后，所有新的 Pod 均已启用（10 个 Pod ，在 2 秒后就绪），并且所有之前的 10 个Pod 都将终止（第一个 Terminated Pod 将要退出）。</p>
+<p>总共，您在短时间内将 Pod 的数量增加了一倍（运行 10 次，终止 10 次）。<br><img src="/images/k8s/g_sd_49.png" alt="graceful shutdown"></p>
+<p>与 “Readiness” 探针相比，宽限时间（graceful period）越长，您同时具有 “Running”（和 Terminating ）的 Pod 越多。</p>
+<p>不好吗？</p>
+<p>不一定，因为您要小心不要断开连接。</p>
+<h2 id="终止长时间运行的任务"><a href="#终止长时间运行的任务" class="headerlink" title="终止长时间运行的任务"></a>终止长时间运行的任务</h2><p><em>那长期工作呢？</em></p>
+<p><em>如果您要对大型视频进行转码，是否有其他方法可以延迟停止 Pod？</em></p>
+<p>假设您有一个包含三个副本的 Deployment。</p>
+<p>每个副本都分配了一个视频进行转码，该任务可能需要几个小时才能完成。</p>
+<p>当您触发滚动更新时，Pod 会在 30 秒内完成任务，然后将其杀死。</p>
+<p>如何避免延迟关闭 Pod？</p>
+<p>您可以将其增加 <code>terminationGracePeriodSeconds</code> 几个小时。</p>
+<p><strong>但是，此时 Pod 的 endpoint不可达。</strong><br><img src="/images/k8s/g_sd_50.png" alt="graceful shutdown"></p>
+<p>如果公开指标以监视 Pod，则检测工具将无法访问 Pod。</p>
+<p>为什么？</p>
+<p><strong>诸如 Prometheus 之类的工具依赖于 Endpoints 来在群集中探测 Pod</strong>。</p>
+<p>但是，一旦删除 Pod，endpoint 删除就会在群集中通告，甚至传播到 Prometheus！</p>
+<p><strong>您应该考虑为每个新版本创建一个新的 Deployment，而不是增加宽限时间（grace period）</strong>。</p>
+<p>当您创建全新的 deployment 时，现有的 deployment 将保持不变。</p>
+<p>长时间运行的作业可以照常继续处理视频。</p>
+<p>完成后，您可以手动删除它们。</p>
+<p>如果希望自动删除它们，则可能需要设置一个弹性伸缩，当它们用尽任务时，可以将部署扩展到零个副本。</p>
+<p>这种 Pod 自动伸缩的一个示例是 Osiris，<a href="https://github.com/deislabs/osiris" target="_blank" rel="external">它是 Kubernetes 的通用，从零缩放的组件</a>。</p>
+<p>该技术有时被称为 <strong>Rainbow 部署</strong>，并且在每次您必须使以前的 Pod 运行超过宽限期的时间时很有用。</p>
+<p><em>另一个很好的例子是 WebSockets。</em></p>
+<p>如果您正在向用户流式传输实时更新，则可能不希望在每次发布时都终止 WebSocket。</p>
+<p>如果您每天频繁发布，则可能会导致实时 Feed 多次中断。</p>
+<p><strong>为每个版本创建一个新的 Deployment 是一个不太明显但却是更好的选择。</strong></p>
+<p>现有用户可以继续流更新，而最新的 Deployment 服务于新用户。</p>
+<p>当用户断开与旧 Pod 的连接时，您可以逐渐减少副本并退出旧的 Deployment。</p>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>您应该注意 Pod 从集群中删除，因为它们的IP地址可能仍用于路由流量。</p>
+<p>与其立即关闭 Pods，不如考虑在应用程序中等待更长的时间或设置一个 <code>preStop</code> 钩子。</p>
+<p>仅在通告集群中的所有 endpoint 并将其从 kube-proxy，Ingress 控制器，CoreDNS 等中删除后，才应删除 Pod。</p>
+<p>如果您的 Pod 运行诸如视频转码或使用 WebSocket 进行实时更新之类的长期任务，则应考虑使用 Rainbow 部署。</p>
+<p>在 Rainbow 部署中，您为每个版本创建一个新的 Deployment，并在耗尽连接（或任务）后删除上一个版本。</p>
+<p>您可以在长时间运行的任务完成后立即手动删除较旧的 Deployment。</p>
+<p>或者，您可以自动将 Deployment 扩展到零副本，从而可以自动化该过程。</p>
+<p><img src="/images/wx_dyh.png" alt="微信订阅号"></p>
+<blockquote>
+<p>原文：<a href="https://learnk8s.io/graceful-shutdown" target="_blank" rel="external">https://learnk8s.io/graceful-shutdown</a></p>
+</blockquote>
+]]></content>
+    </entry>
+    
+    <entry>
       <title><![CDATA[图文带你了解 Go 中的分配]]></title>
       <url>http://team.jiunile.com/blog/2020/12/go-allocations.html</url>
       <content type="html"><![CDATA[<h2 id="介绍"><a href="#介绍" class="headerlink" title="介绍"></a>介绍</h2><p>得益于了 Go 运行时高效的内置内存管理，我们通常能够在程序中优先考虑正确性和可维护性，而不需要过多考虑如何进行分配的细节。不过，有时我们可能会发现代码中的性能瓶颈，并希望进行更深入的研究。</p>
