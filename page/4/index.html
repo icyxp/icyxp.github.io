@@ -369,6 +369,241 @@
   
   
   <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://team.jiunile.com/blog/2020/11/go-chan-close.html">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="icyboy">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="CloudNative 架构">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h2 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/blog/2020/11/go-chan-close.html" itemprop="url">Go chan 为啥没有判断 close 的接口</a></h2>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2020-11-16T22:00:00+08:00">
+                2020-11-16
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/golang/" itemprop="url" rel="index">
+                    <span itemprop="name">golang</span>
+                  </a>
+                </span>
+
+                
+                
+                  ， 
+                
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/golang/channel/" itemprop="url" rel="index">
+                    <span itemprop="name">channel</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+                <a href="/blog/2020/11/go-chan-close.html#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count valine-comment-count" data-xid="/blog/2020/11/go-chan-close.html" itemprop="commentCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+          
+             <span id="/blog/2020/11/go-chan-close.html" class="leancloud_visitors" data-flag-title="Go chan 为啥没有判断 close 的接口">
+               <span class="post-meta-divider">|</span>
+               <span class="post-meta-item-icon">
+                 <i class="fa fa-eye"></i>
+               </span>
+               
+                 <span class="post-meta-item-text">热度&#58;</span>
+               
+                 <span class="leancloud-visitors-count"></span>
+		 <span>℃</span>
+             </span>
+          
+
+          
+
+          
+            <div class="post-wordcount">
+              
+                
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-file-word-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">字数统计&#58;</span>
+                
+                <span title="字数统计">
+                  3,265 字
+                </span>
+              
+
+              
+                <span class="post-meta-divider">|</span>
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-clock-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">阅读时长 &asymp;</span>
+                
+                <span title="阅读时长">
+                  14 分钟
+                </span>
+              
+            </div>
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          <h2 id="大纲"><a href="#大纲" class="headerlink" title="大纲"></a>大纲</h2><ul>
+<li>Go 为什么没有判断 close 的接口？</li>
+<li>Go 关闭 channel 究竟做了什么？<br>  -<code>closechan</code></li>
+<li>一个判断 chan 是否 close 的函数<ul>
+<li>思考方法一：通过“写”chan 实现</li>
+<li>思考方法二：通过“读”chan 实现</li>
+<li>chan close 原则</li>
+<li>其实并不需要 <code>isChanClose</code> 函数 !!!</li>
+</ul>
+</li>
+<li>怎么优雅关闭 chan ？<ul>
+<li>方法一：panic-recover</li>
+<li>方法二：sync.Once</li>
+<li>方法三：事件同步来解决</li>
+</ul>
+</li>
+<li>总结</li>
+</ul>
+          <!--noindex-->
+          <div class="post-button text-center">
+            <a class="btn" href="/blog/2020/11/go-chan-close.html#more" rel="contents">
+              阅读全文 &raquo;
+            </a>
+          </div>
+          <!--/noindex-->
+        
+      
+    </div>
+    
+    
+    
+
+    <div>
+    
+    </div>
+
+    <div>
+      
+    </div>
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
     <link itemprop="mainEntityOfPage" href="http://team.jiunile.com/blog/2020/11/go-sync-pool.html">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -1235,256 +1470,6 @@
 
 
     
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://team.jiunile.com/blog/2020/11/k8s-cni-benchmark.html">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="icyboy">
-      <meta itemprop="description" content="">
-      <meta itemprop="image" content="/images/avatar.jpg">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="CloudNative 架构">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h2 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/blog/2020/11/k8s-cni-benchmark.html" itemprop="url">Kubernetes 网络插件在超过 10Gbit/s 下的基准测试结果</a></h2>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2020-11-11T20:00:00+08:00">
-                2020-11-11
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
-            <span class="post-category" >
-            
-              <span class="post-meta-divider">|</span>
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">分类于</span>
-              
-              
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/kubernetes/" itemprop="url" rel="index">
-                    <span itemprop="name">kubernetes</span>
-                  </a>
-                </span>
-
-                
-                
-                  ， 
-                
-              
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/kubernetes/基准测试/" itemprop="url" rel="index">
-                    <span itemprop="name">基准测试</span>
-                  </a>
-                </span>
-
-                
-                
-                  ， 
-                
-              
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/kubernetes/基准测试/网络/" itemprop="url" rel="index">
-                    <span itemprop="name">网络</span>
-                  </a>
-                </span>
-
-                
-                
-              
-            </span>
-          
-
-          
-            
-              <span class="post-comments-count">
-                <span class="post-meta-divider">|</span>
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-comment-o"></i>
-                </span>
-                <a href="/blog/2020/11/k8s-cni-benchmark.html#comments" itemprop="discussionUrl">
-                  <span class="post-comments-count valine-comment-count" data-xid="/blog/2020/11/k8s-cni-benchmark.html" itemprop="commentCount"></span>
-                </a>
-              </span>
-            
-          
-
-          
-          
-             <span id="/blog/2020/11/k8s-cni-benchmark.html" class="leancloud_visitors" data-flag-title="Kubernetes 网络插件在超过 10Gbit/s 下的基准测试结果">
-               <span class="post-meta-divider">|</span>
-               <span class="post-meta-item-icon">
-                 <i class="fa fa-eye"></i>
-               </span>
-               
-                 <span class="post-meta-item-text">热度&#58;</span>
-               
-                 <span class="leancloud-visitors-count"></span>
-		 <span>℃</span>
-             </span>
-          
-
-          
-
-          
-            <div class="post-wordcount">
-              
-                
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-file-word-o"></i>
-                </span>
-                
-                  <span class="post-meta-item-text">字数统计&#58;</span>
-                
-                <span title="字数统计">
-                  1,980 字
-                </span>
-              
-
-              
-                <span class="post-meta-divider">|</span>
-              
-
-              
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-clock-o"></i>
-                </span>
-                
-                  <span class="post-meta-item-text">阅读时长 &asymp;</span>
-                
-                <span title="阅读时长">
-                  8 分钟
-                </span>
-              
-            </div>
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          <h2 id="概览"><a href="#概览" class="headerlink" title="概览"></a>概览</h2><blockquote>
-<p>在运行 Kubernetes 1.19 和 Ubuntu 18.04 上进行基准测试</p>
-</blockquote>
-<ol>
-<li>在我们深入讨论度量之前</li>
-<li>CNI 经过 MTU 调优</li>
-<li>CNI 基准:原始数据</li>
-<li>CNI 加密</li>
-<li>总结</li>
-<li>结论-我的结论</li>
-</ol>
-<h2 id="1-在我们深入讨论度量标准之前…"><a href="#1-在我们深入讨论度量标准之前…" class="headerlink" title="1 在我们深入讨论度量标准之前…"></a>1 在我们深入讨论度量标准之前…</h2><h3 id="1-1-自2019年4月以来有什么新鲜事吗"><a href="#1-1-自2019年4月以来有什么新鲜事吗" class="headerlink" title="1.1 自2019年4月以来有什么新鲜事吗?"></a>1.1 自2019年4月以来有什么新鲜事吗?</h3><ul>
-<li><strong>测试您自己的群集</strong>：现在您可以使用我们发布的“Kubernetes网络基准测试”工具：knb (<a href="https://github.com/InfraBuilder/k8s-bench-suite">https://github.com/InfraBuilder/k8s-bench-suite</a>)在自己的集群上运行基准测试。</li>
-<li>在CNI 竞争中欢迎新的挑战者:<ul>
-<li>来自 VMware Tanzu 的 “<a href="https://antrea.io/docs/master/getting-started/">Antrea</a>”</li>
-<li>来自 alauda.io 的 “<a href="https://github.com/alauda/kube-ovn">Kube-OVN</a>”</li>
-</ul>
-</li>
-<li><strong>新场景</strong>：这个基准测试涵盖了 “Pod-to-Pod” 的网络性能，还包括一个新的 “Pod-to-Service” 场景，该方案涉及真实的测试案例。实际上，您的 API 容器将通过服务而不是容器 IP 消耗服务中的数据库（当然，我们对这两种场景也会测试 TCP 和 UDP）</li>
-<li><strong>资源消耗</strong>：现在每个测试都有自己的资源比较。</li>
-<li><strong>删除应用程序测试</strong>：我们不再运行 HTTP、FTP 和 SCP 测试。我们与社区和 CNI 维护者卓有成效的合作突显了 iperf TCP 结果和 curl 结果之间的差距，这是由于 CNI 启动的延迟(Pod 启动时的最初几秒钟，与实际用例无关)。</li>
-<li><strong>开源</strong>：所有基准测试的源代码（脚本、cni yml 和原始结果）都可以在 github 上获得：<a href="https://github.com/icyxp/benchmark-k8s-cni-2020-08">https://github.com/icyxp/benchmark-k8s-cni-2020-08</a>
-          <!--noindex-->
-          <div class="post-button text-center">
-            <a class="btn" href="/blog/2020/11/k8s-cni-benchmark.html#more" rel="contents">
-              阅读全文 &raquo;
-            </a>
-          </div>
-          <!--/noindex-->
-        
-      
-    </div>
-    
-    
-    
-
-    <div>
-    
-    </div>
-
-    <div>
-      
-    </div>
-
-    
-
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
   </section>
 
   
@@ -1539,7 +1524,7 @@
               
                 <a href="/archives/">
               
-                  <span class="site-state-item-count">108</span>
+                  <span class="site-state-item-count">109</span>
                   <span class="site-state-item-name">日志</span>
                 </a>
               </div>
@@ -1550,7 +1535,7 @@
               
               <div class="site-state-item site-state-categories">
                 <a href="/categories/index.html">
-                  <span class="site-state-item-count">97</span>
+                  <span class="site-state-item-count">98</span>
                   <span class="site-state-item-name">分类</span>
                 </a>
               </div>
@@ -1561,7 +1546,7 @@
               
               <div class="site-state-item site-state-tags">
                 <a href="/tags/index.html">
-                  <span class="site-state-item-count">180</span>
+                  <span class="site-state-item-count">182</span>
                   <span class="site-state-item-name">标签</span>
                 </a>
               </div>
@@ -1664,7 +1649,7 @@
     
       <span class="post-meta-item-text">Site words total count&#58;</span>
     
-    <span title="Site words total count">324.7k</span>
+    <span title="Site words total count">330.8k</span>
   
 </div>
 
@@ -1676,7 +1661,7 @@
 
 <div class="theme-info">
   <div class="powered-by"></div>
-  <span class="post-count">博客全站共324.7k字</span>
+  <span class="post-count">博客全站共330.8k字</span>
 </div>
 
 
